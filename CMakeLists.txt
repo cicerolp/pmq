@@ -12,7 +12,7 @@ include("${PROJECT_SOURCE_DIR}/../hppsimulations/pma_cd-release/inc/pma/pma-expo
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
-                               ext/DMPLoader/dmploader.cpp
+                               include/DMPLoader/dmploader.cpp
 )
 
 
