@@ -7,7 +7,7 @@ aux_source_directory(. SRC_LIST)
 
 
 #include pma export tree
-include("${PROJECT_SOURCE_DIR}/../hppsimulations/pma_cd-release/inc/pma/pma-exports.cmake")
+include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
