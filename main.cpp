@@ -84,6 +84,43 @@ uint64_t spatialKey(tweet_t& t){
   return mortonEncode_RAM(x,y);
 }
 
+/**
+ * @brief update_map scans the pma and update the start and end poiters for each key in the pma.
+ * @param pma
+ * @param range
+ * @return returns the number of keys that had their start of theis range modified.
+ *
+ * Note this doesn't work if a key was deleted from the pma.
+ */
+int update_map(struct pma_struct* pma, std::map<int64_t,std::pair<char*,char*> > &range){
+   uint64_t last = *(uint64_t*) SEGMENT_START(pma,0);
+
+   int mod_ranges = 0;
+
+   char* el = (char*) SEGMENT_START(pma,0);
+
+   if (range[last].first!=el){
+     mod_ranges++;
+     range[last].first = el;
+   }
+
+   for (int s = 0 ; s < pma->nb_segments; s++){
+       for (char* el = (char*) SEGMENT_START(pma,s) ; el < SEGMENT_ELT(pma,s,pma->elts[s]) ; el += pma->elt_size){
+           if (last != *(uint64_t*) el){
+               range[last].second = el;
+               last = *(uint64_t*) el;
+
+               if (range[last].first!=el){
+                   mod_ranges++;
+                   range[last].first = el;
+               }
+           }
+       }
+   }
+   range[last].second = (char*) SEGMENT_START(pma,pma->nb_segments - 1 ) + pma->elts[pma->nb_segments - 1] * pma->elt_size;
+
+   return mod_ranges;
+}
 
 int main(int argc, char *argv[])
 {
@@ -132,6 +169,11 @@ int main(int argc, char *argv[])
 
    struct pma_struct * pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
 
+   /* Creates a map with begin and end of each index in the pma. */
+   std::map<int64_t,std::pair<char*,char*> > range;
+
+//   printf("first range = %d\n",range[3].first);
+
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
@@ -146,27 +188,18 @@ int main(int argc, char *argv[])
            size = batch_size;
        }
        insert_batch(pma,batch_start,batch_size);
+       int count = update_map(pma,range);
+       printf("Size of map %d ; updated %d \n",range.size(),count);
+
+       // print the updated ranges:
+     //  for (int r ; r < batch_size; r++){
+           //printf("%d batch_start[r].key;
+      //     printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
+      // }
    }
 
 //   print_pma_keys(pma);
 //   std::cout << "\n";
-
-   /* Creates a map with begin and end of each index in the pma. */ .
-   std::map<int64_t,std::pair<char*,char*> > range;
-   uint64_t last = *(uint64_t*) SEGMENT_START(pma,0);
-   range[last].first = (char*) SEGMENT_START(pma,0);
-   for (int s = 0 ; s < pma->nb_segments; s++){
-       for (char* el = (char*) SEGMENT_START(pma,s) ; el < SEGMENT_ELT(pma,s,pma->elts[s]) ; el += pma->elt_size){
-           if (last != *(uint64_t*) el){
-               range[last].second = el;
-               last = *(uint64_t*) el;
-               range[last].first = el;
-           }
-       }
-   }
-   range[last].second = (char*) SEGMENT_START(pma,pma->nb_segments - 1 ) + pma->elts[pma->nb_segments - 1] * pma->elt_size;
-
-   printf("Size of map %d \n",range.size());
 
    for (auto &e : range){
        printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
