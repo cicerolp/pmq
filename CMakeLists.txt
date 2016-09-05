@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 aux_source_directory(. SRC_LIST)
 
-
-
+set(PMA_BUILD_DIR "../hppsimulations/pma_cd-release" CACHE PATH "Location of the PMA build tree")
 
 #include pma export tree
 include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
