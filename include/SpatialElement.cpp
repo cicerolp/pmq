@@ -5,9 +5,15 @@
 
 SpatialElement::SpatialElement(const spatial_t& tile) {
    el = tile;
+   beg = NULL;
+   end = NULL;
 }
 
-
+/**
+ * @brief SpatialElement::update inserts a list of element in a quatree
+ * @param range
+ * @return
+ */
 uint32_t SpatialElement::update(map_t &range) {
 
   if (el.z == 24)
@@ -22,6 +28,9 @@ uint32_t SpatialElement::update(map_t &range) {
       quads[q].emplace(m);
   }
 
+
+
+
   for (int i=0 ; i < 4 ; i++ ){
       if (quads[i].empty()) continue;
 
@@ -29,8 +38,19 @@ uint32_t SpatialElement::update(map_t &range) {
         auto tile = get_tile(el.x * 2, el.y * 2, i);
         _container[i] = std::make_unique<SpatialElement> (spatial_t(tile.first,tile.second,el.z+1));
       }
+
+      if (beg == NULL ){
+          beg = (* (quads[i].begin())).second.first;
+      }
+
+      end = (* (quads[i].rbegin())).second.second;
+
       _container[i]->update(quads[i]);
+
+
   }
+
+//  std::cout << "("<< el << ") " << "[" << (void * ) beg << " - " << (void*) end << "]" << std::endl;
 
 }
 /*

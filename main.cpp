@@ -215,12 +215,12 @@ int main(int argc, char *argv[])
 
 //   print_pma_keys(pma);
 //   std::cout << "\n";
-
+/*
    for (auto &e : range){
        //printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
        std::cout << e.first << std::endl;
    }
-
+*/
    destroy_pma(pma);
    free(reference_array);
 

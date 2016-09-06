@@ -26,7 +26,7 @@ struct quadtree_key{
     friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
       stream << qtree.lat << "  " << qtree.lgt ;
       return stream;
-   }
+    }
     uint64_t mCode;
     float lat;
     float lgt;
