@@ -145,7 +145,17 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
      * - get the ending segment
      */
 
+    unsigned int seg_beg = (beg - (char*) pma->array)/(pma->cap_segments * pma->elt_size);
+    unsigned int seg_end = (end - 1 - (char* ) pma->array)/(pma->cap_segments * pma->elt_size);
+//    _START_ beg / pma->cap_segments
 
+    unsigned int cnt = 0;
+
+    for (unsigned int s = seg_beg ; s <= seg_end; s ++ ){
+        cnt += pma->elts[s] ;
+    }
+
+    return cnt;
 }
 
 int main(int argc, char *argv[])
@@ -226,6 +236,30 @@ int main(int argc, char *argv[])
       // }
    }
 
+
+
+
+   // A stupid test :
+   SpatialElement* ptr = &quadtree;
+   //goes a somewhere deep in the tree
+   for (int d = 0 ; d < 2 ; d++){
+       int k = 0 ;
+       while(ptr->_container[k] == NULL)
+           k++;
+       ptr = (ptr->_container[k]).get();
+   }
+
+   //print the counts on each of child quadrants
+   std::cout << " Element in the parent range [" << (void*) ptr->beg << " : " << (void*) ptr->end << "] " << count_elts_pma(pma,ptr->beg,ptr->end) <<  std::endl ;
+   for (int i = 0 ; i < 4 ; i++){
+    if (ptr->_container[i] != NULL){
+       std::cout << " Element in the quadrant " << i << " = " <<
+                    (void*) (ptr->_container[i]->beg) << " : " <<
+                    (void*) (ptr->_container[i]->end) << "] " <<
+                    count_elts_pma(pma,ptr->_container[i]->beg,ptr->_container[i]->end) <<
+                    std::endl ;
+    }
+   }
 
 
 //   print_pma_keys(pma);

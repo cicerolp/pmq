@@ -57,7 +57,7 @@ uint32_t SpatialElement::update(map_t &range) {
 
   }
 
-  std::cout << "("<< el << ") " << "[" << (void * ) beg << " - " << (void*) end << "]" << std::endl;
+  //std::cout << "("<< el << ") " << "[" << (void * ) beg << " - " << (void*) end << "]" << std::endl;
 
 }
 
