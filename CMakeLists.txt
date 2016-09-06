@@ -16,8 +16,14 @@ add_executable(${PROJECT_NAME} ${SRC_LIST}
 include/SpatialElement.h
 include/SpatialElement.cpp
 include/types.h
+
+include/mongoose/mongoose.c
+include/mongoose/mongoose.h
 )
 
+include_directories(
+  "${PROJECT_SOURCE_DIR}"
+  "${PROJECT_SOURCE_DIR}/include")
 
 #SET(CMAKE_C_COMPILER /usr/bin/g++)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -30,7 +36,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 #LINK_DIRECTORIES("../hppsimulations/pma_cd-release/inc/pma")
 #target_link_libraries (twitterVis pma )
+#message(STATUS "System libs : " ${SYSTEM_LIBS} )
 
-target_link_libraries(${PROJECT_NAME} pma)
+FIND_PACKAGE(Threads REQUIRED)
+
+
+target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} )
 
 

@@ -21,11 +21,11 @@
 
 #include "ext/CImg/CImg.h"
 
-#include "include/DMPLoader/dmploader.hpp"
-#include "include/mercator_util.h"
-#include "include/morton.h"
-#include "include/types.h"
-#include "include/SpatialElement.h"
+#include "DMPLoader/dmploader.hpp"
+#include "mercator_util.h"
+#include "morton.h"
+#include "types.h"
+#include "SpatialElement.h"
 
 #ifdef __APPLE__
 #include "mac_utils.h"
