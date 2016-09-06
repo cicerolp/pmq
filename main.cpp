@@ -24,10 +24,14 @@
 #include "include/DMPLoader/dmploader.hpp"
 #include "include/mercator_util.h"
 #include "include/morton.h"
+#include "include/types.h"
+#include "include/SpatialElement.h"
 
 #ifdef __APPLE__
 #include "mac_utils.h"
 #endif
+
+uint32_t g_Quadtree_Depth = 25;
 
 
 
@@ -78,11 +82,18 @@ void insert_batch(struct pma_struct* pma, elttype* batch, int size)
     return;
 }
 
-uint64_t spatialKey(tweet_t& t){
-  uint32_t y = mercator_util::lat2tiley(t.latitude, 25);
-  uint32_t x = mercator_util::lon2tilex(t.longitude, 25);
+/**
+ * @brief spatialKey Computes the the morton-index using the tweets coordinates on quadtree
+ * @param t The tweet data structure.
+ * @param depth Depth of refinement of the quadtree
+ * @return
+ */
+uint64_t spatialKey(tweet_t& t, int depth){
+  uint32_t y = mercator_util::lat2tiley(t.latitude, depth);
+  uint32_t x = mercator_util::lon2tilex(t.longitude, depth);
   return mortonEncode_RAM(x,y);
 }
+
 
 /**
  * @brief update_map scans the pma and update the start and end poiters for each key in the pma.
@@ -92,7 +103,7 @@ uint64_t spatialKey(tweet_t& t){
  *
  * Note this doesn't work if a key was deleted from the pma.
  */
-int update_map(struct pma_struct* pma, std::map<int64_t,std::pair<char*,char*> > &range){
+int update_map(struct pma_struct* pma, map_t &range){
    uint64_t last = *(uint64_t*) SEGMENT_START(pma,0);
 
    int mod_ranges = 0;
@@ -154,7 +165,7 @@ int main(int argc, char *argv[])
    //use the spatial index as key
    for (auto& tweet : tweet_vec){
        elttype e;
-       e.key = spatialKey(tweet);
+       e.key = spatialKey(tweet,g_Quadtree_Depth);
        e.value = tweet;
        input_vec.emplace_back(e);
    }
@@ -170,9 +181,8 @@ int main(int argc, char *argv[])
    struct pma_struct * pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
 
    /* Creates a map with begin and end of each index in the pma. */
-   std::map<int64_t,std::pair<char*,char*> > range;
-
-//   printf("first range = %d\n",range[3].first);
+   map_t range;
+   SpatialElement quadtree(spatial_t(0,0,0));
 
    elttype * batch_start;
    int size = nb_elements / batch_size;
@@ -191,6 +201,9 @@ int main(int argc, char *argv[])
        int count = update_map(pma,range);
        printf("Size of map %d ; updated %d \n",range.size(),count);
 
+
+       quadtree.update(range);
+
        // print the updated ranges:
      //  for (int r ; r < batch_size; r++){
            //printf("%d batch_start[r].key;
@@ -198,11 +211,14 @@ int main(int argc, char *argv[])
       // }
    }
 
+
+
 //   print_pma_keys(pma);
 //   std::cout << "\n";
 
    for (auto &e : range){
-       printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
+       //printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
+       std::cout << e.first << std::endl;
    }
 
    destroy_pma(pma);

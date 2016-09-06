@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 
 namespace mercator_util {
    inline uint32_t index(uint32_t x, uint32_t y) {
