@@ -147,6 +147,9 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
 
     unsigned int seg_beg = (beg - (char*) pma->array)/(pma->cap_segments * pma->elt_size);
     unsigned int seg_end = (end - 1 - (char* ) pma->array)/(pma->cap_segments * pma->elt_size);
+
+    std::cout << "begin " << seg_beg << " ; end " << seg_end << std::endl;
+
 //    _START_ beg / pma->cap_segments
 
     unsigned int cnt = 0;
@@ -155,6 +158,9 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
         cnt += pma->elts[s] ;
     }
 
+    // need to subtract the extra elements at the end a start of each segmend
+    cnt -= (beg - (char*) SEGMENT_START(pma,seg_beg)) / pma->elt_size;
+    cnt -= ((char*) SEGMENT_ELT(pma,seg_end,pma->elts[seg_end]) - end) / pma->elt_size;
     return cnt;
 }
 
@@ -238,6 +244,7 @@ int main(int argc, char *argv[])
 
 
 
+   std::cout << " Element in the root node [" << (void*) quadtree.beg << " : " << (void*) quadtree.end << "] " << count_elts_pma(pma,quadtree.beg,quadtree.end) <<  std::endl ;
 
    // A stupid test :
    SpatialElement* ptr = &quadtree;
