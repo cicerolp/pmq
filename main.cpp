@@ -98,8 +98,8 @@ uint64_t spatialKey(tweet_t& t, int depth){
 /**
  * @brief update_map scans the pma and update the start and end poiters for each key in the pma.
  * @param pma
- * @param range
- * @return returns the number of keys that had their start of theis range modified.
+ * @param range The start and end o
+ * @return returns the number of keys that had their start of their range modified.
  *
  * Note this doesn't work if a key was deleted from the pma.
  */
@@ -131,6 +131,21 @@ int update_map(struct pma_struct* pma, map_t &range){
    range[last].second = (char*) SEGMENT_START(pma,pma->nb_segments - 1 ) + pma->elts[pma->nb_segments - 1] * pma->elt_size;
 
    return mod_ranges;
+}
+
+/**
+ * @brief count_elts_pma Returns the amount of valid elements between range [beg,end[
+ * @param pma
+ * @param beg
+ * @param end
+ * @return
+ */
+int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
+    /* - get the starting segment
+     * - get the ending segment
+     */
+
+
 }
 
 int main(int argc, char *argv[])
@@ -199,7 +214,7 @@ int main(int argc, char *argv[])
        }
        insert_batch(pma,batch_start,batch_size);
        int count = update_map(pma,range);
-       printf("Size of map %d ; updated %d \n",range.size(),count);
+     // printf("Size of map %d ; updated %d \n",range.size(),count);
 
 
        quadtree.update(range);
