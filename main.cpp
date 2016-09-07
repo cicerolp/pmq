@@ -122,11 +122,9 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
     /* - get the starting segment
      * - get the ending segment
      */
-
-
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {   
 
    bool server = true;
    Server::server_opts nds_opts;

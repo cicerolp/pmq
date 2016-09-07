@@ -21,8 +21,12 @@
 #include <functional>
 #include <unordered_map>
 
-// mongoose
+// mongoose http server
 #include <mongoose/mongoose.h>
+
+// rapidjson
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 // mercator_util
 #include "mercator_util.h"
