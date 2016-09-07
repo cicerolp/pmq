@@ -1,13 +1,4 @@
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <errno.h>
-#include <vector>
-#include <string.h>
-#include <time.h>
-#include <algorithm>
-#include <map>
+#include "stde.h"
 
 //#include "PmaConfig.h"
 #include "pma/pma.h"
@@ -21,15 +12,10 @@
 
 #include "ext/CImg/CImg.h"
 
-#include "DMPLoader/dmploader.hpp"
-#include "mercator_util.h"
-#include "morton.h"
-#include "types.h"
+#include "Server.h"
 #include "SpatialElement.h"
+#include "DMPLoader/dmploader.hpp"
 
-#ifdef __APPLE__
-#include "mac_utils.h"
-#endif
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -164,8 +150,21 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
     return cnt;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {   
+
+   bool server = true;
+   Server::server_opts nds_opts;
+   nds_opts.port = 7000;
+   nds_opts.cache = false;
+   nds_opts.multithreading = true;
+
+   std::cout << "Server Options:" << std::endl;
+   std::cout << "\tOn/Off: " << server << std::endl;
+   std::cout << "\t" << nds_opts << std::endl;
+
+   // http server
+   std::unique_ptr<std::thread> server_ptr;
+   if (server) server_ptr = std::make_unique<std::thread>(Server::run, nds_opts);
 
    cimg_usage("Benchmark inserts elements in batches.");
    //const unsigned int nb_elements ( cimg_option("-n",100,"Number of elements to insert"));
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
    std::vector<tweet_t> tweet_vec;
    loadTweetFile(tweet_vec,fname);
 
-   /* Create <key,value> elements */
+   // Create <key,value> elements
 
    std::vector<elttype> input_vec;
    input_vec.reserve(tweet_vec.size());
@@ -211,7 +210,7 @@ int main(int argc, char *argv[])
 
    struct pma_struct * pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
 
-   /* Creates a map with begin and end of each index in the pma. */
+   // Creates a map with begin and end of each index in the pma.
    map_t range;
    SpatialElement quadtree(spatial_t(0,0,0));
 
@@ -242,8 +241,6 @@ int main(int argc, char *argv[])
       // }
    }
 
-
-
    std::cout << " Element in the root node [" << (void*) quadtree.beg << " : " << (void*) quadtree.end << "] " << count_elts_pma(pma,quadtree.beg,quadtree.end) <<  std::endl ;
 
    // A stupid test :
@@ -266,6 +263,15 @@ int main(int argc, char *argv[])
                     count_elts_pma(pma,ptr->_container[i]->beg,ptr->_container[i]->end) <<
                     std::endl ;
     }
+   }
+
+
+   if (server_ptr) {
+      std::cout << "Server Running... press any key to terminate." << std::endl;
+      getchar();
+
+      Server::getInstance().stop();
+      server_ptr->join();
    }
 
 
