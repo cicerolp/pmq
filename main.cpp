@@ -75,8 +75,8 @@ uint64_t spatialKey(tweet_t& t, int depth){
 
 /**
  * @brief update_map scans the pma and update the start and end poiters for each key in the pma.
- * @param pma
- * @param range The start and end o
+ * @param pma [IN]
+ * @param range [OUT] Will be filled with the elements containing ( Key, begin_in_pma, end_in_pma) indicating where is located the range of Key in the pma array;
  * @return returns the number of keys that had their start of their range modified.
  *
  * Note this doesn't work if a key was deleted from the pma.
@@ -113,9 +113,14 @@ int update_map(struct pma_struct* pma, map_t &range){
 
 /**
  * @brief count_elts_pma Returns the amount of valid elements between range [beg,end[
- * @param pma
- * @param beg
+ * @param pma A pma data structure
+ * @param beg The pointer where want to start counting elements.
  * @param end
+ *
+ * @note This function was made to be used by the quadtree to query the amount of elements in a range.
+ *
+ * usually *beg will point to the position of first occurence of a Key in the pma and *end will point to the position of its last occurence.
+ *
  * @return
  */
 int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
@@ -142,7 +147,7 @@ int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
     return cnt;
 }
 
-int main(int argc, char *argv[]) {   
+int main(int argc, char *argv[]) {
 
    bool server = true;
    Server::server_opts nds_opts;
@@ -220,42 +225,61 @@ int main(int argc, char *argv[]) {
            size = batch_size;
        }
        insert_batch(pma,batch_start,size);
-       int count = update_map(pma,range);
+       update_map(pma,range); //Extract information of new key range boundaries inside the pma.
      // printf("Size of map %d ; updated %d \n",range.size(),count);
-
 
        quadtree.update(range);
 
-       // print the updated ranges:
+     // print the updated ranges:
      //  for (int r ; r < batch_size; r++){
            //printf("%d batch_start[r].key;
       //     printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
       // }
    }
 
-   std::cout << " Element in the root node [" << (void*) quadtree.beg << " : " << (void*) quadtree.end << "] " << count_elts_pma(pma,quadtree.beg,quadtree.end) <<  std::endl ;
+   std::cout << "############ TEST ##############" << std::endl;
 
-   // A stupid test :
-   SpatialElement* ptr = &quadtree;
-   //goes a somewhere deep in the tree
+   std::cout << " Element in the root node [" << (void*) quadtree.beg << " : " << (void*) quadtree.end << "] = " << count_elts_pma(pma,quadtree.beg,quadtree.end) <<  std::endl ;
+
+   // Get the root of our quatree.
+   SpatialElement* queryNode_ptr = &quadtree;
+
+   //Find a node to use as example of query;
    for (int d = 0 ; d < 2 ; d++){
        int k = 0 ;
-       while(ptr->_container[k] == NULL)
+       while(queryNode_ptr->_container[k] == NULL)
            k++;
-       ptr = (ptr->_container[k]).get();
+       queryNode_ptr = (queryNode_ptr->_container[k]).get();
    }
 
-   //print the counts on each of child quadrants
-   std::cout << " Element in the parent range [" << (void*) ptr->beg << " : " << (void*) ptr->end << "] " << count_elts_pma(pma,ptr->beg,ptr->end) <<  std::endl ;
+   //QUERY 1: gets the number of Elements in the queryNode
+   std::cout << " Element in the parent quadrant [" << (void*) queryNode_ptr->beg << " : " << (void*) queryNode_ptr->end << "] = " << count_elts_pma(pma,queryNode_ptr->beg,queryNode_ptr->end) <<  std::endl ;
+
+
+   //QUERY 2: gets the number elements in each of childs quadrants of the queryNode
    for (int i = 0 ; i < 4 ; i++){
-    if (ptr->_container[i] != NULL){
-       std::cout << " Element in the quadrant " << i << " = " <<
-                    (void*) (ptr->_container[i]->beg) << " : " <<
-                    (void*) (ptr->_container[i]->end) << "] " <<
-                    count_elts_pma(pma,ptr->_container[i]->beg,ptr->_container[i]->end) <<
-                    std::endl ;
-    }
+       if (queryNode_ptr->_container[i] != NULL){
+           std::cout << " Element in child quadrant " << i << " [" <<
+                        (void*) (queryNode_ptr->_container[i]->beg) << " : " <<
+                        (void*) (queryNode_ptr->_container[i]->end) << "]  = " <<
+                        count_elts_pma(pma,queryNode_ptr->_container[i]->beg,queryNode_ptr->_container[i]->end) <<
+                        std::endl ;
+       }
    }
+
+   /* Notes for the server implementation :
+    * A query on the server will ask how many elements are in a quadrant of the PMA.
+    *
+    * // A query contains the spatial element that refers to a quadrant.
+    * struct query {
+    *   SpatilaElement
+    * }
+    *
+    * // The answer to the query will be returned by the function count_elts_pma.
+    * NbElements = count_elts_pma(pma, SpatialElement.beg, SpatialElement.end)
+    *
+    */
+
 
 
    if (server_ptr) {
