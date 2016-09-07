@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 
    bool server = true;
    Server::server_opts nds_opts;
-   nds_opts.port = 7000;
+   nds_opts.port = 7001;
    nds_opts.cache = false;
    nds_opts.multithreading = true;
 
@@ -166,106 +166,6 @@ int main(int argc, char *argv[]) {
    std::unique_ptr<std::thread> server_ptr;
    if (server) server_ptr = std::make_unique<std::thread>(Server::run, nds_opts);
 
-   cimg_usage("Benchmark inserts elements in batches.");
-   //const unsigned int nb_elements ( cimg_option("-n",100,"Number of elements to insert"));
-   const unsigned int seg_size ( cimg_option("-s",8,"Segment size for the pma"));
-   const int batch_size ( cimg_option("-b",10,"Batch size used in batched insertions"));
-   const float tau_0 ( cimg_option("-t0",0.92,"pma parameter tau_0"));
-   const float tau_h ( cimg_option("-th",0.7,"pma parameter tau_h"));
-   const float rho_0 ( cimg_option("-r0",0.08,"pma parameter rho_0"));
-   const float rho_h ( cimg_option("-rh",0.3,"pma parameter rho_0"));
-   std::string fname ( cimg_option("-f","../../data/twitter/tweet1000.dat","file with tweets"));
-
-   const char* is_help = cimg_option("-h",(char*)0,0);
-
-   if (is_help) return 0;
-
-   std::cout << "Input file: " << fname << std::endl;
-
-   elttype *reference_array;
-
-   std::vector<tweet_t> tweet_vec;
-   loadTweetFile(tweet_vec,fname);
-
-   // Create <key,value> elements
-
-   std::vector<elttype> input_vec;
-   input_vec.reserve(tweet_vec.size());
-
-   //use the spatial index as key
-   for (auto& tweet : tweet_vec){
-       elttype e;
-       e.key = spatialKey(tweet,g_Quadtree_Depth);
-       e.value = tweet;
-       input_vec.emplace_back(e);
-   }
-
-   reference_array = (elttype * ) malloc( (input_vec.size()) *sizeof(elttype));
-   memcpy(reference_array, &input_vec[0], input_vec.size() * sizeof(elttype));
-   qsort(reference_array, input_vec.size(), sizeof(elttype), comp<uint64_t>);
-
-
-   int nb_elements = input_vec.size();
-   PRINTOUT("Number of elements == %d \n",nb_elements);
-
-   struct pma_struct * pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-
-   // Creates a map with begin and end of each index in the pma.
-   map_t range;
-   SpatialElement quadtree(spatial_t(0,0,0));
-
-   elttype * batch_start;
-   int size = nb_elements / batch_size;
-   int num_batches = 1 + (nb_elements-1)/batch_size;
-
-   for (int k = 0; k < num_batches; k++)
-   {
-       batch_start = &input_vec[k*size];
-
-       if ((nb_elements-k*batch_size) / batch_size == 0){
-           size = nb_elements % batch_size;
-       }else{
-           size = batch_size;
-       }
-       insert_batch(pma,batch_start,batch_size);
-       int count = update_map(pma,range);
-     // printf("Size of map %d ; updated %d \n",range.size(),count);
-
-
-       quadtree.update(range);
-
-       // print the updated ranges:
-     //  for (int r ; r < batch_size; r++){
-           //printf("%d batch_start[r].key;
-      //     printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
-      // }
-   }
-
-   std::cout << " Element in the root node [" << (void*) quadtree.beg << " : " << (void*) quadtree.end << "] " << count_elts_pma(pma,quadtree.beg,quadtree.end) <<  std::endl ;
-
-   // A stupid test :
-   SpatialElement* ptr = &quadtree;
-   //goes a somewhere deep in the tree
-   for (int d = 0 ; d < 2 ; d++){
-       int k = 0 ;
-       while(ptr->_container[k] == NULL)
-           k++;
-       ptr = (ptr->_container[k]).get();
-   }
-
-   //print the counts on each of child quadrants
-   std::cout << " Element in the parent range [" << (void*) ptr->beg << " : " << (void*) ptr->end << "] " << count_elts_pma(pma,ptr->beg,ptr->end) <<  std::endl ;
-   for (int i = 0 ; i < 4 ; i++){
-    if (ptr->_container[i] != NULL){
-       std::cout << " Element in the quadrant " << i << " = " <<
-                    (void*) (ptr->_container[i]->beg) << " : " <<
-                    (void*) (ptr->_container[i]->end) << "] " <<
-                    count_elts_pma(pma,ptr->_container[i]->beg,ptr->_container[i]->end) <<
-                    std::endl ;
-    }
-   }
-
-
    if (server_ptr) {
       std::cout << "Server Running... press any key to terminate." << std::endl;
       getchar();
@@ -273,18 +173,6 @@ int main(int argc, char *argv[]) {
       Server::getInstance().stop();
       server_ptr->join();
    }
-
-
-//   print_pma_keys(pma);
-//   std::cout << "\n";
-/*
-   for (auto &e : range){
-       //printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
-       std::cout << e.first << std::endl;
-   }
-*/
-   destroy_pma(pma);
-   free(reference_array);
 
    return 0;
 }
