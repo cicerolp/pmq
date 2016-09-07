@@ -39,3 +39,5 @@
 
 // common types
 #include "types.h"
+
+#include "pma_util.h"

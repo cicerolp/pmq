@@ -1,8 +1,8 @@
 #pragma once
 #include "stde.h"
 
-#include "Singleton.h"
 #include "Query.h"
+#include "Singleton.h"
 
 class Server: public Singleton<Server> {
 	friend class Singleton<Server>;

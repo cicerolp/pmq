@@ -1,9 +1,5 @@
 #pragma once
-
-#include "mercator_util.h"
-#include "morton.h"
-#include <iostream>
-
+#include "stde.h"
 
 extern uint32_t g_Quadtree_Depth;
 
@@ -17,11 +13,9 @@ struct quadtree_key{
         mCode = mortonCode;
     }
 
-//    inline uint64_t operator()() const {return mCode;}
-
-    friend inline bool operator<(const quadtree_key& lhs, const quadtree_key& rhs){ return (lhs.mCode < rhs.mCode); }
-
-
+   friend inline bool operator<(const quadtree_key& lhs, const quadtree_key& rhs) {
+      return (lhs.mCode < rhs.mCode);
+   }
 
     friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
       stream << qtree.lat << "  " << qtree.lgt ;
@@ -31,8 +25,6 @@ struct quadtree_key{
     float lat;
     float lgt;
 };
-
-
 
 
 typedef std::map<quadtree_key,std::pair<char*,char*> > map_t;
@@ -79,3 +71,11 @@ struct spatial_t {
    };
 };
 
+struct json_t {
+   uint32_t count;
+   spatial_t tile;
+
+   json_t(const spatial_t& el, uint32_t sum) : tile(el), count(sum) {}
+};
+
+using json_ctn = std::vector<json_t>;

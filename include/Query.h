@@ -6,53 +6,30 @@
 
 class Query {
 public:
-   enum QueryType { TILE, GROUP, TSERIES, SCATTER, MYSQL, REGION };
-
    Query(const std::string& url);
    Query(const std::vector<std::string>& tokens);
 
-   inline const QueryType& type() const {
-      return _type;
-   }
-
-   inline const std::string& instance() const {
-      return _instance;
-   }
-
    friend std::ostream& operator<<(std::ostream& os, const Query& query);
 
-   struct query_t {
-      enum type { spatial, categorical, temporal };
-      query_t(type _id) : id(_id) {}
-      type id;
-   };
-   struct spatial_query_t : public query_t {
-      spatial_query_t() : query_t(spatial) {}
-
-      // BUG fix multiple spatial dimenions
+   struct spatial_query_t {
       uint32_t resolution {0};
-      std::vector<spatial_t> tile;
+      spatial_t tile;
    };
 
-   inline bool eval(uint32_t key) const {
-      return restrictions[key] != nullptr;
+   inline bool eval() const {
+      return restriction != nullptr;
    }
 
    template<typename T>
-   inline T* get(uint32_t key) const {
-      return (T*)restrictions[key].get();
+   inline T* get() const {
+      return (T*)restriction.get();
    }
 
    template<typename T>
-   inline T* get(uint32_t key) {
-      return (T*)restrictions[key].get();
+   inline T* get() {
+      return (T*)restriction.get();
    }
 
 private:
-   Query(const std::string& instance, const std::string& type);
-
-   QueryType _type;
-   std::string _instance;
-
-   std::vector<std::unique_ptr<query_t>> restrictions;
+   std::unique_ptr<spatial_query_t> restriction;
 };

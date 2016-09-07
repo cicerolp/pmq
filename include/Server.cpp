@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "PMAInstance.h"
 
 void Server::run(server_opts opts) {
    Server::getInstance().nds_opts = opts;
@@ -34,10 +35,8 @@ void Server::handler(mg_connection* conn, int ev, void* p) {
          mg_serve_http(conn, hm, Server::getInstance().http_server_opts);
 
       } else if (tokens[1] == "rest" && tokens.size() >= 4) {
-         if (tokens[2] == "schema") {
-            //printJson(conn, NDSInstances::getInstance().schema(tokens[3]));
-         } else if (tokens.size() >= 5 && tokens[2] == "query") {
-            //printJson(conn, NDSInstances::getInstance().query(Query(tokens)));
+         if (tokens.size() >= 5 && tokens[2] == "query") {
+            printJson(conn, PMAInstance::getInstance().query(Query(tokens)));
          } else {
             printJson(conn, "[]");
          }

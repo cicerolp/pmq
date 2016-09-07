@@ -35,6 +35,9 @@ include/Server.cpp
 include/Query.h
 include/Query.cpp
 
+include/PMAInstance.h
+include/PMAInstance.cpp
+
 include/Singleton.h
 )
 
