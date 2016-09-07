@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
    const float tau_h ( cimg_option("-th",0.7,"pma parameter tau_h"));
    const float rho_0 ( cimg_option("-r0",0.08,"pma parameter rho_0"));
    const float rho_h ( cimg_option("-rh",0.3,"pma parameter rho_0"));
-   std::string fname ( cimg_option("-f","../../data/twitter/tweet1000.dat","file with tweets"));
+   std::string fname ( cimg_option("-f","../data/tweet100.dat","file with tweets"));
 
    const char* is_help = cimg_option("-h",(char*)0,0);
 
