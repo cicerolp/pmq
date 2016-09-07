@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
        }else{
            size = batch_size;
        }
-       insert_batch(pma,batch_start,batch_size);
+       insert_batch(pma,batch_start,size);
        int count = update_map(pma,range);
      // printf("Size of map %d ; updated %d \n",range.size(),count);
 
