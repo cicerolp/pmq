@@ -11,14 +11,31 @@ include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
-                               include/DMPLoader/dmploader.cpp
-                               include/morton.h
-include/SpatialElement.h
-include/SpatialElement.cpp
+
+include/morton.h
+
+include/DMPLoader/dmploader.hpp
+include/DMPLoader/dmploader.cpp
+
+include/stde.h
 include/types.h
 
-include/mongoose/mongoose.c
+include/string_util.h
+include/string_util.cpp
+
+include/SpatialElement.h
+include/SpatialElement.cpp
+
 include/mongoose/mongoose.h
+include/mongoose/mongoose.c
+
+include/Server.h
+include/Server.cpp
+
+include/Query.h
+include/Query.cpp
+
+include/Singleton.h
 )
 
 include_directories(

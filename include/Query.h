@@ -1,0 +1,58 @@
+#pragma once
+#include "stde.h"
+
+#include "types.h"
+#include "string_util.h"
+
+class Query {
+public:
+   enum QueryType { TILE, GROUP, TSERIES, SCATTER, MYSQL, REGION };
+
+   Query(const std::string& url);
+   Query(const std::vector<std::string>& tokens);
+
+   inline const QueryType& type() const {
+      return _type;
+   }
+
+   inline const std::string& instance() const {
+      return _instance;
+   }
+
+   friend std::ostream& operator<<(std::ostream& os, const Query& query);
+
+   struct query_t {
+      enum type { spatial, categorical, temporal };
+      query_t(type _id) : id(_id) {}
+      type id;
+   };
+   struct spatial_query_t : public query_t {
+      spatial_query_t() : query_t(spatial) {}
+
+      // BUG fix multiple spatial dimenions
+      uint32_t resolution {0};
+      std::vector<spatial_t> tile;
+   };
+
+   inline bool eval(uint32_t key) const {
+      return restrictions[key] != nullptr;
+   }
+
+   template<typename T>
+   inline T* get(uint32_t key) const {
+      return (T*)restrictions[key].get();
+   }
+
+   template<typename T>
+   inline T* get(uint32_t key) {
+      return (T*)restrictions[key].get();
+   }
+
+private:
+   Query(const std::string& instance, const std::string& type);
+
+   QueryType _type;
+   std::string _instance;
+
+   std::vector<std::unique_ptr<query_t>> restrictions;
+};
