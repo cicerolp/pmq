@@ -22,8 +22,6 @@ inline int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
    unsigned int seg_beg = (beg - (char*) pma->array)/(pma->cap_segments * pma->elt_size);
    unsigned int seg_end = (end - 1 - (char* ) pma->array)/(pma->cap_segments * pma->elt_size);
 
-   std::cout << "begin " << seg_beg << " ; end " << seg_end << std::endl;
-
    unsigned int cnt = 0;
 
    for (unsigned int s = seg_beg ; s <= seg_end; s ++ ){

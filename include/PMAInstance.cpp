@@ -38,7 +38,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
    qsort(reference_array, input_vec.size(), sizeof(elttype), comp<uint64_t>);
 
    int nb_elements = input_vec.size();
-   PRINTOUT("Number of elements == %d \n",nb_elements);
+   //PRINTOUT("Number of elements == %d \n",nb_elements);
 
    pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    
@@ -50,8 +50,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
 
-   for (int k = 0; k < num_batches; k++)
-   {
+   for (int k = 0; k < num_batches; k++) {
        batch_start = &input_vec[k*size];
 
        if ((nb_elements-k*batch_size) / batch_size == 0){
@@ -61,15 +60,8 @@ bool PMAInstance::create(int argc, char *argv[]) {
        }
        insert_batch(pma,batch_start,size);
        update_map(pma,range); //Extract information of new key range boundaries inside the pma.
-      // printf("Size of map %d ; updated %d \n",range.size(),count);
 
       quadtree->update(range);
-
-      // print the updated ranges:
-      //  for (int r ; r < batch_size; r++){
-      //    printf("%d batch_start[r].key;
-      //     printf("%llu : [%p - %p] : %d \n" , e.first , e.second.first, e.second.second , (e.second.second - e.second.first) / pma->elt_size);
-      // }
    }
    
    _ready = true;

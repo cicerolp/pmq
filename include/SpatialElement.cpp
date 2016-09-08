@@ -20,43 +20,40 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
  */
 void SpatialElement::update(map_t &range) {
 
-  if (el.z == g_Quadtree_Depth -1 )
+   // points to beggining of the first quadrant
+   if (beg == nullptr)
+      beg = range.begin()->second.first;
+      
+   //points to the end of the last quadrant
+   end = range.begin()->second.second;
+   
+   if (el.z == g_Quadtree_Depth -1 )
       return;
+      
+   // node is not a leaf
+   el.leaf = 0;
 
-  std::vector<map_t> quads(4);
+   std::vector<map_t> quads(4);
 
-  for (auto& m : range){
-      int y = mercator_util::lat2tiley(m.first.lat,el.z);
-      int x = mercator_util::lon2tilex(m.first.lgt,el.z);
+   for (auto& m : range) {
+      int x = mercator_util::lon2tilex(m.first.lgt, el.z + 1);
+      int y = mercator_util::lat2tiley(m.first.lat, el.z + 1);
+      
       int q = mercator_util::index(x,y);
 
       (quads[q]).emplace(m);
-  }
+   }
 
-  //reset pointers of this node
-  beg = NULL;
-  end = NULL;
-
-  for (int i=0 ; i < 4 ; i++ ){
+   for (int i=0 ; i < 4 ; i++ ) {
       if (quads[i].empty()) continue;
 
-      // node is not a leaf
-      el.leaf = 0;
-
       if ( _container[i] == NULL ) {
-        auto tile = get_tile(el.x * 2, el.y * 2, i);
-        _container[i] = std::make_unique<SpatialElement> (spatial_t(tile.first,tile.second,el.z+1));
+         auto pair = get_tile(el.x * 2, el.y * 2, i);
+         _container[i] = std::make_unique<SpatialElement>(spatial_t(pair.first, pair.second, el.z + 1));
       }
-
-      if (beg == NULL ){ // points to beggining of the first quadrant
-          beg = (* (quads[i].begin())).second.first;
-      }
-
-      //points to the end of the last quadrant
-      end = (* (quads[i].rbegin())).second.second;
 
       _container[i]->update(quads[i]);
-  }
+   }
 }
 
 void SpatialElement::query_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const {

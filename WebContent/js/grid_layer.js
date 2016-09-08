@@ -33,8 +33,8 @@ function grid_layer() {
       tile.height = size.y;
    
       var ctx = tile.getContext('2d');
-      //ctx.font = "15px sans-serif";
-      //ctx.fillText(coords, size.x/2, size.y/2);
+      ctx.font = "15px sans-serif";
+      ctx.fillText(coords, size.x/2, size.y/2);
 
       var query_map = "/tile/" + coords.x + "/" + coords.y + "/" + coords.z + "/8";
 
@@ -44,10 +44,9 @@ function grid_layer() {
          dataType: "json",
          success: function (data) {
             var datum = {
-               ctx: ctx,
-               size: size,                  
+               ctx: ctx,               
+               done: done,
                data: data,
-               done: done,                                
                coords: coords,
              };
 
@@ -63,9 +62,9 @@ function grid_layer() {
 
 function color_tile(entry) {
    entry.ctx.font = "15px sans-serif";
+   
    entry.data.forEach(function(d) {
-
-      entry.ctx.fillStyle = ryw(d[3]);      
+      entry.ctx.fillStyle = ryw(d[3]);
 
       var lon0 = tilex2lon(d[0], d[2]);
       var lat0 = tiley2lat(d[1], d[2]);
@@ -76,11 +75,20 @@ function color_tile(entry) {
       var y0 = (lat2tiley(lat0, entry.coords.z) - entry.coords.y) * 256;
       var x1 = (lon2tilex(lon1, entry.coords.z) - entry.coords.x) * 256;
       var y1 = (lat2tiley(lat1, entry.coords.z) - entry.coords.y) * 256;
-
-      const size_px = 0.5;
+      
+      
+      const size_px = 1.0;
       var width = x1 - x0;
       var height = y1 - y0;
       entry.ctx.fillRect(x0 - size_px, y0 - size_px, width + size_px, height + size_px);
+      
+      /*var radius = 3.0;
+      var midx = (x0 + x1) / 2;
+      var midy = (y0 + y1) / 2;
+      entry.ctx.beginPath();
+      entry.ctx.arc(midx, midy, radius, 0, 2 * Math.PI);
+      entry.ctx.fill();*/
+      
    });
 
    var error;
