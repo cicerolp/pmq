@@ -59,12 +59,21 @@ bool PMAInstance::create(int argc, char *argv[]) {
            size = batch_size;
        }
        insert_batch(pma,batch_start,size);
-       update_map(pma,range); //Extract information of new key range boundaries inside the pma.
 
+
+
+      update_map(pma,range); //Extract information of new key range boundaries inside the pma.
+
+   _ready = false;
       quadtree->update(range);
-   }
-   
+
    _ready = true;
+
+   std::cout << "batch " << k << std::endl;
+   sleep(5);
+
+
+   }
    return true;
 }
 

@@ -77,7 +77,7 @@ function color_tile(entry) {
       var y1 = (lat2tiley(lat1, entry.coords.z) - entry.coords.y) * 256;
       
       
-      const size_px = 1.0;
+      const size_px = 0.5;
       var width = x1 - x0;
       var height = y1 - y0;
       entry.ctx.fillRect(x0 - size_px, y0 - size_px, width + size_px, height + size_px);

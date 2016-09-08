@@ -39,6 +39,8 @@ include/PMAInstance.h
 include/PMAInstance.cpp
 
 include/Singleton.h
+
+include/pma_util.h
 )
 
 include_directories(
