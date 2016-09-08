@@ -15,16 +15,18 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    if (is_help) return false;
 
-   std::cout << "Input file: " << fname << std::endl;
+   PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
 
    std::vector<tweet_t> tweet_vec;
    loadTweetFile(tweet_vec,fname);
 
-   // Create <key,value> elements
 
+   // Create <key,value> elements
    std::vector<elttype> input_vec;
    input_vec.reserve(tweet_vec.size());
 
+
+   PRINTOUT("Computing keys for tweets... ");
    //use the spatial index as key
    for (auto& tweet : tweet_vec){
        elttype e;
@@ -33,12 +35,9 @@ bool PMAInstance::create(int argc, char *argv[]) {
        input_vec.emplace_back(e);
    }
 
-   reference_array = (elttype * ) malloc( (input_vec.size()) *sizeof(elttype));
-   memcpy(reference_array, &input_vec[0], input_vec.size() * sizeof(elttype));
-   qsort(reference_array, input_vec.size(), sizeof(elttype), comp<uint64_t>);
-
    int nb_elements = input_vec.size();
-   //PRINTOUT("Number of elements == %d \n",nb_elements);
+
+   PRINTOUT(" %d teewts loaded \n",tweet_vec.size());
 
    pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    
@@ -61,19 +60,16 @@ bool PMAInstance::create(int argc, char *argv[]) {
      }
      insert_batch(pma,batch_start,size);
 
-
-
      update_map(pma,range); //Extract information of new key range boundaries inside the pma.
 
-    // _ready = false;
+     _ready = false;
      t.start();
      quadtree->update(range);
      t.stop();
-    // _ready = true;
+     _ready = true;
 
      std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
      sleep(1);
-
 
    }
    return true;
@@ -81,12 +77,11 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
 void PMAInstance::destroy() {
    destroy_pma(pma);
-   free(reference_array);
 }
 
 std::string PMAInstance::query(const Query& query) {
 
-   if (!pma || !quadtree) return ("[]"); 
+   if ( !_ready || !pma || !quadtree) return ("[]");
    
    json_ctn json;
    auto restriction = query.get<Query::spatial_query_t>();
