@@ -81,10 +81,6 @@ function color_tile(entry) {
       var width = x1 - x0;
       var height = y1 - y0;
       entry.ctx.fillRect(x0 - size_px, y0 - size_px, width + size_px, height + size_px);
-
-
-
-      entry.ctx.fillText("DEMO", entry.size.x/2, entry.size.y/2);
    });
 
    var error;
