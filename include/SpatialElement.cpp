@@ -74,7 +74,7 @@ void SpatialElement::query_tile(pma_struct* pma, const spatial_t& tile, json_ctn
 
 void SpatialElement::aggregate_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const {
    if (el.z == tile.z + 8 || el.leaf) {
-      subset.emplace_back(json_t(el, 1/*count_elts_pma(pma, beg, end)*/));
+      subset.emplace_back(json_t(el, count_elts_pma(pma, beg, end)));
    } else {
       if (_container[0] != nullptr) _container[0]->aggregate_tile(pma, tile, subset);
       if (_container[1] != nullptr) _container[1]->aggregate_tile(pma, tile, subset);
