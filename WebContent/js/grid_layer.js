@@ -23,7 +23,9 @@ function lat2tiley(lat, z) {
 
 function grid_layer() {
 
-   var layer = L.gridLayer({});
+   var layer = L.gridLayer({
+      updateInterval: 0,
+   });
 
    layer.createTile = function(coords, done) {
       var tile = L.DomUtil.create('canvas', 'leaflet-tile');
@@ -33,8 +35,7 @@ function grid_layer() {
       tile.height = size.y;
    
       var ctx = tile.getContext('2d');
-      ctx.font = "15px sans-serif";
-      ctx.fillText(coords, size.x/2, size.y/2);
+      ctx.globalCompositeOperation = "lighter";
 
       var query_map = "/tile/" + coords.x + "/" + coords.y + "/" + coords.z + "/8";
 

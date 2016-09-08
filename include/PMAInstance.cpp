@@ -64,15 +64,11 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
       update_map(pma,range); //Extract information of new key range boundaries inside the pma.
 
-   _ready = false;
+      //_ready = false;
       quadtree->update(range);
-
-   _ready = true;
-
-   std::cout << "batch " << k << std::endl;
-   sleep(5);
-
-
+      //_ready = true;
+      
+      sleep(1);
    }
    return true;
 }
@@ -84,7 +80,7 @@ void PMAInstance::destroy() {
 
 std::string PMAInstance::query(const Query& query) {
 
-   if (!_ready || !pma || !quadtree) return ("[]"); 
+   if (!pma || !quadtree) return ("[]"); 
    
    json_ctn json;
    auto restriction = query.get<Query::spatial_query_t>();
