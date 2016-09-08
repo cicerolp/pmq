@@ -46,29 +46,35 @@ bool PMAInstance::create(int argc, char *argv[]) {
    map_t range;
    quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
 
+   simpleTimer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
 
    for (int k = 0; k < num_batches; k++) {
-       batch_start = &input_vec[k*size];
+     batch_start = &input_vec[k*size];
 
-       if ((nb_elements-k*batch_size) / batch_size == 0){
-           size = nb_elements % batch_size;
-       }else{
-           size = batch_size;
-       }
-       insert_batch(pma,batch_start,size);
+     if ((nb_elements-k*batch_size) / batch_size == 0){
+       size = nb_elements % batch_size;
+     }else{
+       size = batch_size;
+     }
+     insert_batch(pma,batch_start,size);
 
 
 
-      update_map(pma,range); //Extract information of new key range boundaries inside the pma.
+     update_map(pma,range); //Extract information of new key range boundaries inside the pma.
 
-      //_ready = false;
-      quadtree->update(range);
-      //_ready = true;
-      
-      sleep(1);
+    // _ready = false;
+     t.start();
+     quadtree->update(range);
+     t.stop();
+    // _ready = true;
+
+     std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
+     sleep(1);
+
+
    }
    return true;
 }
