@@ -23,6 +23,21 @@ struct quadtree_key {
       stream << qtree.lat << "  " << qtree.lgt ;
       return stream;
     }
+
+    /**
+     * @brief getQuadrant from given morton code in a quadtree.
+     * @param mCode : The morton code computed for a quadtree of depth \a max_depth;
+     * @param max_depth : The max depth of the tree.
+     * @param node_depth The current depth of a node.
+     *
+     * @note Root node has depth 0 which has only a single quadrant.
+     * @return
+     */
+    inline
+    unsigned int getQuadrant(uint64_t mCode, unsigned int max_depth, unsigned int node_depth){
+        return (mCode >> ( (max_depth - node_depth) * 2)) & 3;
+    }
+
     uint64_t mCode;
     float lat;
     float lgt;
