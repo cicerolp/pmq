@@ -3,7 +3,9 @@
 
 extern uint32_t g_Quadtree_Depth;
 
-struct quadtree_key{
+struct quadtree_key {
+   quadtree_key() = default;
+   
     quadtree_key(uint64_t mortonCode){
         uint32_t x = 0;
         uint32_t y = 0;
@@ -27,7 +29,20 @@ struct quadtree_key{
 };
 
 
-typedef std::map<quadtree_key,std::pair<char*,char*> > map_t;
+struct elinfo_t {
+   elinfo_t() = default;
+   elinfo_t(uint64_t value, char* _begin, char* _end) : key(value) {
+      begin = _begin;
+      end = _end;
+   }
+   
+   quadtree_key key;
+   char* begin;
+   char* end;
+};
+
+using map_t = std::vector<elinfo_t>;
+using map_t_it = std::vector<elinfo_t>::iterator;
 
 struct spatial_t {
    spatial_t() : spatial_t(0, 0, 0) { }
@@ -79,3 +94,39 @@ struct json_t {
 };
 
 using json_ctn = std::vector<json_t>;
+
+struct tweet_t {
+  float latitude;
+  float longitude;
+  uint64_t time;
+  uint8_t language;
+  uint8_t device;
+  uint8_t app;
+};
+
+using valuetype = tweet_t;
+
+struct elttype {
+   uint64_t key;
+   tweet_t value;
+   
+   elttype(const tweet_t& el, uint32_t depth) : value(el) {
+      uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
+      uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
+      key = mortonEncode_RAM(x,y);
+   }
+   
+   // Pma uses only the key to sort elements.
+   friend inline bool operator==(const elttype& lhs, const elttype& rhs) { 
+      return (lhs.key == rhs.key); 
+   }
+   friend inline bool operator!=(const elttype& lhs, const elttype& rhs) { 
+      return !(lhs == rhs); 
+   }
+   friend inline bool operator<(const elttype& lhs, const elttype& rhs) { 
+      return (lhs.key < rhs.key); 
+   }
+   friend inline std::ostream& operator<<(std::ostream &out, const elttype& e) {
+      return out << e.key; 
+   }
+};

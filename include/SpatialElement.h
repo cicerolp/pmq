@@ -7,7 +7,7 @@ public:
    SpatialElement(const spatial_t& tile);
    ~SpatialElement() = default;
 
-   void update( map_t &range );
+   void update(const map_t_it& it_begin, const map_t_it& it_end);
    void query_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const;
       
 private:

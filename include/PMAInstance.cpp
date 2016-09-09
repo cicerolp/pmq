@@ -17,32 +17,18 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
 
-   std::vector<tweet_t> tweet_vec;
-   loadTweetFile(tweet_vec,fname);
-
-
    // Create <key,value> elements
    std::vector<elttype> input_vec;
-   input_vec.reserve(tweet_vec.size());
-
-
-   PRINTOUT("Computing keys for tweets... ");
-   //use the spatial index as key
-   for (auto& tweet : tweet_vec){
-       elttype e;
-       e.key = spatialKey(tweet,g_Quadtree_Depth);
-       e.value = tweet;
-       input_vec.emplace_back(e);
-   }
+   loadTweetFile(input_vec, fname);
 
    int nb_elements = input_vec.size();
 
-   PRINTOUT(" %d teewts loaded \n",tweet_vec.size());
+   PRINTOUT(" %d teewts loaded \n", input_vec.size());
 
-   pma = (struct pma_struct * ) build_pma(nb_elements,sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    
-   // Creates a map with begin and end of each index in the pma.
-   map_t range;
+   
+   
    quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
 
    simpleTimer t;
@@ -60,11 +46,13 @@ bool PMAInstance::create(int argc, char *argv[]) {
      }
      insert_batch(pma,batch_start,size);
 
-     update_map(pma,range); //Extract information of new key range boundaries inside the pma.
+   // Creates a map with begin and end of each index in the pma.
+      map_t range;
+     update_map(pma, range); //Extract information of new key range boundaries inside the pma.
 
      _ready = false;
      t.start();
-     quadtree->update(range);
+     quadtree->update(range.begin(), range.end());
      t.stop();
      _ready = true;
 
