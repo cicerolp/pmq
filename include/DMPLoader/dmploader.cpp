@@ -12,14 +12,17 @@ void loadTweetFile(std::vector<elttype> &tweets, std::string fname) {
   }
 
    tweet_t record;
-   size_t record_size = 19;
-   
+   size_t record_size = 19; //file record size
+
    const uint32_t depth = 25;
    
-   while (!infile.eof()) {
+   while (true) {
       try {         
-         infile.read((char*)&record, record_size);         
-         tweets.emplace_back(record, depth);        
+         infile.read((char*)&record, record_size);
+
+         if (infile.eof() ) break;
+
+         tweets.emplace_back(record, depth);
       } catch (...) {
          break;
       }
