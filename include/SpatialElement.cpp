@@ -40,14 +40,15 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
    uint32_t index = 4;
    
    for (auto it_curr = it_begin; it_curr != it_end; ++it_curr) {
-            
       int x = mercator_util::lon2tilex((*it_curr).key.lgt, el.z + 1);
       int y = mercator_util::lat2tiley((*it_curr).key.lat, el.z + 1);      
-      int q = mercator_util::index(x,y);
+      int q1 = mercator_util::index(x,y);
       
-      // TODO
-      // get q (quadrant) from morton code
-      // (*it_curr).key.mCode
+      int q = (*it_curr).key.getQuadrant(g_Quadtree_Depth, el.z + 1);
+      
+      if (q != q1) {
+         std::cerr << "mercator: [" << q1 << "], morton: [" << q << "]" << std::endl;
+      }
 
       if (index != q) {
          index = q;
@@ -57,7 +58,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
       v_end[q]++;
    }
    
-   for (int i=0 ; i < 4 ; i++ ) {
+   for (int i = 0; i < 4 ; ++i) {
       if (v_begin[i] == it_end) continue;
 
       if ( _container[i] == NULL ) {

@@ -6,41 +6,53 @@ extern uint32_t g_Quadtree_Depth;
 struct quadtree_key {
    quadtree_key() = default;
    
-    quadtree_key(uint64_t mortonCode){
-        uint32_t x = 0;
-        uint32_t y = 0;
-        mortonDecode_RAM(mortonCode,x,y);
-        lat = mercator_util::tiley2lat(y,g_Quadtree_Depth);
-        lgt = mercator_util::tilex2lon(x,g_Quadtree_Depth);
-        mCode = mortonCode;
-    }
+   quadtree_key(uint64_t mortonCode) {
+      uint32_t x = 0;
+      uint32_t y = 0;
+      mortonDecode_RAM(mortonCode,x,y);
+      lat = mercator_util::tiley2lat(y,g_Quadtree_Depth);
+      lgt = mercator_util::tilex2lon(x,g_Quadtree_Depth);
+      mCode = mortonCode;
+   }
 
    friend inline bool operator<(const quadtree_key& lhs, const quadtree_key& rhs) {
       return (lhs.mCode < rhs.mCode);
    }
 
-    friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
+   friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
+      /*uint32_t x, y;      
+      mortonDecode_RAM(qtree.mCode, x, y);
+      
+      float lat = mercator_util::tiley2lat(y, g_Quadtree_Depth);
+      float lon = mercator_util::tilex2lon(x, g_Quadtree_Depth);
+      
+      stream << "lat: " << lat << ", lon: " << lon ;      
+      return stream;*/
+      
+      // TODO remove
       stream << qtree.lat << "  " << qtree.lgt ;
       return stream;
-    }
+   }
 
-    /**
-     * @brief getQuadrant from given morton code in a quadtree.
-     * @param mCode : The morton code computed for a quadtree of depth \a max_depth;
-     * @param max_depth : The max depth of the tree.
-     * @param node_depth The current depth of a node.
-     *
-     * @note Root node has depth 0 which has only a single quadrant.
-     * @return
-     */
-    inline
-    unsigned int getQuadrant(uint64_t mCode, unsigned int max_depth, unsigned int node_depth){
-        return (mCode >> ( (max_depth - node_depth) * 2)) & 3;
-    }
+   /**
+   * @brief getQuadrant from given morton code in a quadtree.
+   * @param mCode : The morton code computed for a quadtree of depth \a max_depth;
+   * @param max_depth : The max depth of the tree.
+   * @param node_depth The current depth of a node.
+   *
+   * @note Root node has depth 0 which has only a single quadrant.
+   * @return
+   */
+   inline
+   unsigned int getQuadrant(uint32_t max_depth, uint32_t node_depth){
+      return (mCode >> ((max_depth - node_depth) * 2)) & 3;
+   }
 
-    uint64_t mCode;
-    float lat;
-    float lgt;
+   uint64_t mCode;
+   
+   // TODO remove
+   float lat;
+   float lgt;
 };
 
 
