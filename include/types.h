@@ -9,7 +9,7 @@ struct quadtree_key {
    quadtree_key(uint64_t mortonCode) {
       uint32_t x = 0;
       uint32_t y = 0;
-      mortonDecode_RAM(mortonCode,x,y);
+      mortonDecode_RAM(mortonCode,y,x);
       lat = mercator_util::tiley2lat(y,g_Quadtree_Depth);
       lgt = mercator_util::tilex2lon(x,g_Quadtree_Depth);
       mCode = mortonCode;
@@ -138,9 +138,11 @@ struct elttype {
    tweet_t value;
    
    elttype(const tweet_t& el, uint32_t depth) : value(el) {
+
       uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
       uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-      key = mortonEncode_RAM(x,y);
+      key = mortonEncode_RAM(y,x);
+    //  printf( "ELTTYPE: lgt: %f , lat: %f, x: %d , y: %d, depth: %d , morton: %lu \n" , value.longitude, value.latitude , x ,  y, depth, key ) ;
    }
    
    // Pma uses only the key to sort elements.
