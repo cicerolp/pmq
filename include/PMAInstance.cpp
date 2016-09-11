@@ -23,7 +23,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    int nb_elements = input_vec.size();
 
-   PRINTOUT(" %d teewts loaded \n", input_vec.size());
+   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
    pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
         
@@ -37,21 +37,27 @@ bool PMAInstance::create(int argc, char *argv[]) {
    for (int k = 0; k < num_batches; k++) {
      batch_start = &input_vec[k*size];
 
-     if ((nb_elements-k*batch_size) / batch_size == 0){
+     if ((nb_elements-k*batch_size) / batch_size == 0) {
        size = nb_elements % batch_size;
-     }else{
+     } else {
        size = batch_size;
      }
+     // lock pma and quadtree update
+     mutex.lock();
+     
      insert_batch(pma,batch_start,size);
 
       // Creates a map with begin and end of each index in the pma.
       map_t range;
       update_map(pma, range); //Extract information of new key range boundaries inside the pma.
 
-     _ready = false;
+     
      t.start();
      quadtree->update(range.begin(), range.end());
      t.stop();
+
+     mutex.unlock();
+     
      _ready = true;
 
      std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
@@ -67,12 +73,14 @@ void PMAInstance::destroy() {
 
 std::string PMAInstance::query(const Query& query) {
 
-   if ( !_ready || !pma || !quadtree) return ("[]");
+   if (!_ready || !pma || !quadtree) return ("[]");
    
    json_ctn json;
    auto restriction = query.get<Query::spatial_query_t>();
    
+   mutex.lock();
    quadtree->query_tile(pma, restriction->tile, json);
+   mutex.unlock();
       
    // serialization
    rapidjson::StringBuffer buffer;

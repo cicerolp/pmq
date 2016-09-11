@@ -8,10 +8,10 @@ public:
    ~SpatialElement() = default;
 
    void update(const map_t_it& it_begin, const map_t_it& it_end);
-   void query_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const;
+   void query_tile(pma_struct* pma, const std::vector<spatial_t>& tile, json_ctn& subset) const;
       
 private:
-   void aggregate_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const;
+   void aggregate_tile(pma_struct* pma, uint32_t zoom, json_ctn& subset) const;
 
    inline static std::pair<uint32_t, uint32_t> get_tile(uint32_t x, uint32_t y, uint32_t index) {
       if (index == 1) {

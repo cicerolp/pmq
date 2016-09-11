@@ -12,7 +12,7 @@ public:
 
    struct spatial_query_t {
       uint32_t resolution {0};
-      spatial_t tile;
+      std::vector<spatial_t> tile;
    };
 
    inline bool eval() const {

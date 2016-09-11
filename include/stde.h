@@ -8,6 +8,7 @@
 
 // C++ includes
 #include <map>
+#include <mutex>
 #include <regex>
 #include <array>
 #include <queue>

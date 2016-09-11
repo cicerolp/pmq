@@ -81,6 +81,8 @@ private:
 
 	bool _ready{ false };
 
+   std::mutex mutex;
+
    pma_struct* pma;   
    std::unique_ptr<SpatialElement> quadtree;
 };

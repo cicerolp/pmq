@@ -64,23 +64,8 @@ struct spatial_t {
    spatial_t(uint32_t _x, uint32_t _y, uint8_t _z, uint8_t _l = 1)
       : x(_x), y(_y), z(_z), leaf(_l) { }
 
-
-   inline bool contains(const spatial_t& other) const {
-      if (other.z > z) {
-         uint64_t n = (uint64_t)1 << (other.z - z);
-
-         uint64_t x_min = x * n;
-         uint64_t x_max = x_min + n;
-
-         uint64_t y_min = y * n;
-         uint64_t y_max = y_min + n;
-
-         return x_min <= other.x && x_max >= other.x && y_min <= other.y && y_max >= other.y;
-      } else if (other.z == z) {
-         return x == other.x && y == other.y;
-      } else {
-         return false;
-      }
+   inline bool operator==(const spatial_t& rhs) const {
+      return x == rhs.x && y == rhs.y && z == rhs.z;
    }
 
    friend std::ostream& operator<<(std::ostream& stream, const spatial_t& tile) {

@@ -58,26 +58,26 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
    }
 }
  
-void SpatialElement::query_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const {
-   if (el.contains(tile)) {
-      if (el.leaf || el.z == tile.z) {
-         return aggregate_tile(pma, tile, subset);
-      } else {
-         if (_container[0] != nullptr) _container[0]->query_tile(pma, tile, subset);
-         if (_container[1] != nullptr) _container[1]->query_tile(pma, tile, subset);
-         if (_container[2] != nullptr) _container[2]->query_tile(pma, tile, subset);
-         if (_container[3] != nullptr) _container[3]->query_tile(pma, tile, subset);
-      }
-   }
+void SpatialElement::query_tile(pma_struct* pma, const std::vector<spatial_t>& tile, json_ctn& subset) const {
+   if (el.z == tile.front().z) {
+      if (std::find(tile.begin(), tile.end(), el) != tile.end())
+         return aggregate_tile(pma, el.z, subset);
+      else return;      
+   } else if (el.z < tile.front().z) {
+      if (_container[0] != nullptr) _container[0]->query_tile(pma, tile, subset);
+      if (_container[1] != nullptr) _container[1]->query_tile(pma, tile, subset);
+      if (_container[2] != nullptr) _container[2]->query_tile(pma, tile, subset);
+      if (_container[3] != nullptr) _container[3]->query_tile(pma, tile, subset);
+   }  
 }
 
-void SpatialElement::aggregate_tile(pma_struct* pma, const spatial_t& tile, json_ctn& subset) const {
-   if (el.z == tile.z + 8 || el.leaf) {
+void SpatialElement::aggregate_tile(pma_struct* pma, uint32_t zoom, json_ctn& subset) const {
+   if (el.z == zoom + 8 || el.leaf) {
       subset.emplace_back(json_t(el, count_elts_pma(pma, beg, end)));
    } else {
-      if (_container[0] != nullptr) _container[0]->aggregate_tile(pma, tile, subset);
-      if (_container[1] != nullptr) _container[1]->aggregate_tile(pma, tile, subset);
-      if (_container[2] != nullptr) _container[2]->aggregate_tile(pma, tile, subset);
-      if (_container[3] != nullptr) _container[3]->aggregate_tile(pma, tile, subset);
+      if (_container[0] != nullptr) _container[0]->aggregate_tile(pma, zoom, subset);
+      if (_container[1] != nullptr) _container[1]->aggregate_tile(pma, zoom, subset);
+      if (_container[2] != nullptr) _container[2]->aggregate_tile(pma, zoom, subset);
+      if (_container[3] != nullptr) _container[3]->aggregate_tile(pma, zoom, subset);
    }
 }
