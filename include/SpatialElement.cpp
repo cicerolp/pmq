@@ -23,7 +23,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
    //points to the end of the last quadrant
    end = (*std::prev(it_end)).end;
       
-   if (el.z == g_Quadtree_Depth -1 )
+   if (el.z == g_Quadtree_Depth -1)
       return;
       
    // node is not a leaf

@@ -12,7 +12,7 @@
       L_PREFER_CANVAS = true;
       var S_URL = "./rest/query";
       
-      var map_move = false;
+      var map_move = false, map_zoom = false;
       var heatmap_updating = false;      
    </script>
    
@@ -41,19 +41,19 @@
       });
        
       var cfg = {
-         blur: 0.0,
+         blur: 0.75,
          radius: 5.0,         
          minOpacity: 0.3,
-         maxOpacity: 1.0,
+         maxOpacity: 0.9,
          scaleRadius: false, 
-         useLocalExtrema: false,
+         useLocalExtrema: true,
          latField: 'lat',
          lngField: 'lon',
          valueField: 'count',
          gradient: {
             '.0': 'blue',
-            '.5': 'red',
-            '.75': 'white'
+            '.25': 'red',
+            '.90': 'white'
          },
       };      
 
@@ -72,7 +72,10 @@
       map.attributionControl.setPrefix("");
       
       map.on("zoomstart", function (e) {
-         map_move = true;
+         map_zoom = true;
+      }); 
+      map.on("zoomend", function (e) {
+         map_zoom = false;
       }); 
       map.on("movestart", function (e) {
          map_move = true;
@@ -83,7 +86,7 @@
       });
       
       update_heatmap();
-      var interval = window.setInterval(update_heatmap, 1000);
+      var interval = window.setInterval(update_heatmap, 40);
       
       function get_visible_tiles() {  
          var tileSize = 256;
@@ -124,7 +127,7 @@
       };
       
       function update_heatmap() {
-         if (map_move || heatmap_updating) return;
+         if (map_move  || map_zoom || heatmap_updating) return;
          heatmap_updating = true;
          
          var curr_tiles = get_visible_tiles();
@@ -149,12 +152,6 @@
                   var heatmap_min = Number.MAX_SAFE_INTEGER;
                   var heatmap_data = [];
                   
-                  heatmapLayer.setData({
-                     max: heatmap_max,
-                     min: heatmap_min,
-                     data: heatmap_data
-                  });
-                
                   response.forEach(function(el) {        
                      heatmap_max = Math.max(heatmap_max, el[3]);
                      heatmap_min = Math.min(heatmap_min, el[3]);
@@ -171,7 +168,11 @@
                   });
                   
                   heatmap_updating = false;
-               }
+               },
+               error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                  heatmapLayer.setData({data: [{lat: -90, lon:-180, count: 0}]});
+                  heatmap_updating = false;
+               } 
          });
       }
       

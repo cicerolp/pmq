@@ -25,9 +25,7 @@ int main(int argc, char *argv[]) {
    std::unique_ptr<std::thread> server_ptr;
    if (server) server_ptr = std::make_unique<std::thread>(Server::run, nds_opts);
 
-
-   PMAInstance::getInstance().create(argc, argv);
-   
+   PMAInstance::getInstance().create(argc, argv);   
    
    if (server_ptr) {
       std::cout << "Server Running... press any key to terminate." << std::endl;

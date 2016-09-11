@@ -35,34 +35,32 @@ bool PMAInstance::create(int argc, char *argv[]) {
    int num_batches = 1 + (nb_elements-1)/batch_size;
 
    for (int k = 0; k < num_batches; k++) {
-     batch_start = &input_vec[k*size];
+      batch_start = &input_vec[k*size];
 
-     if ((nb_elements-k*batch_size) / batch_size == 0) {
-       size = nb_elements % batch_size;
-     } else {
-       size = batch_size;
-     }
-     // lock pma and quadtree update
-     mutex.lock();
-     
-     insert_batch(pma,batch_start,size);
+      if ((nb_elements-k*batch_size) / batch_size == 0) {
+         size = nb_elements % batch_size;
+      } else {
+         size = batch_size;
+      }
+      // lock pma and quadtree update
+      mutex.lock();
+
+      insert_batch(pma, batch_start, size);
 
       // Creates a map with begin and end of each index in the pma.
       map_t range;
       update_map(pma, range); //Extract information of new key range boundaries inside the pma.
 
-     
-     t.start();
-     quadtree->update(range.begin(), range.end());
-     t.stop();
+      t.start();
+      quadtree->update(range.begin(), range.end());
+      t.stop();
 
-     mutex.unlock();
-     
-     _ready = true;
+      mutex.unlock();
 
-     std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
-     sleep(1);
+      _ready = true;
 
+      std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
    }
    return true;
 }
