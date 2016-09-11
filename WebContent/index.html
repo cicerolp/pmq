@@ -11,11 +11,17 @@
    <script>
       L_PREFER_CANVAS = true;
       var S_URL = "./rest/query";
+      
+      var heatmap_updating = false;      
    </script>
+   
+   <script src="js/mercator.js"></script>
+   
+   <script src="js/leaflet.js"></script>
 
-   <script src="js/grid_layer.js"></script>
-   <script src="js/leaflet.js"></script>   
-
+   <script src="js/heatmap.min.js"></script>
+   <script src="js/leaflet-heatmap.js"></script>
+   
    <script src="js/jquery-2.1.4.min.js"></script>
 </head>
 <body>
@@ -29,28 +35,126 @@
       var baseLayer = L.tileLayer(layers["black"], {
          subdomains: "abcd",
          minZoom: 0,
-         maxZoom: 20,
+         maxZoom: 20,        
+         maxNativeZoom: 20
       });
        
-      var grid_layer = grid_layer();
+      var cfg = {
+         radius: 10,
+         minOpacity: 0.3,
+         maxOpacity: 1.0,
+         scaleRadius: false, 
+         useLocalExtrema: false,
+         latField: 'lat',
+         lngField: 'lng',
+         valueField: 'count',
+         gradient: {
+            '.0': 'blue',
+            '.5': 'red',
+            '.85': 'white'
+         },
+      };      
 
+      var heatmapLayer = new HeatmapOverlay(cfg);
+      
       map = new L.Map('map', {
-         layers: [baseLayer, grid_layer],
-         center : new L.LatLng(0, 0),
-         zoom : 0,
+         layers: [baseLayer, heatmapLayer],
+         center : new L.LatLng(38, -97),
+         zoom : 4,
          minZoom: 0,
          maxZoom: 20,
          zoomControl: true,
          preferCanvas: true,
-         fadeAnimation: false,
       });
         
       map.attributionControl.setPrefix("");
       
-      var interval = window.setInterval(update_map, 1000);
+      map.on("moveend", function (e) {
+         update_heatmap();
+      });
       
-      function update_map() {
-         grid_layer.redraw();
+      update_heatmap();
+      var interval = window.setInterval(update_heatmap, 1000);
+      
+      function get_visible_tiles() {  
+         var tileSize = 256;
+         var zoom = map.getZoom();
+         var bounds = map.getPixelBounds();
+         
+         var container = [];
+
+         // get NorthWest and SouthEast points
+         var nwTilePoint = new L.Point(Math.floor(bounds.min.x / tileSize),
+             Math.floor(bounds.min.y / tileSize));
+
+         var seTilePoint = new L.Point(Math.floor(bounds.max.x / tileSize),
+             Math.floor(bounds.max.y / tileSize));
+
+         // get max number of tiles in this zoom level
+         var max = map.options.crs.scale(zoom) / tileSize; 
+
+         // enumerate visible tiles 
+         for (var x = nwTilePoint.x; x <= seTilePoint.x; x++) {
+            for (var y = nwTilePoint.y; y <= seTilePoint.y; y++) {
+               var xTile = Math.abs(x % max);
+               var yTile = Math.abs(y % max);
+               
+               var el = {x: xTile, y: yTile};
+               
+               if (container.length == 0) {
+                  container.push(el);
+               } else {
+                  var lhs = container[container.length - 1];            
+                  if (lhs.x != el.x || lhs.y != el.y)
+                     container.push(el);
+               }
+             }
+         }
+         
+         return container;      
+      };
+      
+      function update_heatmap() {
+         if (heatmap_updating == true) return;
+         heatmap_updating = true;
+         
+         var curr_tiles = get_visible_tiles();
+                           
+         var heatmap_max = 0;
+         var heatmap_min = Number.MAX_SAFE_INTEGER;
+         var heatmap_data = [];
+         
+         var zoom = map.getZoom();
+         
+         curr_tiles.forEach(function(entry) {            
+            var query_map = "/tile/" + entry.x + "/" + entry.y + "/" + zoom + "/8";
+
+            $.ajax({
+               type: 'GET',
+               async: false,
+               url: S_URL + query_map,
+               dataType: "json",
+               success: function (data) {
+                  data.forEach(function(el) {
+        
+                     heatmap_max = Math.max(heatmap_max, el[3]);
+                     heatmap_min = Math.min(heatmap_min, el[3]);
+                     
+                     var lon = tilex2lon(el[0] + 0.5, el[2]);
+                     var lat = tiley2lat(el[1] + 0.5, el[2]);            
+                     heatmap_data.push({lat: lat, lng:lon, count: el[3]})
+                  });
+               }
+            });
+         });
+         
+         heatmapLayer.setData({
+            max: heatmap_max,
+            min: heatmap_min,
+            data: heatmap_data
+         });
+         
+         heatmap_updating = false;
       }
       
    </script>

@@ -1,7 +1,4 @@
 #pragma once
-#include "stde.h"
-
-#include "Query.h"
 #include "Singleton.h"
 
 class Server: public Singleton<Server> {

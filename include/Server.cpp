@@ -1,4 +1,6 @@
 #include "Server.h"
+
+#include "Query.h"
 #include "PMAInstance.h"
 
 void Server::run(server_opts opts) {

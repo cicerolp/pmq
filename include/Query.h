@@ -1,5 +1,4 @@
 #pragma once
-#include "stde.h"
 
 #include "types.h"
 #include "string_util.h"

@@ -37,7 +37,5 @@
 // morton z-index
 #include "morton.h"
 
-// common types
-#include "types.h"
-
+// pma lib
 #include "pma_util.h"

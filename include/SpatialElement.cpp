@@ -1,9 +1,5 @@
-//#include "stdafx.h"
+#include "stde.h"
 #include "SpatialElement.h"
-#include "mercator_util.h"
-#include <vector>
-
-#include <pma/utils/debugMacros.h>
 
 SpatialElement::SpatialElement(const spatial_t& tile) {
    el = tile;
@@ -40,21 +36,8 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
    uint32_t index = 4;
    
    for (auto it_curr = it_begin; it_curr != it_end; ++it_curr) {
-      int x = mercator_util::lon2tilex((*it_curr).key.lgt, el.z + 1);
-      int y = mercator_util::lat2tiley((*it_curr).key.lat, el.z + 1);
-      int q1 = mercator_util::index(x,y);
-
-      //assert((*it_curr).key.mCode == tempcode ) ; //norton code of key was computed on depth 25.
-      //That's why they are different here, but that's normal.
-
       int q = (*it_curr).key.getQuadrant(g_Quadtree_Depth, el.z + 1);
 
-      assert(q == q1);
-#ifndef NDEBUG
-      if (q != q1) {
-        PRINTOUT( " (%f , %f ) (%d,%d) Qmer %d Qmor %d ; depth %d ; err %d\n",(*it_curr).key.lgt , (*it_curr).key.lat, x, y,  q1, q , el.z + 1, q != q1);
-      }
-#endif
       if (index != q) {
          index = q;
          v_begin[q] = it_curr; 

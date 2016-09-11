@@ -26,9 +26,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
    PRINTOUT(" %d teewts loaded \n", input_vec.size());
 
    pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   
-   
-   
+        
    quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
 
    simpleTimer t;
@@ -46,9 +44,9 @@ bool PMAInstance::create(int argc, char *argv[]) {
      }
      insert_batch(pma,batch_start,size);
 
-   // Creates a map with begin and end of each index in the pma.
+      // Creates a map with begin and end of each index in the pma.
       map_t range;
-     update_map(pma, range); //Extract information of new key range boundaries inside the pma.
+      update_map(pma, range); //Extract information of new key range boundaries inside the pma.
 
      _ready = false;
      t.start();

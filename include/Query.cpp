@@ -13,7 +13,6 @@ Query::Query(const std::vector<std::string>& tokens) {
 
          get<spatial_query_t>()->tile = spatial_t(x, y, z);
          get<spatial_query_t>()->resolution = std::stoi(string_util::next_token(it));
-
       }
    }
 }
