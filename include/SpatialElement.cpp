@@ -3,8 +3,8 @@
 
 SpatialElement::SpatialElement(const spatial_t& tile) {
    el = tile;
-   beg = NULL;
-   end = NULL;
+   beg = 0;
+   end = 0;
 }
 
 /**

@@ -25,8 +25,8 @@ private:
       return { x, y };
    }
 
-   char* beg;
-   char* end;
+   unsigned int beg;
+   unsigned int end;
 
    spatial_t el; // tile of quadtree
    std::array<std::unique_ptr<SpatialElement>, 4> _container;

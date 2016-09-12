@@ -45,14 +45,15 @@ struct quadtree_key {
 
 struct elinfo_t {
    elinfo_t() = default;
-   elinfo_t(uint64_t value, char* _begin, char* _end) : key(value) {
+   elinfo_t(uint64_t value, unsigned int _begin, unsigned int _end) : key(value) {
       begin = _begin;
       end = _end;
    }
    
    quadtree_key key;
-   char* begin;
-   char* end;
+   //Segment index of the interval containing this key on the pma array;
+   unsigned int begin;
+   unsigned int end;
 };
 
 using map_t = std::vector<elinfo_t>;

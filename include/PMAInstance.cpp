@@ -48,11 +48,11 @@ bool PMAInstance::create(int argc, char *argv[]) {
       insert_batch(pma, batch_start, size);
 
       // Creates a map with begin and end of each index in the pma.
-      map_t range;
-      update_map(pma, range); //Extract information of new key range boundaries inside the pma.
+      map_t modifiedKeys;
+      pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
 
       t.start();
-      quadtree->update(range.begin(), range.end());
+      quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
 
       _update = true;
