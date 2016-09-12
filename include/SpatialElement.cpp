@@ -17,8 +17,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
  void SpatialElement::update(const map_t_it& it_begin, const map_t_it& it_end) {
 
    // points to beggining of the first quadrant
-   if (beg == nullptr)
-      beg = (*it_begin).begin;
+   beg = (*it_begin).begin;
       
    //points to the end of the last quadrant
    end = (*std::prev(it_end)).end;
