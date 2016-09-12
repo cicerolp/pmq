@@ -34,3 +34,15 @@ inline int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
    return cnt;
 }
 
+/**
+ * @brief count_elts_pma find in [sbeg, send[ all the elements starting with mcode at level z.
+ * @param pma
+ * @param sbeg
+ * @param send
+ * @param mcode
+ * @param z
+ * @return
+ */
+inline int count_elts_pma(struct pma_struct* pma, unsigned int  sbeg , unsigned int  send, uint64_t mcode, int z){
+    //s
+}

@@ -9,6 +9,15 @@
 #include "ext/CImg/CImg.h"
 #include "DMPLoader/dmploader.hpp"
 
+
+/**
+ * @brief insert_batch
+ * @param pma
+ * @param batch
+ * @param size
+ *
+ * Will return the windowIds of windows that were rebalanced
+ */
 inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
     simpleTimer t;
     double insertTime = 0; //time to add the batch in the pma
@@ -40,13 +49,19 @@ inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
  *
  * Note this doesn't work if a key was deleted from the pma.
  */
+// TODO : INPUT range with (wId);
+// OUTPUT: range with seg_beg and seg_end;
+// DONT return when seg_beg == seg_end;
 inline int update_map(struct pma_struct* pma, map_t &range){
    int mod_ranges = 0;
    char* el = (char*) SEGMENT_START(pma,0);
-   uint64_t last = *(uint64_t*) SEGMENT_START(pma,0);
-   
+   uint64_t last = *(uint64_t*) SEGMENT_START(pma,0); //mcode
+
+   //range.emplace_back(mcode, seg_beg , seg_end);
    range.emplace_back(last, el, nullptr);   
    mod_ranges++;
+
+   // TODO Scan the window to find mCodes in it;
 
    for (int s = 0 ; s < pma->nb_segments; s++){
       for (el = (char*) SEGMENT_START(pma,s) ; el < SEGMENT_ELT(pma,s,pma->elts[s]) ; el += pma->elt_size){
