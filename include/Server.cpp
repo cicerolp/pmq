@@ -36,8 +36,10 @@ void Server::handler(mg_connection* conn, int ev, void* p) {
       if (tokens.size() <= 1) {
          mg_serve_http(conn, hm, Server::getInstance().http_server_opts);
 
-      } else if (tokens[1] == "rest" && tokens.size() >= 4) {
-         if (tokens.size() >= 5 && tokens[2] == "query") {
+      } else if (tokens[1] == "rest" && tokens.size() >= 3) {
+         if (tokens[2] == "update") {
+            printJson(conn, PMAInstance::getInstance().update());
+         } else if (tokens.size() >= 5 && tokens[2] == "query") {
             printJson(conn, PMAInstance::getInstance().query(Query(tokens)));
          } else {
             printJson(conn, "[]");

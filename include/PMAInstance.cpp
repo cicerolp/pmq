@@ -55,12 +55,13 @@ bool PMAInstance::create(int argc, char *argv[]) {
       quadtree->update(range.begin(), range.end());
       t.stop();
 
+      _update = true;
       mutex.unlock();
 
       _ready = true;
 
       std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
    }
    return true;
 }
@@ -71,13 +72,14 @@ void PMAInstance::destroy() {
 
 std::string PMAInstance::query(const Query& query) {
 
-   if (!_ready || !pma || !quadtree) return ("[]");
+   if (!_ready || !pma || !quadtree || !_update) return ("[]");
    
    json_ctn json;
    auto restriction = query.get<Query::spatial_query_t>();
    
    mutex.lock();
    quadtree->query_tile(pma, restriction->tile, json);
+   _update = false;
    mutex.unlock();
       
    // serialization

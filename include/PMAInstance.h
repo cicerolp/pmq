@@ -9,6 +9,7 @@
 #include "ext/CImg/CImg.h"
 #include "DMPLoader/dmploader.hpp"
 
+#undef Bool
 
 /**
  * @brief insert_batch
@@ -89,12 +90,22 @@ public:
    void destroy();
 
 	std::string query(const Query& query);
+   inline std::string update() {
+      // serialization
+      rapidjson::StringBuffer buffer;
+      rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+      
+      writer.Bool(_update);
+      
+      return buffer.GetString();
+   }
 
 private:
    PMAInstance() = default;
 	virtual ~PMAInstance() = default;
 
 	bool _ready{ false };
+   bool _update{ false };
 
    std::mutex mutex;
 
