@@ -72,7 +72,10 @@ void SpatialElement::query_tile(pma_struct* pma, const std::vector<spatial_t>& t
 
 void SpatialElement::aggregate_tile(pma_struct* pma, uint32_t zoom, json_ctn& subset) const {
    if (el.z == zoom + 8 || el.leaf) {
-      subset.emplace_back(json_t(el, count_elts_pma(pma, beg, end)));
+       PRINTOUT("TODO\n");
+       /* TODO FIX this call
+      subset.emplace_back(json_t(el, count_elts_pma(pma, beg, end,el.mCode,el.z)));
+      */
    } else {
       if (_container[0] != nullptr) _container[0]->aggregate_tile(pma, zoom, subset);
       if (_container[1] != nullptr) _container[1]->aggregate_tile(pma, zoom, subset);
