@@ -47,9 +47,23 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
       insert_batch(pma, batch_start, size);
 
+      std::cout << "PMA WINDOWS : " ;
+      for (auto k: *(pma->last_rebalanced_segs)){
+          std::cout << k << " "; //<< std::endl;
+      }
+
+      std::cout << "\n";
+
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
+
+      std::cout << "ModifiedKeys" << std::endl;
+      for (auto& k: modifiedKeys){
+          std::cout << k.key.mCode << " " ;
+      }
+
+      std::cout << "\n";
 
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());

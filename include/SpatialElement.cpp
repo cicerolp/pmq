@@ -14,17 +14,19 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
  * @note we don't support deletes;
  * @return
  */
+// TODO receives a vector of <mcode, <beg,end>>
  void SpatialElement::update(const map_t_it& it_begin, const map_t_it& it_end) {
+
+
+   if ( (el.z == g_Quadtree_Depth -1) || (it_begin == it_end) )
+      return;
 
    // points to beggining of the first quadrant
    beg = (*it_begin).begin;
-      
+
    //points to the end of the last quadrant
    end = (*std::prev(it_end)).end;
-      
-   if (el.z == g_Quadtree_Depth -1)
-      return;
-      
+
    // node is not a leaf
    el.leaf = 0;  
 
