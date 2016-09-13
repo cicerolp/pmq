@@ -103,15 +103,16 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
         if (wId < pma->nb_segments)
             continue;
 
-        unsigned int s =  pma_get_window_start(pma,wId); //Get first segment of the window
+        unsigned int sStart =  pma_get_window_start(pma,wId); //Get first segment of the window
 
-        char* el_pt = (char*) SEGMENT_START(pma,s); //get first element of the segment
+        char* el_pt = (char*) SEGMENT_START(pma,sStart); //get first element of the segment
         uint64_t lastElKey = *(uint64_t*) el_pt; //mcode of the first element
-        modified.emplace_back( lastElKey , s, s+1);  //save the start for this key. Initialy end = begin+1 (open interval)
+        modified.emplace_back( lastElKey , sStart, sStart);  //save the start for this key. Initialy end = begin+1 (open interval)
         mod_ranges++;
 
         // loop over the segments of the current window
-        for (s ; s < pma_get_window_size(pma,wId); s++){
+        unsigned int s ;
+        for (s = sStart ; s < sStart + pma_get_window_size(pma,wId); s++){
             el_pt = (char*) SEGMENT_START(pma,s);
 
             //If we changed segment but the lastkey is also in first postition of this segment, we incremente its "end" index;
