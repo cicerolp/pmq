@@ -66,7 +66,7 @@ inline int count_elts_pma(struct pma_struct* pma, unsigned int  seg_beg , unsign
    }
 
    //subtract extra elements for the last segment
-   for (char* el_pt = (char* ) SEGMENT_ELT(pma,seg_end-1,pma->elts[seg_end-1]) ; (*(uint64_t*) el_pt) > mCodeMax ; el_pt -= pma->elt_size){
+   for (char* el_pt = (char* ) SEGMENT_ELT(pma,seg_end-1,pma->elts[seg_end-1]-1) ; (*(uint64_t*) el_pt) > mCodeMax ; el_pt -= pma->elt_size){
        cnt--;
    }
 
