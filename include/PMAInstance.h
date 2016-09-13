@@ -107,34 +107,43 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
 
         char* el_pt = (char*) SEGMENT_START(pma,s); //get first element of the segment
         uint64_t lastElKey = *(uint64_t*) el_pt; //mcode of the first element
-        modified.emplace_back(lastElKey, s, 0);  //save the start for this key.
+        modified.emplace_back( lastElKey , s, s+1);  //save the start for this key. Initialy end = begin+1 (open interval)
         mod_ranges++;
 
         // loop over the segments of the current window
         for (s ; s < pma_get_window_size(pma,wId); s++){
+            el_pt = (char*) SEGMENT_START(pma,s);
 
-            for (el_pt = (char*) SEGMENT_START(pma,s) ; el_pt < SEGMENT_ELT(pma,s,pma->elts[s]) ; el_pt += pma->elt_size){
+            //If we changed segment but the lastkey is also in first postition of this segment, we incremente its "end" index;
+            if (lastElKey == (*(uint64_t*) el_pt)){
+                modified.back().end ++ ;
+            }
+
+            for (el_pt ; el_pt < SEGMENT_ELT(pma,s,pma->elts[s]) ; el_pt += pma->elt_size){
 
                 if (lastElKey != (*(uint64_t*) el_pt)) {
-                    modified.back().end = s;
 
                     lastElKey = *(uint64_t*) el_pt;
 
-                    modified.emplace_back(lastElKey, s, 0);
+                    modified.emplace_back(lastElKey, s, s+1);
                     mod_ranges++;
                 }
             }
+
         }
 
+        //if the last lastKey continues outside of this range of windows we remove it;
+        //        modified.pop_back();
+
+        //ACTUALLY I THINK WE STILL NEED IT; if the begin of the last range was modified we still need to inform to the quadtree.
 
         /* we still need to find the end of last element (can be out of the current window) */
-
         //initialize 'end' with the last segment of the pma + 1
         modified.back().end = pma->nb_segments;
         for (char* seg_pt = (char* ) SEGMENT_START(pma,s) ; seg_pt < SEGMENT_START(pma, pma->nb_elements) ; seg_pt += (pma->cap_segments * pma->elt_size)){
             // Check the first key of the following segments until we find one that differs;
             if (lastElKey != *(uint64_t*) seg_pt ){
-                modified.back().end = (seg_pt - (char*) pma->array) / (pma->cap_segments*pma->elt_size) ;
+                modified.back().end = (seg_pt - (char*) pma->array) / (pma->cap_segments*pma->elt_size); //gets they index of segment that differs;
                 break;
             }
         }
