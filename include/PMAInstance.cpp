@@ -27,6 +27,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
         
+   
    simpleTimer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
@@ -45,17 +46,36 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
       insert_batch(pma, batch_start, size);
 
+#ifndef NDEBUG
+      PRINTOUT( "PMA WINDOWS : ") ;
+      for (auto k: *(pma->last_rebalanced_segs)){
+          std::cout << k << " "; //<< std::endl;
+      }
+#endif
+      std::cout << "\n";
+
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
-
-      if (quadtree == nullptr)
+ 
+if (quadtree == nullptr)
          quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
-      
+
+#ifndef NDEBUG
+      PRINTOUT("ModifiedKeys %d : ",modifiedKeys.size()) ;
+      for (auto& k: modifiedKeys){
+          std::cout << k.key.mCode << " " ;
+      }
+
+      std::cout << "\n";
+
+      PRINTOUT("pma keys: ");
+      print_pma_keys(pma);
+#endif
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
-      
+
       // unlock pma and quadtree update
       mutex.unlock();
 
@@ -76,13 +96,14 @@ std::string PMAInstance::query(const Query& query) {
    if (!quadtree) return ("[]");
    
    json_ctn json;
-   
+  
+      
    // serialization
    rapidjson::StringBuffer buffer;
    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-
+   
    // start json
-   writer.StartArray();   
+   writer.StartArray();
    
    switch (query.type()) {
       case Query::TILE: {
@@ -92,18 +113,18 @@ std::string PMAInstance::query(const Query& query) {
          quadtree->query_tile(restriction->region, json);
          mutex.unlock();
          
-         for (auto& el : json) {
+   for (auto& el : json) {
             uint32_t x, y;
             mortonDecode_RAM(el.tile.code, y, x);
 
-            writer.StartArray();
+      writer.StartArray();
             writer.Uint(x);
             writer.Uint(y);
-            writer.Uint(el.tile.z);
+      writer.Uint(el.tile.z);
             writer.Uint(1);
 
             //writer.Uint(count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z));
-            writer.EndArray();   
+      writer.EndArray();   
          }    
       } break;
       
@@ -127,7 +148,7 @@ std::string PMAInstance::query(const Query& query) {
    }
    
    // end json
-   writer.EndArray();   
+   writer.EndArray();
    
    return buffer.GetString();
 }

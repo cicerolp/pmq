@@ -71,7 +71,7 @@ void SpatialElement::query_tile(const region_t& region, json_ctn& subset) const 
          if (_container[2] != nullptr) _container[2]->query_tile(region, subset);
          if (_container[3] != nullptr) _container[3]->query_tile(region, subset);
       }
-   }
+   }  
 }
 
 void SpatialElement::query_region(const region_t& region, json_ctn& subset) const {
@@ -79,7 +79,7 @@ void SpatialElement::query_region(const region_t& region, json_ctn& subset) cons
       if (region.z == el.z || region.cover(el)) {
          subset.emplace_back(json_t(el, beg, end));
                   
-      } else {
+   } else {
          if (_container[0] != nullptr) _container[0]->query_region(region, subset);
          if (_container[1] != nullptr) _container[1]->query_region(region, subset);
          if (_container[2] != nullptr) _container[2]->query_region(region, subset);
