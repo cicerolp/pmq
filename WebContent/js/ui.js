@@ -54,6 +54,12 @@ function map_init() {
       minZoom: 0,
       maxZoom: 20,
       zoomControl: true,
+      maxBounds: [
+         [-90, -180],
+         [+90, +180]
+      ],
+      maxBoundsViscosity: 1.0,
+      worldCopyJump : false,
    });
      
    map.attributionControl.setPrefix("");
@@ -81,6 +87,20 @@ function map_init() {
    var interval = window.setInterval(update_heatmap, 100);
 }
 
+function call_assync_query(query, call_success, call_error) {
+   $.ajax({
+         type: 'GET',
+         url: S_URL + query,
+         dataType: "json",
+         success: function (data, textStatus, jqXHR) {
+            call_success(data, textStatus, jqXHR);
+         },
+         error: function(jqXHR, textStatus, errorThrown) { 
+            call_error(jqXHR, textStatus, errorThrown);
+         } 
+   });
+}
+
 function onMouseDown(e) {
    if (e.originalEvent.button != 2) {
       return;
@@ -95,20 +115,6 @@ function onMouseDown(e) {
 
    drawing = true;
    tile.p0 = e.latlng;
-}
-
-function call_assync_query(query, call_success, call_error) {
-   $.ajax({
-         type: 'GET',
-         url: S_URL + query,
-         dataType: "json",
-         success: function (data, textStatus, jqXHR) {
-            call_success(data, textStatus, jqXHR);
-         },
-         error: function(jqXHR, textStatus, errorThrown) { 
-            call_error(jqXHR, textStatus, errorThrown);
-         } 
-   });
 }
 
 function onMouseUp(e) {
@@ -163,6 +169,11 @@ function get_visible_tiles() {
    }   
    var _y0 = roundtile(lat2tiley(lat0, _z), _z);
    var _y1 = roundtile(lat2tiley(lat1, _z), _z);
+   
+   if (_y0 > _y1) {
+      _y0 = 0;
+      _y1 = Math.pow(2, _z);
+   }   
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 };
