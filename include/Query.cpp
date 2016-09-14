@@ -8,11 +8,13 @@ Query::Query(const std::vector<std::string>& tokens) {
       if ((*it) == "tile") {
          if (!restriction) restriction = std::make_unique<spatial_query_t>();
          
-         auto x = std::stoi(string_util::next_token(it));
-         auto y = std::stoi(string_util::next_token(it));
          auto z = std::stoi(string_util::next_token(it));
-
-         get<spatial_query_t>()->tile.emplace_back(spatial_t(x, y, z));
+         auto x0 = std::stoi(string_util::next_token(it));
+         auto y0 = std::stoi(string_util::next_token(it));
+         auto x1 = std::stoi(string_util::next_token(it));
+         auto y1 = std::stoi(string_util::next_token(it));
+          
+         get<spatial_query_t>()->region = region_t(x0, y0, x1, y1, z);
          
       } else if ((*it) == "resolution") {
           if (!restriction) restriction = std::make_unique<spatial_query_t>();
@@ -39,12 +41,10 @@ std::ostream& operator<<(std::ostream& os, const Query& query) {
 
    switch (r->type) {
       case Query::TILE: {
-         auto spatial = query.get<Query::spatial_query_t>();
+         auto el = query.get<Query::spatial_query_t>();
    
-         for (auto& el :spatial->tile) {
-            os << "/tile/" << el;
-         }   
-         os << "/resolution/" << spatial->resolution;
+         os << "/tile/" << el->region;  
+         os << "/resolution/" << el->resolution;
          
       } break;      
       case Query::REGION: {

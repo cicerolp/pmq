@@ -19,7 +19,7 @@ public:
    struct spatial_query_t : public query_t {
       spatial_query_t() : query_t(TILE) {}
       uint32_t resolution {0};
-      std::vector<spatial_t> tile;
+      region_t region;
    };
    struct region_query_t : public query_t {
       region_query_t() : query_t(REGION) {}

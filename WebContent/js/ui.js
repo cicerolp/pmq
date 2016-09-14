@@ -78,7 +78,7 @@ function map_init() {
    });
 
    update_heatmap();
-   //var interval = window.setInterval(update_heatmap, 100);
+   var interval = window.setInterval(update_heatmap, 100);
 }
 
 function onMouseDown(e) {
@@ -101,7 +101,7 @@ function call_assync_query(query, call_success, call_error) {
          url: S_URL + query,
          dataType: "json",
          success: function (data, textStatus, jqXHR) {
-            call_success(data[0], textStatus, jqXHR);
+            call_success(data, textStatus, jqXHR);
          },
          error: function(jqXHR, textStatus, errorThrown) { 
             call_error(jqXHR, textStatus, errorThrown);
@@ -169,42 +169,30 @@ function onMouseMove(e) {
 }
 
 function get_visible_tiles() {  
-   var tileSize = 256;
-   var zoom = map.getZoom();
-   var bounds = map.getPixelBounds();
-   
-   var container = [];
-   
-   var nwTilePoint = new L.Point(Math.floor(bounds.min.x / tileSize),
-       Math.floor(bounds.min.y / tileSize));
+   var b = map.getBounds();
 
-   var seTilePoint = new L.Point(Math.floor(bounds.max.x / tileSize),
-       Math.floor(bounds.max.y / tileSize));
+   var lat0 = b._northEast.lat;
+   var lon0 = b._southWest.lng;
+   var lat1 = b._southWest.lat;
+   var lon1 = b._northEast.lng;
 
-   var max = map.options.crs.scale(zoom) / tileSize; 
+   var _z = map.getZoom();
 
-   for (var x = nwTilePoint.x; x <= seTilePoint.x; x++) {
-      for (var y = nwTilePoint.y; y <= seTilePoint.y; y++) {
-         var xTile = Math.abs(x % max);
-         var yTile = Math.abs(y % max);
-         
-         var el = {x: xTile, y: yTile};
-         
-         if (container.length == 0) {
-            container.push(el);
-         } else {
-            var lhs = container[container.length - 1];            
-            if (lhs.x != el.x || lhs.y != el.y)
-               container.push(el);
-         }
-       }
-   }
+   var _x0 = roundtile(lon2tilex(lon0, _z), _z);
+   var _x1 = roundtile(lon2tilex(lon1, _z), _z);
    
-   return container;      
+   if (_x0 > _x1) {
+      _x0 = 0;
+      _x1 = Math.pow(2, _z);
+   }   
+   var _y0 = roundtile(lat2tiley(lat0, _z), _z);
+   var _y1 = roundtile(lat2tiley(lat1, _z), _z);
+   
+   return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 };
 
-function set_heatmap(response, textStatus) {
- if (textStatus != "success") {
+function set_heatmap(response, textStatus) {   
+   if (textStatus != "success") {
       heatmapLayer.setData({data: [{lat: -90, lon:-180, count: 0}]});
       heatmap_updating = false;         
       return;
@@ -233,30 +221,16 @@ function set_heatmap(response, textStatus) {
 }
 
 function request_data() {
-   var curr_tiles = get_visible_tiles();
+   var region = get_visible_tiles();
    
-   var zoom = map.getZoom();
+   var query = "/query";
    
-   var query = ("");
+   query += "/tile/" + region.z + "/" + region.x0
+   + "/" + region.y0 + "/" + region.x1 + "/" + region.y1;
    
-   curr_tiles.forEach(function(entry) {            
-      query += ("/tile/" + entry.x + "/" + entry.y + "/" + zoom);
-   });
+   query += ("/resolution/" + 8);      
    
-   if (query.length != 0)
-      query += ("/resolution/" + 8);
-   
-   $.ajax({
-         type: 'GET',
-         url: S_URL + "/query" + query,
-         dataType: "json",
-         success: function (data, textStatus, jqXHR) {
-            set_heatmap(data, textStatus);
-         },
-         error: function(jqXHR, textStatus, errorThrown) { 
-            set_heatmap(jqXHR, textStatus);
-         } 
-   });
+   call_assync_query(query, set_heatmap, set_heatmap);
 }
 
 function update_heatmap() {

@@ -87,7 +87,7 @@ std::string PMAInstance::query(const Query& query) {
          auto restriction = query.get<Query::spatial_query_t>();
 
          mutex.lock();
-         quadtree->query_tile(restriction->tile, json);
+         quadtree->query_tile(restriction->region, json);
          mutex.unlock();
          
          for (auto& el : json) {

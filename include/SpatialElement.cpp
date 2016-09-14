@@ -61,19 +61,17 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
    }
 }
  
-void SpatialElement::query_tile(const std::vector<spatial_t>& tile, json_ctn& subset) const {
-   if (el.z == tile.front().z) {
-      if (std::find(tile.begin(), tile.end(), el) != tile.end()) {
-         return aggregate_tile(el.z + 8, subset);
+void SpatialElement::query_tile(const region_t& region, json_ctn& subset) const {
+   if (region.intersect(el)) {
+      if (region.z == el.z) {
+         return aggregate_tile(el.z + 8, subset);                  
       } else {
-         return;      
+         if (_container[0] != nullptr) _container[0]->query_tile(region, subset);
+         if (_container[1] != nullptr) _container[1]->query_tile(region, subset);
+         if (_container[2] != nullptr) _container[2]->query_tile(region, subset);
+         if (_container[3] != nullptr) _container[3]->query_tile(region, subset);
       }
-   } else {
-      if (_container[0] != nullptr) _container[0]->query_tile(tile, subset);
-      if (_container[1] != nullptr) _container[1]->query_tile(tile, subset);
-      if (_container[2] != nullptr) _container[2]->query_tile(tile, subset);
-      if (_container[3] != nullptr) _container[3]->query_tile(tile, subset);
-   }  
+   }
 }
 
 void SpatialElement::query_region(const region_t& region, json_ctn& subset) const {

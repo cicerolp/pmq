@@ -8,7 +8,7 @@ public:
    ~SpatialElement() = default;
 
    void update(const map_t_it& it_begin, const map_t_it& it_end);
-   void query_tile(const std::vector<spatial_t>& tile, json_ctn& subset) const;
+   void query_tile(const region_t& region, json_ctn& subset) const;
    void query_region(const region_t& region, json_ctn& subset) const;
       
 private:
