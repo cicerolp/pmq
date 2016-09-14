@@ -94,61 +94,64 @@ void PMAInstance::destroy() {
 std::string PMAInstance::query(const Query& query) {
 
    if (!quadtree) return ("[]");
-   
+
    json_ctn json;
-  
-      
+
+
    // serialization
    rapidjson::StringBuffer buffer;
    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-   
+
    // start json
    writer.StartArray();
-   
+
    switch (query.type()) {
-      case Query::TILE: {
-         auto restriction = query.get<Query::spatial_query_t>();
+   case Query::TILE: {
+      auto restriction = query.get<Query::spatial_query_t>();
 
-         mutex.lock();
-         quadtree->query_tile(restriction->region, json);
-         mutex.unlock();
-         
-   for (auto& el : json) {
-            uint32_t x, y;
-            mortonDecode_RAM(el.tile.code, y, x);
+      mutex.lock();
+      quadtree->query_tile(restriction->region, json);
 
-      writer.StartArray();
-            writer.Uint(x);
-            writer.Uint(y);
-      writer.Uint(el.tile.z);
-            writer.Uint(1);
 
-            //writer.Uint(count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z));
-      writer.EndArray();   
-         }    
-      } break;
-      
-      case Query::REGION: {
-         auto restriction = query.get<Query::region_query_t>();
+      for (auto& el : json) {
+         uint32_t x, y;
+         mortonDecode_RAM(el.tile.code, y, x);
 
-         mutex.lock();
-         quadtree->query_region(restriction->region, json);
-         mutex.unlock();
+         writer.StartArray();
+         writer.Uint(x);
+         writer.Uint(y);
+         writer.Uint(el.tile.z);
+         //writer.Uint(1);
 
-         uint32_t count = 0;
-         for (auto& el : json) {
-            //count += count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
-            count += 1;
-         }
-         writer.Uint(count);         
-      } break;
-      default: {
-         return ("[]");      
-      } break;
+         writer.Uint(count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z));
+
+         writer.EndArray();
+      }
+      mutex.unlock();
+   } break;
+
+   case Query::REGION: {
+      auto restriction = query.get<Query::region_query_t>();
+
+      mutex.lock();
+      quadtree->query_region(restriction->region, json);
+
+
+      uint32_t count = 0;
+      for (auto& el : json) {
+         count += count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
+         // count += 1;
+      }
+      mutex.unlock();
+      writer.Uint(count);
+   } break;
+   default: {
+      return ("[]");
+   } break;
    }
-   
+
    // end json
    writer.EndArray();
-   
+
    return buffer.GetString();
 }

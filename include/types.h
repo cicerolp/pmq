@@ -136,7 +136,7 @@ struct json_t {
    uint32_t begin, end;
    
    json_t(const spatial_t& el, uint32_t beg, uint32_t end) 
-      : tile(el), begin(begin), end(end) {}
+      : tile(el), begin(beg), end(end) {}
 };
 
 using json_ctn = std::vector<json_t>;
