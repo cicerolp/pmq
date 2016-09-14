@@ -1,14 +1,13 @@
 #include "stde.h"
 #include "SpatialElement.h"
 
-SpatialElement::SpatialElement(const spatial_t& tile) {
-   el = tile;
+SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
    beg = 0;
    end = 0;
 }
 
 /**
- * @brief SpatialElement::update inserts a list of element in a quatree
+ * @brief SpatialElement::update inserts a list of element in a quadtree
  * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the pma.
  *
  * @note we don't support deletes;
@@ -47,11 +46,14 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
       v_end[q]++;
    }
    
+   uint32_t x, y;
+   mortonDecode_RAM(el.code, y, x);
+   
    for (int i = 0; i < 4 ; ++i) {
       if (v_begin[i] == it_end) continue;
 
       if ( _container[i] == NULL ) {
-         auto pair = get_tile(el.x * 2, el.y * 2, i);
+         auto pair = get_tile(x * 2, y * 2, i);
          _container[i] = std::make_unique<SpatialElement>(spatial_t(pair.first, pair.second, el.z + 1));
       }
 
@@ -59,29 +61,42 @@ SpatialElement::SpatialElement(const spatial_t& tile) {
    }
 }
  
-void SpatialElement::query_tile(pma_struct* pma, const std::vector<spatial_t>& tile, json_ctn& subset) const {
+void SpatialElement::query_tile(const std::vector<spatial_t>& tile, json_ctn& subset) const {
    if (el.z == tile.front().z) {
-      if (std::find(tile.begin(), tile.end(), el) != tile.end())
-         return aggregate_tile(pma, el.z, subset);
-      else return;      
-   } else if (el.z < tile.front().z) {
-      if (_container[0] != nullptr) _container[0]->query_tile(pma, tile, subset);
-      if (_container[1] != nullptr) _container[1]->query_tile(pma, tile, subset);
-      if (_container[2] != nullptr) _container[2]->query_tile(pma, tile, subset);
-      if (_container[3] != nullptr) _container[3]->query_tile(pma, tile, subset);
+      if (std::find(tile.begin(), tile.end(), el) != tile.end()) {
+         return aggregate_tile(el.z + 8, subset);
+      } else {
+         return;      
+      }
+   } else {
+      if (_container[0] != nullptr) _container[0]->query_tile(tile, subset);
+      if (_container[1] != nullptr) _container[1]->query_tile(tile, subset);
+      if (_container[2] != nullptr) _container[2]->query_tile(tile, subset);
+      if (_container[3] != nullptr) _container[3]->query_tile(tile, subset);
    }  
 }
 
-void SpatialElement::aggregate_tile(pma_struct* pma, uint32_t zoom, json_ctn& subset) const {
-   if (el.z == zoom + 8 || el.leaf) {
-       PRINTOUT("TODO\n");
-       /* TODO FIX this call
-      subset.emplace_back(json_t(el, count_elts_pma(pma, beg, end,el.mCode,el.z)));
-      */
+void SpatialElement::query_region(const region_t& region, json_ctn& subset) const {
+   if (region.intersect(el)) {
+      if (region.z == el.z || region.cover(el)) {
+         subset.emplace_back(json_t(el, beg, end));
+                  
+      } else {
+         if (_container[0] != nullptr) _container[0]->query_region(region, subset);
+         if (_container[1] != nullptr) _container[1]->query_region(region, subset);
+         if (_container[2] != nullptr) _container[2]->query_region(region, subset);
+         if (_container[3] != nullptr) _container[3]->query_region(region, subset);
+      }
+   }
+}
+
+void SpatialElement::aggregate_tile(uint32_t zoom, json_ctn& subset) const {
+   if (el.leaf || el.z == zoom) {
+      subset.emplace_back(json_t(el, beg, end));
    } else {
-      if (_container[0] != nullptr) _container[0]->aggregate_tile(pma, zoom, subset);
-      if (_container[1] != nullptr) _container[1]->aggregate_tile(pma, zoom, subset);
-      if (_container[2] != nullptr) _container[2]->aggregate_tile(pma, zoom, subset);
-      if (_container[3] != nullptr) _container[3]->aggregate_tile(pma, zoom, subset);
+      if (_container[0] != nullptr) _container[0]->aggregate_tile(zoom, subset);
+      if (_container[1] != nullptr) _container[1]->aggregate_tile(zoom, subset);
+      if (_container[2] != nullptr) _container[2]->aggregate_tile(zoom, subset);
+      if (_container[3] != nullptr) _container[3]->aggregate_tile(zoom, subset);
    }
 }

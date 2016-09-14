@@ -164,8 +164,7 @@ private:
    PMAInstance() = default;
 	virtual ~PMAInstance() = default;
 
-	bool _ready{ false };
-   bool _update{ false };
+	bool _update{ false };
 
    std::mutex mutex;
 

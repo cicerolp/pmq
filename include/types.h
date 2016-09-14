@@ -60,25 +60,29 @@ using map_t = std::vector<elinfo_t>;
 using map_t_it = std::vector<elinfo_t>::iterator;
 
 struct spatial_t {
-   spatial_t() : spatial_t(0, 0, 0) { }
-
-   spatial_t(uint32_t _x, uint32_t _y, uint8_t _z, uint8_t _l = 1)
-      : x(_x), y(_y), z(_z), leaf(_l) { }
-
+   spatial_t(uint32_t x, uint32_t y, uint8_t z, uint8_t l = 1) : z(z), leaf(l) {
+      code = mortonEncode_RAM(y,x);
+   }
    inline bool operator==(const spatial_t& rhs) const {
-      return x == rhs.x && y == rhs.y && z == rhs.z;
+      return code == rhs.code;
+   }
+   
+   inline std::pair<uint32_t, uint32_t> get_tile() const {
+      uint32_t x, y;
+      mortonDecode_RAM(code, y, x);
+      return {x, y};
    }
 
-   friend std::ostream& operator<<(std::ostream& stream, const spatial_t& tile) {
-      stream << tile.x << "/" << tile.y << "/" << tile.z;
+   friend std::ostream& operator<<(std::ostream& stream, const spatial_t& el) {
+      auto tile = el.get_tile();
+      stream << tile.first << "/" << tile.second << "/" << el.z;
       return stream;
    }
 
    union {
       struct {
-         uint64_t x : 25;
-         uint64_t y : 25;
-         uint64_t z : 5;
+         uint64_t code : 50;
+         uint64_t z    : 5;
          uint64_t leaf : 1;
       };
 
@@ -86,11 +90,45 @@ struct spatial_t {
    };
 };
 
-struct json_t {
-   uint32_t count;
-   spatial_t tile;
+struct region_t {
+   region_t() = default;
 
-   json_t(const spatial_t& el, uint32_t sum) : tile(el), count(sum) {}
+   region_t(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t z) :  z(z) {
+      code0 = mortonEncode_RAM(y0, x0);
+      code1 = mortonEncode_RAM(y1, x1);
+   }
+
+   inline bool cover(const spatial_t& el) const {
+      if (z > el.z) {
+         return el.code >= code0 && el.code <= code1;
+         
+      } else {
+         return false;
+      }
+   }
+
+   inline bool intersect(const spatial_t& el) const {
+      if (z > el.z) {         
+         return code0 <= el.code && code1 >= el.code;
+         
+      } else if (z == el.z) {
+         return code0 <= el.code && code1 >= el.code;
+         
+      } else {
+         return false;
+      }
+   }
+
+   uint32_t z;
+   uint64_t code0, code1;
+};
+
+struct json_t {
+   spatial_t tile;
+   uint32_t begin, end;
+   
+   json_t(const spatial_t& el, uint32_t beg, uint32_t end) 
+      : tile(el), begin(begin), end(end) {}
 };
 
 using json_ctn = std::vector<json_t>;

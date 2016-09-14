@@ -5,16 +5,31 @@
 
 class Query {
 public:
+   enum query_type { INVALID, TILE, REGION };
+   
    Query(const std::string& url);
    Query(const std::vector<std::string>& tokens);
 
    friend std::ostream& operator<<(std::ostream& os, const Query& query);
 
-   struct spatial_query_t {
+    struct query_t {
+      query_t(query_type type) : type(type) {}
+      query_type type;
+   };
+   struct spatial_query_t : public query_t {
+      spatial_query_t() : query_t(TILE) {}
       uint32_t resolution {0};
       std::vector<spatial_t> tile;
    };
+   struct region_query_t : public query_t {
+      region_query_t() : query_t(REGION) {}
+      region_t region;
+   };
 
+   inline query_type type() const {
+      return restriction ? restriction->type : INVALID;
+   }
+   
    inline bool eval() const {
       return restriction != nullptr;
    }
@@ -29,6 +44,6 @@ public:
       return (T*)restriction.get();
    }
 
-private:
-   std::unique_ptr<spatial_query_t> restriction;
+private:  
+   std::unique_ptr<query_t> restriction;
 };

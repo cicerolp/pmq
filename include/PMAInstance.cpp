@@ -27,8 +27,6 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
         
-   quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
-
    simpleTimer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
@@ -47,32 +45,21 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
       insert_batch(pma, batch_start, size);
 
-      std::cout << "PMA WINDOWS : " ;
-      for (auto k: *(pma->last_rebalanced_segs)){
-          std::cout << k << " "; //<< std::endl;
-      }
-
-      std::cout << "\n";
-
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
 
-      std::cout << "ModifiedKeys" << std::endl;
-      for (auto& k: modifiedKeys){
-          std::cout << k.key.mCode << " " ;
-      }
-
-      std::cout << "\n";
-
+      if (quadtree == nullptr)
+         quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
+      
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
 
       _update = true;
+      
+      // unlock pma and quadtree update
       mutex.unlock();
-
-      _ready = true;
 
       std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -86,34 +73,63 @@ void PMAInstance::destroy() {
 
 std::string PMAInstance::query(const Query& query) {
 
-   if (!_ready || !pma || !quadtree || !_update) return ("[]");
+   if (!quadtree || !_update) return ("[]");
    
    json_ctn json;
-   auto restriction = query.get<Query::spatial_query_t>();
    
-   mutex.lock();
-   quadtree->query_tile(pma, restriction->tile, json);
-   _update = false;
-   mutex.unlock();
-      
    // serialization
    rapidjson::StringBuffer buffer;
    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-   
+
    // start json
-   writer.StartArray();
+   writer.StartArray();   
    
-   for (auto& el : json) {
-      writer.StartArray();
-      writer.Uint(el.tile.x);
-      writer.Uint(el.tile.y);
-      writer.Uint(el.tile.z);
-      writer.Uint(el.count);
-      writer.EndArray();   
+   switch (query.type()) {
+      case Query::TILE: {
+         auto restriction = query.get<Query::spatial_query_t>();
+
+         mutex.lock();
+         quadtree->query_tile(restriction->tile, json);
+         _update = false;
+         mutex.unlock();
+         
+         for (auto& el : json) {
+            uint32_t x, y;
+            mortonDecode_RAM(el.tile.code, y, x);
+
+            writer.StartArray();
+            writer.Uint(x);
+            writer.Uint(y);
+            writer.Uint(el.tile.z);
+            writer.Uint(1);
+
+            //writer.Uint(count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z));
+            writer.EndArray();   
+         }    
+      } break;
+      
+      case Query::REGION: {
+         auto restriction = query.get<Query::region_query_t>();
+
+         mutex.lock();
+         quadtree->query_region(restriction->region, json);
+         _update = false;
+         mutex.unlock();
+
+         uint32_t count = 0;
+         for (auto& el : json) {
+            //count += count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
+            count += 1;
+         }
+         writer.Uint(count);         
+      } break;
+      default: {
+         return ("[]");      
+      } break;
    }
    
    // end json
-   writer.EndArray();
+   writer.EndArray();   
    
    return buffer.GetString();
 }
