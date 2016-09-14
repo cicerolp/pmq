@@ -56,9 +56,13 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
+      t.start();
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
- 
-if (quadtree == nullptr)
+      t.stop();
+
+      PRINTCSVL("ModifiedKeys", t.miliseconds(),"ms" );
+
+      if (quadtree == nullptr)
          quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
 
 #ifndef NDEBUG
@@ -75,11 +79,10 @@ if (quadtree == nullptr)
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
-
+      PRINTCSVL("QuadtreeUpdate" , t.miliseconds(),"ms" , k);
       // unlock pma and quadtree update
       mutex.unlock();
 
-      std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
 #ifdef NDEBUG
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
 #endif

@@ -37,7 +37,7 @@ inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
     add_array_elts(pma,(void *)batch, (void *) ((char *)batch + (size)*sizeof(elttype)),comp<uint64_t>);
     t.stop();
     insertTime += t.miliseconds();
-    //PRINTCSVL("Batch insert", t.miliseconds(),"ms" );
+    PRINTCSVL("Batch insert", t.miliseconds(),"ms" );
 
     return;
 }
