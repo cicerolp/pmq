@@ -7,24 +7,23 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
 }
 
 /**
- * @brief SpatialElement::update inserts a list of element in a quadtree
+ * @brief SpatialElement::update inserts a list of element in a quatree
  * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the pma.
  *
  * @note we don't support deletes;
  * @return
  */
 // TODO receives a vector of <mcode, <beg,end>>
- void SpatialElement::update(const map_t_it& it_begin, const map_t_it& it_end) {
+ void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end) {
+   // empty container
+   if (it_begin == it_end) return;
 
 
-   if ( (el.z == g_Quadtree_Depth -1) || (it_begin == it_end) )
-      return;
-
-   // points to beggining of the first quadrant
-   beg = (*it_begin).begin;
-
-   //points to the end of the last quadrant
-   end = (*std::prev(it_end)).end;
+   if (el.z == g_Quadtree_Depth - 1){
+       beg = (*it_begin).begin;
+       end = (*std::prev(it_end)).end;
+       return;
+   }
 
    // node is not a leaf
    el.leaf = 0;  
@@ -34,31 +33,39 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
 
    // intialized with an invalid value
    uint32_t index = 4;
-   
-   for (auto it_curr = it_begin; it_curr != it_end; ++it_curr) {
-      int q = (*it_curr).key.getQuadrant(g_Quadtree_Depth, el.z + 1);
 
-      if (index != q) {
+   //Splits range of modifed keys into 4 quadrants
+   for (auto it_curr = it_begin; it_curr != it_end; ++it_curr) {
+      int q = (*it_curr).key.getQuadrant(g_Quadtree_Depth, el.zoom + 1);
+
+      if (index != q) { //gets the first element of each quadrant
          index = q;
          v_begin[q] = it_curr; 
          v_end[q] = it_curr;
       }
-      v_end[q]++;
+      v_end[q]++; //increment the iterator that points to end of the current quadrant q
    }
    
    uint32_t x, y;
    mortonDecode_RAM(el.code, y, x);
-   
-   for (int i = 0; i < 4 ; ++i) {
-      if (v_begin[i] == it_end) continue;
 
-      if ( _container[i] == NULL ) {
-         auto pair = get_tile(x * 2, y * 2, i);
-         _container[i] = std::make_unique<SpatialElement>(spatial_t(pair.first, pair.second, el.z + 1));
-      }
+   for (int i = 0; i < 4 ; ++i) {
+       if (v_begin[i] == it_end) continue; //quadrant q is empty : stop recursion
+
+       if ( _container[i] == NULL ) { // The quadrant was empty before, creat it to insert the new elements.
+           auto pair = get_tile(x * 2, y * 2, i);
+           _container[i] = std::make_unique<SpatialElement>(spatial_t(pair.first, pair.second, el.zoom + 1));
+       }
 
       _container[i]->update(v_begin[i], v_end[i]);
    }
+
+   auto lastChild = std::find_if(_container.rbegin(),_container.rend(),[](const std::unique_ptr<SpatialElement>& el){return el != NULL ; });
+   end = (*lastChild)->end;
+
+   auto firstChild = std::find_if(_container.begin(),_container.end(),[](const std::unique_ptr<SpatialElement>& el){return el != NULL ; });
+   beg = (*firstChild)->beg;
+
 }
  
 void SpatialElement::query_tile(const region_t& region, json_ctn& subset) const {
