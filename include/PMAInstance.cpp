@@ -60,7 +60,9 @@ bool PMAInstance::create(int argc, char *argv[]) {
       mutex.unlock();
 
       std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
+#ifdef NDEBUG
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+#endif
    }
    return true;
 }

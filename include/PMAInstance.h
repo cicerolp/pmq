@@ -141,7 +141,7 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
         /* we still need to find the end of last element (can be out of the current window) */
         //initialize 'end' with the last segment of the pma + 1
         modified.back().end = pma->nb_segments;
-        for (char* seg_pt = (char* ) SEGMENT_START(pma,s) ; seg_pt < SEGMENT_START(pma, pma->nb_elements) ; seg_pt += (pma->cap_segments * pma->elt_size)){
+        for (char* seg_pt = (char* ) SEGMENT_START(pma,s) ; seg_pt < SEGMENT_START(pma, pma->nb_segments) ; seg_pt += (pma->cap_segments * pma->elt_size)){
             // Check the first key of the following segments until we find one that differs;
             if (lastElKey != *(uint64_t*) seg_pt ){
                 modified.back().end = (seg_pt - (char*) pma->array) / (pma->cap_segments*pma->elt_size); //gets they index of segment that differs;
