@@ -28,6 +28,8 @@ private:
 
    uint32_t beg, end;
 
+   using node_ptr = std::unique_ptr<SpatialElement>;
+   
    spatial_t el; // tile of quadtree
-   std::array<std::unique_ptr<SpatialElement>, 4> _container;
+   std::array<node_ptr, 4> _container;
 };

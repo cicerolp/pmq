@@ -81,7 +81,7 @@ if (quadtree == nullptr)
 
       std::cout << "Quadtree update " << k << " in " << t.miliseconds() << "ms" << std::endl;
 #ifdef NDEBUG
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::milliseconds(40));
 #endif
    }
    return true;

@@ -29,10 +29,10 @@ function map_init() {
    });
     
    var cfg = {
-      blur: 0.5,
+      blur: 0.25,
       radius: 5.0,         
       minOpacity: 0.3,
-      maxOpacity: 0.9,
+      maxOpacity: 1.0,
       scaleRadius: false, 
       useLocalExtrema: true,
       latField: 'lat',
@@ -91,6 +91,8 @@ function onMouseDown(e) {
       marker = null;
    }
 
+   set_progressbar_value([0]);
+
    drawing = true;
    tile.p0 = e.latlng;
 }
@@ -125,33 +127,7 @@ function onMouseUp(e) {
 
    drawing = false;
 
-   if (marker == null) return;
-
-   var b = L.latLngBounds(tile.p0, tile.p1);
-
-   var lat0 = b._northEast.lat;
-   var lon0 = b._southWest.lng;
-   var lat1 = b._southWest.lat;
-   var lon1 = b._northEast.lng;
-
-   var z = map.getZoom() + 8;
-
-   var x0 = roundtile(lon2tilex(lon0, z), z);
-   var x1 = roundtile(lon2tilex(lon1, z), z);
-
-   if (x0 > x1) {
-      x0 = 0;
-      x1 = Math.pow(2, z);
-   }
-
-   // /x0/y0/x1/y1/
-   var query = "/query/region/" + z
-      + "/" + x0
-      + "/" + roundtile(lat2tiley(lat0, z), z)
-      + "/" + x1
-      + "/" + roundtile(lat2tiley(lat1, z), z);
-      
-   call_assync_query(query, set_progressbar_value);
+   update_marker();   
 }
 
 function onMouseMove(e) {
@@ -190,6 +166,36 @@ function get_visible_tiles() {
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 };
+
+function update_marker() {
+   if (marker == null) return;
+   
+   var b = L.latLngBounds(tile.p0, tile.p1);
+
+   var lat0 = b._northEast.lat;
+   var lon0 = b._southWest.lng;
+   var lat1 = b._southWest.lat;
+   var lon1 = b._northEast.lng;
+
+   var z = map.getZoom() + 8;
+
+   var x0 = roundtile(lon2tilex(lon0, z), z);
+   var x1 = roundtile(lon2tilex(lon1, z), z);
+
+   if (x0 > x1) {
+      x0 = 0;
+      x1 = Math.pow(2, z);
+   }
+
+   // /x0/y0/x1/y1/
+   var query = "/query/region/" + z
+      + "/" + x0
+      + "/" + roundtile(lat2tiley(lat0, z), z)
+      + "/" + x1
+      + "/" + roundtile(lat2tiley(lat1, z), z);
+      
+   call_assync_query(query, set_progressbar_value);
+}
 
 function set_heatmap(response, textStatus) {   
    if (textStatus != "success") {
@@ -238,24 +244,10 @@ function update_heatmap() {
    
    heatmap_updating = true;
    
-   $.ajax({
-         type: 'GET',
-         url: S_URL + "/update",
-         dataType: "json",
-         success: function (update, textStatus, jqXHR) {
-            // request updated data
-            if (update) {
-               request_data();
-               
-               // /x0/y0/x1/y1/
-               var query = "/query/region/1/0/0/1/1";      
-               call_assync_query(query, set_progressbar_max);
-            } else {
-               heatmap_updating = false;
-            }
-         },
-         error: function(jqXHR, textStatus, errorThrown) { 
-            set_heatmap(jqXHR, textStatus);
-         } 
-   });
+   // /x0/y0/x1/y1/
+   var query = "/query/region/1/0/0/1/1";      
+   call_assync_query(query, set_progressbar_max);
+   
+   update_marker();   
+   request_data();
 }
