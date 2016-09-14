@@ -74,8 +74,7 @@ struct spatial_t {
    }
 
    friend std::ostream& operator<<(std::ostream& stream, const spatial_t& el) {
-      auto tile = el.get_tile();
-      stream << tile.first << "/" << tile.second << "/" << el.z;
+      stream << el.code << "/" << el.z;
       return stream;
    }
 
@@ -100,7 +99,9 @@ struct region_t {
 
    inline bool cover(const spatial_t& el) const {
       if (z > el.z) {
-         return el.code >= code0 && el.code <= code1;
+         uint64_t min, max;
+         morton_min_max(el.code, z - el.z, min, max);
+         return min >= code0&& max <= code1;
          
       } else {
          return false;
@@ -108,8 +109,10 @@ struct region_t {
    }
 
    inline bool intersect(const spatial_t& el) const {
-      if (z > el.z) {         
-         return code0 <= el.code && code1 >= el.code;
+      if (z > el.z) {
+         uint64_t min, max;
+         morton_min_max(el.code, z - el.z, min, max);         
+         return code0 <= max && code1 >= min;
          
       } else if (z == el.z) {
          return code0 <= el.code && code1 >= el.code;
@@ -117,6 +120,11 @@ struct region_t {
       } else {
          return false;
       }
+   }
+   
+   friend std::ostream& operator<<(std::ostream& stream, const region_t& el) {
+      stream << el.code0 << "/" << el.code1 << "/" << el.z;
+      return stream;
    }
 
    uint32_t z;

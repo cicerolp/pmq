@@ -78,7 +78,7 @@ function map_init() {
    });
 
    update_heatmap();
-   var interval = window.setInterval(update_heatmap, 100);
+   //var interval = window.setInterval(update_heatmap, 100);
 }
 
 function onMouseDown(e) {
@@ -93,6 +93,20 @@ function onMouseDown(e) {
 
    drawing = true;
    tile.p0 = e.latlng;
+}
+
+function call_assync_query(query, call_success, call_error) {
+   $.ajax({
+         type: 'GET',
+         url: S_URL + query,
+         dataType: "json",
+         success: function (data, textStatus, jqXHR) {
+            call_success(data[0], textStatus, jqXHR);
+         },
+         error: function(jqXHR, textStatus, errorThrown) { 
+            call_error(jqXHR, textStatus, errorThrown);
+         } 
+   });
 }
 
 function onMouseUp(e) {
@@ -131,20 +145,13 @@ function onMouseUp(e) {
    }
 
    // /x0/y0/x1/y1/
-   var query = "/region/" + z
+   var query = "/query/region/" + z
       + "/" + x0
       + "/" + roundtile(lat2tiley(lat0, z), z)
       + "/" + x1
       + "/" + roundtile(lat2tiley(lat1, z), z);
       
-   $.ajax({
-         type: 'GET',
-         url: S_URL + "/query" + query,
-         dataType: "json",
-         success: function (data, textStatus, jqXHR) {
-            console.log(data);
-         }
-   });   
+   call_assync_query(query, set_progressbar_value);
 }
 
 function onMouseMove(e) {
@@ -261,10 +268,14 @@ function update_heatmap() {
          type: 'GET',
          url: S_URL + "/update",
          dataType: "json",
-         success: function (data, textStatus, jqXHR) {
+         success: function (update, textStatus, jqXHR) {
             // request updated data
-            if (data) {
+            if (update) {
                request_data();
+               
+               // /x0/y0/x1/y1/
+               var query = "/query/region/1/0/0/1/1";      
+               call_assync_query(query, set_progressbar_max);
             } else {
                heatmap_updating = false;
             }

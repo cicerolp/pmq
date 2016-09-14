@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Twitter VIS</title>
-	<meta charset="utf-8" />
+   <title>Twitter VIS</title>
+   <meta charset="utf-8" />
 
-	<link rel="stylesheet" href="css/leaflet.css" />
+   <link rel="stylesheet" href="css/leaflet.css" />
    <link rel="stylesheet" href="css/styles.css" />
+   
+   <link rel="stylesheet" href="css/jquery-ui.min.css">
+   <link rel="stylesheet" href="css/jquery-ui.theme.min.css">  
 
    <!-- Leaflet - a JavaScript library for mobile-friendly maps -->
    <script>
@@ -20,23 +23,91 @@
       var marker_opt = {
          color: '#ffffff', 
          weight: 1,
-         interactive: false,
+         interactive: false
       };
    </script>
    
    <script src="js/mercator.js"></script>
    
-   <script src="js/leaflet.js"></script>
+   <script src="js/d3-4.2.3.min.js"></script>
+   
+   <script src="js/leaflet.min.js"></script>
 
    <script src="js/heatmap.min.js"></script>
    <script src="js/leaflet-heatmap.js"></script>
    
    <script src="js/jquery-2.1.4.min.js"></script>
+   <script src="js/jquery-ui-1.12.0.min.js"></script>   
    
+   <style>
+      body, html {
+         margin: 0;
+         padding: 0;
+         height: 100%;
+         position: relative;
+         background: rgba(0.3, 0.3, 0.3, 1);
+         font-family: sans-serif;
+         overflow-y:hidden;
+         overflow-x:hidden;
+      }
+      #container {
+         width: 100vw;
+         height: 100vh;
+         left: 0px;
+         position: relative;
+      }
+      #progressbar {
+         position: absolute;
+         width: 100%;
+         left: -1px;
+         bottom: 0;
+         z-index: 900;
+      }
+      #progress-label {
+        position: absolute;
+        left: 12px;
+        top: 8px;
+        font-weight: bold;
+        text-shadow: 1px 1px 0 #fff;
+        z-index: 900;
+      }
+  </style>
    
+   <script>
+   var progressbar_count = 0;
+   $( function() {
+      $("#progressbar .ui-progressbar-value").addClass("ui-corner-right");
+      
+      var progressbar = $( "#progressbar" ),
+      progressLabel = $( "#progress-label" );
+ 
+      progressbar.progressbar({
+         value: false,
+         change: function() {
+            progressLabel.text("Count: " + progressbar.progressbar("value") + " of " + progressbar.progressbar("option", "max"));
+         },
+         /*complete: function() {
+            progressLabel.text( "Complete!" );
+         }*/
+      });
+   });
+   
+   function set_progressbar_max(value) {
+      $( "#progressbar" ).progressbar( "option", "max", value);
+   }
+   
+   function set_progressbar_value(value) {
+      $( "#progressbar" ).progressbar( "value", value);
+   }
+  </script>
 </head>
 <body>
-   <div id="map" ></div>
+   <div id="container">
+      <div id="map" ></div>
+      <div id="progressbar">
+         <div id="progress-label">Loading...</div>            
+      </div>   
+   </div>
    <script src="js/ui.js"></script>
 </body>
 </html>

@@ -55,8 +55,6 @@ bool PMAInstance::create(int argc, char *argv[]) {
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
-
-      _update = true;
       
       // unlock pma and quadtree update
       mutex.unlock();
@@ -73,7 +71,7 @@ void PMAInstance::destroy() {
 
 std::string PMAInstance::query(const Query& query) {
 
-   if (!quadtree || !_update) return ("[]");
+   if (!quadtree) return ("[]");
    
    json_ctn json;
    
@@ -90,7 +88,6 @@ std::string PMAInstance::query(const Query& query) {
 
          mutex.lock();
          quadtree->query_tile(restriction->tile, json);
-         _update = false;
          mutex.unlock();
          
          for (auto& el : json) {
@@ -113,7 +110,6 @@ std::string PMAInstance::query(const Query& query) {
 
          mutex.lock();
          quadtree->query_region(restriction->region, json);
-         _update = false;
          mutex.unlock();
 
          uint32_t count = 0;

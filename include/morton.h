@@ -52,5 +52,11 @@ uint64_t mortonEncode_RAM(uint32_t x, uint32_t y){
 }
 
 
+inline
+void morton_min_max(uint64_t code, uint32_t diff, uint64_t& min, uint64_t& max){
+   min = code << 2 * (diff);
+   max = min | ((uint64_t) ~0  >> (64 - 2 * diff));
+}
+
 
 #endif // MORTON_H_
