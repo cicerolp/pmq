@@ -99,7 +99,7 @@ std::string PMAInstance::query(const Query& query) {
    if (!quadtree) return ("[]");
 
    json_ctn json;
-
+   simpleTimer t1;
 
    // serialization
    rapidjson::StringBuffer buffer;
@@ -137,14 +137,20 @@ std::string PMAInstance::query(const Query& query) {
       auto restriction = query.get<Query::region_query_t>();
 
       mutex.lock();
+      t1.start();
       quadtree->query_region(restriction->region, json);
-
+      t1.stop();
+      PRINTCSVL("Quadtree_query",t1.miliseconds(),"ms");
 
       uint32_t count = 0;
+
+      t1.start();
       for (auto& el : json) {
          count += count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
          // count += 1;
       }
+      t1.stop();
+      PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
       mutex.unlock();
       writer.Uint(count);
    } break;

@@ -159,6 +159,13 @@ public:
 	bool create(int argc, char *argv[]);
    void destroy();
 
+   /**
+     * @brief query
+     * @param query  "/rest/query/region/1/0/0/1/1"
+     *
+     * /zoom/x0/y0/x1/y1/
+     *
+     */
 	std::string query(const Query& query);
 
 private:
