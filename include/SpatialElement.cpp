@@ -17,7 +17,6 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
    // empty container
    if (it_begin == it_end) return;
 
-
    if (el.z == g_Quadtree_Depth - 1) {
       beg = (*it_begin).begin;
       end = (*std::prev(it_end)).end;
@@ -26,55 +25,41 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
 
    // node is not a leaf
    el.leaf = 0;  
-
-   std::vector<map_t_it> v_begin(4, it_end);
-   std::vector<map_t_it> v_end(4);
-
-   // initialize with an invalid value
-   uint32_t index = 4;
-
-   // splits range of modified keys into 4 quadrants
-   for (auto it_curr = it_begin; it_curr != it_end; ++it_curr) {
-      int q = (*it_curr).key.getQuadrant(g_Quadtree_Depth, el.z + 1);
-
-      //gets the first element of each quadrant
-      if (index != q) {
-         index = q;
-         v_begin[q] = it_curr; 
-         v_end[q] = it_curr;
-      }
-      
-      //increment the iterator that points to end of the current quadrant q
-      v_end[q]++; 
-   }
+   
+   uint32_t z_diff_2 = (g_Quadtree_Depth - el.z - 1) * 2;
    
    uint32_t x, y;
    mortonDecode_RAM(el.code, y, x);
 
-   for (int i = 0; i < 4 ; ++i) {
-      //quadrant q is empty : continue
-       if (v_begin[i] == it_end) continue;
-       
-       // quadrant was empty before, create it to insert the new elements
-       if ( _container[i] == NULL ) { 
-           auto pair = get_tile(x * 2, y * 2, i);
-           _container[i] = std::make_unique<SpatialElement>(spatial_t(pair.first, pair.second, el.z + 1));
-       }
-
-      _container[i]->update(v_begin[i], v_end[i]);
+   auto it_curr = it_begin;
+   auto it_last = it_begin;
+   
+   uint32_t index = (*it_curr).key.get_index(z_diff_2);
+   
+   // update intermediate valid nodes
+   while(++it_curr != it_end) {
+      int curr_index = (*it_curr).key.get_index(z_diff_2);
+      
+      if (curr_index != index) {  
+         get_node(x, y, el.z + 1, index)->update(it_last, it_curr);
+         
+         it_last = it_curr;
+         index = curr_index;
+      }
    }
-
-   // update end index
-   end = (*std::find_if(_container.rbegin(),_container.rend(),[](const node_ptr& el) {
-      return el != nullptr;
-   }))->end;
+      
+   // update last valid node
+   get_node(x, y, el.z + 1, index)->update(it_last, it_curr);
 
    // update beg index
    beg = (*std::find_if(_container.begin(),_container.end(),[](const node_ptr& el) {
       return el != nullptr;
    }))->beg;
-
-   assert(beg < end);
+   
+   // update end index
+   end = (*std::find_if(_container.rbegin(),_container.rend(),[](const node_ptr& el) {
+      return el != nullptr;
+   }))->end;
 }
  
 void SpatialElement::query_tile(const region_t& region, json_ctn& subset) const {

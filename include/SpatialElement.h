@@ -14,7 +14,17 @@ public:
 private:
    void aggregate_tile(uint32_t zoom, json_ctn& subset) const;
 
-   inline static std::pair<uint32_t, uint32_t> get_tile(uint32_t x, uint32_t y, uint32_t index) {
+   inline SpatialElement* get_node(uint32_t x, uint32_t y, uint32_t z, uint32_t index) {
+      if ( _container[index] == nullptr ) {
+         child_coords(x, y, index);
+         _container[index] = std::make_unique<SpatialElement>(spatial_t(x, y, z));
+      }
+      return _container[index].get();
+   }
+   
+   inline static void child_coords(uint32_t& x, uint32_t& y, uint32_t index) {
+      x *= 2;
+      y *= 2;
       if (index == 1) {
          ++y;
       } else if (index == 2) {
@@ -23,7 +33,6 @@ private:
          ++y;
          ++x;
       }
-      return { x, y };
    }
 
    uint32_t beg, end;
