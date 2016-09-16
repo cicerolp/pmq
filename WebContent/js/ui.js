@@ -170,60 +170,56 @@ function onMouseMove(e) {
    map.addLayer(marker);
 }
 
-function get_visible_tiles() {  
-   var b = map.getBounds();
-
+function get_coords_bounds(b, zoom) {
+   var _z = zoom || map.getZoom();
+   
    var lat0 = b._northEast.lat;
-   var lon0 = b._southWest.lng;
+   var lon0 = b._southWest.lng;   
    var lat1 = b._southWest.lat;
    var lon1 = b._northEast.lng;
-
-   var _z = map.getZoom();
-
+   
+   if (lon0 > 180 || lon1 < -180) {
+      lon0 = -180;         
+      lon1 = +180;
+      lat0 = -90;     
+      lat1 = +90;
+   } else {
+      if(lon0 < -180) lon0 = -180;         
+      if(lon1 > 180) lon1 = 180;
+      if(lat0 < -90) lat0 = -90;     
+      if(lat1 > 90) lat1 = 90;
+   }
+   
    var _x0 = roundtile(lon2tilex(lon0, _z), _z);
    var _x1 = roundtile(lon2tilex(lon1, _z), _z);
    
    if (_x0 > _x1) {
       _x0 = 0;
-      _x1 = Math.pow(2, _z);
+      _x1 = Math.pow(2, _z) - 1;
    }   
    var _y0 = roundtile(lat2tiley(lat0, _z), _z);
    var _y1 = roundtile(lat2tiley(lat1, _z), _z);
    
    if (_y0 > _y1) {
       _y0 = 0;
-      _y1 = Math.pow(2, _z);
+      _y1 = Math.pow(2, _z) - 1;
    }   
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
-};
+}
 
 function update_marker() {
    if (marker === null ||drawing) return;
    
-   var b = L.latLngBounds(tile.p0, tile.p1);
-
-   var lat0 = b._northEast.lat;
-   var lon0 = b._southWest.lng;
-   var lat1 = b._southWest.lat;
-   var lon1 = b._northEast.lng;
-
-   var z = map.getZoom() + 8;
-
-   var x0 = roundtile(lon2tilex(lon0, z), z);
-   var x1 = roundtile(lon2tilex(lon1, z), z);
-
-   if (x0 > x1) {
-      x0 = 0;
-      x1 = Math.pow(2, z);
-   }
+   var zoom = map.getZoom() + 8;
+   var coords = get_coords_bounds(L.latLngBounds(tile.p0, tile.p1), zoom);
 
    // /x0/y0/x1/y1/
-   var query = "/query/region/" + z
-      + "/" + x0
-      + "/" + roundtile(lat2tiley(lat0, z), z)
-      + "/" + x1
-      + "/" + roundtile(lat2tiley(lat1, z), z);
+   var query = "/query/region/" + coords.z
+      + "/" + coords.x0
+      + "/" + coords.y0
+      + "/" + coords.x1
+      + "/" + coords.y1;
       
    call_assync_query(query, set_progressbar_value);
 }
@@ -246,7 +242,7 @@ function set_heatmap(response, textStatus) {
 }
 
 function request_data() {
-   var region = get_visible_tiles();
+   var region = get_coords_bounds(map.getBounds());
    
    var query = "/query";
    
