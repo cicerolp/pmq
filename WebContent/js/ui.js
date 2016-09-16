@@ -34,8 +34,8 @@ function map_init() {
    var cfg = {
       blur: 0.25,
       radius: 5.0,         
-      minOpacity: 0.3,
-      maxOpacity: 1.0,
+      minOpacity: 0.4,
+      maxOpacity: 0.9,
       scaleRadius: false, 
       useLocalExtrema: true,
       latField: 0,
@@ -44,7 +44,7 @@ function map_init() {
       gradient: {
          '.0': 'blue',
          '.1': 'red',
-         '.80': 'white'
+         '.65': 'white'
       },
    };      
 
@@ -222,39 +222,21 @@ function update_marker() {
    call_assync_query(query, set_progressbar_value);
 }
 
-function set_heatmap(response, textStatus) {   
-   if (textStatus != "success") {
-      heatmapLayer.setData({
+function set_heatmap(response, textStatus) {
+   heatmap_updating = false; 
+   
+   var data = null;   
+   if (textStatus !== "success") {
+      data = {
          max: 0,
          min: 0,
          data: [[-90, -180, 0]]
-      });
-      heatmap_updating = false;         
-      return;
+      };      
+   } else {      
+      data = response[0];
    }
    
-   var heatmap_max = 0;
-   var heatmap_min = Number.MAX_SAFE_INTEGER;
-   var heatmap_data = [];
-   
-   response.forEach(function(el) {        
-      heatmap_max = Math.max(heatmap_max, el[3]);
-      heatmap_min = Math.min(heatmap_min, el[3]);
-      
-      var lon = tilex2lon(el[0] + 0.5, el[2]);
-      var lat = tiley2lat(el[1] + 0.5, el[2]); 
-      var value = el[3];
-      
-      heatmap_data.push([lat, lon, value]);
-   });
-   
-   heatmapLayer.setData({
-      max: heatmap_max,
-      min: heatmap_min,
-      data: heatmap_data
-   });
-   
-   heatmap_updating = false;
+   heatmapLayer.setData(data);
 }
 
 function request_data() {

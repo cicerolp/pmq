@@ -114,21 +114,40 @@ std::string PMAInstance::query(const Query& query) {
       mutex.lock();
       quadtree->query_tile(restriction->region, json);
 
-
+      uint32_t max = 0;
+      uint32_t min = std::numeric_limits<uint32_t>::max();
+      
+      writer.StartObject();
+      
+      writer.String("data");      
+      writer.StartArray();      
       for (auto& el : json) {
          uint32_t x, y;
          mortonDecode_RAM(el.tile.code, y, x);
-
+         
          writer.StartArray();
-         writer.Uint(x);
-         writer.Uint(y);
-         writer.Uint(el.tile.z);
-         //writer.Uint(1);
-
-         writer.Uint(count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z));
-
+         
+         writer.Double(mercator_util::tiley2lat(y, el.tile.z));
+         writer.Double(mercator_util::tilex2lon(x, el.tile.z));
+         
+         uint32_t count = count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
+         
+         max = std::max(max, count);
+         min = std::min(min, count);
+                  
+         writer.Uint(count);
          writer.EndArray();
       }
+      writer.EndArray();      
+      
+      writer.String("min");
+      writer.Uint(min);
+      
+      writer.String("max");
+      writer.Uint(max);
+      
+      writer.EndObject();
+      
       mutex.unlock();
    } break;
 
