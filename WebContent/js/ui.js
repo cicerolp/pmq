@@ -9,6 +9,7 @@ function LatLngPoint() {
 }
 
 var heatmapLayer = null;
+
 var drawing = false;
 var marker = null;
 var tile = new LatLngPoint();
@@ -50,8 +51,10 @@ function map_init() {
 
    heatmapLayer = new HeatmapOverlay(cfg);
 
+   var grid = grid_layer();
+
    map = new L.Map('map', {
-      layers: [black_base, heatmapLayer],
+      layers: [black_base, heatmapLayer, grid],
       center : new L.LatLng(38, -97),
       zoom : 4,
       minZoom: 0,
@@ -70,8 +73,11 @@ function map_init() {
       "White" : white_base,
    };
 
+   
+
    var overlayMaps = {
-      "Heatmap.js": heatmapLayer
+      "Heatmap.js": heatmapLayer,
+      "Debug Layer": grid
    };
    
    L.control.layers(baseMaps, overlayMaps).addTo(map);
