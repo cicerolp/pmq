@@ -78,14 +78,13 @@ bool PMAInstance::create(int argc, char *argv[]) {
 #endif
       t.start();
       quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
+      if (modifiedKeys.size() != 0) up_to_date = false;     
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.miliseconds(),"ms" , k);
       // unlock pma and quadtree update
       mutex.unlock();
 
-#ifdef NDEBUG
-      std::this_thread::sleep_for(std::chrono::milliseconds(40));
-#endif
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));      
    }
    return true;
 }
@@ -163,4 +162,13 @@ std::string PMAInstance::query(const Query& query) {
    writer.EndArray();
 
    return buffer.GetString();
+}
+
+std::string PMAInstance::update() {
+   if (up_to_date) {
+      return ("[true]");   
+   } else {
+      up_to_date = true;
+      return ("[false]");
+   }
 }

@@ -38,8 +38,7 @@ void Server::handler(mg_connection* conn, int ev, void* p) {
 
       } else if (tokens[1] == "rest" && tokens.size() >= 3) {
          if (tokens[2] == "update") {
-            //printJson(conn, PMAInstance::getInstance().update());
-            printJson(conn, "[true]");
+            printJson(conn, PMAInstance::getInstance().update());
          } else if (tokens.size() >= 5 && tokens[2] == "query") {
             printJson(conn, PMAInstance::getInstance().query(Query(tokens)));
          } else {

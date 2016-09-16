@@ -21,12 +21,15 @@ function map_init() {
       white : 'http://{s}.tiles.mapbox.com/v4/cicerolp.pdni2p2n/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiY2ljZXJvbHAiLCJhIjoia1IxYmtfMCJ9.3EMmwKCCFN-hmsrQY4_wUQ'
    }
 
-   var baseLayer = L.tileLayer(layers["black"], {
+   var base_config = {
       subdomains: "abcd",
       minZoom: 0,
       maxZoom: 20,        
       maxNativeZoom: 20
-   });
+   };
+   
+   var black_base = L.tileLayer(layers["black"], base_config);
+   var white_base = L.tileLayer(layers["white"], base_config);
     
    var cfg = {
       blur: 0.25,
@@ -35,9 +38,9 @@ function map_init() {
       maxOpacity: 1.0,
       scaleRadius: false, 
       useLocalExtrema: true,
-      latField: 'lat',
-      lngField: 'lon',
-      valueField: 'count',
+      latField: 0,
+      lngField: 1,
+      valueField: 2,
       gradient: {
          '.0': 'blue',
          '.1': 'red',
@@ -48,7 +51,7 @@ function map_init() {
    heatmapLayer = new HeatmapOverlay(cfg);
 
    map = new L.Map('map', {
-      layers: [baseLayer, heatmapLayer],
+      layers: [black_base, heatmapLayer],
       center : new L.LatLng(38, -97),
       zoom : 4,
       minZoom: 0,
@@ -61,8 +64,20 @@ function map_init() {
       maxBoundsViscosity: 1.0,
       worldCopyJump : false,
    });
+   
+   var baseMaps = {
+      "Black": black_base,
+      "White" : white_base,
+   };
+
+   var overlayMaps = {
+      "Heatmap.js": heatmapLayer
+   };
+   
+   L.control.layers(baseMaps, overlayMaps).addTo(map);
      
    map.attributionControl.setPrefix("");
+   //map.attributionControl.setPrefix("Federal University of Rio Grande do Sul");
 
    map.on('mousedown', onMouseDown); 
    map.on('mousemove', onMouseMove);
@@ -80,11 +95,10 @@ function map_init() {
    });      
    map.on("moveend", function (e) {
       map_move = false;
-      update_heatmap();
+      update();
    });
 
-   update_heatmap();
-   var interval = window.setInterval(update_heatmap, 100);
+   call_update();
 }
 
 function call_assync_query(query, call_success, call_error) {
@@ -179,7 +193,7 @@ function get_visible_tiles() {
 };
 
 function update_marker() {
-   if (marker == null) return;
+   if (marker === null ||drawing) return;
    
    var b = L.latLngBounds(tile.p0, tile.p1);
 
@@ -210,7 +224,11 @@ function update_marker() {
 
 function set_heatmap(response, textStatus) {   
    if (textStatus != "success") {
-      heatmapLayer.setData({data: [{lat: -90, lon:-180, count: 0}]});
+      heatmapLayer.setData({
+         max: 0,
+         min: 0,
+         data: [[-90, -180, 0]]
+      });
       heatmap_updating = false;         
       return;
    }
@@ -224,8 +242,10 @@ function set_heatmap(response, textStatus) {
       heatmap_min = Math.min(heatmap_min, el[3]);
       
       var lon = tilex2lon(el[0] + 0.5, el[2]);
-      var lat = tiley2lat(el[1] + 0.5, el[2]);            
-      heatmap_data.push({lat: lat, lon:lon, count: el[3]})
+      var lat = tiley2lat(el[1] + 0.5, el[2]); 
+      var value = el[3];
+      
+      heatmap_data.push([lat, lon, value]);
    });
    
    heatmapLayer.setData({
@@ -250,15 +270,36 @@ function request_data() {
    call_assync_query(query, set_heatmap, set_heatmap);
 }
 
-function update_heatmap() {
-   if (map_move  || map_zoom || heatmap_updating) return;
+function call_update(response, textStatus) {   
+   if (textStatus != "success") {
+      up_to_date = true;
+   } else {      
+      up_to_date = response[0];
+   }
    
+   var wait = 0;
+   if (!up_to_date) {
+      wait = 1000;
+   } else {
+      wait = 1000;
+   }
+   
+   update();
+   
+   setTimeout(function() {
+      call_assync_query("/update", call_update, call_update);
+   }, wait);
+}
+
+function update() {   
+   if (up_to_date || map_move || map_zoom || heatmap_updating) return;
+
    heatmap_updating = true;
    
    // /x0/y0/x1/y1/
    var query = "/query/region/1/0/0/1/1";      
    call_assync_query(query, set_progressbar_max);
    
-   update_marker();   
+   update_marker();
    request_data();
 }

@@ -5,6 +5,7 @@
 * Dual-licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
 * and the Beerware (http://en.wikipedia.org/wiki/Beerware) license.
 */
+
 ;(function (name, context, factory) {
   // Supports UMD. AMD, CommonJS/Node.js and browser context
   if (typeof module !== "undefined" && module.exports) {
@@ -81,6 +82,7 @@
 
       map.off('moveend', this._reset, this);
     },
+    
     _draw: function() {
       if (!this._map) { return; }
       
@@ -108,23 +110,24 @@
         }
         return;
       }
-
+      
+      var latField = this.cfg.latField;
+      var lngField = this.cfg.lngField;
+      var valueField = this.cfg.valueField;
 
       var latLngPoints = [];
       var radiusMultiplier = this.cfg.scaleRadius ? scale : 1;
       var localMax = 0;
       var localMin = 0;
-      var valueField = this.cfg.valueField;
       var len = this._data.length;
     
       while (len--) {
         var entry = this._data[len];
         var value = entry[valueField];
-        var latlng = entry.latlng;
-
-
+        var latlng = [entry[latField], entry[lngField]];
+        
         // we don't wanna render points that are not even on the map ;-)
-        if (!bounds.contains(latlng)) {
+        if (!bounds.contains([latlng])) {
           continue;
         }
         // local max is the maximum within current bounds
@@ -154,43 +157,32 @@
 
       this._heatmap.setData(generatedData);
     },
-    setData: function(data) {
+    
+    setData: function(data) {       
+      if (this._data.equals(data.data) && 
+              data.max === this._max && 
+              data.min === this._min) {
+         return;
+      } 
+       
       this._max = data.max || this._max;
       this._min = data.min || this._min;
-      var latField = this.cfg.latField || 'lat';
-      var lngField = this.cfg.lngField || 'lng';
-      var valueField = this.cfg.valueField || 'value';
-    
-      // transform data to latlngs
-      var data = data.data;
-      var len = data.length;
-      var d = [];
-    
-      while (len--) {
-        var entry = data[len];
-        var latlng = new L.LatLng(entry[latField], entry[lngField]);
-        var dataObj = { latlng: latlng };
-        dataObj[valueField] = entry[valueField];
-        if (entry.radius) {
-          dataObj.radius = entry.radius;
-        }
-        d.push(dataObj);
-      }
-      this._data = d;
-    
+
+      this._data = data.data;    
       this._draw();
     },
+    
     // experimential... not ready.
-    addData: function(pointOrArray) {
+    /*addData: function(pointOrArray) {
       if (pointOrArray.length > 0) {
         var len = pointOrArray.length;
         while(len--) {
           this.addData(pointOrArray[len]);
         }
       } else {
-        var latField = this.cfg.latField || 'lat';
-        var lngField = this.cfg.lngField || 'lng';
-        var valueField = this.cfg.valueField || 'value';
+        var latField = this.cfg.latField;
+        var lngField = this.cfg.lngField;
+        var valueField = this.cfg.valueField;
         var entry = pointOrArray;
         var latlng = new L.LatLng(entry[latField], entry[lngField]);
         var dataObj = { latlng: latlng };
@@ -205,7 +197,8 @@
         this._data.push(dataObj);
         this._draw();
       }
-    },
+    },*/
+   
     _reset: function () {
       this._origin = this._map.layerPointToLatLng(new L.Point(0, 0));
       
