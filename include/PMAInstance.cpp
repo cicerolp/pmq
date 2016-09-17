@@ -97,7 +97,7 @@ std::string PMAInstance::query(const Query& query) {
 
    if (!quadtree) return ("[]");
 
-   json_ctn json;
+   std::vector<SpatialElement*> json;
    simpleTimer t1;
 
    // serialization
@@ -108,73 +108,73 @@ std::string PMAInstance::query(const Query& query) {
    writer.StartArray();
 
    switch (query.type()) {
-   case Query::TILE: {
-      auto restriction = query.get<Query::spatial_query_t>();
+      case Query::TILE: {
+         auto restriction = query.get<Query::spatial_query_t>();
 
-      mutex.lock();
-      quadtree->query_tile(restriction->region, json);
+         mutex.lock();
+         quadtree->query_tile(restriction->region, json);
 
-      uint32_t max = 0;
-      uint32_t min = std::numeric_limits<uint32_t>::max();
-      
-      writer.StartObject();
-      
-      writer.String("data");      
-      writer.StartArray();      
-      for (auto& el : json) {
-         uint32_t x, y;
-         mortonDecode_RAM(el.tile.code, x, y);
-         
-         writer.StartArray();
-         
-         writer.Double(mercator_util::tiley2lat(y, el.tile.z));
-         writer.Double(mercator_util::tilex2lon(x, el.tile.z));
-         
-         uint32_t count = count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
-         
-         max = std::max(max, count);
-         min = std::min(min, count);
-                  
+         uint32_t max = 0;
+         uint32_t min = std::numeric_limits<uint32_t>::max();
+
+         writer.StartObject();
+
+         writer.String("data");      
+         writer.StartArray();      
+         for (auto& el : json) {
+            uint32_t x, y;
+            mortonDecode_RAM(el->code(), x, y);
+
+            writer.StartArray();
+
+            writer.Double(mercator_util::tiley2lat(y, el->zoom()));
+            writer.Double(mercator_util::tilex2lon(x, el->zoom()));
+
+            uint32_t count = count_elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom());
+
+            max = std::max(max, count);
+            min = std::min(min, count);
+
+            writer.Uint(count);
+            writer.EndArray();
+         }
+         writer.EndArray();      
+
+         writer.String("min");
+         writer.Uint(min);
+
+         writer.String("max");
+         writer.Uint(max);
+
+         writer.EndObject();
+
+         mutex.unlock();
+      } break;
+
+      case Query::REGION: {
+         auto restriction = query.get<Query::region_query_t>();
+
+         mutex.lock();
+         t1.start();
+         quadtree->query_region(restriction->region, json);
+         t1.stop();
+         PRINTCSVL("Quadtree_query",t1.miliseconds(),"ms");
+
+         uint32_t count = 0;
+
+         t1.start();
+         for (auto& el : json) {         
+            count += count_elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom());
+         }
+         t1.stop();
+         PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
+         mutex.unlock();
          writer.Uint(count);
-         writer.EndArray();
-      }
-      writer.EndArray();      
+      } break;
       
-      writer.String("min");
-      writer.Uint(min);
-      
-      writer.String("max");
-      writer.Uint(max);
-      
-      writer.EndObject();
-      
-      mutex.unlock();
-   } break;
-
-   case Query::REGION: {
-      auto restriction = query.get<Query::region_query_t>();
-
-      mutex.lock();
-      t1.start();
-      quadtree->query_region(restriction->region, json);
-      t1.stop();
-      PRINTCSVL("Quadtree_query",t1.miliseconds(),"ms");
-
-      uint32_t count = 0;
-
-      t1.start();
-      for (auto& el : json) {
-         count += count_elts_pma(pma, el.begin, el.end, el.tile.code, el.tile.z);
-         // count += 1;
-      }
-      t1.stop();
-      PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
-      mutex.unlock();
-      writer.Uint(count);
-   } break;
-   default: {
-      return ("[]");
-   } break;
+      default: {
+         return ("[]");
+      } break;
    }
 
    // end json

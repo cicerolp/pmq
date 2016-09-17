@@ -8,11 +8,24 @@ public:
    ~SpatialElement() = default;
 
    void update(const map_t_it& it_begin, const map_t_it& it_end);
-   void query_tile(const region_t& region, json_ctn& subset) const;
-   void query_region(const region_t& region, json_ctn& subset) const;
+   void query_tile(const region_t& region, std::vector<SpatialElement*>& subset);
+   void query_region(const region_t& region, std::vector<SpatialElement*>& subset);
       
+   inline uint32_t begin() const {
+      return _beg;
+   }
+   inline uint32_t end() const {
+      return _end;
+   }
+   inline uint64_t code() const {
+      return _el.code;
+   }
+   inline uint32_t zoom() const {
+      return _el.z;
+   }
+   
 private:
-   void aggregate_tile(uint32_t zoom, json_ctn& subset) const;
+   void aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset);
 
    inline SpatialElement* get_node(uint32_t x, uint32_t y, uint32_t z, uint32_t index) {
       if ( _container[index] == nullptr ) {
@@ -35,10 +48,9 @@ private:
       }
    }
 
-   uint32_t beg, end;
-
-   using node_ptr = std::unique_ptr<SpatialElement>;
+   uint32_t _beg, _end;
+   spatial_t _el;   
    
-   spatial_t el; // tile of quadtree
+   using node_ptr = std::unique_ptr<SpatialElement>;   
    std::array<node_ptr, 4> _container;
 };

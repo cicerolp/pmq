@@ -39,7 +39,7 @@ std::ostream& operator<<(std::ostream& os, const Query& query) {
    auto& r = query.restriction;
    if (r == nullptr) return os;
 
-   switch (r->type) {
+   /*switch (r->type) {
       case Query::TILE: {
          auto el = query.get<Query::spatial_query_t>();
    
@@ -54,7 +54,7 @@ std::ostream& operator<<(std::ostream& os, const Query& query) {
       default: {
          os << "/error";    
       } break;
-   }
+   }*/
 
    return os;
 }

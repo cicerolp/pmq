@@ -173,37 +173,31 @@ function onMouseMove(e) {
 function get_coords_bounds(b, zoom) {
    var _z = zoom || map.getZoom();
    
+   _z = Math.min(_z, 24);
+   
    var lat0 = b._northEast.lat;
    var lon0 = b._southWest.lng;   
    var lat1 = b._southWest.lat;
    var lon1 = b._northEast.lng;
+      
+   // out of bounds check
+   if(lon0 < -180) lon0 = -180;
+   if(lon1 < -180) lon1 = -180;
    
-   if (lon0 > 180 || lon1 < -180) {
-      lon0 = -180;         
-      lon1 = +180;
-      lat0 = -90;     
-      lat1 = +90;
-   } else {
-      if(lon0 < -180) lon0 = -180;         
-      if(lon1 > 180) lon1 = 180;
-      if(lat0 < -90) lat0 = -90;     
-      if(lat1 > 90) lat1 = 90;
-   }
+   if(lon0 > 179) lon0 = 179;
+   if(lon1 > 179) lon1 = 179;
+   
+   if(lat0 < -85) lat0 = -85;
+   if(lat1 < -85) lat1 = -85;
+   
+   if(lat0 > 85) lat0 = 85;
+   if(lat1 > 85) lat1 = 85;
    
    var _x0 = roundtile(lon2tilex(lon0, _z), _z);
    var _x1 = roundtile(lon2tilex(lon1, _z), _z);
    
-   if (_x0 > _x1) {
-      _x0 = 0;
-      _x1 = Math.pow(2, _z) - 1;
-   }   
    var _y0 = roundtile(lat2tiley(lat0, _z), _z);
-   var _y1 = roundtile(lat2tiley(lat1, _z), _z);
-   
-   if (_y0 > _y1) {
-      _y0 = 0;
-      _y1 = Math.pow(2, _z) - 1;
-   }   
+   var _y1 = roundtile(lat2tiley(lat1, _z), _z); 
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 }
@@ -220,7 +214,7 @@ function update_marker() {
       + "/" + coords.y0
       + "/" + coords.x1
       + "/" + coords.y1;
-      
+
    call_assync_query(query, set_progressbar_value);
 }
 
@@ -248,7 +242,7 @@ function request_data() {
    
    query += "/tile/" + region.z + "/" + region.x0
    + "/" + region.y0 + "/" + region.x1 + "/" + region.y1;
-   
+      
    query += ("/resolution/" + 8);      
    
    call_assync_query(query, set_heatmap, set_heatmap);
@@ -281,7 +275,7 @@ function update() {
    heatmap_updating = true;
    
    // /x0/y0/x1/y1/
-   var query = "/query/region/1/0/0/1/1";      
+   var query = "/query/region/0/0/0/1/1";      
    call_assync_query(query, set_progressbar_max);
    
    update_marker();

@@ -3,79 +3,21 @@
 
 extern uint32_t g_Quadtree_Depth;
 
-struct quadtree_key {
-   quadtree_key() = default;
-   
-   quadtree_key(uint64_t mortonCode) {
-      mCode = mortonCode;
-   }
-
-   friend inline bool operator<(const quadtree_key& lhs, const quadtree_key& rhs) {
-      return (lhs.mCode < rhs.mCode);
-   }
-
-   friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
-      uint32_t y, x;      
-      mortonDecode_RAM(qtree.mCode, x, y);
-      
-      float lat = mercator_util::tiley2lat(y, g_Quadtree_Depth);
-      float lon = mercator_util::tilex2lon(x, g_Quadtree_Depth);
-      
-      stream << "lat: " << lat << ", lon: " << lon ;      
-      return stream;
-   }
-
-   inline
-   unsigned int get_index(uint32_t z_diff_2) {
-      return (mCode >> z_diff_2) & 3;
-   }
-
-   uint64_t mCode;
-};
-
-
-struct elinfo_t {
-   elinfo_t() = default;
-   elinfo_t(uint64_t value, unsigned int _begin, unsigned int _end) : key(value) {
-      begin = _begin;
-      end = _end;
-   }
-   
-   quadtree_key key;
-   //Segment index of the interval containing this key on the pma array;
-   unsigned int begin;
-   unsigned int end;
-};
-
-using map_t = std::vector<elinfo_t>;
-using map_t_it = std::vector<elinfo_t>::iterator;
-
 struct spatial_t {
    spatial_t(uint32_t x, uint32_t y, uint8_t z, uint8_t l = 1) : z(z), leaf(l) {
       code = mortonEncode_RAM(x, y);
    }
+   
    inline bool operator==(const spatial_t& rhs) const {
       return code == rhs.code;
    }
    
-   inline std::pair<uint32_t, uint32_t> get_tile() const {
-      uint32_t x, y;
-      mortonDecode_RAM(code, x, y);
-      return {x, y};
-   }
-
-   friend std::ostream& operator<<(std::ostream& stream, const spatial_t& el) {
-      stream << el.code << "/" << el.z;
-      return stream;
-   }
-
    union {
       struct {
          uint64_t code : 50;
          uint64_t z    : 5;
          uint64_t leaf : 1;
       };
-
       uint64_t data;
    };
 };
@@ -83,24 +25,26 @@ struct spatial_t {
 struct region_t {
    region_t() = default;
 
-   region_t(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t z) :  z(z) {
-      code0 = mortonEncode_RAM(x0, y0);
-      code1 = mortonEncode_RAM(x1, y1);
+   region_t(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t z) {
+      _x0 = x0;
+      _y0 = y0;
+      _x1 = x1;
+      _y1 = y1;
+      _z = z;
    }
 
    inline bool cover(const spatial_t& el) const {
-      if (z > el.z) {
-         uint64_t min, max;
-         morton_min_max(el.code, z - el.z, min, max);
-         return min >= code0&& max <= code1;
-         
+      if (_z == el.z) {
+         uint32_t x, y;
+         mortonDecode_RAM(el.code, x, y);         
+         return _x0 <= x && _x1 >= x && _y0 <= y && _y1 >= y;
       } else {
          return false;
       }
    }
 
    inline bool intersect(const spatial_t& el) const {
-      if (z > el.z) {
+      /*if (z > el.z) {
          uint64_t min, max;
          morton_min_max(el.code, z - el.z, min, max);         
          return code0 <= max && code1 >= min;
@@ -110,32 +54,36 @@ struct region_t {
          
       } else {
          return false;
-      }
-   }
-   
-   friend std::ostream& operator<<(std::ostream& stream, const region_t& el) {
-      stream << el.code0 << "/" << el.code1 << "/" << el.z;
-      return stream;
+      }*/
+      return false;
    }
 
-   uint32_t z;
-   uint64_t code0, code1;
-};
-
-struct json_t {
-   spatial_t tile;
-   uint32_t begin, end;
+   uint32_t z() const {
+      return _z;
+   }
+   uint32_t y1() const {
+      return _y1;
+   }
+   uint32_t x1() const {
+      return _x1;
+   }
+   uint32_t y0() const {
+      return _y0;
+   }
+   uint32_t x0() const {
+      return _x0;
+   }   
    
-   json_t(const spatial_t& el, uint32_t beg, uint32_t end) 
-      : tile(el), begin(beg), end(end) {}
+private:
+   uint32_t _x0, _y0, _x1, _y1, _z;
 };
-
-using json_ctn = std::vector<json_t>;
 
 struct tweet_t {
   float latitude;
   float longitude;
+  
   uint64_t time;
+  
   uint8_t language;
   uint8_t device;
   uint8_t app;
@@ -153,7 +101,7 @@ struct elttype {
       key = mortonEncode_RAM(x, y);
    }
    
-   // Pma uses only the key to sort elements.
+   // pma uses only the key to sort elements
    friend inline bool operator==(const elttype& lhs, const elttype& rhs) { 
       return (lhs.key == rhs.key); 
    }
@@ -167,3 +115,25 @@ struct elttype {
       return out << e.key; 
    }
 };
+
+struct elinfo_t {
+   elinfo_t() = default;
+   elinfo_t(uint64_t value, uint32_t _begin, uint32_t _end) {
+      // morton code
+      key = value;
+      
+      // segments interval
+      begin = _begin;
+      end = _end;
+   }
+   
+   inline uint32_t get_index(uint32_t z_diff_2) const {
+      return (key >> z_diff_2) & 3;
+   }
+      
+   uint64_t key;
+   uint32_t begin, end;
+};
+
+using map_t = std::vector<elinfo_t>;
+using map_t_it = std::vector<elinfo_t>::iterator;
