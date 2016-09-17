@@ -26,9 +26,9 @@ private:
       x *= 2;
       y *= 2;
       if (index == 1) {
-         ++y;
-      } else if (index == 2) {
          ++x;
+      } else if (index == 2) {
+         ++y;
       } else if (index == 3) {
          ++y;
          ++x;

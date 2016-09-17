@@ -29,7 +29,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : el(tile) {
    uint32_t z_diff_2 = (g_Quadtree_Depth - el.z - 1) * 2;
    
    uint32_t x, y;
-   mortonDecode_RAM(el.code, y, x);
+   mortonDecode_RAM(el.code, x, y);
 
    auto it_curr = it_begin;
    auto it_last = it_begin;

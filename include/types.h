@@ -16,7 +16,7 @@ struct quadtree_key {
 
    friend std::ostream& operator<<(std::ostream& stream, const quadtree_key& qtree) {
       uint32_t y, x;      
-      mortonDecode_RAM(qtree.mCode, y, x);
+      mortonDecode_RAM(qtree.mCode, x, y);
       
       float lat = mercator_util::tiley2lat(y, g_Quadtree_Depth);
       float lon = mercator_util::tilex2lon(x, g_Quadtree_Depth);
@@ -52,7 +52,7 @@ using map_t_it = std::vector<elinfo_t>::iterator;
 
 struct spatial_t {
    spatial_t(uint32_t x, uint32_t y, uint8_t z, uint8_t l = 1) : z(z), leaf(l) {
-      code = mortonEncode_RAM(y,x);
+      code = mortonEncode_RAM(x, y);
    }
    inline bool operator==(const spatial_t& rhs) const {
       return code == rhs.code;
@@ -60,7 +60,7 @@ struct spatial_t {
    
    inline std::pair<uint32_t, uint32_t> get_tile() const {
       uint32_t x, y;
-      mortonDecode_RAM(code, y, x);
+      mortonDecode_RAM(code, x, y);
       return {x, y};
    }
 
@@ -84,8 +84,8 @@ struct region_t {
    region_t() = default;
 
    region_t(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t z) :  z(z) {
-      code0 = mortonEncode_RAM(y0, x0);
-      code1 = mortonEncode_RAM(y1, x1);
+      code0 = mortonEncode_RAM(x0, y0);
+      code1 = mortonEncode_RAM(x1, y1);
    }
 
    inline bool cover(const spatial_t& el) const {
@@ -150,7 +150,7 @@ struct elttype {
    elttype(const tweet_t& el, uint32_t depth) : value(el) {
       uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
       uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-      key = mortonEncode_RAM(y,x);
+      key = mortonEncode_RAM(x, y);
    }
    
    // Pma uses only the key to sort elements.

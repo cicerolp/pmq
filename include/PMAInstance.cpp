@@ -123,7 +123,7 @@ std::string PMAInstance::query(const Query& query) {
       writer.StartArray();      
       for (auto& el : json) {
          uint32_t x, y;
-         mortonDecode_RAM(el.tile.code, y, x);
+         mortonDecode_RAM(el.tile.code, x, y);
          
          writer.StartArray();
          
