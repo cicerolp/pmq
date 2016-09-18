@@ -34,28 +34,30 @@ struct region_t {
    }
 
    inline bool cover(const spatial_t& el) const {
-      if (_z == el.z) {
-         uint32_t x, y;
-         mortonDecode_RAM(el.code, x, y);         
-         return _x0 <= x && _x1 >= x && _y0 <= y && _y1 >= y;
-      } else {
-         return false;
-      }
-   }
+      uint32_t x, y;
+      mortonDecode_RAM(el.code, x, y);
+      
+      if (_z <= el.z) {
+         uint64_t n = (uint64_t)1 << (el.z - _z);
 
-   inline bool intersect(const spatial_t& el) const {
-      /*if (z > el.z) {
-         uint64_t min, max;
-         morton_min_max(el.code, z - el.z, min, max);         
-         return code0 <= max && code1 >= min;
-         
-      } else if (z == el.z) {
-         return code0 <= el.code && code1 >= el.code;
-         
+         uint64_t x_min = _x0 * n;
+         uint64_t x_max = _x1 * n;
+
+         uint64_t y_min = _y0 * n;
+         uint64_t y_max = _y1 * n;
+
+         return x_min <= x && x_max >= x && y_min <= y && y_max >= y;
       } else {
-         return false;
-      }*/
-      return false;
+         uint64_t n = (uint64_t)1 << (_z - el.z);
+
+         uint64_t x_min = x * n;
+         uint64_t x_max = x_min + n - 1;
+
+         uint64_t y_min = y * n;
+         uint64_t y_max = y_min + n - 1;
+
+         return _x0 <= x_min && _x1 >= x_max && _y0 <= y_min && _y1 >= y_max;
+      }
    }
 
    uint32_t z() const {

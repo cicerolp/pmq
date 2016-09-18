@@ -184,8 +184,8 @@ function get_coords_bounds(b, zoom) {
    if(lon0 < -180) lon0 = -180;
    if(lon1 < -180) lon1 = -180;
    
-   if(lon0 > 179) lon0 = 179;
-   if(lon1 > 179) lon1 = 179;
+   if(lon0 > 179) lon0 = 179.9;
+   if(lon1 > 179) lon1 = 179.9;
    
    if(lat0 < -85) lat0 = -85;
    if(lat1 < -85) lat1 = -85;
@@ -193,11 +193,11 @@ function get_coords_bounds(b, zoom) {
    if(lat0 > 85) lat0 = 85;
    if(lat1 > 85) lat1 = 85;
    
-   var _x0 = roundtile(lon2tilex(lon0, _z), _z);
-   var _x1 = roundtile(lon2tilex(lon1, _z), _z);
+   var _x0 = Math.floor(lon2tilex(lon0, _z));
+   var _x1 = Math.floor(lon2tilex(lon1, _z));
    
-   var _y0 = roundtile(lat2tiley(lat0, _z), _z);
-   var _y1 = roundtile(lat2tiley(lat1, _z), _z); 
+   var _y0 = Math.floor(lat2tiley(lat0, _z));
+   var _y1 = Math.floor(lat2tiley(lat1, _z)); 
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 }

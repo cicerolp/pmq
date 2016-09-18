@@ -1,9 +1,3 @@
-function roundtile(v, z) {
-    v = Math.floor(v);
-    while (v < 0) v += 1 << z;
-    return v % (1 << z);
-}
-
 function tilex2lon(x, z) {
     return x / Math.pow(2.0, z) * 360.0 - 180;
 }

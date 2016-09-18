@@ -52,18 +52,18 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    get_node(x, y, _el.z + 1, index)->update(it_last, it_curr);
 
    // update beg index
-   _beg = (*std::find_if(_container.begin(),_container.end(),[](const node_ptr& el) {
+   _beg = (*std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) {
       return el != nullptr;
    }))->begin();
    
    // update end index
-   _end = (*std::find_if(_container.rbegin(),_container.rend(),[](const node_ptr& el) {
+   _end = (*std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) {
       return el != nullptr;
    }))->end();
 }
  
 void SpatialElement::query_tile(const region_t& region, std::vector<SpatialElement*>& subset) {   
-   if (region.cover(_el)) {
+   if (region.z() == _el.z && region.cover(_el)) {
          return aggregate_tile(_el.z + 8, subset);                  
    } else if (region.z() > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_tile(region, subset);
