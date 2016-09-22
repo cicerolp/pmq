@@ -33,7 +33,7 @@ function map_init() {
    var white_base = L.tileLayer(layers["white"], base_config);
     
    var cfg = {
-      blur: 0.25,
+      blur: 1.0,
       radius: 5.0,         
       minOpacity: 0.4,
       maxOpacity: 0.9,
@@ -44,8 +44,8 @@ function map_init() {
       valueField: 2,
       gradient: {
          '.0': 'blue',
-         '.1': 'red',
-         '.65': 'white'
+         '.070': 'red',
+         '.50': 'white'
       },
    };      
 
@@ -72,9 +72,7 @@ function map_init() {
       "Black": black_base,
       "White" : white_base,
    };
-
    
-
    var overlayMaps = {
       "Heatmap.js": heatmapLayer,
       "Debug Layer": grid
@@ -95,14 +93,19 @@ function map_init() {
    }); 
    map.on("zoomend", function (e) {
       map_zoom = false;
+      up_to_date = false;
    }); 
    map.on("movestart", function (e) {
       map_move = true;
    });      
    map.on("moveend", function (e) {
       map_move = false;
+      up_to_date = false;
       update();
    });
+
+   up_to_date = false;
+   update();
 
    call_update();
 }
@@ -248,10 +251,10 @@ function request_data() {
    call_assync_query(query, set_heatmap, set_heatmap);
 }
 
-function call_update(response, textStatus) {   
+function call_update(response, textStatus) {
    if (textStatus != "success") {
       up_to_date = true;
-   } else {      
+   } else {
       up_to_date = response[0];
    }
    

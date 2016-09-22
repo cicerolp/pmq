@@ -159,11 +159,11 @@
     },
     
     setData: function(data) {       
-      if (this._data.equals(data.data) && 
+      /*if (this._data.equals(data.data) && 
               data.max === this._max && 
               data.min === this._min) {
          return;
-      } 
+      }*/ 
        
       this._max = data.max || this._max;
       this._min = data.min || this._min;
