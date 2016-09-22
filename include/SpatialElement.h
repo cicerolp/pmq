@@ -7,7 +7,7 @@ public:
    SpatialElement(const spatial_t& tile);
    ~SpatialElement() = default;
 
-   void update(const map_t_it& it_begin, const map_t_it& it_end);
+   void update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end);
    void query_tile(const region_t& region, std::vector<SpatialElement*>& subset);
    void query_region(const region_t& region, std::vector<SpatialElement*>& subset);
       

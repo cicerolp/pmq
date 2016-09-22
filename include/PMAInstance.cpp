@@ -68,7 +68,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
 #ifndef NDEBUG
       PRINTOUT("ModifiedKeys %d : ",modifiedKeys.size()) ;
       for (auto& k: modifiedKeys){
-          std::cout << k.key.mCode << " " ;
+          std::cout << k.key << " " ;
       }
 
       std::cout << "\n";
@@ -77,7 +77,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
       print_pma_keys(pma);
 #endif
       t.start();
-      quadtree->update(modifiedKeys.begin(), modifiedKeys.end());
+      quadtree->update(pma, modifiedKeys.begin(), modifiedKeys.end());
       if (modifiedKeys.size() != 0) up_to_date = false;     
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.miliseconds(),"ms" , k);

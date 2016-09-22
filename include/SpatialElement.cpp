@@ -13,7 +13,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
  * @note we don't support deletes;
  * @return
  */
- void SpatialElement::update(const map_t_it& it_begin, const map_t_it& it_end) {
+ void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end) {
    // empty container
    if (it_begin == it_end) return;
 
@@ -41,7 +41,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
       int curr_index = (*it_curr).get_index(z_diff_2);
       
       if (curr_index != index) {  
-         get_node(x, y, _el.z + 1, index)->update(it_last, it_curr);
+         get_node(x, y, _el.z + 1, index)->update(pma, it_last, it_curr);
          
          it_last = it_curr;
          index = curr_index;
@@ -49,7 +49,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    }
       
    // update last valid node
-   get_node(x, y, _el.z + 1, index)->update(it_last, it_curr);
+   get_node(x, y, _el.z + 1, index)->update(pma, it_last, it_curr);
 
    // update beg index
    _beg = (*std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) {
@@ -60,6 +60,19 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    _end = (*std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) {
       return el != nullptr;
    }))->end();
+
+#ifndef NDEBUG
+   if (!_el.leaf) {
+      uint32_t curr_count = count_elts_pma(pma, begin(), end(), code(), zoom());
+
+      uint32_t count = 0;
+      for (auto& ptr : _container) {
+         if (ptr) count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
+      }
+
+      assert(curr_count == count);
+   }
+#endif
 }
  
 void SpatialElement::query_tile(const region_t& region, std::vector<SpatialElement*>& subset) {   
