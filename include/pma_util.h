@@ -6,6 +6,8 @@
 #include "pma/utils/test_utils.h"
 #include "pma/utils/benchmark_utils.h"
 
+#include "types.h"
+
 
 extern uint32_t g_Quadtree_Depth;
 
@@ -117,6 +119,19 @@ inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int 
 
       for ( ; cur_el_pt <  (char*) SEGMENT_ELT(pma,s,pma->elts[s]) ; cur_el_pt += pma->elt_size) {
          PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
+
+         valuetype tweet = *(valuetype*) ELT_TO_CONTENT(cur_el_pt);
+
+         writer.StartArray();
+         writer.Uint(tweet.time);
+         writer.Double(tweet.latitude);
+         writer.Double(tweet.longitude);
+         writer.Uint(tweet.language);
+         writer.Uint(tweet.device);
+         writer.Uint(tweet.app);
+         writer.EndArray();
+
+         cnt++;
       }
 
    }
@@ -124,35 +139,18 @@ inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int 
    //loop on last segment
    for ( ; cur_el_pt < (char*) SEGMENT_ELT(pma,seg_end-1,pma->elts[seg_end-1]) && *(uint64_t*)cur_el_pt <= mCodeMax ; cur_el_pt += pma->elt_size) {
       PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
+         valuetype tweet = *(valuetype*) ELT_TO_CONTENT(cur_el_pt);
+
+         writer.StartArray();
+         writer.Uint(tweet.time);
+         writer.Double(tweet.latitude);
+         writer.Double(tweet.longitude);
+         writer.Uint(tweet.language);
+         writer.Uint(tweet.device);
+         writer.Uint(tweet.app);
+         writer.EndArray();
+         cnt++;
    }
-
-
-   /* TODO
-   for ([begin, end], where <code, z>) {
-      valuetype tweet = "get element from pma";
-
-      writer.StartArray();
-      writer.Uint(tweet.time);
-      writer.Double(tweet.latitude);
-      writer.Double(tweet.longitude);
-      writer.Uint(tweet.language);
-      writer.Uint(tweet.device);
-      writer.Uint(tweet.app);
-      writer.EndArray();
-
-      cnt++;
-   }
-   */
-
-   /*REMOVE*/
-   writer.StartArray();
-   writer.Uint(seg_beg);
-   writer.Uint(seg_end);
-   writer.Uint(mCode);
-   writer.Uint(z);
-   writer.EndArray();
-   cnt = count_elts_pma(pma, seg_beg, seg_end, mCode, z);
-   /*REMOVE*/
 
    return cnt;
 }
