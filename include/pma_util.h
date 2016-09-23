@@ -38,6 +38,21 @@ inline int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
    return cnt;
 }
 #endif
+
+/**
+ * @brief get_mcode_range : Computes the min and max values for a geo_hash with prefix \a mCode
+ * @param mCode : The prefix of the morton code representing a quadtree node.
+ * @param z : The depth of the quadtree node (corresponding to this mCode).
+ * @param min [OUT]
+ * @param max [OUT]
+ */
+inline void get_mcode_range(uint64_t mCode, int z, uint64_t& min, uint64_t& max){
+    int diffDepth = g_Quadtree_Depth - z;
+    min = mCode << 2*(diffDepth);
+    max = min | ((uint64_t) ~0  >> (64-2*diffDepth) );
+    return;
+}
+
 /**
  * @brief count_elts_pma find in [sbeg, send[ all the elements starting with mcode at level z.
  * @param pma
@@ -53,9 +68,9 @@ inline int count_elts_pma(struct pma_struct* pma, char* beg , char* end){
 inline int count_elts_pma(struct pma_struct* pma, unsigned int  seg_beg , unsigned int  seg_end, uint64_t mCode, int z){
 
    unsigned int cnt = 0;
-   int diffDepth = g_Quadtree_Depth - z;
-   uint64_t mCodeMin = mCode << 2*(diffDepth);
-   uint64_t mCodeMax = mCodeMin | ((uint64_t) ~0  >> (64-2*diffDepth) );
+   uint64_t mCodeMin = 0;
+   uint64_t mCodeMax = 0;
+   get_mcode_range(mCode,z,mCodeMin,mCodeMax);
 
    for (unsigned int s = seg_beg ; s < seg_end; s ++ ){
       cnt += pma->elts[s] ;
@@ -75,9 +90,43 @@ inline int count_elts_pma(struct pma_struct* pma, unsigned int  seg_beg , unsign
    return cnt;
 }
 
+/**
+ * @brief elts_pma Gets the elements in the \a pma between segments [seg_beg , seg_end[ with prefix equal to \a mCode.
+ * @param pma
+ * @param seg_beg
+ * @param seg_end
+ * @param mCode The MortonCode prefix the function will be looking for
+ * @param z The depth in the quadtree used to compute the prefix.
+ * @param writer Will be filled with the elements retreived
+ * @return the amount elements written.
+ */
 inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int  seg_end, uint64_t mCode, int z, json_writer& writer) {
 
    unsigned int cnt = 0;
+   uint64_t mCodeMin;
+   uint64_t mCodeMax;
+   get_mcode_range(mCode,z,mCodeMin,mCodeMax);
+
+   //Find the first element of the first segment
+   char* cur_el_pt = (char* ) SEGMENT_START(pma,seg_beg) ;
+   while ( (*(uint64_t*) cur_el_pt) < mCodeMin  )
+       cur_el_pt += pma->elt_size;
+
+   //loop on the first segments (up to one before last)
+   for (unsigned int s = seg_beg ; s < seg_end-1 ; ++s , cur_el_pt = (char*) SEGMENT_START(pma, s)  ){
+
+      for ( ; cur_el_pt <  (char*) SEGMENT_ELT(pma,s,pma->elts[s]) ; cur_el_pt += pma->elt_size) {
+         PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
+      }
+
+   }
+
+   //loop on last segment
+   for ( ; cur_el_pt < (char*) SEGMENT_ELT(pma,seg_end-1,pma->elts[seg_end-1]) && *(uint64_t*)cur_el_pt <= mCodeMax ; cur_el_pt += pma->elt_size) {
+      PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
+   }
+
+
    /* TODO
    for ([begin, end], where <code, z>) {
       valuetype tweet = "get element from pma";
