@@ -156,7 +156,8 @@ function onMouseUp(e) {
 
    drawing = false;
 
-   update_marker();   
+   update_marker();
+   update_table();
 }
 
 function onMouseMove(e) {
@@ -203,6 +204,40 @@ function get_coords_bounds(b, zoom) {
    var _y1 = Math.floor(lat2tiley(lat1, _z)); 
    
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
+}
+
+function update_table() {
+   table = $('#async_table').DataTable({
+      retrieve: true,
+      deferRender: true,
+      scrollX: "100%",
+      scrollY: "100%",
+      scrollCollapse: true,
+      ajax: {
+         type: 'GET',
+         url: S_URL + "/query/data/0/0/0/0/0",
+         dataType: "json"
+      },
+   });
+
+   var region;
+
+   if (marker === null || drawing) {
+      region = get_coords_bounds(map.getBounds());
+   } else {
+      region = get_coords_bounds(L.latLngBounds(tile.p0, tile.p1), map.getZoom() + 8);
+   }
+
+   // /x0/y0/x1/y1/
+   var query = "/query/data/" + region.z
+      + "/" + region.x0
+      + "/" + region.y0
+      + "/" + region.x1
+      + "/" + region.y1;
+
+   
+   table.ajax.url(S_URL + query);
+   table.ajax.reload();
 }
 
 function update_marker() {
@@ -282,5 +317,6 @@ function update() {
    call_assync_query(query, set_progressbar_max);
    
    update_marker();
+   update_table();
    request_data();
 }

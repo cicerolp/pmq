@@ -29,6 +29,8 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
+
 // mercator_util
 #include "mercator_util.h"
 

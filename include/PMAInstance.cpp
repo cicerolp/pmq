@@ -104,19 +104,19 @@ std::string PMAInstance::query(const Query& query) {
    rapidjson::StringBuffer buffer;
    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
-   // start json
-   writer.StartArray();
-
-   switch (query.type()) {
+   switch (query.type) {
       case Query::TILE: {
-         auto restriction = query.get<Query::spatial_query_t>();
+         // start json
+         writer.StartArray();
 
+         // lock mutex
          mutex.lock();
-         quadtree->query_tile(restriction->region, json);
+
+         quadtree->query_tile(query.region, json);
 
          uint32_t max = 0;
          uint32_t min = std::numeric_limits<uint32_t>::max();
-
+                  
          writer.StartObject();
 
          writer.String("data");      
@@ -138,6 +138,10 @@ std::string PMAInstance::query(const Query& query) {
             writer.Uint(count);
             writer.EndArray();
          }
+
+         // unlock mutex
+         mutex.unlock();
+
          writer.EndArray();      
 
          writer.String("min");
@@ -148,16 +152,21 @@ std::string PMAInstance::query(const Query& query) {
 
          writer.EndObject();
 
-         mutex.unlock();
+         // end json
+         writer.EndArray();         
       } break;
 
       case Query::REGION: {
-         auto restriction = query.get<Query::region_query_t>();
+         // start json
+         writer.StartArray();
 
+         // lock mutex
          mutex.lock();
+
          t1.start();
-         quadtree->query_region(restriction->region, json);
+         quadtree->query_region(query.region, json);
          t1.stop();
+
          PRINTCSVL("Quadtree_query",t1.miliseconds(),"ms");
 
          uint32_t count = 0;
@@ -167,18 +176,57 @@ std::string PMAInstance::query(const Query& query) {
             count += count_elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom());
          }
          t1.stop();
-         PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
+
+         // unlock mutex
          mutex.unlock();
+
+         PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
+         
          writer.Uint(count);
+
+         // end json
+         writer.EndArray();
       } break;
-      
+   
+      case Query::DATA: {
+
+         writer.StartObject();
+
+         writer.String("draw");
+         writer.Int(1);
+
+         uint32_t count = 0;
+
+         // lock mutex
+         mutex.lock();
+
+         quadtree->query_region(query.region, json);
+
+         writer.String("data");
+         writer.StartArray();
+         for (auto& el : json) {
+            count += elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom(), writer);
+         }
+         writer.EndArray();
+
+         // unlock mutex
+         mutex.unlock();
+
+         writer.String("recordsTotal");
+         writer.Int(count);
+
+         writer.String("recordsFiltered");
+         writer.Int(count);
+
+         writer.EndObject();
+      } break;
+
       default: {
          return ("[]");
       } break;
    }
 
-   // end json
-   writer.EndArray();
+   
 
    return buffer.GetString();
 }
