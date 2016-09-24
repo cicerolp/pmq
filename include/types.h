@@ -1,5 +1,7 @@
 #pragma once
 #include "stde.h"
+#include "morton.h"
+#include "mercator_util.h"
 
 extern uint32_t g_Quadtree_Depth;
 

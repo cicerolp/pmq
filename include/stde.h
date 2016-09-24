@@ -30,16 +30,3 @@
 #include <rapidjson/stringbuffer.h>
 
 using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
-
-// mercator_util
-#include "mercator_util.h"
-
-// string_util
-#include "string_util.h"
-
-// morton z-index
-#include "morton.h"
-
-// pma lib
-#include "pma_util.h"
-

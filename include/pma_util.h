@@ -1,13 +1,11 @@
 #pragma once
 #include "stde.h"
-
-#include "pma/pma.h"
-#include "pma/utils/debugMacros.h"
-#include "pma/utils/test_utils.h"
-#include "pma/utils/benchmark_utils.h"
-
 #include "types.h"
 
+#include "pma/pma.h"
+#include "pma/utils/test_utils.h"
+#include "pma/utils/debugMacros.h"
+#include "pma/utils/benchmark_utils.h"
 
 extern uint32_t g_Quadtree_Depth;
 
@@ -110,12 +108,12 @@ inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int 
    get_mcode_range(mCode,z,mCodeMin,mCodeMax);
 
    //Find the first element of the first segment
-   char* cur_el_pt = (char* ) SEGMENT_START(pma,seg_beg) ;
-   while ( (*(uint64_t*) cur_el_pt) < mCodeMin  )
+   char* cur_el_pt = (char* ) SEGMENT_START(pma,seg_beg);
+   while ((*(uint64_t*) cur_el_pt) < mCodeMin)
        cur_el_pt += pma->elt_size;
 
    //loop on the first segments (up to one before last)
-   for (unsigned int s = seg_beg ; s < seg_end-1 ; ++s , cur_el_pt = (char*) SEGMENT_START(pma, s)  ){
+   for (unsigned int s = seg_beg ; s < seg_end-1 ; ++s , cur_el_pt = (char*) SEGMENT_START(pma, s)) {
 
       for ( ; cur_el_pt <  (char*) SEGMENT_ELT(pma,s,pma->elts[s]) ; cur_el_pt += pma->elt_size) {
          PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
@@ -130,10 +128,8 @@ inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int 
          writer.Uint(tweet.device);
          writer.Uint(tweet.app);
          writer.EndArray();
-
          cnt++;
       }
-
    }
 
    //loop on last segment
