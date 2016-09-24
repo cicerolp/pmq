@@ -19,7 +19,7 @@ function resizeend() {
       setTimeout(resizeend, delta);
    } else {
       timeout = false;
-      resize_table();
+      resize();
    }
 }
 
@@ -124,7 +124,7 @@ function map_init() {
       update();
    });
 
-   resize_table();
+   resize();
 
    up_to_date = false;
    update();
@@ -228,7 +228,7 @@ function get_coords_bounds(b, zoom) {
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 }
 
-function resize_table() {
+function resize() {
    var div = d3.select('#right-panel');
    var height = Math.max(1, div.node().getBoundingClientRect().height - 167) + "px";
 
@@ -248,21 +248,55 @@ function resize_table() {
             "targets": 0
          }, {
             "render": function (data, type, row) {
+               var vendor = String(data);
+               vendor = vendor.replace("14", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
+               vendor = vendor.replace("13", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
+               vendor = vendor.replace("12", "<img style='vertical-align: middle;' src='/images/flags/ru.png'/>");
+               vendor = vendor.replace("11", "<img style='vertical-align: middle;' src='/images/flags/pt.png'/>");
+               vendor = vendor.replace("10", "<img style='vertical-align: middle;' src='/images/flags/pl.png'/>");
+               vendor = vendor.replace("9", "<img style='vertical-align: middle;' src='/images/flags/nl.png'/>");
+               vendor = vendor.replace("8", "<img style='vertical-align: middle;' src='/images/flags/ko.png'/>");
+               vendor = vendor.replace("7", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
+               vendor = vendor.replace("6", "<img style='vertical-align: middle;' src='/images/flags/it.png'/>");
+               vendor = vendor.replace("5", "<img style='vertical-align: middle;' src='/images/flags/fr.png'/>");
+               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
+               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/flags/de.png'/>");
+               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/flags/es.png'/>");
+               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/flags/en.png'/>");
+               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/flags/pirate.png'/>");
 
+               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               return cellHtml;
+
+            },
+            "targets": 1
+         }, {
+            "render": function (data, type, row) {
                var vendor = String(data);
                vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/other-icon.png'/>");
-               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");
-               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
-               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/chrome-icon.png'/>");
-               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");
-               vendor = vendor.replace("5", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
-               vendor = vendor.replace("6", "<img style='vertical-align: middle;' src='/images/windows-icon.ico'/>");
+               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
+               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");               
+               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
+               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/windows-icon.ico'/>");
 
                var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
                return cellHtml;
 
             },
             "targets": 2
+         }, {
+            "render": function (data, type, row) {
+               var vendor = String(data);
+               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/chrome.png'/>");
+               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/twitter.jpg'/>");
+               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/foursquare.png'/>");
+               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/instagram.png'/>");
+
+               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               return cellHtml;
+
+            },
+            "targets": 3
          }
       ],
       ajax: {
@@ -273,6 +307,13 @@ function resize_table() {
    }
 
    $('#async_table').DataTable(table_cfg);
+
+   var div = d3.select('#right-panel');
+   var right_panel_w = div.node().getBoundingClientRect().width;
+
+   var container_width = (document.documentElement.clientWidth - right_panel_w) + "px";
+
+   $("#container").css("width", container_width);
 }
 
 function update_table() {
