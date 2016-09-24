@@ -3,6 +3,26 @@ $(document).bind("contextmenu", function(event) {
    event.preventDefault();    
 });
 
+var rtime;
+var timeout = false;
+var delta = 200;
+$(window).resize(function () {
+   rtime = new Date();
+   if (timeout === false) {
+      timeout = true;
+      setTimeout(resizeend, delta);
+   }
+});
+
+function resizeend() {
+   if (new Date() - rtime < delta) {
+      setTimeout(resizeend, delta);
+   } else {
+      timeout = false;
+      resize_table();
+   }
+}
+
 function LatLngPoint() {
    this.p0;
    this.p1;
@@ -33,10 +53,10 @@ function map_init() {
    var white_base = L.tileLayer(layers["white"], base_config);
     
    var cfg = {
-      blur: 1.0,
+      blur: 0.5,
       radius: 5.0,         
-      minOpacity: 0.4,
-      maxOpacity: 0.9,
+      minOpacity: 0.5,
+      maxOpacity: 1.0,
       scaleRadius: false, 
       useLocalExtrema: true,
       latField: 0,
@@ -103,6 +123,8 @@ function map_init() {
       up_to_date = false;
       update();
    });
+
+   resize_table();
 
    up_to_date = false;
    update();
@@ -206,22 +228,59 @@ function get_coords_bounds(b, zoom) {
    return {x0: _x0, y0: _y0, x1: _x1, y1: _y1, z: _z};
 }
 
-function update_table() {
-   table = $('#async_table').DataTable({
-      retrieve: true,
+function resize_table() {
+   var div = d3.select('#right-panel');
+   var height = Math.max(1, div.node().getBoundingClientRect().height - 167) + "px";
+
+   var table_cfg = {
+      destroy: true,
       deferRender: true,
       scrollX: "100%",
-      scrollY: "100%",
-      scrollCollapse: true,
+      scrollY: height,
+      scrollCollapse: false,
+      lengthMenu: [[100, 250, 500, -1], [100, 250, 500, "All"]],
+      columnDefs: [
+         {
+            "render": function (data, type, row) {
+               var format = d3.timeFormat("%Y/%m/%d %H:%m");
+               return format(new Date(data * 1000));
+            },
+            "targets": 0
+         }, {
+            "render": function (data, type, row) {
+
+               var vendor = String(data);
+               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/other-icon.png'/>");
+               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");
+               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
+               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/chrome-icon.png'/>");
+               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");
+               vendor = vendor.replace("5", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
+               vendor = vendor.replace("6", "<img style='vertical-align: middle;' src='/images/windows-icon.ico'/>");
+
+               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               return cellHtml;
+
+            },
+            "targets": 2
+         }
+      ],
       ajax: {
          type: 'GET',
          url: S_URL + "/query/data/0/0/0/0/0",
          dataType: "json"
       },
+   }
+
+   $('#async_table').DataTable(table_cfg);
+}
+
+function update_table() {
+   table = $('#async_table').DataTable({
+      retrieve: true,
    });
-
+      
    var region;
-
    if (marker === null || drawing) {
       region = get_coords_bounds(map.getBounds());
    } else {
@@ -295,9 +354,9 @@ function call_update(response, textStatus) {
    
    var wait = 0;
    if (!up_to_date) {
-      wait = 1000;
+      wait = 40;
    } else {
-      wait = 1000;
+      wait = 40;
    }
    
    update();

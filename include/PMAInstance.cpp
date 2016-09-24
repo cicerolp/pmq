@@ -189,6 +189,7 @@ std::string PMAInstance::query(const Query& query) {
       } break;
    
       case Query::DATA: {
+         uint32_t max_cnt = 1000;
 
          writer.StartObject();
 
@@ -204,8 +205,9 @@ std::string PMAInstance::query(const Query& query) {
 
          writer.String("data");
          writer.StartArray();
-         for (auto& el : json) {
-            count += elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom(), writer);
+         for (auto& el : json) {            
+            count += elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom(), writer, max_cnt);
+            if (max_cnt == 0) break;
          }
          writer.EndArray();
 

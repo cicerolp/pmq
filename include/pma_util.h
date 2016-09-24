@@ -100,11 +100,13 @@ inline int count_elts_pma(struct pma_struct* pma, unsigned int  seg_beg , unsign
  * @param writer Will be filled with the elements retreived
  * @return the amount elements written.
  */
-inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int  seg_end, uint64_t mCode, int z, json_writer& writer) {
-
+inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int  seg_end, uint64_t mCode, int z, json_writer& writer, uint32_t &max_cnt) {
+   
    unsigned int cnt = 0;
-   uint64_t mCodeMin;
-   uint64_t mCodeMax;
+
+   if (max_cnt == 0) return cnt;
+
+   uint64_t mCodeMin, mCodeMax;
    get_mcode_range(mCode,z,mCodeMin,mCodeMax);
 
    //Find the first element of the first segment
@@ -116,36 +118,41 @@ inline int elts_pma(struct pma_struct* pma, unsigned int  seg_beg, unsigned int 
    for (unsigned int s = seg_beg ; s < seg_end-1 ; ++s , cur_el_pt = (char*) SEGMENT_START(pma, s)) {
 
       for ( ; cur_el_pt <  (char*) SEGMENT_ELT(pma,s,pma->elts[s]) ; cur_el_pt += pma->elt_size) {
-         PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
 
+         if (max_cnt == 0) return cnt;
+
+         //PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
          valuetype tweet = *(valuetype*) ELT_TO_CONTENT(cur_el_pt);
 
          writer.StartArray();
          writer.Uint(tweet.time);
-         writer.Double(tweet.latitude);
-         writer.Double(tweet.longitude);
          writer.Uint(tweet.language);
          writer.Uint(tweet.device);
          writer.Uint(tweet.app);
          writer.EndArray();
          cnt++;
+
+         max_cnt--;
       }
    }
 
    //loop on last segment
    for ( ; cur_el_pt < (char*) SEGMENT_ELT(pma,seg_end-1,pma->elts[seg_end-1]) && *(uint64_t*)cur_el_pt <= mCodeMax ; cur_el_pt += pma->elt_size) {
-      PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
-         valuetype tweet = *(valuetype*) ELT_TO_CONTENT(cur_el_pt);
+      
+      if (max_cnt == 0) return cnt;
+      
+      //PRINTOUT("%llu \n", *(uint64_t* )cur_el_pt );
+      valuetype tweet = *(valuetype*) ELT_TO_CONTENT(cur_el_pt);
 
-         writer.StartArray();
-         writer.Uint(tweet.time);
-         writer.Double(tweet.latitude);
-         writer.Double(tweet.longitude);
-         writer.Uint(tweet.language);
-         writer.Uint(tweet.device);
-         writer.Uint(tweet.app);
-         writer.EndArray();
-         cnt++;
+      writer.StartArray();
+      writer.Uint(tweet.time);
+      writer.Uint(tweet.language);
+      writer.Uint(tweet.device);
+      writer.Uint(tweet.app);
+      writer.EndArray();
+      cnt++;
+
+      max_cnt--;
    }
 
    return cnt;
