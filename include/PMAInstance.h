@@ -23,7 +23,9 @@ inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
     simpleTimer t;
     double insertTime = 0; //time to add the batch in the pma
     double inputTime = 0; //time to prepare the batch
-
+#ifndef NDEBUG
+    static unsigned int call_counter = 0;
+#endif
     t.start();
     //Inserted batch needs to be sorted already;
     std::sort( batch, batch + size , [](elttype a, elttype b) { return a < b; });
@@ -37,8 +39,11 @@ inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
     add_array_elts(pma,(void *)batch, (void *) ((char *)batch + (size)*sizeof(elttype)),comp<uint64_t>);
     t.stop();
     insertTime += t.miliseconds();
-    PRINTCSVL("Batch insert", t.miliseconds(),"ms" );
-
+#ifndef NDEBUG
+    PRINTCSVL("Batch insert", t.miliseconds(),"ms", call_counter++);
+#else
+    PRINTCSVL("Batch insert", t.miliseconds(),"ms");
+#endif
     return;
 }
 
