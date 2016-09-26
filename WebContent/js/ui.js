@@ -36,6 +36,8 @@ var drawing = false;
 var marker = null;
 var tile = new LatLngPoint();
 
+var format = d3.timeFormat("%Y/%m/%d %H:%m");
+
 map_init();
 
 function map_init() {
@@ -246,60 +248,87 @@ function resize() {
       lengthMenu: [[100, 250, 500, -1], [100, 250, 500, "All"]],
       columnDefs: [
          {
-            "render": function (data, type, row) {
-               var format = d3.timeFormat("%Y/%m/%d %H:%m");
+            "render": function (data, type, row) {               
                return format(new Date(data * 1000));
             },
             "targets": 0
          }, {
             "render": function (data, type, row) {
-               var vendor = String(data);
-               vendor = vendor.replace("14", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
-               vendor = vendor.replace("13", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
-               vendor = vendor.replace("12", "<img style='vertical-align: middle;' src='/images/flags/ru.png'/>");
-               vendor = vendor.replace("11", "<img style='vertical-align: middle;' src='/images/flags/pt.png'/>");
-               vendor = vendor.replace("10", "<img style='vertical-align: middle;' src='/images/flags/pl.png'/>");
-               vendor = vendor.replace("9", "<img style='vertical-align: middle;' src='/images/flags/nl.png'/>");
-               vendor = vendor.replace("8", "<img style='vertical-align: middle;' src='/images/flags/ko.png'/>");
-               vendor = vendor.replace("7", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
-               vendor = vendor.replace("6", "<img style='vertical-align: middle;' src='/images/flags/it.png'/>");
-               vendor = vendor.replace("5", "<img style='vertical-align: middle;' src='/images/flags/fr.png'/>");
-               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/flags/none.png'/>");
-               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/flags/de.png'/>");
-               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/flags/es.png'/>");
-               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/flags/en.png'/>");
-               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/flags/pirate.png'/>");
+               var str = String(data);
 
-               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               if (str === "14") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/none.png'/>";
+               } else if (str === "13") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/none.png'/>";
+               } else if (str === "12") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/ru.png'/>";
+               } else if (str === "11") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/pt.png'/>";
+               } else if (str === "10") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/pl.png'/>";
+               } else if (str === "9") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/nl.png'/>";
+               } else if (str === "8") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/ko.png'/>";
+               } else if (str === "7") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/none.png'/>";
+               } else if (str === "6") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/it.png'/>";
+               } else if (str === "5") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/fr.png'/>";
+               } else if (str === "4") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/none.png'/>";
+               } else if (str === "3") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/de.png'/>";
+               } else if (str === "2") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/es.png'/>";
+               } else if (str === "1") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/en.png'/>";
+               } else if (str === "0") {
+                  str = "<img style='vertical-align: middle;' src='/images/flags/pirate.png'/>";
+               }
+
+               var cellHtml = "<span originalValue='" + data + "'>" + str + "</span>";
                return cellHtml;
 
             },
             "targets": 1
          }, {
             "render": function (data, type, row) {
-               var vendor = String(data);
-               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/other-icon.png'/>");
-               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
-               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/android-icon.png'/>");               
-               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>");
-               vendor = vendor.replace("4", "<img style='vertical-align: middle;' src='/images/windows-icon.ico'/>");
+               var str = String(data);
 
-               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               if (str === "4") {
+                  str = "<img style='vertical-align: middle;' src='/images/windows-icon.ico'/>";
+               } else if (str === "3") {
+                  str = "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>";
+               } else if (str === "2") {
+                  str = "<img style='vertical-align: middle;' src='/images/android-icon.png'/>";
+               } else if (str === "1") {
+                  str = "<img style='vertical-align: middle;' src='/images/apple-icon.ico'/>";
+               } else if (str === "0") {
+                  str = "<img style='vertical-align: middle;' src='/images/other-icon.png'/>";
+               }
+
+               var cellHtml = "<span originalValue='" + data + "'>" + str + "</span>";
                return cellHtml;
-
             },
             "targets": 2
          }, {
             "render": function (data, type, row) {
-               var vendor = String(data);
-               vendor = vendor.replace("0", "<img style='vertical-align: middle;' src='/images/chrome.png'/>");
-               vendor = vendor.replace("1", "<img style='vertical-align: middle;' src='/images/twitter.jpg'/>");
-               vendor = vendor.replace("2", "<img style='vertical-align: middle;' src='/images/foursquare.png'/>");
-               vendor = vendor.replace("3", "<img style='vertical-align: middle;' src='/images/instagram.png'/>");
+               var str = String(data);
 
-               var cellHtml = "<span originalValue='" + data + "'>" + vendor + "</span>";
+               if (str === "3") {
+                  str = "<img style='vertical-align: middle;' src='/images/instagram.png'/>";
+               } else if (str === "2") {
+                  str = "<img style='vertical-align: middle;' src='/images/foursquare.png'/>";
+               } else if (str === "1") {
+                  str = "<img style='vertical-align: middle;' src='/images/twitter.jpg'/>";
+               } else if (str === "0") {
+                  str = "<img style='vertical-align: middle;' src='/images/chrome.png'/>";
+               }
+
+               var cellHtml = "<span originalValue='" + data + "'>" + str + "</span>";
                return cellHtml;
-
             },
             "targets": 3
          }
@@ -362,8 +391,6 @@ function update_marker() {
 }
 
 function set_heatmap(response, textStatus) {
-   heatmap_updating = false; 
-   
    var data = null;   
    if (textStatus !== "success") {
       data = {
@@ -393,6 +420,8 @@ function set_heatmap(response, textStatus) {
       simple_heat.setOptions(options);
       simple_heat.setLatLngs(data.data);
    }
+
+   heatmap_updating = false;
 }
 
 function request_data() {
