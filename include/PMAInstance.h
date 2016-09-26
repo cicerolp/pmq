@@ -100,8 +100,8 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
 
     for (unsigned int wId : *(pma->last_rebalanced_segs) ){
         //We don't need to track rebalance on leaf segments (TODO : could remove it from the PMA rebalance function)
-        if (wId < pma->nb_segments)
-            continue;
+        //  if (wId < pma->nb_segments)
+        //    continue;
 
         unsigned int sStart =  pma_get_window_start(pma,wId); //Get first segment of the window
 
