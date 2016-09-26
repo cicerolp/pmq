@@ -30,6 +30,7 @@ function LatLngPoint() {
 
 var heatmapLayer = null;
 var simple_heat = null;
+var custom_layer = null;
 
 var drawing = false;
 var marker = null;
@@ -70,13 +71,14 @@ function map_init() {
       },
    };      
 
-   simple_heat = L.heatLayer([[0.0, 0.0, 0.0]]);
+   //simple_heat = L.heatLayer([[0.0, 0.0, 0.0]]);
+   custom_layer = L.customLayer(cfg);
    heatmapLayer = new HeatmapOverlay(cfg);
    
    var grid = grid_layer();
 
    map = new L.Map('map', {
-      layers: [black_base, simple_heat],
+      layers: [black_base, custom_layer],
       center : new L.LatLng(38, -97),
       zoom : 4,
       minZoom: 0,
@@ -380,6 +382,9 @@ function set_heatmap(response, textStatus) {
       radius: 5.0,
       blur: 6.0,
    };
+
+   if (map.hasLayer(custom_layer))
+      custom_layer.setData(data);
 
    if (map.hasLayer(heatmapLayer))
       heatmapLayer.setData(data);
