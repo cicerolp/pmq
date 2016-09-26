@@ -70,6 +70,23 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
          if (ptr) count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
       }
 
+      uint32_t diff = it_end - it_begin;
+
+      if (curr_count != count)
+      {
+         it_curr = it_begin;
+         while (it_curr != it_end) {
+            auto& t = (*it_curr);
+
+            std::cout << t.key << std::endl;
+            std::cout << t.begin << std::endl;
+            std::cout << t.end << std::endl;
+            std::cout << std::endl;
+
+            it_curr++;
+         }
+      }
+      
       assert(curr_count == count);
    }
 #endif

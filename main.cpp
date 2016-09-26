@@ -11,6 +11,28 @@ uint32_t g_Quadtree_Depth = 25;
 
 int main(int argc, char *argv[]) {
 
+   uint32_t z_diff_2 = (25 - 7 - 1) * 2;
+
+   std::cout << ((222844826865401 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222845364849203 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222846651023631 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222847165741530 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222847311711782 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222848171958240 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222854373566221 >> z_diff_2) & 3) << std::endl;
+
+   std::cout << std::endl;
+
+   z_diff_2 = (25 - 8 - 1) * 2;
+
+   std::cout << ((222844826865401 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222845364849203 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222846651023631 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222847165741530 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222847311711782 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222848171958240 >> z_diff_2) & 3) << std::endl;
+   std::cout << ((222854373566221 >> z_diff_2) & 3) << std::endl;
+
    bool server = true;
    Server::server_opts nds_opts;
    nds_opts.port = 7000;
