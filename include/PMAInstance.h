@@ -20,7 +20,7 @@
  * Will return the windowIds of windows that were rebalanced
  */
 inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
-    simpleTimer t;
+    Timer t;
     double insertTime = 0; //time to add the batch in the pma
     double inputTime = 0; //time to prepare the batch
 
@@ -30,14 +30,14 @@ inline void insert_batch(struct pma_struct* pma, elttype* batch, int size) {
     t.stop();
 
     //PRINTCSVL("Batch sort", t.miliseconds(),"ms" );
-    inputTime += t.miliseconds();
+    inputTime += t.milliseconds();
 
     /* Inserts the current batch  */
     t.start();
-    add_array_elts(pma,(void *)batch, (void *) ((char *)batch + (size)*sizeof(elttype)),comp<uint64_t>);
+    pma::batch::add_array_elts(pma,(void *)batch, (void *) ((char *)batch + (size)*sizeof(elttype)),comp<uint64_t>);
     t.stop();
-    insertTime += t.miliseconds();
-    PRINTCSVL("Batch insert", t.miliseconds(),"ms" );
+    insertTime += t.milliseconds();
+    PRINTCSVL("Batch insert", t.milliseconds(),"ms" );
 
     return;
 }

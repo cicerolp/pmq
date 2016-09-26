@@ -9,6 +9,9 @@
 
 extern uint32_t g_Quadtree_Depth;
 
+//Timer used for benchmarks;
+using Timer = unixTimer< CLOCK_MONOTONIC >;
+
 /**
  * @brief count_elts_pma Returns the amount of valid elements between range [beg,end[
  * @param pma A pma data structure

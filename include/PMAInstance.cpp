@@ -25,10 +25,10 @@ bool PMAInstance::create(int argc, char *argv[]) {
 
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   pma = (struct pma_struct * ) build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
         
    
-   simpleTimer t;
+   Timer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
@@ -60,7 +60,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
       t.stop();
 
-      PRINTCSVL("ModifiedKeys", t.miliseconds(),"ms" );
+      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms" );
 
       if (quadtree == nullptr)
          quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
@@ -80,7 +80,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
       quadtree->update(pma, modifiedKeys.begin(), modifiedKeys.end());
       if (modifiedKeys.size() != 0) up_to_date = false;     
       t.stop();
-      PRINTCSVL("QuadtreeUpdate" , t.miliseconds(),"ms" , k);
+      PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
       // unlock pma and quadtree update
       mutex.unlock();
 
@@ -90,7 +90,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
 }
 
 void PMAInstance::destroy() {
-   destroy_pma(pma);
+   pma::destroy_pma(pma);
 }
 
 std::string PMAInstance::query(const Query& query) {
@@ -98,7 +98,7 @@ std::string PMAInstance::query(const Query& query) {
    if (!quadtree) return ("[]");
 
    std::vector<SpatialElement*> json;
-   simpleTimer t1;
+   Timer t1;
 
    // serialization
    rapidjson::StringBuffer buffer;
@@ -167,7 +167,7 @@ std::string PMAInstance::query(const Query& query) {
          quadtree->query_region(query.region, json);
          t1.stop();
 
-         PRINTCSVL("Quadtree_query",t1.miliseconds(),"ms");
+         PRINTCSVL("Quadtree_query",t1.milliseconds(),"ms");
 
          uint32_t count = 0;
 
@@ -180,7 +180,7 @@ std::string PMAInstance::query(const Query& query) {
          // unlock mutex
          mutex.unlock();
 
-         PRINTCSVL("PMA_query",t1.miliseconds(),"ms");
+         PRINTCSVL("PMA_query",t1.milliseconds(),"ms");
          
          writer.Uint(count);
 
