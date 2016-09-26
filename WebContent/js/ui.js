@@ -29,6 +29,7 @@ function LatLngPoint() {
 }
 
 var heatmapLayer = null;
+var simple_heat = null;
 
 var drawing = false;
 var marker = null;
@@ -69,20 +70,21 @@ function map_init() {
       },
    };      
 
+   simple_heat = L.heatLayer([[0.0, 0.0, 0.0]]);
    heatmapLayer = new HeatmapOverlay(cfg);
-
+   
    var grid = grid_layer();
 
    map = new L.Map('map', {
-      layers: [black_base, heatmapLayer, grid],
+      layers: [black_base, simple_heat],
       center : new L.LatLng(38, -97),
       zoom : 4,
       minZoom: 0,
       maxZoom: 20,
       zoomControl: true,
       maxBounds: [
-         [-90, -180],
-         [+90, +180]
+         [-90, -360],
+         [+90, +360]
       ],
       maxBoundsViscosity: 1.0,
       worldCopyJump : false,
@@ -94,7 +96,8 @@ function map_init() {
    };
    
    var overlayMaps = {
-      "Heatmap.js": heatmapLayer,
+      //"Simpleheat.js": simple_heat,
+      //"Heatmap.js": heatmapLayer,      
       "Debug Layer": grid
    };
    
@@ -370,7 +373,21 @@ function set_heatmap(response, textStatus) {
       data = response[0];
    }
    
-   heatmapLayer.setData(data);
+   var options = {
+      minOpacity: 0.5,
+      maxZoom: map.getZoom(),
+      max: data.max,
+      radius: 5.0,
+      blur: 6.0,
+   };
+
+   if (map.hasLayer(heatmapLayer))
+      heatmapLayer.setData(data);
+
+   if (map.hasLayer(simple_heat)) {
+      simple_heat.setOptions(options);
+      simple_heat.setLatLngs(data.data);
+   }
 }
 
 function request_data() {
@@ -395,9 +412,9 @@ function call_update(response, textStatus) {
    
    var wait = 0;
    if (!up_to_date) {
-      wait = 40;
+      wait = 250;
    } else {
-      wait = 40;
+      wait = 250;
    }
    
    update();

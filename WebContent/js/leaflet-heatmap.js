@@ -79,7 +79,6 @@
     onRemove: function (map) {
       // remove layer's DOM elements and listeners
       map.getPanes().overlayPane.removeChild(this._el);
-
       map.off('moveend', this._reset, this);
     },
     
@@ -159,12 +158,6 @@
     },
     
     setData: function(data) {       
-      /*if (this._data.equals(data.data) && 
-              data.max === this._max && 
-              data.min === this._min) {
-         return;
-      }*/ 
-       
       this._max = data.max || this._max;
       this._min = data.min || this._min;
 
