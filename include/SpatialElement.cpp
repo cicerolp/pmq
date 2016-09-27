@@ -112,7 +112,41 @@ void SpatialElement::query_region(const region_t& region, std::vector<SpatialEle
       if (_container[1] != nullptr) _container[1]->query_region(region, subset);
       if (_container[2] != nullptr) _container[2]->query_region(region, subset);
       if (_container[3] != nullptr) _container[3]->query_region(region, subset);
-   }   
+   }
+}
+
+int SpatialElement::check_child_consistency() const
+{
+    if (_el.leaf)
+      return 0;
+
+    //parent begin == fist child's begin
+    if (_beg != (*get_first_child())->begin())
+        return 1;
+
+    //parent end == last child's end
+    if (_end != (*get_last_child())->end())
+        return 1;
+
+    //child.end == next_child.begin
+    for (auto child = get_first_child(); child < get_last_child().base()- 1; child++){
+        if ( (*child)->end() != (*(child+1))->begin() )
+            return 1;
+    }
+
+    return 0;
+}
+
+int SpatialElement::check_child_level() const {
+    for (auto& child : _container) {
+       if (child != nullptr ){
+         if ( child->check_child_consistency() ) {
+            PRINTOUT("ERROR");
+            return 1;
+         };
+       };
+    }
+    return 0;
 }
 
 void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset) {

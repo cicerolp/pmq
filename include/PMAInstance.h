@@ -161,7 +161,7 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
 class PMAInstance : public Singleton<PMAInstance> {
 	friend class Singleton<PMAInstance>;
 public:
-	bool create(int argc, char *argv[]);
+   bool create(int argc, char *argv[]);
    void destroy();
 
    /**
@@ -171,7 +171,7 @@ public:
      * /zoom/x0/y0/x1/y1/
      *
      */
-	std::string query(const Query& query);
+   std::string query(const Query& query);
    std::string update();
 
 //private:

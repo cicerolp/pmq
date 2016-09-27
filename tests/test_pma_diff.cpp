@@ -1,7 +1,7 @@
 /** @file Tests the correctness of quadtree.
  *
  *
- * 1 - include a batche into the pma
+ * 1 - include a batch into the pma
  * 2 - update the quadtree
  *
  * Check:
@@ -15,6 +15,33 @@
  */
 
 #include "PMAInstance.h"
+#include <queue>
+
+
+int BFS_check(  SpatialElement* root)
+{
+    std::queue< SpatialElement* > Q;
+    Q.push(root);
+
+    while(!Q.empty())
+    {
+       SpatialElement* node = Q.front();
+
+       Q.pop();
+
+       if( node->check_child_consistency() ){
+          return 1; //found an error
+       }
+
+       for (auto& child : node->container()) {
+          if (child != nullptr ){
+             Q.push(child.get());
+          };
+       };
+    }
+    return 0;
+}
+
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -35,7 +62,6 @@ int main(int argc, char *argv[]) {
 
    PMAInstance PMQ;
 
-
    PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
 
    // Create <key,value> elements
@@ -48,12 +74,12 @@ int main(int argc, char *argv[]) {
 
    PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
 
-
    Timer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
 
+   //Inserts all the batches
    for (int k = 0; k < num_batches; k++) {
       batch_start = &input_vec[k*size];
 
@@ -68,11 +94,10 @@ int main(int argc, char *argv[]) {
 #ifndef NDEBUG
       PRINTOUT( "PMA WINDOWS : ") ;
       for (auto k: *(PMQ.pma->last_rebalanced_segs)){
-          std::cout << k << " "; //<< std::endl;
+         std::cout << k << " "; //<< std::endl;
       }
 #endif
       std::cout << "\n";
-
 
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
@@ -88,7 +113,7 @@ int main(int argc, char *argv[]) {
 #ifndef NDEBUG
       PRINTOUT("ModifiedKeys %d : ",modifiedKeys.size()) ;
       for (auto& k: modifiedKeys){
-          std::cout << k.key << " " ;
+         std::cout << k.key << " " ;
       }
 
       std::cout << "\n";
@@ -102,7 +127,15 @@ int main(int argc, char *argv[]) {
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
       std::cout << "\n";
+
+      //Check every level.
+      // TODO FIX SEGFAULT HERE
+      BFS_check(PMQ.quadtree.get());
+
+
    }
-   return true;
+
+   PMQ.destroy();
+   return EXIT_SUCCESS;
 
 }

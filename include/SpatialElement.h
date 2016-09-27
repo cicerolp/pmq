@@ -27,6 +27,9 @@ public:
    inline uint32_t zoom() const {
       return _el.z;
    }
+   inline const container_t& container() const {
+       return _container;
+   }
 
    inline container_t::const_iterator  get_first_child() const {
        return std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) { return el != nullptr;});
@@ -35,6 +38,14 @@ public:
    inline container_t::const_reverse_iterator get_last_child() const {
        return std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) { return el != nullptr;});
    }
+
+   /**
+    * @brief check_child_consistency
+    * @return
+    */
+   int check_child_consistency() const;
+
+   int check_child_level() const ;
 
 
 private:
