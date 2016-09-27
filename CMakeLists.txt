@@ -62,7 +62,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 FIND_PACKAGE(Threads REQUIRED)
 
-
 target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} )
+
+
+######## PMQ Tests ############
+enable_testing()
+add_subdirectory(tests)
 
 

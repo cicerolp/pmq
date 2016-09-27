@@ -174,12 +174,12 @@ public:
 	std::string query(const Query& query);
    std::string update();
 
-private:
+//private:
    PMAInstance() = default;
 	virtual ~PMAInstance() = default;
 
    std::mutex mutex;
-   bool up_to_date {true};
+   bool up_to_date {true}; //What is this for ?
 
    pma_struct* pma;   
    std::unique_ptr<SpatialElement> quadtree;
