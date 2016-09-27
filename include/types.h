@@ -130,7 +130,12 @@ struct elinfo_t {
       begin = _begin;
       end = _end;
    }
-   
+
+   /**
+    * @brief get_index returns the quadrant id of this node
+    * @param z_diff_2 is the depth from this node to the bottom of the tree X 2;
+    * @return
+    */
    inline uint32_t get_index(uint32_t z_diff_2) const {
       return (key >> z_diff_2) & 3;
    }

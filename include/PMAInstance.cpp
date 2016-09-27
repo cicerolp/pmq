@@ -54,6 +54,9 @@ bool PMAInstance::create(int argc, char *argv[]) {
 #endif
       std::cout << "\n";
 
+      pma->last_rebalanced_segs->clear();
+      pma->last_rebalanced_segs->push_back(ELTS_ROOTINDEX);
+      
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
       t.start();
@@ -85,6 +88,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
       mutex.unlock();
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));      
+      std::cout << "\n";
    }
    return true;
 }

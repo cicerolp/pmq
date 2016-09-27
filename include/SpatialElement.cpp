@@ -32,24 +32,24 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    mortonDecode_RAM(_el.code, x, y);
 
    auto it_curr = it_begin;
-   auto it_last = it_begin;
+   auto it_previous_begin = it_begin;
    
    uint32_t index = (*it_curr).get_index(z_diff_2);
    
    // update intermediate valid nodes
-   while(++it_curr != it_end) {
+   while( (++it_curr) != it_end) {
       int curr_index = (*it_curr).get_index(z_diff_2);
       
       if (curr_index != index) {  
-         get_node(x, y, _el.z + 1, index)->update(pma, it_last, it_curr);
+         get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
          
-         it_last = it_curr;
+         it_previous_begin = it_curr;
          index = curr_index;
       }
    }
       
    // update last valid node
-   get_node(x, y, _el.z + 1, index)->update(pma, it_last, it_curr);
+   get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
 
    // update beg index
    _beg = (*std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) {
@@ -63,13 +63,31 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
 
 #ifndef NDEBUG
    if (!_el.leaf) {
+      //count elements in this node
       uint32_t curr_count = count_elts_pma(pma, begin(), end(), code(), zoom());
 
+      //count elements in the child notes
       uint32_t count = 0;
       for (auto& ptr : _container) {
          if (ptr) count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
       }
 
+      uint32_t diff = it_end - it_begin;
+
+      //Parent and child count should match.
+      if (curr_count != count)
+      {
+         it_curr = it_begin;
+         while (it_curr != it_end) {
+            auto& t = (*it_curr);
+
+//            print_pma_keys_range(pma,_beg, _end)
+            PRINTOUT("%lu %d %d\n", t.key, t.begin, t.end);
+
+            it_curr++;
+         }
+      }
+      
       assert(curr_count == count);
    }
 #endif
