@@ -74,6 +74,8 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       var animated = this._map.options.zoomAnimation && L.Browser.any3d;
       L.DomUtil.addClass(canvas, 'leaflet-zoom-' + (animated ? 'animated' : 'hide'));
+
+      this._ctx = canvas.getContext('2d');
    },
    
    _reset: function () {
@@ -108,7 +110,7 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       var data = this._data;
       var canvas = this._canvas;
-      var ctx = canvas.getContext('2d');
+      var ctx = this._ctx;
 
       ctx.globalCompositeOperation = 'lighter';
       ctx.clearRect(0, 0, canvas.width, canvas.height);

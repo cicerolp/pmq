@@ -193,7 +193,7 @@ std::string PMAInstance::query(const Query& query) {
       } break;
    
       case Query::DATA: {
-         uint32_t max_cnt = 1000;
+         uint32_t max_cnt = 100;
 
          writer.StartObject();
 
