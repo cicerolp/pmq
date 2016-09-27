@@ -8,6 +8,9 @@ public:
    SpatialElement(const spatial_t& tile);
    ~SpatialElement() = default;
 
+   using node_ptr = std::unique_ptr<SpatialElement>;
+   using container_t = std::array<node_ptr, 4>;
+
    void update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end);
    void query_tile(const region_t& region, std::vector<SpatialElement*>& subset);
    void query_region(const region_t& region, std::vector<SpatialElement*>& subset);
@@ -24,7 +27,16 @@ public:
    inline uint32_t zoom() const {
       return _el.z;
    }
-   
+
+   inline container_t::const_iterator  get_first_child() const {
+       return std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) { return el != nullptr;});
+   }
+
+   inline container_t::const_reverse_iterator get_last_child() const {
+       return std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) { return el != nullptr;});
+   }
+
+
 private:
    void aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset);
 
@@ -51,7 +63,8 @@ private:
 
    uint32_t _beg, _end;
    spatial_t _el;   
-   
-   using node_ptr = std::unique_ptr<SpatialElement>;   
-   std::array<node_ptr, 4> _container;
+
+   container_t _container;
+
+
 };
