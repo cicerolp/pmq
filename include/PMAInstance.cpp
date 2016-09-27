@@ -54,8 +54,8 @@ bool PMAInstance::create(int argc, char *argv[]) {
 #endif
       std::cout << "\n";
 
-      pma->last_rebalanced_segs->clear();
-      pma->last_rebalanced_segs->push_back(ELTS_ROOTINDEX);
+//      pma->last_rebalanced_segs->clear();
+//      pma->last_rebalanced_segs->push_back(ELTS_ROOTINDEX);
       
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
