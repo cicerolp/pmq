@@ -62,34 +62,21 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    }))->end();
 
 #ifndef NDEBUG
-   if (!_el.leaf) {
-      //count elements in this node
-      uint32_t curr_count = count_elts_pma(pma, begin(), end(), code(), zoom());
-
-      //count elements in the child notes
-      uint32_t count = 0;
-      for (auto& ptr : _container) {
-         if (ptr) count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
-      }
-
-      uint32_t diff = it_end - it_begin;
-
       //Parent and child count should match.
-      if (curr_count != count)
+      int diff =  check_count(pma);
+      if ( diff)
       {
          it_curr = it_begin;
          while (it_curr != it_end) {
             auto& t = (*it_curr);
-
-//            print_pma_keys_range(pma,_beg, _end)
+//          print_pma_keys_range(pma,_beg, _end)
             PRINTOUT("%lu %d %d\n", t.key, t.begin, t.end);
-
             it_curr++;
          }
       }
       
-      assert(curr_count == count);
-   }
+      assert(diff == 0);
+
 #endif
 }
  
@@ -128,7 +115,7 @@ int SpatialElement::check_child_consistency() const
     if (_end != (*get_last_child())->end())
         return 1;
 
-    //child.end >= next_child.begin
+    //child.end >= next_child.begin (because a same segment can contain elements from different nodes.
     for (auto child = get_first_child(); child < get_last_child().base()- 1; child = get_next_child(child+1)){
         if ( (*child)->end() < (*(get_next_child(child)))->begin() )
             return 1;
@@ -147,6 +134,24 @@ int SpatialElement::check_child_level() const {
        };
     }
     return 0;
+}
+
+int SpatialElement::check_count(const struct pma_struct* pma) const
+{
+   if (!_el.leaf) {
+      //count elements in this node
+      uint32_t this_count = count_elts_pma(pma, begin(), end(), code(), zoom());
+
+      //count elements in the child notes
+      uint32_t child_count = 0;
+      for (auto& ptr : _container) {
+         if (ptr) child_count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
+      }
+
+      //Parent and child count should match.
+      return (this_count - child_count);
+   }
+   return 0;
 }
 
 void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset) {

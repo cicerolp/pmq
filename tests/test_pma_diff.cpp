@@ -18,6 +18,9 @@
 #include <queue>
 
 
+uint32_t g_Quadtree_Depth = 25;
+const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
+
 int BFS(  SpatialElement* root, int (*fun)(SpatialElement *) )
 {
     std::queue< SpatialElement* > Q;
@@ -46,6 +49,10 @@ int check_consistency(SpatialElement* node){
     return node->check_child_consistency();
 }
 
+int check_count(SpatialElement* node){
+    return node->check_count(global_pma);
+}
+
 int print_node(SpatialElement* node){
     static unsigned int level = 0;
 
@@ -54,12 +61,15 @@ int print_node(SpatialElement* node){
         printf("\n %02d :", level);
     }
 
-    printf("%012lx [%d %d] ", node->code(), node->begin() , node->end() );
+    // printf("%012lx [%d %d] ", node->code(), node->begin() , node->end() );
+
+    unsigned int count = count_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom());
+    printf("%u [%d %d] ", count , node->begin() , node->end() );
+
 
     return 0;
 }
 
-uint32_t g_Quadtree_Depth = 25;
 
 int main(int argc, char *argv[]) {
 
@@ -89,6 +99,7 @@ int main(int argc, char *argv[]) {
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
    PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   global_pma = PMQ.pma;
 
    Timer t;
    elttype * batch_start;
@@ -145,10 +156,16 @@ int main(int argc, char *argv[]) {
       std::cout << "\n";
 
       //Check every level.
-      // TODO FIX SEGFAULT HERE
       //BFS(PMQ.quadtree.get(),print_node);
       //BFS(PMQ.quadtree.get(),check_consistency);
-      BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
+      //BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
+
+      int ret = BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return node->check_count(global_pma);});
+
+      if (ret){
+          return EXIT_FAILURE;
+      }
+      std::cout << "\n";
 
    }
 

@@ -53,6 +53,12 @@ public:
 
    int check_child_level() const ;
 
+   /**
+    * @brief check_count checks it the count of element in parent is equal to summation of elements on the childs
+    * @param pma
+    * @return returns the difference between parent an child.
+    */
+   int check_count(const pma_struct *pma) const;
 
 private:
    void aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset);

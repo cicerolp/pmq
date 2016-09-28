@@ -68,7 +68,7 @@ inline void get_mcode_range(uint64_t mCode, int z, uint64_t& min, uint64_t& max)
  *
  * @return
  */
-inline int count_elts_pma(struct pma_struct* pma, unsigned int  seg_beg , unsigned int  seg_end, uint64_t mCode, int z){
+inline int count_elts_pma(const struct pma_struct* pma, unsigned int  seg_beg , unsigned int  seg_end, uint64_t mCode, int z){
 
    unsigned int cnt = 0;
    uint64_t mCodeMin = 0;
