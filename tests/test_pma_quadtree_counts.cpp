@@ -124,8 +124,8 @@ int main(int argc, char *argv[]) {
 
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   struct pma_struct* pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   global_pma = PMQ.pma;
+   struct pma_struct * pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   global_pma = pma;
 
    elttype * batch_start;
    int size = nb_elements / batch_size;
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
          size = batch_size;
       }
 
-      insert_batch(PMQ.pma, batch_start, size);
+      insert_batch(pma, batch_start, size);
 
 #ifndef NDEBUG
       PRINTOUT( "PMA WINDOWS : ") ;
@@ -167,13 +167,18 @@ int main(int argc, char *argv[]) {
       print_pma_keys(pma);
 #endif
 
-      // TODO check that all the modifiedKeys are not outside [beg, end[
+      // TODO CHECK for every key in modified key that it doesn't appear outside its range.
+
       for (auto& k: modifiedKeys){
-          //PMA is sorted
+
+          //look for key before beg seg i
+
 
 
       }
 
+
+      // TODO CHECK that all the segments in its range contains this KEY.
 
       if (ret){
           return EXIT_FAILURE;
