@@ -2,6 +2,10 @@
 add_executable(test_pma_diff
 test_pma_diff.cpp
 
+../include/mongoose/mongoose.c
+../include/string_util.cpp
+../include/Query.cpp
+../include/Server.cpp
 ../include/PMAInstance.cpp
 ../include/DMPLoader/dmploader.cpp
 ../include/SpatialElement.cpp

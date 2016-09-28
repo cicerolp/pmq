@@ -149,8 +149,7 @@ int main(int argc, char *argv[]) {
       print_pma_keys(PMQ.pma);
 #endif
       t.start();
-      PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
-      if (modifiedKeys.size() != 0) PMQ.up_to_date = false;
+      PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());      
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
       std::cout << "\n";
