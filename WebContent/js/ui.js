@@ -43,6 +43,8 @@ init();
 function init() {
    ws_init();
    map_init();
+
+   update();
 }
 
 function reset_defaults() {
@@ -56,8 +58,7 @@ function ws_init() {
    var ws = new WebSocket(WS_URL);
          
    ws.onopen = function (ev) {
-      reset_defaults();
-      update();
+      reset_defaults();      
    };
    ws.onerror = function (ev) {
       up_to_date = false;
@@ -69,7 +70,6 @@ function ws_init() {
    };
    ws.onmessage = function (ev) {
       up_to_date = false;
-      update();
    };   
 }
 
@@ -461,6 +461,8 @@ function request_data() {
 }
 
 function update() {
+   setTimeout(update, 40);
+
    if (up_to_date || map_move || map_zoom || heatmap_updating) return;
 
    heatmap_updating = true;
