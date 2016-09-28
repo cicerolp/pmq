@@ -75,7 +75,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
          }
       }
       
-      assert(diff == 0);
+     // assert(diff == 0);
 
 #endif
 }
