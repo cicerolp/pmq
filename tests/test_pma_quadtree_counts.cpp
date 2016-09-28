@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
 
    if (is_help) return false;
 
+   PMAInstance PMQ;
 
    PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
 
@@ -124,9 +125,10 @@ int main(int argc, char *argv[]) {
 
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   struct pma_struct * pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   global_pma = pma;
+   PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   global_pma = PMQ.pma;
 
+   Timer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
@@ -141,11 +143,11 @@ int main(int argc, char *argv[]) {
          size = batch_size;
       }
 
-      insert_batch(pma, batch_start, size);
+      insert_batch(PMQ.pma, batch_start, size);
 
 #ifndef NDEBUG
       PRINTOUT( "PMA WINDOWS : ") ;
-      for (auto k: *(pma->last_rebalanced_segs)){
+      for (auto k: *(PMQ.pma->last_rebalanced_segs)){
          std::cout << k << " "; //<< std::endl;
       }
 #endif
@@ -153,7 +155,14 @@ int main(int argc, char *argv[]) {
 
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
-      pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
+      t.start();
+      pma_diff(PMQ.pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
+      t.stop();
+
+      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms" );
+
+      if (PMQ.quadtree == nullptr)
+         PMQ.quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
 
 #ifndef NDEBUG
       PRINTOUT("ModifiedKeys %d : ",modifiedKeys.size()) ;
@@ -164,21 +173,56 @@ int main(int argc, char *argv[]) {
       std::cout << "\n";
 
       PRINTOUT("pma keys: ");
-      print_pma_keys(pma);
+      print_pma_keys(PMQ.pma);
 #endif
+      t.start();
+      PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
+      if (modifiedKeys.size() != 0) PMQ.up_to_date = false;
+      t.stop();
+      PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
 
-      // TODO CHECK for every key in modified key that it doesn't appear outside its range.
+      PRINTOUT("QUADTREE DUMP:");
+      //Check every level.
+      BFS(PMQ.quadtree.get(),print_node); // prints without any check
+      //BFS(PMQ.quadtree.get(),check_consistency);
+      //BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
+      //int ret = BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return node->check_count(global_pma);});
 
-      for (auto& k: modifiedKeys){
+      std::cout << "\n";
 
-          //look for key before beg seg i
+      //traverese the tree checking counts
+      int ret = BFS(PMQ.quadtree.get(), [](SpatialElement* node) {
 
+              if ( node->check_count(global_pma) ){
 
+              PRINTOUT ("ERROR NODES : count [seg_b seg_e] (code_min code_max)");
 
-      }
+              //print problematic node
+              print_node_range(node);
+              for(auto& e : node->container())
+                 print_node_range(e.get());
 
+              std::cout << "\n";
 
-      // TODO CHECK that all the segments in its range contains this KEY.
+              std::cout << "PMA RANGE: \n";
+              std::cout << "P> " ;
+              iterate_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom(),  print_pma_el_key );
+              std::cout << "\n";
+
+              std::cout << "C> " ;
+              for(auto& e : node->container() ) {
+                 if (e != nullptr){
+                   iterate_elts_pma(global_pma, e->begin(), e->end(), e->code(), e->zoom(),  print_pma_el_key );
+                   printf (" | ");
+                  }
+               }
+
+              return 1;
+              }
+
+              return 0;
+   }  );
+
 
       if (ret){
           return EXIT_FAILURE;
