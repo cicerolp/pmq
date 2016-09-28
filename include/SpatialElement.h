@@ -39,6 +39,12 @@ public:
        return std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) { return el != nullptr;});
    }
 
+   //Get next sibling of the chiled pointed by it
+   inline container_t::const_iterator  get_next_child(container_t::const_iterator it) const {
+       return std::find_if(it, _container.end(),[](const node_ptr& el) { return el != nullptr;});
+   }
+
+
    /**
     * @brief check_child_consistency
     * @return

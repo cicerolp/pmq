@@ -128,9 +128,9 @@ int SpatialElement::check_child_consistency() const
     if (_end != (*get_last_child())->end())
         return 1;
 
-    //child.end == next_child.begin
-    for (auto child = get_first_child(); child < get_last_child().base()- 1; child++){
-        if ( (*child)->end() != (*(child+1))->begin() )
+    //child.end >= next_child.begin
+    for (auto child = get_first_child(); child < get_last_child().base()- 1; child = get_next_child(child+1)){
+        if ( (*child)->end() < (*(get_next_child(child)))->begin() )
             return 1;
     }
 

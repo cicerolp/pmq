@@ -47,7 +47,15 @@ int check_consistency(SpatialElement* node){
 }
 
 int print_node(SpatialElement* node){
-    std::cout << node->zoom() << ": " << node->code() << " [" << node->begin() <<", "<< node->end() << "] " << std::endl;
+    static unsigned int level = 0;
+
+    if (level != node->zoom()){
+        level = node->zoom();
+        printf("\n %02d :", level);
+    }
+
+    printf("%012lx [%d %d] ", node->code(), node->begin() , node->end() );
+
     return 0;
 }
 
@@ -138,8 +146,9 @@ int main(int argc, char *argv[]) {
 
       //Check every level.
       // TODO FIX SEGFAULT HERE
-      BFS(PMQ.quadtree.get(),print_node);
-
+      //BFS(PMQ.quadtree.get(),print_node);
+      //BFS(PMQ.quadtree.get(),check_consistency);
+      BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
 
    }
 
