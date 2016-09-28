@@ -18,7 +18,7 @@
 #include <queue>
 
 
-int BFS_check(  SpatialElement* root)
+int BFS(  SpatialElement* root, int (*fun)(SpatialElement *) )
 {
     std::queue< SpatialElement* > Q;
     Q.push(root);
@@ -29,7 +29,7 @@ int BFS_check(  SpatialElement* root)
 
        Q.pop();
 
-       if( node->check_child_consistency() ){
+       if( fun(node) ){
           return 1; //found an error
        }
 
@@ -42,6 +42,14 @@ int BFS_check(  SpatialElement* root)
     return 0;
 }
 
+int check_consistency(SpatialElement* node){
+    return node->check_child_consistency();
+}
+
+int print_node(SpatialElement* node){
+    std::cout << node->zoom() << ": " << node->code() << " [" << node->begin() <<", "<< node->end() << "] " << std::endl;
+    return 0;
+}
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -130,7 +138,7 @@ int main(int argc, char *argv[]) {
 
       //Check every level.
       // TODO FIX SEGFAULT HERE
-      BFS_check(PMQ.quadtree.get());
+      BFS(PMQ.quadtree.get(),print_node);
 
 
    }
