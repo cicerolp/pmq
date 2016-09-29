@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
 
    if (is_help) return false;
 
+   int errors = 0;
 
    PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
 
@@ -125,11 +126,11 @@ int main(int argc, char *argv[]) {
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
    struct pma_struct* pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   global_pma = PMQ.pma;
 
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
+
 
    //Inserts all the batches
    for (int k = 0; k < num_batches; k++) {
@@ -141,7 +142,7 @@ int main(int argc, char *argv[]) {
          size = batch_size;
       }
 
-      insert_batch(PMQ.pma, batch_start, size);
+      insert_batch(pma, batch_start, size);
 
 #ifndef NDEBUG
       PRINTOUT( "PMA WINDOWS : ") ;
@@ -167,22 +168,43 @@ int main(int argc, char *argv[]) {
       print_pma_keys(pma);
 #endif
 
-      // TODO check that all the modifiedKeys are not outside [beg, end[
+
+      std::cout << "\n";
+      //TODO check that there are no modifiedKey outside of their range
       for (auto& k: modifiedKeys){
           //PMA is sorted
 
+          if (k.begin == 0)
+              continue;
+
+          //check if key exists in previous segment ->> ERROR
+          if (k.key <=  *(int64_t* ) SEGMENT_LAST(pma,k.begin-1) ){
+              PRINTOUT("ERROR BEG Key: %lu (%d %d) \n", k.key, k.begin, k.end);
+              errors++;
+              //return EXIT_FAILURE;
+           }
+
+          if (k.end = pma->nb_segments)
+              continue;
+
+          //check if key exists in segment end ->> ERROR
+          if (k.key >= *(int64_t* ) SEGMENT_START(pma,k.end)){
+              PRINTOUT("ERROR END Key: %lu (%d %d) \n", k.key, k.begin, k.end);
+              errors++;
+              //return EXIT_FAILURE;
+          }
 
       }
 
-
-      if (ret){
+      if (errors){
+          PRINTOUT("ERRORS: %d\n",errors);
           return EXIT_FAILURE;
       }
-      std::cout << "\n";
 
    }
 
-   PMQ.destroy();
+
+   pma::destroy_pma(pma);
    return EXIT_SUCCESS;
 
 }
