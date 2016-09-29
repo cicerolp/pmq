@@ -1,0 +1,52 @@
+# -*- org-export-babel-evaluate: nil; -*-
+#+TITLE: Lab book TwitterVis project
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n)
+#+CATEGORY: TwitterVis
+#+OPTIONS: ^:{}
+#+PROPERTY: header-args :cache no :eval no-export
+
+
+
+* TO-DO List [0/5]
+    
+** TODO Related Work - State Of the Art
+*** TODO find other data structure for geospatial data
+  - find a reference work to which we could compare 
+
+*** TODO What is a meaningfull size of batch for real applications ?
+  We should look at the real rate of insertions Tweets / s
+
+** TODO Look at the Twitter API for streaming
+  - how to use it?
+
+  - What are the limits? 
+
+** TODO Profiling the TwitterVis Project
+  - Identify and compare costs:
+    - PMA Instertion
+    - PMA modified key scan ( PMA_diff )
+    - Quadtree update
+
+** TODO Benchmarks
+*** TODO TwitterVis comparison:
+- compare UPD and QUERY performance of different implementations
+  
+*** INPROGRESS PMA Micro-benchmarks:                               :@JULIO:
+- compare time spent on INS, DIFF, UPD. 
+  
+** TODO Developpment:
+*** INPROGRESS Interfaces for using a general storage container with the quadtree: :@CICERO:
+- Cícero is doing it.
+
+*** INPROGRESS Generate files with the queries to apply on the benchmark. :@CICERO:
+
+*** TODO Add TIMSORT to the sorting algorithms on the benchmarks.  :@JULIO:
+    
+*** TODO Handle deletion of Tweets
+
+   
