@@ -15,88 +15,11 @@
  */
 
 #include "PMAInstance.h"
+
 #include <queue>
 
 
-uint32_t g_Quadtree_Depth = 25;
 const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
-
-int BFS(  SpatialElement* root, int (*fun)(SpatialElement *) )
-{
-    std::queue< SpatialElement* > Q;
-    Q.push(root);
-
-    while(!Q.empty())
-    {
-       SpatialElement* node = Q.front();
-
-       Q.pop();
-
-       if( fun(node) ){
-          return 1; //found an error
-       }
-
-       for (auto& child : node->container()) {
-          if (child != nullptr ){
-             Q.push(child.get());
-          };
-       };
-    }
-    return 0;
-}
-
-int check_consistency(SpatialElement* node){
-    return node->check_child_consistency();
-}
-
-int check_count(SpatialElement* node){
-    return node->check_count(global_pma);
-}
-
-int print_node(SpatialElement* node){
-    static unsigned int level = 0;
-
-    if (node == nullptr)
-        return 0;
-
-    if (level != node->zoom()){
-        level = node->zoom();
-        printf("\n %02d :", level);
-    }
-
-    // printf("%012lx [%d %d] ", node->code(), node->begin() , node->end() );
-
-    unsigned int count = count_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom());
-    printf("%u [%d %d] ", count , node->begin() , node->end() );
-
-
-    return 0;
-}
-
-int print_node_range(SpatialElement* node){
-    static unsigned int level = 0;
-
-    if (node == nullptr)
-        return 0;
-
-    if (level != node->zoom()){
-        level = node->zoom();
-        printf("\n %02d :", level);
-    }
-    uint64_t min=0, max=0;
-    get_mcode_range(node->code(),node->zoom(),min,max);
-
-    unsigned int count = count_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom());
-    printf("%u [%d %d] (%lu %lu) ", count , node->begin() , node->end(), min, max);
-
-
-    return 0;
-}
-
-int print_pma_el_key(const char* el){
-    printf("%lu ", *(uint64_t* )el );
-    return 0;
-}
 
 int main(int argc, char *argv[]) {
 

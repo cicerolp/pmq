@@ -1,10 +1,7 @@
 
-add_executable(test_pma_diff
-test_pma_diff.cpp
+add_executable(test_pma_diff test_pma_diff.cpp
 
-../include/PMAInstance.cpp
 ../include/DMPLoader/dmploader.cpp
-../include/SpatialElement.cpp
 )
 
 target_link_libraries(test_pma_diff pma  ${CMAKE_THREAD_LIBS_INIT} )
