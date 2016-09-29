@@ -1,4 +1,5 @@
 #pragma once
+#pragma GCC system_header
 
 // C includes
 #include <cmath>
@@ -30,4 +31,12 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+
+
+#include "pma/pma.h"
+#include "pma/utils/test_utils.h"
+#include "pma/utils/debugMacros.h"
+#include "pma/utils/benchmark_utils.h"
+
 using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
+

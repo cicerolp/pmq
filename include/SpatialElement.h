@@ -1,6 +1,5 @@
 #pragma once
 #include "types.h"
-#include "pma_util.h"
 
 // Quadtree node
 class SpatialElement {

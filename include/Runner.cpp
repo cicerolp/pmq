@@ -103,8 +103,7 @@ std::string Runner::query(const Query& query) {
    if (!quadtree) return ("[]");
 
    std::vector<SpatialElement*> json;
-   Timer t1;
-
+   
    // serialization
    rapidjson::StringBuffer buffer;
    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
