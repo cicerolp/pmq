@@ -189,7 +189,7 @@ std::string PMAInstance::query(const Query& query) {
          // unlock mutex
          mutex.unlock();
 
-         PRINTCSVL("PMA_query",t1.milliseconds(),"ms");
+         PRINTCSVL("PMA_query",t1.milliseconds(),"ms",json.size());
          
          writer.Uint(count);
 
