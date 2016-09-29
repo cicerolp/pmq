@@ -64,6 +64,9 @@ FIND_PACKAGE(Threads REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} )
 
+######## Benchmarks
+add_subdirectory(benchmarks)
+
 
 ######## PMQ Tests ############
 enable_testing()
