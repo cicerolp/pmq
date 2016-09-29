@@ -1,6 +1,8 @@
 #pragma once
 #include "Singleton.h"
 
+static sig_atomic_t s_signal_received = 0;
+
 class Server: public Singleton<Server> {
 	friend class Singleton<Server>;
 
@@ -20,14 +22,21 @@ public:
    };
 
 	static void run(server_opts opts);
-	static void handler(struct mg_connection* conn, int ev, void *p);
-
-	static void printText(struct mg_connection* conn, const std::string& content);
+	static void handler(struct mg_connection *nc, int ev, void *ev_data);
+   
+   static void printText(struct mg_connection* conn, const std::string& content);
 	static void printJson(struct mg_connection* conn, const std::string& content);
 
+   static inline int is_websocket(const struct mg_connection *nc) {
+      return nc->flags & MG_F_IS_WEBSOCKET;
+   }
+
+   void renew_data();
 	void stop() { running = false; };
 
 private:
+   void broadcast();
+
 	bool running{ true };
 
 	struct mg_serve_http_opts http_server_opts;
@@ -38,4 +47,7 @@ private:
 
 	Server() = default;
 	virtual ~Server() = default;
+
+   std::unordered_map<mg_connection*, bool> up_to_date;
+   std::mutex mutex;
 };

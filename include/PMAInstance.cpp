@@ -1,4 +1,5 @@
 #include "PMAInstance.h"
+#include "Server.h"
 
 bool PMAInstance::create(int argc, char *argv[]) {
    cimg_usage("Benchmark inserts elements in batches.");
@@ -81,7 +82,11 @@ bool PMAInstance::create(int argc, char *argv[]) {
 #endif
       t.start();
       quadtree->update(pma, modifiedKeys.begin(), modifiedKeys.end());
-      if (modifiedKeys.size() != 0) up_to_date = false;     
+
+      // broadcast to all connections
+      if (modifiedKeys.size() != 0) {
+         Server::getInstance().renew_data();         
+      }
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
       // unlock pma and quadtree update
@@ -232,16 +237,5 @@ std::string PMAInstance::query(const Query& query) {
       } break;
    }
 
-   
-
    return buffer.GetString();
-}
-
-std::string PMAInstance::update() {
-   if (up_to_date) {
-      return ("[true]");   
-   } else {
-      up_to_date = true;
-      return ("[false]");
-   }
 }

@@ -173,8 +173,6 @@ int main(int argc, char *argv[]) {
       print_pma_keys(PMQ.pma);
 #endif
       PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
-      if (modifiedKeys.size() != 0) PMQ.up_to_date = false;
-
 
       //Check every level.
 
@@ -229,7 +227,7 @@ int main(int argc, char *argv[]) {
 
    }
 
-   PMQ.destroy();
+   pma::destroy_pma(PMQ.pma);
    return EXIT_SUCCESS;
 
 }

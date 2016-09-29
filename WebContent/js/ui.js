@@ -38,7 +38,40 @@ var tile = new LatLngPoint();
 
 var format = d3.timeFormat("%Y/%m/%d %H:%m");
 
-map_init();
+init();
+
+function init() {
+   ws_init();
+   map_init();
+
+   update();
+}
+
+function reset_defaults() {
+   up_to_date = false;
+   map_move = false;
+   map_zoom = false;
+   heatmap_updating = false;
+}
+
+function ws_init() {
+   var ws = new WebSocket(WS_URL);
+         
+   ws.onopen = function (ev) {
+      reset_defaults();      
+   };
+   ws.onerror = function (ev) {
+      up_to_date = false;
+      setTimeout(ws_init, 250);
+   };
+   ws.onclose = function (ev) {
+      up_to_date = false;
+      setTimeout(ws_init, 250);
+   };
+   ws.onmessage = function (ev) {
+      up_to_date = false;
+   };   
+}
 
 function map_init() {
    var layers = {
@@ -73,14 +106,14 @@ function map_init() {
       },
    };      
 
-   //simple_heat = L.heatLayer([[0.0, 0.0, 0.0]]);
+   simple_heat = L.heatLayer([[0.0, 0.0, 0.0]]);
    custom_layer = L.customLayer(cfg);
    heatmapLayer = new HeatmapOverlay(cfg);
    
    var grid = grid_layer();
 
    map = new L.Map('map', {
-      layers: [black_base, custom_layer],
+      layers: [black_base, simple_heat],
       center : new L.LatLng(38, -97),
       zoom : 4,
       minZoom: 0,
@@ -100,7 +133,8 @@ function map_init() {
    };
    
    var overlayMaps = {
-      //"Simpleheat.js": simple_heat,
+      "Simpleheat.js": simple_heat,
+      "CustomLayer": custom_layer,
       //"Heatmap.js": heatmapLayer,      
       "Debug Layer": grid
    };
@@ -128,18 +162,16 @@ function map_init() {
    map.on("moveend", function (e) {
       map_move = false;
       up_to_date = false;
-      update();
    });
 
    resize();
-
-   up_to_date = false;
-   update();
-
-   call_update();
 }
 
+function default_action(jqXHR, textStatus, errorThrown) { }
+
 function call_assync_query(query, call_success, call_error) {
+   var call_error_f = call_error || default_action;
+
    $.ajax({
          type: 'GET',
          url: S_URL + query,
@@ -148,7 +180,7 @@ function call_assync_query(query, call_success, call_error) {
             call_success(data, textStatus, jqXHR);
          },
          error: function(jqXHR, textStatus, errorThrown) { 
-            call_error(jqXHR, textStatus, errorThrown);
+            call_error_f(jqXHR, textStatus, errorThrown);
          } 
    });
 }
@@ -375,7 +407,7 @@ function update_table() {
 }
 
 function update_marker() {
-   if (marker === null ||drawing) return;
+   if (marker === null || drawing) return;
    
    var zoom = map.getZoom() + 8;
    var coords = get_coords_bounds(L.latLngBounds(tile.p0, tile.p1), zoom);
@@ -391,16 +423,7 @@ function update_marker() {
 }
 
 function set_heatmap(response, textStatus) {
-   var data = null;   
-   if (textStatus !== "success") {
-      data = {
-         max: 0,
-         min: 0,
-         data: [[-90, -180, 0]]
-      };      
-   } else {      
-      data = response[0];
-   }
+   var data = response[0];
    
    var options = {
       minOpacity: 0.5,
@@ -434,31 +457,12 @@ function request_data() {
       
    query += ("/resolution/" + 8);      
    
-   call_assync_query(query, set_heatmap, set_heatmap);
+   call_assync_query(query, set_heatmap);
 }
 
-function call_update(response, textStatus) {
-   if (textStatus != "success") {
-      up_to_date = true;
-   } else {
-      up_to_date = response[0];
-   }
-   
-   var wait = 0;
-   if (!up_to_date) {
-      wait = 250;
-   } else {
-      wait = 250;
-   }
-   
-   update();
-   
-   setTimeout(function() {
-      call_assync_query("/update", call_update, call_update);
-   }, wait);
-}
+function update() {
+   setTimeout(update, 40);
 
-function update() {   
    if (up_to_date || map_move || map_zoom || heatmap_updating) return;
 
    heatmap_updating = true;
@@ -470,4 +474,6 @@ function update() {
    update_marker();
    update_table();
    request_data();
+
+   up_to_date = true;
 }

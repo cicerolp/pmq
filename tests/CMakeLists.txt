@@ -9,10 +9,8 @@ add_test(pma_diff_b10 test_pma_diff -f ${CMAKE_SOURCE_DIR}/data/tweet10_4.dat -b
 
 ########################################################
 
-add_executable(test_pma_quadtree_counts
-test_pma_quadtree_counts.cpp
+add_executable(test_pma_quadtree_counts test_pma_quadtree_counts.cpp
 
-../include/PMAInstance.cpp
 ../include/DMPLoader/dmploader.cpp
 ../include/SpatialElement.cpp
 )
