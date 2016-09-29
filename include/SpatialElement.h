@@ -13,7 +13,17 @@ public:
    using container_it = container_t::const_iterator;
 
    void update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end);
+   /**
+    * @brief query_tile Finds the tiles contained in a region. For each tile goes down for 8 levels.
+    * @param region
+    * @param subset [RETURN] All the tiles 8 levels deeper.
+    */
    void query_tile(const region_t& region, std::vector<SpatialElement*>& subset);
+   /**
+    * @brief query_region
+    * @param region
+    * @param subset
+    */
    void query_region(const region_t& region, std::vector<SpatialElement*>& subset);
 
    inline uint32_t begin() const {

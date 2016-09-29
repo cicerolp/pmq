@@ -64,7 +64,7 @@ bool PMAInstance::create(int argc, char *argv[]) {
       pma_diff(pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
       t.stop();
 
-      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms" );
+      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
 
       if (quadtree == nullptr)
          quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
