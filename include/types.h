@@ -162,7 +162,7 @@ using map_t_it = std::vector<elinfo_t>::iterator;
 
 // time resolution: high_resolution_clock
 // represents the clock with the smallest tick period provided by the implementation.
-using resolution_t = std::chrono::high_resolution_clock;
+using resolution_t = std::chrono::steady_clock;
 
 // time duration : nanoseconds
 using duration_t = std::chrono::nanoseconds;
