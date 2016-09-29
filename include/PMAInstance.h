@@ -112,7 +112,15 @@ inline int pma_diff(struct pma_struct* pma, map_t &modified){
 
         char* el_pt = (char*) SEGMENT_START(pma,sStart); //get first element of the segment
         uint64_t lastElKey = *(uint64_t*) el_pt; //mcode of the first element
-        modified.emplace_back( lastElKey , sStart, sStart);  //save the start for this key. Initialy end = begin+1 (open interval)
+
+        uint64_t fstSeg = sStart;
+        //Check it this key appear previously in the pma.
+        while (fstSeg > 0 &&  ( lastElKey == *(uint64_t*) SEGMENT_LAST(pma,fstSeg-1) ) ){
+            fstSeg--;
+        }
+
+
+        modified.emplace_back( lastElKey , fstSeg, sStart);  //save the start for this key. Initialy end = begin+1 (open interval)
         mod_ranges++;
 
         // loop over the segments of the current window
