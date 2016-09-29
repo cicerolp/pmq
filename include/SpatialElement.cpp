@@ -13,7 +13,7 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
  * @note we don't support deletes;
  * @return
  */
- void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end) {
+void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end) {
    // empty container
    if (it_begin == it_end) return;
 
@@ -24,76 +24,77 @@ SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
    }
 
    // node is not a leaf
-   _el.leaf = 0;  
-   
+   _el.leaf = 0;
+
    uint32_t z_diff_2 = (g_Quadtree_Depth - _el.z - 1) * 2;
-   
+
    uint32_t x, y;
    mortonDecode_RAM(_el.code, x, y);
 
    auto it_curr = it_begin;
    auto it_previous_begin = it_begin;
-   
+
    uint32_t index = (*it_curr).get_index(z_diff_2);
-   
+
+   // update first child index
+   set_child_index(index);
+
    // update intermediate valid nodes
-   while( (++it_curr) != it_end) {
+   while ((++it_curr) != it_end) {
       int curr_index = (*it_curr).get_index(z_diff_2);
-      
-      if (curr_index != index) {  
+
+      if (curr_index != index) {
          get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
-         
+
          it_previous_begin = it_curr;
          index = curr_index;
       }
    }
-      
+
    // update last valid node
    get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
 
+   // update last child index
+   set_child_index(index);
+
    // update beg index
-   _beg = (*std::find_if(_container.begin(), _container.end(),[](const node_ptr& el) {
-      return el != nullptr;
-   }))->begin();
-   
+   _beg = (*get_first_child())->begin();
+
    // update end index
-   _end = (*std::find_if(_container.rbegin(), _container.rend(),[](const node_ptr& el) {
-      return el != nullptr;
-   }))->end();
+   _end = (*get_last_child())->end();
 
 #ifndef NDEBUG
-      //Parent and child count should match.
-      int diff =  check_count(pma);
-      if ( diff)
-      {
-         it_curr = it_begin;
-         while (it_curr != it_end) {
-            auto& t = (*it_curr);
-//          print_pma_keys_range(pma,_beg, _end)
-            PRINTOUT("%lu %d %d\n", t.key, t.begin, t.end);
-            it_curr++;
-         }
+   //Parent and child count should match.
+   int diff = check_count(pma);
+   if (diff) {
+      it_curr = it_begin;
+      while (it_curr != it_end) {
+         auto& t = (*it_curr);
+         //          print_pma_keys_range(pma,_beg, _end)
+         PRINTOUT("%lu %d %d\n", t.key, t.begin, t.end);
+         it_curr++;
       }
-      
-     // assert(diff == 0);
+   }
+
+   // assert(diff == 0);
 
 #endif
 }
- 
-void SpatialElement::query_tile(const region_t& region, std::vector<SpatialElement*>& subset) {   
+
+void SpatialElement::query_tile(const region_t& region, std::vector<SpatialElement*>& subset) {
    if (region.z() == _el.z && region.cover(_el)) {
-         return aggregate_tile(_el.z + 8, subset);                  
+      return aggregate_tile(_el.z + 8, subset);
    } else if (region.z() > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_tile(region, subset);
       if (_container[1] != nullptr) _container[1]->query_tile(region, subset);
       if (_container[2] != nullptr) _container[2]->query_tile(region, subset);
       if (_container[3] != nullptr) _container[3]->query_tile(region, subset);
-   } 
+   }
 }
 
 void SpatialElement::query_region(const region_t& region, std::vector<SpatialElement*>& subset) {
    if (region.cover(_el)) {
-         subset.emplace_back(this);                  
+      subset.emplace_back(this);
    } else if (region.z() > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_region(region, subset);
       if (_container[1] != nullptr) _container[1]->query_region(region, subset);
@@ -102,42 +103,36 @@ void SpatialElement::query_region(const region_t& region, std::vector<SpatialEle
    }
 }
 
-int SpatialElement::check_child_consistency() const
-{
-    if (_el.leaf)
-      return 0;
+int SpatialElement::check_child_consistency() const {
+   if (_el.leaf) return 0;
 
-    //parent begin == fist child's begin
-    if (_beg != (*get_first_child())->begin())
-        return 1;
+   //parent begin == fist child's begin
+   if (_beg != (*get_first_child())->begin()) return 1;
 
-    //parent end == last child's end
-    if (_end != (*get_last_child())->end())
-        return 1;
+   //parent end == last child's end
+   if (_end != (*get_last_child())->end()) return 1;
 
-    //child.end >= next_child.begin (because a same segment can contain elements from different nodes.
-    for (auto child = get_first_child(); child < get_last_child().base()- 1; child = get_next_child(child+1)){
-        if ( (*child)->end() < (*(get_next_child(child)))->begin() )
-            return 1;
-    }
+   //child.end >= next_child.begin (because a same segment can contain elements from different nodes.
+   for (auto child = get_first_child(); child < get_last_child(); child = get_next_child(child + 1)) {
+      if ((*child)->end() < (*(get_next_child(child)))->begin()) return 1;
+   }
 
-    return 0;
+   return 0;
 }
 
 int SpatialElement::check_child_level() const {
-    for (auto& child : _container) {
-       if (child != nullptr ){
-         if ( child->check_child_consistency() ) {
+   for (auto& child : _container) {
+      if (child != nullptr) {
+         if (child->check_child_consistency()) {
             PRINTOUT("ERROR");
             return 1;
          };
-       };
-    }
-    return 0;
+      };
+   }
+   return 0;
 }
 
-int SpatialElement::check_count(const struct pma_struct* pma) const
-{
+int SpatialElement::check_count(const struct pma_struct* pma) const {
    if (!_el.leaf) {
       //count elements in this node
       uint32_t this_count = count_elts_pma(pma, begin(), end(), code(), zoom());
@@ -156,7 +151,7 @@ int SpatialElement::check_count(const struct pma_struct* pma) const
 
 void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset) {
    if (_el.leaf || _el.z == zoom) {
-      subset.emplace_back(this); 
+      subset.emplace_back(this);
    } else {
       if (_container[0] != nullptr) _container[0]->aggregate_tile(zoom, subset);
       if (_container[1] != nullptr) _container[1]->aggregate_tile(zoom, subset);
