@@ -12,6 +12,8 @@ get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
 
+include/PMQInterface.cpp
+
 include/morton.h
 
 include/DMPLoader/dmploader.hpp
@@ -35,8 +37,8 @@ include/Server.cpp
 include/Query.h
 include/Query.cpp
 
-include/PMAInstance.h
-include/PMAInstance.cpp
+include/Runner.h
+include/Runner.cpp
 
 include/Singleton.h
 

@@ -159,3 +159,23 @@ struct elinfo_t {
 
 using map_t = std::vector<elinfo_t>;
 using map_t_it = std::vector<elinfo_t>::iterator;
+
+// time resolution: high_resolution_clock
+// represents the clock with the smallest tick period provided by the implementation.
+using resolution_t = std::chrono::high_resolution_clock;
+
+// time duration : nanoseconds
+using duration_t = std::chrono::nanoseconds;
+
+//template<class T>
+//using duration_cast = std::chrono::duratio;
+
+/*
+std::chrono::time_point<resolution_t> start, end;
+start = resolution_t::now();
+...
+{code here}
+...
+end = resolution_t::now();
+return std::chrono::duration_cast<duration_t>(end - start);
+*/

@@ -133,7 +133,8 @@ int SpatialElement::check_child_level() const {
 }
 
 int SpatialElement::check_count(const struct pma_struct* pma) const {
-   if (!_el.leaf) {
+   // TODO remove comment
+   /*if (!_el.leaf) {
       //count elements in this node
       uint32_t this_count = count_elts_pma(pma, begin(), end(), code(), zoom());
 
@@ -146,7 +147,9 @@ int SpatialElement::check_count(const struct pma_struct* pma) const {
       //Parent and child count should match.
       return (this_count - child_count);
    }
+   */
    return 0;
+
 }
 
 void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset) {

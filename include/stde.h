@@ -9,6 +9,7 @@
 // C++ includes
 #include <map>
 #include <mutex>
+#include <chrono>
 #include <regex>
 #include <array>
 #include <queue>

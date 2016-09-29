@@ -1,16 +1,16 @@
 #include "stde.h"
+#include "PMQInterface.h"
 
 #ifdef PMA_TRACE_MOVE
   extern unsigned int g_iteration_counter;
 #endif
 
 #include "Server.h"
-#include "PMAInstance.h"
+#include "Runner.h"
 
 uint32_t g_Quadtree_Depth = 25;
 
 int main(int argc, char *argv[]) {
-
    bool server = true;
    Server::server_opts nds_opts;
    nds_opts.port = 7000;
@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
    std::unique_ptr<std::thread> server_ptr;
    if (server) server_ptr = std::make_unique<std::thread>(Server::run, nds_opts);
 
-   PMAInstance::getInstance().create(argc, argv);   
-   
    if (server_ptr) {
       std::cout << "Server Running... press any key to terminate." << std::endl;
       getchar();
@@ -35,6 +33,5 @@ int main(int argc, char *argv[]) {
       server_ptr->join();
    }
 
-   PMAInstance::getInstance().destroy();
    return 0;
 }
