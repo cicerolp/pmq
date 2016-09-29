@@ -128,13 +128,13 @@ int main(int argc, char *argv[]) {
    PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    global_pma = PMQ.pma;
 
-   Timer t;
    elttype * batch_start;
    int size = nb_elements / batch_size;
    int num_batches = 1 + (nb_elements-1)/batch_size;
 
    //Inserts all the batches
    for (int k = 0; k < num_batches; k++) {
+      PRINTOUT("BATCH %d / %d\n", k , num_batches);
       batch_start = &input_vec[k*size];
 
       if ((nb_elements-k*batch_size) / batch_size == 0) {
@@ -150,16 +150,13 @@ int main(int argc, char *argv[]) {
       for (auto k: *(PMQ.pma->last_rebalanced_segs)){
          std::cout << k << " "; //<< std::endl;
       }
-#endif
       std::cout << "\n";
+#endif
+
 
       // Creates a map with begin and end of each index in the pma.
       map_t modifiedKeys;
-      t.start();
       pma_diff(PMQ.pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
-      t.stop();
-
-      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms" );
 
       if (PMQ.quadtree == nullptr)
          PMQ.quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
@@ -175,11 +172,9 @@ int main(int argc, char *argv[]) {
       PRINTOUT("pma keys: ");
       print_pma_keys(PMQ.pma);
 #endif
-      t.start();
       PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
       if (modifiedKeys.size() != 0) PMQ.up_to_date = false;
-      t.stop();
-      PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
+
 
       //Check every level.
 
@@ -190,9 +185,8 @@ int main(int argc, char *argv[]) {
 #ifndef NDEBUG
       PRINTOUT("QUADTREE DUMP:");
       BFS(PMQ.quadtree.get(),print_node); // prints without any check
-#endif
-
       std::cout << "\n";
+#endif
 
       //traverese the tree checking counts
       int ret = BFS(PMQ.quadtree.get(), [](SpatialElement* node) {
