@@ -181,12 +181,16 @@ int main(int argc, char *argv[]) {
       t.stop();
       PRINTCSVL("QuadtreeUpdate" , t.milliseconds(),"ms" , k);
 
-      PRINTOUT("QUADTREE DUMP:");
       //Check every level.
-      BFS(PMQ.quadtree.get(),print_node); // prints without any check
+
       //BFS(PMQ.quadtree.get(),check_consistency);
       //BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
       //int ret = BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return node->check_count(global_pma);});
+
+#ifndef NDEBUG
+      PRINTOUT("QUADTREE DUMP:");
+      BFS(PMQ.quadtree.get(),print_node); // prints without any check
+#endif
 
       std::cout << "\n";
 
