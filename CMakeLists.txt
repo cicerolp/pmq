@@ -42,7 +42,8 @@ include/Runner.cpp
 
 include/Singleton.h
 
-include/pma_util.h
+include/ContainerInterface.h
+
 )
 
 include_directories(
