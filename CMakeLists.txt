@@ -12,12 +12,9 @@ get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
 
-include/PMQInterface.cpp
+include/PMABatch.cpp
 
 include/morton.h
-
-include/DMPLoader/dmploader.hpp
-include/DMPLoader/dmploader.cpp
 
 include/stde.h
 include/types.h
@@ -25,8 +22,8 @@ include/types.h
 include/string_util.h
 include/string_util.cpp
 
-include/SpatialElement.h
-include/SpatialElement.cpp
+include/QuadtreeNode.h
+include/QuadtreeNode.cpp
 
 include/mongoose/mongoose.h
 include/mongoose/mongoose.c
@@ -43,7 +40,6 @@ include/Runner.cpp
 include/Singleton.h
 
 include/ContainerInterface.h
-
 )
 
 include_directories(

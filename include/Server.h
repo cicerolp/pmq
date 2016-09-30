@@ -37,7 +37,7 @@ public:
 private:
    void broadcast();
 
-	bool running{ true };
+	bool running{ false };
 
 	struct mg_serve_http_opts http_server_opts;
 	struct mg_connection *nc;

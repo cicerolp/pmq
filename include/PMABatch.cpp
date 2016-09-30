@@ -1,25 +1,20 @@
-#include "PMQInterface.h"
-#include "ext/CImg/CImg.h"
+#include "PMABatch.h"
 
-PMQInterface::~PMQInterface() {
+PMABatch::~PMABatch() {
    if (_pma != nullptr)
       pma::destroy_pma(_pma);
 }
 
-duration_t PMQInterface::create(uint32_t size, int argc, char* argv[]) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
-   cimg_usage("Benchmark inserts elements in batches.");
-   //const unsigned int nb_elements ( cimg_option("-n",100,"Number of elements to insert"));
-   const unsigned int seg_size(cimg_option("-s", 8, "Segment size for the pma"));
-   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
-   const float tau_0(cimg_option("-t0", 0.92, "pma parameter tau_0"));
-   const float tau_h(cimg_option("-th", 0.7, "pma parameter tau_h"));
-   const float rho_0(cimg_option("-r0", 0.08, "pma parameter rho_0"));
-   const float rho_h(cimg_option("-rh", 0.3, "pma parameter rho_0"));
-   std::string fname(cimg_option("-f", "../data/tweet100.dat", "file with tweets"));
-
+duration_t PMABatch::create(uint32_t size, int argc, char* argv[]) {
+   const uint32_t seg_size(cimg_option("-s", 8, "pma::batch arg: segment size")); 
+   const float tau_0(cimg_option("-t0", 0.92, "pma::batch arg: tau_0"));
+   const float tau_h(cimg_option("-th", 0.7 , "pma::batch arg: tau_h"));
+   const float rho_0(cimg_option("-r0", 0.08, "pma::batch arg: rho_0"));
+   const float rho_h(cimg_option("-rh", 0.3 , "pma::batch arg: rho_0"));
+   
    const char* is_help = cimg_option("-h", (char*)0, 0);
+
+   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
 
    if (is_help) return resolution_t::now() - t_point;
 
@@ -28,7 +23,7 @@ duration_t PMQInterface::create(uint32_t size, int argc, char* argv[]) {
    return resolution_t::now() - t_point;
 }
 
-duration_t PMQInterface::insert(std::vector<elttype> batch) {
+duration_t PMABatch::insert(std::vector<elttype> batch) {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr) return resolution_t::now() - t_point;
 
@@ -40,7 +35,7 @@ duration_t PMQInterface::insert(std::vector<elttype> batch) {
    return resolution_t::now() - t_point;
 }
 
-duration_t PMQInterface::diff(std::vector<elinfo_t>& keys) {
+duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr) return resolution_t::now() - t_point;
 
@@ -103,7 +98,7 @@ duration_t PMQInterface::diff(std::vector<elinfo_t>& keys) {
    return resolution_t::now() - t_point;
 }
 
-duration_t PMQInterface::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) {
+duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr) return resolution_t::now() - t_point;
 
@@ -128,7 +123,7 @@ duration_t PMQInterface::count(const uint32_t& begin, const uint32_t& end, const
    return resolution_t::now() - t_point;
 }
 
-duration_t PMQInterface::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function _apply) {
+duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function _apply) const {
    // *example*
    /*struct writer_t {
       writer_t() : writer(buffer) {};

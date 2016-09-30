@@ -29,6 +29,8 @@ void Server::run(server_opts opts) {
 }
 
 void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
+   if (!Server::getInstance().running) return;
+
    switch (ev) {
       case MG_EV_HTTP_REQUEST: {
          struct http_message* hm = (struct http_message *) ev_data;
@@ -41,7 +43,7 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
                mg_serve_http(nc, hm, Server::getInstance().http_server_opts);
             } else if (tokens[1] == "rest" && tokens.size() >= 3) {
                if (tokens.size() >= 5 && tokens[2] == "query") {
-                  printJson(nc, Runner::getInstance().query(Query(tokens)));
+                  //printJson(nc, Runner::getInstance().query(Query(tokens)));
                } else {
                   printJson(nc, "[]");
                }
@@ -85,6 +87,8 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
 }
 
 void Server::renew_data() {
+   if (!running) return;
+
    mutex.lock();
    for (auto& pair : up_to_date) {
       pair.second = false;
@@ -93,6 +97,8 @@ void Server::renew_data() {
 }
 
 void Server::broadcast() {
+   if (!running) return;
+
    static const std::string msg = "renew";
 
    mutex.lock();
@@ -108,6 +114,8 @@ void Server::broadcast() {
 }
 
 void Server::printText(mg_connection* conn, const std::string& content) {
+   if (!Server::getInstance().running) return;
+
    if (Server::getInstance().nds_opts.cache) {
       mg_printf(conn,
                 "HTTP/1.1 200 OK\r\n"
@@ -134,6 +142,8 @@ void Server::printText(mg_connection* conn, const std::string& content) {
 }
 
 void Server::printJson(mg_connection* conn, const std::string& content) {
+   if (!Server::getInstance().running) return;
+
    if (Server::getInstance().nds_opts.cache && content != "[]") {
       mg_printf(conn,
                 "HTTP/1.1 200 OK\r\n"

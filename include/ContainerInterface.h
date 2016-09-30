@@ -4,7 +4,6 @@
 
 using valuetype_function = std::function<void(const valuetype&)>;
 
-template<typename _It>
 class ContainerInterface {
 public:
    // building
@@ -15,7 +14,7 @@ public:
    virtual duration_t diff(std::vector<elinfo_t>& keys) = 0;
 
    // acessing
-   virtual duration_t count(const _It& begin, const _It& end, const spatial_t& el, uint32_t& count) = 0;
+   virtual duration_t count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const = 0;
 
-   virtual duration_t apply(const _It& begin, const _It& end, const spatial_t& el, valuetype_function __apply) = 0;
+   virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function __apply) const = 0;
 };

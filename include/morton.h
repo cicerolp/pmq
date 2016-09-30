@@ -1,12 +1,7 @@
-#ifndef MORTON_H_
-#define MORTON_H_
+#pragma once
 
 #include <stdint.h>
 #include <limits.h>
-
-//typedef uint16_t u_short;
-//typedef uint32_t u_short;
-//typedef uint32_t u_int;
 
 /* ********** 64 bit versions ********************/
 inline
@@ -18,7 +13,6 @@ uint32_t m_undilate_2(uint64_t t) {
   t = (t | (t >> 16)) & 0x00000000FFFFFFFF;
   return((uint32_t) t);
 }
-
 
 /**
  * @brief mortonDecode_RAM  decode a morton code to its (x,y) index;
@@ -45,18 +39,13 @@ uint64_t m_dilate_2(uint32_t t){
     return (r);
 }
 
-
 inline
 uint64_t mortonEncode_RAM(uint32_t x, uint32_t y){
     return m_dilate_2(x) | m_dilate_2(y)<<1;
 }
-
 
 inline
 void morton_min_max(uint64_t code, uint32_t diff, uint64_t& min, uint64_t& max){
    min = code << 2 * (diff);
    max = min | ((uint64_t) ~0  >> (64 - 2 * diff));
 }
-
-
-#endif // MORTON_H_

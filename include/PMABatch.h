@@ -3,9 +3,9 @@
 
 extern uint32_t g_Quadtree_Depth;
 
-class PMQInterface : public ContainerInterface<uint32_t> {
+class PMABatch : public ContainerInterface {
 public:
-   virtual ~PMQInterface();
+   virtual ~PMABatch();
 
    duration_t create(uint32_t size, int argc, char *argv[]) override final;
 
@@ -44,7 +44,7 @@ public:
    *
    * @return
    */
-   duration_t count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) override final;
+   duration_t count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const override final;
    
    /**
    * @brief elts_pma Gets the elements in the \a pma between segments [seg_beg , seg_end[ with prefix equal to \a mCode.
@@ -57,7 +57,7 @@ public:
    * @param max_cnt limits to max_cnt elements.
    * @return the amount elements written.
    */
-   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function _apply) override final;
+   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function _apply) const override final;
 
 private:
    /**
@@ -72,7 +72,7 @@ private:
    pma_struct* _pma {nullptr};
 };
 
-void PMQInterface::get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max) {
+void PMABatch::get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max) {
    uint32_t diffDepth = g_Quadtree_Depth - zoom;
    min = code << 2 * (diffDepth);
    max = min | ((uint64_t)~0 >> (64 - 2 * diffDepth));

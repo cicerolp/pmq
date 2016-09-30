@@ -1,31 +1,26 @@
 #pragma once
 #include "stde.h"
-
 #include "Query.h"
-#include "Singleton.h"
+#include "QuadtreeNode.h"
+#include "ContainerInterface.h"
 
-#include "SpatialElement.h"
-
-#include "DMPLoader/dmploader.hpp"
-
-#include "PMQInterface.h"
-
-class Runner : public Singleton<Runner> {
-	friend class Singleton<Runner>;
+class Runner {
 public:
-   /**
-     * @brief query
-     * @param query  "/rest/query/region/1/0/0/1/1"
-     *
-     * /zoom/x0/y0/x1/y1/
-     *
-     */
+   struct runner_opts {
+      uint32_t batch{100};
+      uint32_t interval{100};
+      bool hint_server{false};
+   };
+
+   Runner(std::unique_ptr<ContainerInterface>& container);
+   virtual ~Runner() = default;
+
+   void run(const std::vector<elttype>& records, const runner_opts& opts);
    std::string query(const Query& query);
 
 private:
-   Runner() = default;
-	virtual ~Runner() = default;
-
-   std::mutex mutex;
-   std::unique_ptr<SpatialElement> quadtree;
+   std::mutex _mutex;
+   
+   std::unique_ptr<QuadtreeNode> _quadtree;
+   std::unique_ptr<ContainerInterface> _container;
 };
