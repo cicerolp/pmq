@@ -123,26 +123,7 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
    return resolution_t::now() - t_point;
 }
 
-duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, valuetype_function _apply) const {
-   // *example*
-   /*struct writer_t {
-      writer_t() : writer(buffer) {};
-      // serialization
-      rapidjson::StringBuffer buffer;
-      rapidjson::Writer<rapidjson::StringBuffer> writer;
-
-      void operator()(const valuetype& el) {
-         writer.StartArray();
-         writer.Uint(el.time);
-         writer.Uint(el.language);
-         writer.Uint(el.device);
-         writer.Uint(el.app);
-         writer.EndArray();
-      }
-   };
-   
-   valuetype_function _apply = std::bind(&writer_t::operator(), std::ref(json), std::placeholders::_1);*/
-
+duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, valuetype_function _apply) const {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr) return resolution_t::now() - t_point;
 
@@ -159,12 +140,14 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
 
       for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, s, _pma->elts[s]); cur_el_pt += _pma->elt_size) {
          _apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
+         count++;
       }
    }
 
    //loop on last segment
    for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, end - 1, _pma->elts[end - 1]) && *(uint64_t*)cur_el_pt <= mCodeMax; cur_el_pt += _pma->elt_size) {
       _apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
+      count++;
    }
 
    return resolution_t::now() - t_point;

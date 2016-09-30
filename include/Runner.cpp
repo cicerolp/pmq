@@ -44,7 +44,6 @@ void Runner::run(const std::vector<elttype>& records, const runner_opts& opts) {
 }
 
 std::string Runner::query(const Query& query) {
-
    std::vector<QuadtreeNode*> json;
    
    // serialization
@@ -134,6 +133,7 @@ std::string Runner::query(const Query& query) {
          writer.Int(1);
 
          uint32_t count = 0;
+         valuetype_function _apply = std::bind(Runner::write_el, std::ref(writer), std::placeholders::_1);
 
          // lock mutex
          _mutex.lock();
@@ -142,11 +142,8 @@ std::string Runner::query(const Query& query) {
 
          writer.String("data");
          writer.StartArray();
-         for (auto& el : json) {            
-            //count += elts_pma(pma, el->begin(), el->end(), el->code(), el->zoom(), writer, max_cnt);
-
-            _container->count(el->begin(), el->end(), el->el(), count);
-            //_container->apply(el->begin(), el->end(), el->el(), "")
+         for (auto& el : json) {
+            _container->apply(el->begin(), el->end(), el->el(), count, _apply);
          }
          writer.EndArray();
 
@@ -168,4 +165,13 @@ std::string Runner::query(const Query& query) {
    }
 
    return buffer.GetString();
+}
+
+void Runner::write_el(json_writer& writer, const valuetype& el) {
+   writer.StartArray();
+   writer.Uint(el.time);
+   writer.Uint(el.language);
+   writer.Uint(el.device);
+   writer.Uint(el.app);
+   writer.EndArray();
 }

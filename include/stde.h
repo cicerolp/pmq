@@ -42,6 +42,3 @@
 
 // retrieving command line arguments
 #include "ext/CImg/CImg.h"
-
-using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
-

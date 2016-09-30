@@ -166,3 +166,5 @@ using resolution_t = std::chrono::steady_clock;
 
 // time duration : nanoseconds
 using duration_t = std::chrono::nanoseconds;
+
+using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;

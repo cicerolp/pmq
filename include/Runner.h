@@ -19,6 +19,8 @@ public:
    std::string query(const Query& query);
 
 private:
+   static void write_el(json_writer& runner, const valuetype& el);
+
    std::mutex _mutex;
    
    std::unique_ptr<QuadtreeNode> _quadtree;
