@@ -43,18 +43,24 @@ int main(int argc, char *argv[]) {
 
    Runner::runner_opts run_opts;
    run_opts.batch = cimg_option("-b", 10, "runner arg: batch size");
-   run_opts.interval = cimg_option("-b", 10, "runner arg: insertion interval");
+   run_opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
    
+
+   run_opts.batch = 10;
+
    std::vector<elttype> records = load_input(input_file);
+
+   std::cout << records.size() << std::endl;
 
    std::unique_ptr<ContainerInterface> pma = std::make_unique<PMABatch>();
    pma->create(records.size(), argc, argv);
 
-   Runner runner(pma);
+   Runner runner(pma.get());
    
-   std::thread run_thread(&Runner::run, &runner, records, run_opts);
+   //std::thread run_thread(&Runner::run, &runner, records, run_opts);
+   runner.run(records, run_opts);
    
-   bool server = true;
+   bool server = false;
    Server::server_opts nds_opts;
    nds_opts.port = 7000;
    nds_opts.cache = false;
@@ -75,7 +81,9 @@ int main(int argc, char *argv[]) {
       Server::getInstance().stop();
       server_ptr->join();
    }
-   run_thread.join();
+   //run_thread.join();
+
+   std::cout << "end" << std::endl;
 
    return 0;
 }

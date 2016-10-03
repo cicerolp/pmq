@@ -30,7 +30,10 @@ duration_t PMABatch::insert(std::vector<elttype> batch) {
    // sorting algorithm
    std::sort(batch.begin(), batch.end());
 
-   pma::batch::add_array_elts(_pma, (void *)(&batch[0]), (void *) ((char *)(&batch[0]) + batch.size() * sizeof(elttype)), comp<uint64_t>);
+   void *begin = (void *)(&batch[0]);
+   void *end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
+
+   pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
 
    return resolution_t::now() - t_point;
 }

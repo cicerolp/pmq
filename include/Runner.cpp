@@ -1,7 +1,8 @@
 #include "Runner.h"
 #include "Server.h"
 
-Runner::Runner(std::unique_ptr<ContainerInterface>& container) : _container(std::move(container)) {
+Runner::Runner(ContainerInterface * container) /*: _container(std::move(container)) */{
+   _container = container;
    _quadtree = std::make_unique<QuadtreeNode>(spatial_t(0, 0, 0));
 }
 
@@ -12,13 +13,17 @@ void Runner::run(const std::vector<elttype>& records, const runner_opts& opts) {
    std::vector<elttype>::const_iterator it_begin = records.begin();
    std::vector<elttype>::const_iterator it_curr = records.begin();
 
+   uint32_t count = 0;
+
    while (it_begin != records.end()) {
       it_curr = std::min(it_begin + opts.batch, records.end());
       
       std::vector<elttype> batch(it_begin, it_curr);
 
+      count += batch.size();
+
       // lock container and quadtree update
-      _mutex.lock();
+      //_mutex.lock();
 
       // insert batch
       _container->insert(batch);
@@ -27,19 +32,21 @@ void Runner::run(const std::vector<elttype>& records, const runner_opts& opts) {
       keys.clear();      
       _container->diff(keys);
 
+      std::cout << count << std::endl;
+
       // update quadtree
       _quadtree->update(keys.begin(), keys.end());
 
       // unlock container and quadtree update
-      _mutex.unlock();
+      //_mutex.unlock();
 
-      if (opts.hint_server && keys.size() != 0)
-         Server::getInstance().renew_data();
+      /*if (opts.hint_server && keys.size() != 0)
+         Server::getInstance().renew_data();*/
 
       // update iterator
       it_begin = it_curr;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(opts.interval));
+      //std::this_thread::sleep_for(std::chrono::milliseconds(opts.interval));
    }
 }
 

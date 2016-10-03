@@ -12,7 +12,8 @@ public:
       bool hint_server{false};
    };
 
-   Runner(std::unique_ptr<ContainerInterface>& container);
+   //Runner(std::unique_ptr<ContainerInterface>& container);
+   Runner(ContainerInterface * container);
    virtual ~Runner() = default;
 
    void run(const std::vector<elttype>& records, const runner_opts& opts);
@@ -24,5 +25,6 @@ private:
    std::mutex _mutex;
    
    std::unique_ptr<QuadtreeNode> _quadtree;
-   std::unique_ptr<ContainerInterface> _container;
+   //std::unique_ptr<ContainerInterface> _container;
+   ContainerInterface *_container;
 };
