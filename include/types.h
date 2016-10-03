@@ -114,15 +114,6 @@ struct elttype {
       key = mortonEncode_RAM(x, y);
    }
 
-   // pma uses only the key to sort elements
-   friend inline bool operator==(const elttype& lhs, const elttype& rhs) {
-      return (lhs.key == rhs.key);
-   }
-
-   friend inline bool operator!=(const elttype& lhs, const elttype& rhs) {
-      return !(lhs == rhs);
-   }
-
    friend inline bool operator<(const elttype& lhs, const elttype& rhs) {
       return (lhs.key < rhs.key);
    }
