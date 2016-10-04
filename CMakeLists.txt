@@ -22,8 +22,8 @@ include/types.h
 include/string_util.h
 include/string_util.cpp
 
-include/QuadtreeNode.h
-include/QuadtreeNode.cpp
+include/QuadtreeIntf.h
+include/QuadtreeIntf.cpp
 
 include/mongoose/mongoose.h
 include/mongoose/mongoose.c
@@ -39,7 +39,7 @@ include/Runner.cpp
 
 include/Singleton.h
 
-include/ContainerInterface.h
+include/ContainerIntf.h
 )
 
 include_directories(

@@ -148,8 +148,8 @@ struct elinfo_t {
    uint32_t begin, end;
 };
 
-using map_t = std::vector<elinfo_t>;
-using map_t_it = std::vector<elinfo_t>::iterator;
+using diff_cnt = std::vector<elinfo_t>;
+using diff_it = std::vector<elinfo_t>::iterator;
 
 // time resolution: high_resolution_clock
 // represents the clock with the smallest tick period provided by the implementation.

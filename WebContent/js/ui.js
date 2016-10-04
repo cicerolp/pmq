@@ -141,8 +141,8 @@ function map_init() {
    
    L.control.layers(baseMaps, overlayMaps).addTo(map);
      
-   map.attributionControl.setPrefix("");
-   //map.attributionControl.setPrefix("Federal University of Rio Grande do Sul");
+   //map.attributionControl.setPrefix("");
+   map.attributionControl.setPrefix("Federal University of Rio Grande do Sul");
 
    map.on('mousedown', onMouseDown); 
    map.on('mousemove', onMouseMove);

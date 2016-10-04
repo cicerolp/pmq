@@ -1,19 +1,19 @@
 #include "stde.h"
-#include "QuadtreeNode.h"
+#include "QuadtreeIntf.h"
 
-QuadtreeNode::QuadtreeNode(const spatial_t& tile) : _el(tile) {
+QuadtreeIntf::QuadtreeIntf(const spatial_t& tile) : _el(tile) {
    _beg = 0;
    _end = 0;
 }
 
 /**
- * @brief QuadtreeNode::update inserts a list of element in a quatree
- * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the ContainerInterface.
+ * @brief QuadtreeIntf::update inserts a list of element in a quatree
+ * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the ContainerIntf.
  *
  * @note we don't support deletes;
  * @return
  */
-void QuadtreeNode::update(const map_t_it& it_begin, const map_t_it& it_end) {
+void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
    // empty container
    if (it_begin == it_end) return;
 
@@ -64,7 +64,7 @@ void QuadtreeNode::update(const map_t_it& it_begin, const map_t_it& it_end) {
    _end = (*get_last_child())->end();
 }
 
-void QuadtreeNode::query_tile(const region_t& region, std::vector<QuadtreeNode*>& subset) {
+void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.z() == _el.z && region.cover(_el)) {
       return aggregate_tile(_el.z + 8, subset);
    } else if (region.z() > _el.z) {
@@ -75,7 +75,7 @@ void QuadtreeNode::query_tile(const region_t& region, std::vector<QuadtreeNode*>
    }
 }
 
-void QuadtreeNode::query_region(const region_t& region, std::vector<QuadtreeNode*>& subset) {
+void QuadtreeIntf::query_region(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.cover(_el)) {
       subset.emplace_back(this);
    } else if (region.z() > _el.z) {
@@ -86,7 +86,7 @@ void QuadtreeNode::query_region(const region_t& region, std::vector<QuadtreeNode
    }
 }
 
-void QuadtreeNode::aggregate_tile(uint32_t zoom, std::vector<QuadtreeNode*>& subset) {
+void QuadtreeIntf::aggregate_tile(uint32_t zoom, std::vector<QuadtreeIntf*>& subset) {
    if (_el.leaf || _el.z == zoom) {
       subset.emplace_back(this);
    } else {
@@ -97,7 +97,7 @@ void QuadtreeNode::aggregate_tile(uint32_t zoom, std::vector<QuadtreeNode*>& sub
    }
 }
 
-uint32_t QuadtreeNode::check_child_consistency() const {
+uint32_t QuadtreeIntf::check_child_consistency() const {
    if (_el.leaf) return 0;
 
    // parent begin == fist child's begin
@@ -114,7 +114,7 @@ uint32_t QuadtreeNode::check_child_consistency() const {
    return 0;
 }
 
-uint32_t QuadtreeNode::check_child_level() const {
+uint32_t QuadtreeIntf::check_child_level() const {
    for (auto& child : _container) {
       if (child != nullptr) {
          if (child->check_child_consistency()) {
@@ -126,7 +126,7 @@ uint32_t QuadtreeNode::check_child_level() const {
    return 0;
 }
 
-uint32_t QuadtreeNode::check_count(const ContainerInterface& container) const {
+uint32_t QuadtreeIntf::check_count(const ContainerIntf& container) const {
    if (!_el.leaf) {
       // count elements in this node
       uint32_t curr_count = 0;

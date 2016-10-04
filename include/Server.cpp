@@ -43,7 +43,7 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
                mg_serve_http(nc, hm, Server::getInstance().http_server_opts);
             } else if (tokens[1] == "rest" && tokens.size() >= 3) {
                if (tokens.size() >= 5 && tokens[2] == "query") {
-                  //printJson(nc, Runner::getInstance().query(Query(tokens)));
+                  printJson(nc, Runner::getInstance().query(Query(tokens)));
                } else {
                   printJson(nc, "[]");
                }

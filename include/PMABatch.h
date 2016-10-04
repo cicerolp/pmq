@@ -1,9 +1,9 @@
 #pragma once
-#include "ContainerInterface.h"
+#include "ContainerIntf.h"
 
 extern uint32_t g_Quadtree_Depth;
 
-class PMABatch : public ContainerInterface {
+class PMABatch : public ContainerIntf {
 public:
    virtual ~PMABatch();
 
@@ -57,7 +57,7 @@ public:
    * @param max_cnt limits to max_cnt elements.
    * @return the amount elements written.
    */
-   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, valuetype_function _apply) const override final;
+   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function _apply) const override final;
 
 private:
    /**

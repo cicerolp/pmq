@@ -1,20 +1,30 @@
 #include "Runner.h"
 #include "Server.h"
 
-Runner::Runner(ContainerInterface * container) /*: _container(std::move(container)) */{
-   _container = container;
-   _quadtree = std::make_unique<QuadtreeNode>(spatial_t(0, 0, 0));
+Runner::Runner(int argc, char *argv[]) {
+   std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
+
+   _input = load_input(input_file);
+
+   _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
+   _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
 }
 
-void Runner::run(const std::vector<elttype>& records, const runner_opts& opts) {
+void Runner::set(std::shared_ptr<ContainerIntf> container, std::shared_ptr<QuadtreeIntf>& quadtree) {
+   _container = container;
+   _quadtree = quadtree;
+}
 
-   map_t keys;
+void Runner::run() {
+   if (!_container || !_quadtree) return;
 
-   std::vector<elttype>::const_iterator it_begin = records.begin();
-   std::vector<elttype>::const_iterator it_curr = records.begin();
+   diff_cnt keys;
 
-   while (it_begin != records.end()) {
-      it_curr = std::min(it_begin + opts.batch, records.end());
+   std::vector<elttype>::iterator it_begin = _input.begin();
+   std::vector<elttype>::iterator it_curr = _input.begin();
+
+   while (it_begin != _input.end()) {
+      it_curr = std::min(it_begin + _opts.batch, _input.end());
       
       std::vector<elttype> batch(it_begin, it_curr);
 
@@ -34,18 +44,20 @@ void Runner::run(const std::vector<elttype>& records, const runner_opts& opts) {
       // unlock container and quadtree update
       _mutex.unlock();
 
-      if (opts.hint_server && keys.size() != 0)
+      if (_opts.hint_server && keys.size() != 0)
          Server::getInstance().renew_data();
 
       // update iterator
       it_begin = it_curr;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(opts.interval));
+      std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
    }
 }
 
 std::string Runner::query(const Query& query) {
-   std::vector<QuadtreeNode*> json;
+   if (!_container || !_quadtree) return "[]";
+
+   std::vector<QuadtreeIntf*> json;
    
    // serialization
    rapidjson::StringBuffer buffer;
@@ -133,6 +145,7 @@ std::string Runner::query(const Query& query) {
          writer.String("draw");
          writer.Int(1);
 
+         const uint32_t max = 1000;
          uint32_t count = 0;
          valuetype_function _apply = std::bind(Runner::write_el, std::ref(writer), std::placeholders::_1);
 
@@ -144,7 +157,7 @@ std::string Runner::query(const Query& query) {
          writer.String("data");
          writer.StartArray();
          for (auto& el : json) {
-            _container->apply(el->begin(), el->end(), el->el(), count, _apply);
+            _container->apply(el->begin(), el->end(), el->el(), count, max, _apply);
          }
          writer.EndArray();
 
@@ -175,4 +188,35 @@ void Runner::write_el(json_writer& writer, const valuetype& el) {
    writer.Uint(el.device);
    writer.Uint(el.app);
    writer.EndArray();
+}
+
+std::vector<elttype> Runner::load_input(const std::string& fname) {
+   std::vector<elttype> tweets;
+
+   std::ifstream infile(fname, std::ios::binary);
+   infile.unsetf(std::ios_base::skipws);
+
+   // skip file header
+   for (int i = 0; i < 32; ++i) {
+      infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+   }
+
+   tweet_t record;
+   size_t record_size = 19; //file record size
+
+   while (true) {
+      try {
+         infile.read((char*)&record, record_size);
+
+         if (infile.eof()) break;
+
+         tweets.emplace_back(record, g_Quadtree_Depth);
+      }
+      catch (...) {
+         break;
+      }
+   }
+   infile.close();
+
+   return tweets;
 }
