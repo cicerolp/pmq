@@ -7,6 +7,8 @@ public:
    PMABatch(int argc, char *argv[]);
    virtual ~PMABatch();
 
+   static constexpr const char* name() {return "PMABatch";}
+
    duration_t create(uint32_t size) override final;
 
    /**

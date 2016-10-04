@@ -38,6 +38,8 @@ void run_bench(container_t container,std::vector<elttype> & input_vec,const int 
    PRINTOUTF("Running Bencmark with %s  \n", typeid(container_t).name() );
 // std::cout << typeid(container_t).name() << std::endl;
    std::cout << __PRETTY_FUNCTION__  << std::endl;
+   std::cout << container_t::name()  << std::endl;
+
 
 
    while (it_begin != input_vec.end()) {

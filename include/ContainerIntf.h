@@ -7,6 +7,8 @@ using elttype_function = std::function<void(const void*)>;
 
 class ContainerIntf {
 public:
+   static constexpr const char* name() {return "ConatinerIntf";}
+
    // building
    virtual duration_t create(uint32_t size) = 0;
    
