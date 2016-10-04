@@ -3,9 +3,12 @@
 #include "Query.h"
 #include "Runner.h"
 
-void Server::run(server_opts opts) {
-   Server::getInstance().nds_opts = opts;
+Server::Server(server_opts opts) : nds_opts(opts) {
+   std::cout << "Server Options:" << std::endl;
+   std::cout << "\t" << opts << std::endl;
+}
 
+void Server::run() {
    setvbuf(stdout, NULL, _IOLBF, 0);
    setvbuf(stderr, NULL, _IOLBF, 0);
 

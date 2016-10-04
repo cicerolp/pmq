@@ -19,5 +19,5 @@ public:
 
    // iterating
    virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const = 0;
-   virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const = 0;
+   virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const = 0;
 };

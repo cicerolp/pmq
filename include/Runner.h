@@ -16,6 +16,8 @@ public:
    void set(std::shared_ptr<ContainerIntf> container, std::shared_ptr<QuadtreeIntf>& quadtree);
 
    void run();
+   inline void stop();
+
    std::string query(const Query& query);
 
    inline uint32_t input_size() const;
@@ -29,6 +31,7 @@ private:
 
    static void write_el(json_writer& runner, const valuetype& el);
 
+   bool _running{ true };
 
    std::mutex _mutex;
    
@@ -38,6 +41,10 @@ private:
    std::shared_ptr<QuadtreeIntf> _quadtree;
    std::shared_ptr<ContainerIntf> _container;
 };
+
+void Runner::stop() {
+   _running = false;
+}
 
 uint32_t Runner::input_size() const {
    return _input.size();

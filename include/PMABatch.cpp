@@ -154,7 +154,7 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    return resolution_t::now() - t_point;
 }
 
-duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function _apply) const {
+duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr || count >= max) return resolution_t::now() - t_point;
 
@@ -170,7 +170,7 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    for (unsigned int s = begin; s < end - 1; ++s, cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
 
       for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, s, _pma->elts[s]); cur_el_pt += _pma->elt_size) {
-         _apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
+         __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
          count++;
 
          if (count >= max) return resolution_t::now() - t_point;
@@ -179,7 +179,7 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
 
    //loop on last segment
    for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, end - 1, _pma->elts[end - 1]) && *(uint64_t*)cur_el_pt <= mCodeMax; cur_el_pt += _pma->elt_size) {
-      _apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
+      __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
       count++;
 
       if (count >= max) return resolution_t::now() - t_point;

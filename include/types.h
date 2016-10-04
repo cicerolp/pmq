@@ -106,7 +106,7 @@ using valuetype = tweet_t;
 
 struct elttype {
    uint64_t key;
-   tweet_t value;
+   valuetype value;
 
    elttype(const tweet_t& el, uint32_t depth) : value(el) {
       uint32_t y = mercator_util::lat2tiley(value.latitude, depth);

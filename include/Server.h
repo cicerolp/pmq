@@ -18,7 +18,7 @@ public:
       }
    };
 
-	static void run(server_opts opts);
+	static void run();
 	static void handler(struct mg_connection *nc, int ev, void *ev_data);
    
    static void printText(struct mg_connection* conn, const std::string& content);
@@ -42,7 +42,8 @@ private:
 
    server_opts nds_opts;
 
-	Server() = default;
+	Server(server_opts opts);
+   Server() = default;
 	virtual ~Server() = default;
 
    std::unordered_map<mg_connection*, bool> up_to_date;

@@ -59,7 +59,7 @@ public:
    */
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function _apply) const override final;
 
-   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const override final;
+   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const override final;
 
    inline const pma_struct* const get_container() {
        return _pma;

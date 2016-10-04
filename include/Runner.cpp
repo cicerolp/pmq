@@ -25,7 +25,7 @@ void Runner::run() {
    std::vector<elttype>::iterator it_begin = _input.begin();
    std::vector<elttype>::iterator it_curr = _input.begin();
 
-   while (it_begin != _input.end()) {
+   while (it_begin != _input.end() && _running) {
       it_curr = std::min(it_begin + _opts.batch, _input.end());
       
       std::vector<elttype> batch(it_begin, it_curr);
