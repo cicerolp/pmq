@@ -1,19 +1,19 @@
 #include "stde.h"
-#include "SpatialElement.h"
+#include "QuadtreeIntf.h"
 
-SpatialElement::SpatialElement(const spatial_t& tile) : _el(tile) {
+QuadtreeIntf::QuadtreeIntf(const spatial_t& tile) : _el(tile) {
    _beg = 0;
    _end = 0;
 }
 
 /**
- * @brief SpatialElement::update inserts a list of element in a quatree
- * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the pma.
+ * @brief QuadtreeIntf::update inserts a list of element in a quatree
+ * @param range A list of elements that have been modified in the quadtree (added or updated) with their new ranges in the ContainerIntf.
  *
  * @note we don't support deletes;
  * @return
  */
-void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map_t_it& it_end) {
+void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
    // empty container
    if (it_begin == it_end) return;
 
@@ -44,7 +44,7 @@ void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map
       int curr_index = (*it_curr).get_index(z_diff_2);
 
       if (curr_index != index) {
-         get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
+         get_node(x, y, _el.z + 1, index)->update(it_previous_begin, it_curr);
 
          it_previous_begin = it_curr;
          index = curr_index;
@@ -52,7 +52,7 @@ void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map
    }
 
    // update last valid node
-   get_node(x, y, _el.z + 1, index)->update(pma, it_previous_begin, it_curr);
+   get_node(x, y, _el.z + 1, index)->update(it_previous_begin, it_curr);
 
    // update last child index
    set_child_index(index);
@@ -62,26 +62,9 @@ void SpatialElement::update(pma_struct* pma, const map_t_it& it_begin, const map
 
    // update end index
    _end = (*get_last_child())->end();
-
-#ifndef NDEBUG
-   //Parent and child count should match.
-   int diff = check_count(pma);
-   if (diff) {
-      it_curr = it_begin;
-      while (it_curr != it_end) {
-         auto& t = (*it_curr);
-         //          print_pma_keys_range(pma,_beg, _end)
-         PRINTOUT("%lu %d %d\n", t.key, t.begin, t.end);
-         it_curr++;
-      }
-   }
-
-   // assert(diff == 0);
-
-#endif
 }
 
-void SpatialElement::query_tile(const region_t& region, std::vector<SpatialElement*>& subset) {
+void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.z() == _el.z && region.cover(_el)) {
       return aggregate_tile(_el.z + 8, subset);
    } else if (region.z() > _el.z) {
@@ -92,7 +75,7 @@ void SpatialElement::query_tile(const region_t& region, std::vector<SpatialEleme
    }
 }
 
-void SpatialElement::query_region(const region_t& region, std::vector<SpatialElement*>& subset) {
+void QuadtreeIntf::query_region(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.cover(_el)) {
       subset.emplace_back(this);
    } else if (region.z() > _el.z) {
@@ -103,53 +86,7 @@ void SpatialElement::query_region(const region_t& region, std::vector<SpatialEle
    }
 }
 
-int SpatialElement::check_child_consistency() const {
-   if (_el.leaf) return 0;
-
-   //parent begin == fist child's begin
-   if (_beg != (*get_first_child())->begin()) return 1;
-
-   //parent end == last child's end
-   if (_end != (*get_last_child())->end()) return 1;
-
-   //child.end >= next_child.begin (because a same segment can contain elements from different nodes.
-   for (auto child = get_first_child(); child < get_last_child(); child = get_next_child(child + 1)) {
-      if ((*child)->end() < (*(get_next_child(child)))->begin()) return 1;
-   }
-
-   return 0;
-}
-
-int SpatialElement::check_child_level() const {
-   for (auto& child : _container) {
-      if (child != nullptr) {
-         if (child->check_child_consistency()) {
-            PRINTOUT("ERROR");
-            return 1;
-         };
-      };
-   }
-   return 0;
-}
-
-int SpatialElement::check_count(const struct pma_struct* pma) const {
-   if (!_el.leaf) {
-      //count elements in this node
-      uint32_t this_count = count_elts_pma(pma, begin(), end(), code(), zoom());
-
-      //count elements in the child notes
-      uint32_t child_count = 0;
-      for (auto& ptr : _container) {
-         if (ptr) child_count += count_elts_pma(pma, ptr->begin(), ptr->end(), ptr->code(), ptr->zoom());
-      }
-
-      //Parent and child count should match.
-      return (this_count - child_count);
-   }
-   return 0;
-}
-
-void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>& subset) {
+void QuadtreeIntf::aggregate_tile(uint32_t zoom, std::vector<QuadtreeIntf*>& subset) {
    if (_el.leaf || _el.z == zoom) {
       subset.emplace_back(this);
    } else {
@@ -158,4 +95,52 @@ void SpatialElement::aggregate_tile(uint32_t zoom, std::vector<SpatialElement*>&
       if (_container[2] != nullptr) _container[2]->aggregate_tile(zoom, subset);
       if (_container[3] != nullptr) _container[3]->aggregate_tile(zoom, subset);
    }
+}
+
+uint32_t QuadtreeIntf::check_child_consistency() const {
+   if (_el.leaf) return 0;
+
+   // parent begin == fist child's begin
+   if (_beg != (*get_first_child())->begin()) return 1;
+
+   // parent end == last child's end
+   if (_end != (*get_last_child())->end()) return 1;
+
+   // child.end >= next_child.begin (because a same segment can contain elements from different nodes.
+   for (auto child = get_first_child(); child < get_last_child(); child = get_next_child(child + 1)) {
+      if ((*child)->end() < (*(get_next_child(child)))->begin()) return 1;
+   }
+
+   return 0;
+}
+
+uint32_t QuadtreeIntf::check_child_level() const {
+   for (auto& child : _container) {
+      if (child != nullptr) {
+         if (child->check_child_consistency()) {
+            return 1;
+         }
+      }
+   }
+
+   return 0;
+}
+
+uint32_t QuadtreeIntf::check_count(const ContainerIntf& container) const {
+   if (!_el.leaf) {
+      // count elements in this node
+      uint32_t curr_count = 0;
+      container.count(begin(), end(), _el, curr_count);
+
+      // count elements in the child notes
+      uint32_t child_count = 0;
+      for (auto& ptr : _container) {
+         if (ptr) container.count(ptr->begin(), ptr->end(), ptr->_el, child_count);
+      }
+
+      // parent and child count should match
+      return (curr_count - child_count);
+   }
+
+   return 0;
 }

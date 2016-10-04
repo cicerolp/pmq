@@ -1,4 +1,5 @@
 #pragma once
+#pragma GCC system_header
 
 // C includes
 #include <cmath>
@@ -9,6 +10,7 @@
 // C++ includes
 #include <map>
 #include <mutex>
+#include <chrono>
 #include <regex>
 #include <array>
 #include <queue>
@@ -22,6 +24,9 @@
 #include <functional>
 #include <unordered_map>
 
+// singleton
+#include "Singleton.h"
+
 // mongoose http server
 #include <mongoose/mongoose.h>
 
@@ -29,4 +34,11 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
-using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
+// pma includes
+#include "pma/pma.h"
+#include "pma/utils/test_utils.h"
+#include "pma/utils/debugMacros.h"
+#include "pma/utils/benchmark_utils.h"
+
+// retrieving command line arguments
+#include "ext/CImg/CImg.h"

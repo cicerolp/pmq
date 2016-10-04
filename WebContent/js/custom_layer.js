@@ -124,7 +124,7 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
          var point = this._map.latLngToContainerPoint(latlng);
          var latlngPoint = { x: Math.round(point.x), y: Math.round(point.y) };
 
-         const size_px = 3.0;
+         const size_px = 2.5;
          const offset = size_px / 2;
 
          ctx.fillStyle = this._ryw(entry[2]);

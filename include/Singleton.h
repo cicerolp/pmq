@@ -17,7 +17,6 @@ public:
    }
 
 private:
-
    static T& apply(const std::function<T&()>& function) {
       static T& instanceRef = function();
       return instanceRef;

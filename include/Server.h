@@ -1,11 +1,8 @@
 #pragma once
 #include "Singleton.h"
 
-static sig_atomic_t s_signal_received = 0;
-
 class Server: public Singleton<Server> {
 	friend class Singleton<Server>;
-
 public:
    struct server_opts {
       uint32_t port{ 8000 };

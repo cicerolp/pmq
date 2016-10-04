@@ -114,15 +114,6 @@ struct elttype {
       key = mortonEncode_RAM(x, y);
    }
 
-   // pma uses only the key to sort elements
-   friend inline bool operator==(const elttype& lhs, const elttype& rhs) {
-      return (lhs.key == rhs.key);
-   }
-
-   friend inline bool operator!=(const elttype& lhs, const elttype& rhs) {
-      return !(lhs == rhs);
-   }
-
    friend inline bool operator<(const elttype& lhs, const elttype& rhs) {
       return (lhs.key < rhs.key);
    }
@@ -157,5 +148,14 @@ struct elinfo_t {
    uint32_t begin, end;
 };
 
-using map_t = std::vector<elinfo_t>;
-using map_t_it = std::vector<elinfo_t>::iterator;
+using diff_cnt = std::vector<elinfo_t>;
+using diff_it = std::vector<elinfo_t>::iterator;
+
+// time resolution: high_resolution_clock
+// represents the clock with the smallest tick period provided by the implementation.
+using resolution_t = std::chrono::steady_clock;
+
+// time duration : nanoseconds
+using duration_t = std::chrono::nanoseconds;
+
+using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
