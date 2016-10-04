@@ -102,7 +102,7 @@ int print_node_range(QuadtreeIntf* node){
     return 0;
 }
 
-void static print_pma_el_key(void* el){
+void static print_pma_el_key(const void* el){
 
     printf("%lu ", *(uint64_t* )el );
 }
@@ -155,6 +155,7 @@ int main(int argc, char *argv[]) {
       for (auto k: *(pma.get_container()->last_rebalanced_segs)){
          std::cout << k << " "; //<< std::endl;
       }
+      std::cout << "\n";
 #endif
 
 
@@ -185,7 +186,7 @@ int main(int argc, char *argv[]) {
 
 #ifndef NDEBUG
       PRINTOUT("QUADTREE DUMP:");
-      BFS(quadtree,print_node); // prints without any check
+      BFS(quadtree.get(),print_node); // prints without any check
       std::cout << "\n";
 #endif
 
@@ -193,8 +194,6 @@ int main(int argc, char *argv[]) {
 
       //traverese the tree checking counts
       int ret = BFS(quadtree.get(), [](QuadtreeIntf* node) {
-
-      //        elttype_function apply = std::bind(print_pma_el_key, std::placeholders::_1);
 
               if ( node->check_count(*global_pma) ){
 
@@ -209,13 +208,13 @@ int main(int argc, char *argv[]) {
 
               std::cout << "PMA RANGE: \n";
               std::cout << "P> " ;
-   //TODO FIX           global_pma->apply(node->begin(), node->end(), node->el(),  print_pma_el_key);
+              global_pma->apply(node->begin(), node->end(), node->el(),  print_pma_el_key );
               std::cout << "\n";
 
               std::cout << "C> " ;
               for(auto& e : node->container() ) {
                  if (e != nullptr){
-   // TODO FIX          global_pma->apply(e->begin(), e->end(), e->el(),  apply );
+                   global_pma->apply(e->begin(), e->end(), e->el(),  print_pma_el_key );
                    printf (" | ");
                   }
                }
@@ -230,7 +229,7 @@ int main(int argc, char *argv[]) {
       if (ret){
           return EXIT_FAILURE;
       }
-      std::cout << "\n";
+      //std::cout << "\n";
 
 
    }
