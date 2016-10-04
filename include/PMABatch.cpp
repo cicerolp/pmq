@@ -107,7 +107,7 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
 
    uint64_t mCodeMin = 0;
    uint64_t mCodeMax = 0;
-   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax);
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
 
    for (unsigned int s = begin; s < end; s++) {
       count += _pma->elts[s];
@@ -126,12 +126,42 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
    return resolution_t::now() - t_point;
 }
 
+duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const {
+   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
+   if (_pma == nullptr ) return resolution_t::now() - t_point;
+
+   uint64_t mCodeMin, mCodeMax;
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
+
+   //Find the first element of the first segment
+   char* cur_el_pt = (char*)SEGMENT_START(_pma, begin);
+   while ((*(uint64_t*)cur_el_pt) < mCodeMin)
+      cur_el_pt += _pma->elt_size;
+
+   //loop on the first segments (up to one before last)
+   for (unsigned int s = begin; s < end - 1; ++s, cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
+
+      for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, s, _pma->elts[s]); cur_el_pt += _pma->elt_size) {
+         _apply((void*)cur_el_pt);
+
+      }
+   }
+
+   //loop on last segment
+   for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, end - 1, _pma->elts[end - 1]) && *(uint64_t*)cur_el_pt <= mCodeMax; cur_el_pt += _pma->elt_size) {
+      _apply((void*)cur_el_pt);
+
+   }
+
+   return resolution_t::now() - t_point;
+}
+
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function _apply) const {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
    if (_pma == nullptr || count >= max) return resolution_t::now() - t_point;
 
    uint64_t mCodeMin, mCodeMax;
-   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax);
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
 
    //Find the first element of the first segment
    char* cur_el_pt = (char*)SEGMENT_START(_pma, begin);

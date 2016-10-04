@@ -4,6 +4,8 @@
 
 using valuetype_function = std::function<void(const valuetype&)>;
 
+using elttype_function = std::function<void(const void*)>;
+
 class ContainerIntf {
 public:
    // building

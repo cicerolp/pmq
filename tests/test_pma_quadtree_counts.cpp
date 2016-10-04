@@ -14,21 +14,28 @@
  *
  */
 
-#include "PMAInstance.h"
+
+#include "stde.h"
+#include "types.h"
+#include "PMABatch.h"
+
+#include "InputIntf.h"
+#include "QuadtreeIntf.h"
+
 #include <queue>
 
 
 uint32_t g_Quadtree_Depth = 25;
-const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
+const PMABatch* global_pma; //global reference to the pma, for debuging purpose
 
-int BFS(  SpatialElement* root, int (*fun)(SpatialElement *) )
+int BFS(  QuadtreeIntf* root, int (*fun)(QuadtreeIntf *) )
 {
-    std::queue< SpatialElement* > Q;
+    std::queue< QuadtreeIntf* > Q;
     Q.push(root);
 
     while(!Q.empty())
     {
-       SpatialElement* node = Q.front();
+       QuadtreeIntf* node = Q.front();
 
        Q.pop();
 
@@ -45,121 +52,116 @@ int BFS(  SpatialElement* root, int (*fun)(SpatialElement *) )
     return 0;
 }
 
-int check_consistency(SpatialElement* node){
+int check_consistency(QuadtreeIntf* node){
     return node->check_child_consistency();
 }
 
-int check_count(SpatialElement* node){
-    return node->check_count(global_pma);
+int check_count( QuadtreeIntf* node){
+    return node->check_count(*global_pma);
 }
 
-int print_node(SpatialElement* node){
+int print_node( QuadtreeIntf* node){
     static unsigned int level = 0;
 
     if (node == nullptr)
         return 0;
 
-    if (level != node->zoom()){
-        level = node->zoom();
+    if (level != node->el().z){
+        level = node->el().z;
         printf("\n %02d :", level);
     }
 
     // printf("%012lx [%d %d] ", node->code(), node->begin() , node->end() );
 
-    unsigned int count = count_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom());
+    unsigned int count = 0;
+    global_pma->count(node->begin(), node->end(), node->el(), count);
     printf("%u [%d %d] ", count , node->begin() , node->end() );
 
 
     return 0;
 }
 
-int print_node_range(SpatialElement* node){
+int print_node_range(QuadtreeIntf* node){
     static unsigned int level = 0;
 
     if (node == nullptr)
         return 0;
 
-    if (level != node->zoom()){
-        level = node->zoom();
+    if (level != node->el().z){
+        level = node->el().z;
         printf("\n %02d :", level);
     }
     uint64_t min=0, max=0;
-    get_mcode_range(node->code(),node->zoom(),min,max);
+    PMABatch::get_mcode_range(node->el().code,node->el().z,min,max,25);
 
-    unsigned int count = count_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom());
+    unsigned int count = 0;
+    global_pma->count(node->begin(), node->end(), node->el(), count);
     printf("%u [%d %d] (%lu %lu) ", count , node->begin() , node->end(), min, max);
 
 
     return 0;
 }
 
-int print_pma_el_key(const char* el){
+void static print_pma_el_key(void* el){
+
     printf("%lu ", *(uint64_t* )el );
-    return 0;
 }
 
 int main(int argc, char *argv[]) {
 
    cimg_usage("Benchmark inserts elements in batches.");
-   const unsigned int seg_size ( cimg_option("-s",8,"Segment size for the pma"));
+
    const int batch_size ( cimg_option("-b",10,"Batch size used in batched insertions"));
-   const float tau_0 ( cimg_option("-t0",0.92,"pma parameter tau_0"));
-   const float tau_h ( cimg_option("-th",0.7,"pma parameter tau_h"));
-   const float rho_0 ( cimg_option("-r0",0.08,"pma parameter rho_0"));
-   const float rho_h ( cimg_option("-rh",0.3,"pma parameter rho_0"));
    std::string fname ( cimg_option("-f","../data/tweet100.dat","file with tweets"));
 
    const char* is_help = cimg_option("-h",(char*)0,0);
 
    if (is_help) return false;
 
-   PMAInstance PMQ;
+   int errors = 0;
+
+   uint32_t quadtree_depth;
 
    PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
+   std::vector<elttype> input = input::load_input(fname,quadtree_depth);
+   PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
 
-   // Create <key,value> elements
-   std::vector<elttype> input_vec;
-   loadTweetFile(input_vec, fname);
+   //QuadtreeIntf quadtree(spatial_t(0,0,0));
+   std::shared_ptr<QuadtreeIntf> quadtree = std::make_shared<QuadtreeIntf>(spatial_t(0, 0, 0));
 
-   int nb_elements = input_vec.size();
+   PMABatch pma;
+   global_pma = &pma;
 
-   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
+   pma.create(input.size(),argc,argv);
 
-   PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   global_pma = PMQ.pma;
+   diff_cnt modifiedKeys;
 
-   elttype * batch_start;
-   int size = nb_elements / batch_size;
-   int num_batches = 1 + (nb_elements-1)/batch_size;
+   std::vector<elttype>::iterator it_begin = input.begin();
+   std::vector<elttype>::iterator it_curr = input.begin();
 
-   //Inserts all the batches
-   for (int k = 0; k < num_batches; k++) {
-      PRINTOUT("BATCH %d / %d\n", k , num_batches);
-      batch_start = &input_vec[k*size];
+   while (it_begin != input.end()) {
+      it_curr = std::min(it_begin + batch_size, input.end());
 
-      if ((nb_elements-k*batch_size) / batch_size == 0) {
-         size = nb_elements % batch_size;
-      } else {
-         size = batch_size;
-      }
+      std::vector<elttype> batch(it_begin, it_curr);
 
-      insert_batch(PMQ.pma, batch_start, size);
+      // insert batch
+      pma.insert(batch);
+
+      // update iterator
+      it_begin = it_curr;
 
 #ifndef NDEBUG
       PRINTOUT( "PMA WINDOWS : ") ;
-      for (auto k: *(PMQ.pma->last_rebalanced_segs)){
+      for (auto k: *(pma.get_container()->last_rebalanced_segs)){
          std::cout << k << " "; //<< std::endl;
       }
-      std::cout << "\n";
 #endif
 
 
+      // retrieve modified keys
+      modifiedKeys.clear();
       // Creates a map with begin and end of each index in the pma.
-      map_t modifiedKeys;
-      pma_diff(PMQ.pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
-
-      if (PMQ.quadtree == nullptr)
-         PMQ.quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
+      pma.diff(modifiedKeys); //Extract information of new key range boundaries inside the pma.
 
 #ifndef NDEBUG
       PRINTOUT("ModifiedKeys %d : ",modifiedKeys.size()) ;
@@ -170,26 +172,31 @@ int main(int argc, char *argv[]) {
       std::cout << "\n";
 
       PRINTOUT("pma keys: ");
-      print_pma_keys(PMQ.pma);
+      print_pma_keys(pma.get_container());
 #endif
-      PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
+
+      quadtree->update(modifiedKeys.begin(),modifiedKeys.end());
 
       //Check every level.
 
       //BFS(PMQ.quadtree.get(),check_consistency);
-      //BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return check_consistency(node);});
-      //int ret = BFS(PMQ.quadtree.get(),[](SpatialElement* node){ print_node(node); return node->check_count(global_pma);});
+      //BFS(PMQ.quadtree.get(),[](QuadtreeIntf* node){ print_node(node); return check_consistency(node);});
+      //int ret = BFS(PMQ.quadtree.get(),[](QuadtreeIntf* node){ print_node(node); return node->check_count(global_pma);});
 
 #ifndef NDEBUG
       PRINTOUT("QUADTREE DUMP:");
-      BFS(PMQ.quadtree.get(),print_node); // prints without any check
+      BFS(quadtree,print_node); // prints without any check
       std::cout << "\n";
 #endif
 
-      //traverese the tree checking counts
-      int ret = BFS(PMQ.quadtree.get(), [](SpatialElement* node) {
 
-              if ( node->check_count(global_pma) ){
+
+      //traverese the tree checking counts
+      int ret = BFS(quadtree.get(), [](QuadtreeIntf* node) {
+
+      //        elttype_function apply = std::bind(print_pma_el_key, std::placeholders::_1);
+
+              if ( node->check_count(*global_pma) ){
 
               PRINTOUT ("ERROR NODES : count [seg_b seg_e] (code_min code_max)");
 
@@ -202,13 +209,13 @@ int main(int argc, char *argv[]) {
 
               std::cout << "PMA RANGE: \n";
               std::cout << "P> " ;
-              iterate_elts_pma(global_pma, node->begin(), node->end(), node->code(), node->zoom(),  print_pma_el_key );
+   //TODO FIX           global_pma->apply(node->begin(), node->end(), node->el(),  print_pma_el_key);
               std::cout << "\n";
 
               std::cout << "C> " ;
               for(auto& e : node->container() ) {
                  if (e != nullptr){
-                   iterate_elts_pma(global_pma, e->begin(), e->end(), e->code(), e->zoom(),  print_pma_el_key );
+   // TODO FIX          global_pma->apply(e->begin(), e->end(), e->el(),  apply );
                    printf (" | ");
                   }
                }
@@ -225,9 +232,9 @@ int main(int argc, char *argv[]) {
       }
       std::cout << "\n";
 
+
    }
 
-   pma::destroy_pma(PMQ.pma);
    return EXIT_SUCCESS;
 
 }

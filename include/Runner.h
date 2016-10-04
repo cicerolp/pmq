@@ -8,8 +8,8 @@ class Runner : public Singleton<Runner> {
    friend class Singleton<Runner>;
 public:
    struct runner_opts {
-      uint32_t batch{100};
-      uint32_t interval{100};
+      uint32_t batch{100}; //batch size
+      uint32_t interval{100}; //insertion interval between batches in milliseconds
       bool hint_server{true};
    };
 
@@ -20,13 +20,15 @@ public:
 
    inline uint32_t input_size() const;
 
+   static std::vector<elttype> load_input(const std::string& fname);
+
 private:
    Runner(int argc, char *argv[]);
    Runner() = default;
    virtual ~Runner() = default;
 
    static void write_el(json_writer& runner, const valuetype& el);
-   static std::vector<elttype> load_input(const std::string& fname);
+
 
    std::mutex _mutex;
    
