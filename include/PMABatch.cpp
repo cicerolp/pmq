@@ -1,22 +1,20 @@
 #include "PMABatch.h"
 
+PMABatch::PMABatch(int argc, char* argv[]) {
+   seg_size = cimg_option("-s", 8, "pma::batch arg: segment size");
+   tau_0 = cimg_option("-t0", 0.92, "pma::batch arg: tau_0");
+   tau_h = cimg_option("-th", 0.7, "pma::batch arg: tau_h");
+   rho_0 = cimg_option("-r0", 0.08, "pma::batch arg: rho_0");
+   rho_h = cimg_option("-rh", 0.3, "pma::batch arg: rho_0");
+}
+
 PMABatch::~PMABatch() {
    if (_pma != nullptr)
       pma::destroy_pma(_pma);
 }
 
-duration_t PMABatch::create(uint32_t size, int argc, char* argv[]) {
-   const uint32_t seg_size(cimg_option("-s", 8, "pma::batch arg: segment size")); 
-   const float tau_0(cimg_option("-t0", 0.92, "pma::batch arg: tau_0"));
-   const float tau_h(cimg_option("-th", 0.7 , "pma::batch arg: tau_h"));
-   const float rho_0(cimg_option("-r0", 0.08, "pma::batch arg: rho_0"));
-   const float rho_h(cimg_option("-rh", 0.3 , "pma::batch arg: rho_0"));
-   
-   const char* is_help = cimg_option("-h", (char*)0, 0);
-
+duration_t PMABatch::create(uint32_t size) {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
-   if (is_help) return resolution_t::now() - t_point;
 
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
 

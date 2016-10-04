@@ -5,7 +5,7 @@
 #include "types.h"
 
 namespace input {
-   std::vector<elttype> load_input(const std::string& fname,int mCodeSize) {
+   std::vector<elttype> load(const std::string& fname,int mCodeSize) {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);

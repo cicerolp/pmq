@@ -13,11 +13,14 @@ int main(int argc, char *argv[]) {
 
    Runner& runner = Runner::getInstance(argc, argv);
 
-   std::shared_ptr<ContainerIntf> container = std::make_shared<PMABatch>();
-   container->create(runner.input_size(), argc, argv);
-
+   std::shared_ptr<ContainerIntf> container = std::make_shared<PMABatch>(argc, argv);
    std::shared_ptr<QuadtreeIntf> quadtree = std::make_shared<QuadtreeIntf>(spatial_t(0, 0, 0));
 
+   const char* is_help = cimg_option("-h", (char*)0, 0);
+   if (is_help) 0;
+
+   container->create(runner.input_size());
+   
    runner.set(container, quadtree);
 
    std::thread run_thread(&Runner::run, &runner);

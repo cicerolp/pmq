@@ -6,7 +6,7 @@
 Runner::Runner(int argc, char *argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
 
-   _input = input::load_input(input_file, 25);
+   _input = input::load(input_file, 25);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");

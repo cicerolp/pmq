@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
    const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
    std::string fname(cimg_option("-f", "../data/tweet100.dat", "file with tweets"));
 
+   PMABatch pma(argc, argv);
+
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
 
@@ -36,11 +38,10 @@ int main(int argc, char* argv[]) {
    const uint32_t quadtree_depth = 25;
 
    PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-   std::vector<elttype> input = input::load_input(fname, quadtree_depth);
+   std::vector<elttype> input = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
-
-   PMABatch pma;
-   pma.create(input.size(), argc, argv);
+   
+   pma.create(input.size());
 
    diff_cnt modifiedKeys;
 

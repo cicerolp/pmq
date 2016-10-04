@@ -4,9 +4,10 @@
 
 class PMABatch : public ContainerIntf {
 public:
+   PMABatch(int argc, char *argv[]);
    virtual ~PMABatch();
 
-   duration_t create(uint32_t size, int argc, char *argv[]) override final;
+   duration_t create(uint32_t size) override final;
 
    /**
    * @brief insert_batch
@@ -58,9 +59,9 @@ public:
    */
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function _apply) const override final;
 
-   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const ;
+   duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const override final;
 
-   inline pma_struct* get_container(){
+   inline const pma_struct* const get_container() {
        return _pma;
    }
 
@@ -75,6 +76,9 @@ private:
    * @param max [OUT]
    */
 
+   uint32_t seg_size;
+   float tau_0, tau_h, rho_0, rho_h;
+   
    pma_struct* _pma {nullptr};
 };
 
