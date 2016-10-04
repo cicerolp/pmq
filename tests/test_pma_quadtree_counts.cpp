@@ -75,6 +75,8 @@ int print_node(QuadtreeIntf* node) {
    return 0;
 }
 
+/*  Prints information about node of the quadtree :
+ *  number of keys in the node ; the begin and end segment pointed on the pma ; the min and max allowed keys in this node */
 int print_node_range(QuadtreeIntf* node) {
    static unsigned int level = 0;
 
@@ -219,7 +221,8 @@ int main(int argc, char* argv[]) {
 
    }
 
+   PRINTOUT("TEST SUCCESS \n");
    return EXIT_SUCCESS;
 
 }
-   
+

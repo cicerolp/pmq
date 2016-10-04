@@ -82,9 +82,9 @@ int main(int argc, char* argv[]) {
 
       PRINTOUT("pma keys: ");
       print_pma_keys(pma.get_container());
+      std::cout << "\n";
 #endif
 
-      std::cout << "\n";
       //TODO check that there are no modifiedKey outside of their range
       for (auto& k: modifiedKeys) {
          //PMA is sorted
@@ -115,6 +115,7 @@ int main(int argc, char* argv[]) {
       }
    }
 
+   PRINTOUT("TEST SUCCESS \n");
    return EXIT_SUCCESS;
 
 }

@@ -7,84 +7,104 @@
  *
  */
 
-#include "PMAInstance.h"
-#include <queue>
+#include "stde.h"
+#include "types.h"
+#include "PMABatch.h"
+
+#include "InputIntf.h"
+#include "QuadtreeIntf.h"
+
+#include <typeinfo>
 
 
 uint32_t g_Quadtree_Depth = 25;
-const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
+
+template<typename container_t >
+void run_bench(container_t container,std::vector<elttype> & input_vec,const int batch_size){
+
+   QuadtreeIntf quadtree(spatial_t(0,0,0));
+
+   //create the pma
+   container.create(input_vec.size());
+
+   diff_cnt modifiedKeys;
+   std::vector<elttype>::iterator it_begin = input_vec.begin();
+   std::vector<elttype>::iterator it_curr = input_vec.begin();
+
+   //Timer t;
+   duration_t t;
+
+   //Two option to get the name
+   PRINTOUTF("Running Bencmark with %s  \n", typeid(container_t).name() );
+// std::cout << typeid(container_t).name() << std::endl;
+   std::cout << __PRETTY_FUNCTION__  << std::endl;
+
+
+   while (it_begin != input_vec.end()) {
+      it_curr = std::min(it_begin + batch_size, input_vec.end());
+
+      std::vector<elttype> batch(it_begin, it_curr);
+
+      // insert batch
+      t = container.insert(batch);
+      //PRINTCSVF("Insert", t.milliseconds(),"ms", modifiedKeys.size() );
+
+      // update iterator
+      it_begin = it_curr;
+
+      // retrieve modified keys
+      modifiedKeys.clear();
+
+      // Creates a map with begin and end of each index in the container.
+      t = container.diff(modifiedKeys); //Extract information of new key range boundaries inside the container
+//      PRINTCSVF("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
+
+//      t.start();
+      quadtree.update(modifiedKeys.begin(), modifiedKeys.end());
+  //    t.stop();
+  //    PRINTCSVF("QuadtreeUpdate", t.milliseconds(),"ms");
+
+   }
+}
+
 
 int main(int argc, char *argv[]) {
 
    cimg_usage("Benchmark inserts elements in batches.");
-   const unsigned int seg_size ( cimg_option("-s",8,"Segment size for the pma"));
-   const int batch_size ( cimg_option("-b",10,"Batch size used in batched insertions"));
-   const float tau_0 ( cimg_option("-t0",0.92,"pma parameter tau_0"));
-   const float tau_h ( cimg_option("-th",0.7,"pma parameter tau_h"));
-   const float rho_0 ( cimg_option("-r0",0.08,"pma parameter rho_0"));
-   const float rho_h ( cimg_option("-rh",0.3,"pma parameter rho_0"));
+   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
    std::string fname ( cimg_option("-f","./data/tweet100.dat","file with tweets"));
+   const unsigned int n_exp ( cimg_option("-x",1,"Number of repetitions of each experiment"));
+
+   PMABatch pma_container(argc, argv); //read pma command line parameters
 
    const char* is_help = cimg_option("-h",(char*)0,0);
 
    if (is_help) return false;
 
-   PMAInstance PMQ;
-   Timer t;
+   const uint32_t quadtree_depth = 25;
 
-   PRINTOUT("Loading twitter dataset... %s \n",fname.c_str());
-
-   // Create <key,value> elements
-   std::vector<elttype> input_vec;
-   loadTweetFile(input_vec, fname);
-
-   int nb_elements = input_vec.size();
-
+   PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+   std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   t.start();
-   PMQ.pma = (struct pma_struct * ) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   t.stop();
-   PRINTCSVL("build_pma", t.milliseconds(),"ms" );
+   for (int i = 0 ; i < n_exp; i++){
 
-   global_pma = PMQ.pma;
+     run_bench<PMABatch>(pma_container,input_vec,batch_size);
 
-   if (PMQ.quadtree == nullptr)
-      PMQ.quadtree = std::make_unique<SpatialElement>(spatial_t(0,0,0));
+#if 0
+     do_bench_benderPMA(&input_vec[0],input_vec.size(),reference_array,tau_0,tau_h,rho_0,rho_h,seg_size);
+
+     do_bench_stlsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
+
+     do_bench_qsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
 
 
-   elttype * batch_start;
-   int size = nb_elements / batch_size;
-   int num_batches = 1 + (nb_elements-1)/batch_size;
 
-   //Inserts all the batches:
-   for (int k = 0; k < num_batches; k++) {
-      PRINTOUT("BATCH %d / %d\n", k , num_batches);
-      batch_start = &input_vec[k*size];
+     do_bench_mergesort(&input_vec[0],input_vec.size(),batch_size,reference_array);
 
-      if ((nb_elements-k*batch_size) / batch_size == 0) {
-         size = nb_elements % batch_size;
-      } else {
-         size = batch_size;
-      }
-
-      insert_batch(PMQ.pma, batch_start, size);
-
-      // Creates a map with begin and end of each index in the pma.
-      map_t modifiedKeys;
-      t.start();
-      pma_diff(PMQ.pma,modifiedKeys); //Extract information of new key range boundaries inside the pma.
-      t.stop();
-      PRINTCSVL("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
-
-      t.start();
-      PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
-      t.stop();
-      PRINTCSVL("Quadtree Update", t.milliseconds(),"ms");
+#endif
 
    }
 
-   pma::destroy_pma(PMQ.pma);
-   return EXIT_SUCCESS;
 
 }
