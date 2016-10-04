@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
    std::shared_ptr<QuadtreeIntf> quadtree = std::make_shared<QuadtreeIntf>(spatial_t(0, 0, 0));
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
-   if (is_help) 0;
+   if (is_help) return 0;
 
    container->create(runner.input_size());
    
