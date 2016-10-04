@@ -1,43 +1,42 @@
 #ifndef INPUTINTF_H
 #define INPUTINTF_H
 
-#include <stde.h>
-#include <types.h>
+#include "stde.h"
+#include "types.h"
 
 namespace input {
+   std::vector<elttype> load_input(const std::string& fname,int mCodeSize) {
+      std::vector<elttype> tweets;
 
-std::vector<elttype> load_input(const std::string& fname,int mCodeSize) {
-   std::vector<elttype> tweets;
+      std::ifstream infile(fname, std::ios::binary);
+      infile.unsetf(std::ios_base::skipws);
 
-   std::ifstream infile(fname, std::ios::binary);
-   infile.unsetf(std::ios_base::skipws);
+      // skip file header
+      for (int i = 0; i < 32; ++i) {
+         infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      }
 
-   // skip file header
-   for (int i = 0; i < 32; ++i) {
-      infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      tweet_t record;
+      size_t record_size = 19; //file record size
+
+      while (true) {
+         try {
+            infile.read((char*)&record, record_size);
+
+            if (infile.eof()) break;
+
+            tweets.emplace_back(record, mCodeSize);
+         }
+         catch (...) {
+            break;
+         }
+      }
+      infile.close();
+
+      return tweets;
    }
 
-   tweet_t record;
-   size_t record_size = 19; //file record size
-
-   while (true) {
-      try {
-         infile.read((char*)&record, record_size);
-
-         if (infile.eof()) break;
-
-         tweets.emplace_back(record, mCodeSize);
-      }
-      catch (...) {
-         break;
-      }
-   }
-   infile.close();
-
-   return tweets;
-}
-
-}
+} // namespace input
 
 #endif // INPUTINTF_H
 

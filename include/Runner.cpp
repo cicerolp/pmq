@@ -1,10 +1,12 @@
 #include "Runner.h"
 #include "Server.h"
 
+#include"InputIntf.h"
+
 Runner::Runner(int argc, char *argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
 
-   _input = load_input(input_file);
+   _input = input::load_input(input_file, 25);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
@@ -37,7 +39,7 @@ void Runner::run() {
       // retrieve modified keys
       keys.clear();      
       _container->diff(keys);
-
+      
       // update quadtree
       _quadtree->update(keys.begin(), keys.end());
 
