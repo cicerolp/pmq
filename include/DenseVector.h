@@ -21,21 +21,21 @@ public:
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const override final;
 
 protected:   
-   virtual inline void sort(std::vector<elttype>& cnt) = 0;
+   virtual void sort(std::vector<elttype>& cnt) = 0;
 
    uint32_t _diff_index;
    std::vector<elttype> _container;
 };
 
 class DenseVectorStdSort : public DenseVector {
-public:
+protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       std::sort(cnt.begin(), cnt.end());
    }
 };
 
 class DenseVectorTimSort : public DenseVector {
-public:
+protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       gfx::timsort(cnt.begin(), cnt.end());
    }
