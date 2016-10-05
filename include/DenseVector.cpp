@@ -1,16 +1,16 @@
 #include "DenseVector.h"
 
 duration_t DenseVector::create(uint32_t size) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
+   Timer t;
+   t.start();
    _container.reserve(size);
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t DenseVector::insert(std::vector<elttype> batch) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
+   Timer t;
+   t.start();
    // std algorithm
 
    // we need the batch sorted
@@ -28,12 +28,13 @@ duration_t DenseVector::insert(std::vector<elttype> batch) {
 
    // sorting algorithm
    sort(_container);
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
+   Timer t;
+   t.start();
    
    uint32_t begin_index = _diff_index;
    uint32_t curr_index = _diff_index;
@@ -53,23 +54,26 @@ duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
 
    keys.emplace_back(last_key, begin_index, curr_index);
 
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t DenseVector::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
    assert(begin >= 0 && begin < end && end <= _container.size());
 
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
+   Timer t;
+   t.start();
 
    count += end - begin;
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
    assert(begin >= 0 && begin < end && end <= _container.size());
 
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
+   Timer t;
+   t.start();
 
    uint32_t curr = begin;
    while (curr < end) {
@@ -79,20 +83,20 @@ duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const 
       curr++;
       count++;
    }
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const {
    assert(begin >= 0 && begin < end && end <= _container.size());
 
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
+   Timer t;
+   t.start();
    uint32_t curr = begin;
    while (curr < end) {
       __apply(&_container[curr]);
       curr++;
    }
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }

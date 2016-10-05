@@ -14,17 +14,19 @@ PMABatch::~PMABatch() {
 }
 
 duration_t PMABatch::create(uint32_t size) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-
+   Timer t;
+   t.start();
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   t.stop();
 
-   return resolution_t::now() - t_point;
+   return t ;
 }
 
 duration_t PMABatch::insert(std::vector<elttype> batch) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-   if (_pma == nullptr) return resolution_t::now() - t_point;
+   Timer t;
+   if (_pma == nullptr) return t;
 
+   t.start();
    // sorting algorithm
    std::sort(batch.begin(), batch.end());
 
@@ -32,13 +34,15 @@ duration_t PMABatch::insert(std::vector<elttype> batch) {
    void *end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
 
    pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-   if (_pma == nullptr) return resolution_t::now() - t_point;
+   Timer t;
+   if (_pma == nullptr) return t;
+
+   t.start();
 
    for (unsigned int wId : *(_pma->last_rebalanced_segs)) {
       //We don't need to track rebalance on leaf segments (TODO : could remove it from the PMA rebalance function)
@@ -95,13 +99,15 @@ duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
          }
       }
    }
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-   if (_pma == nullptr) return resolution_t::now() - t_point;
+   Timer t;
+   if (_pma == nullptr) return t;
+
+   t.start();
 
    uint64_t mCodeMin = 0;
    uint64_t mCodeMax = 0;
@@ -121,12 +127,14 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
       count--;
    }
    
-   return resolution_t::now() - t_point;
+   return t;
 }
 
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-   if (_pma == nullptr ) return resolution_t::now() - t_point;
+   Timer t;
+   if (_pma == nullptr) return t;
+
+   t.start();
 
    uint64_t mCodeMin, mCodeMax;
    get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
@@ -150,13 +158,15 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
       _apply((void*)cur_el_pt);
 
    }
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }
 
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
-   std::chrono::time_point<resolution_t> t_point = resolution_t::now();
-   if (_pma == nullptr || count >= max) return resolution_t::now() - t_point;
+   Timer t;
+   if (_pma == nullptr || count >= max) return t;
+
+   t.start();
 
    uint64_t mCodeMin, mCodeMax;
    get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
@@ -173,7 +183,7 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
          __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
          count++;
 
-         if (count >= max) return resolution_t::now() - t_point;
+         if (count >= max) {t.stop(); return t;}
       }
    }
 
@@ -182,8 +192,8 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
       __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
       count++;
 
-      if (count >= max) return resolution_t::now() - t_point;
+      if (count >= max) {t.stop(); return t;}
    }
-
-   return resolution_t::now() - t_point;
+   t.stop();
+   return t;
 }

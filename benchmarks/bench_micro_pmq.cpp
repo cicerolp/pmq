@@ -47,6 +47,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
    std::vector<elttype>::iterator it_curr = input_vec.begin();
 
    Timer t;
+   //std::cout << typeid(Timer).name() << std::endl;
 
    while (it_begin != input_vec.end()) {
       it_curr = std::min(it_begin + batch_size, input_vec.end());
