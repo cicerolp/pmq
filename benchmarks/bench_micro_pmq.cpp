@@ -18,8 +18,24 @@
 
 uint32_t g_Quadtree_Depth = 25;
 
+template< typename T> struct type {
+   static constexpr const char* name() { return "unknown";  }  // end type< T>::name
+}; // type< T>
+
+template<> struct type<PMABatch> {
+   static constexpr const char* name() { return "PMABatch";  }
+};
+
+
 template <typename container_t>
 void run_bench(container_t container, std::vector<elttype>& input_vec, const int batch_size) {
+
+
+#define PRINTBENCH( ... ) do { \
+   std::cout << "Bench " << type<container_t>::name() << " ; ";\
+   printcsv( __VA_ARGS__ ) ; \
+   std::cout << std::endl ;\
+} while (0)
 
    QuadtreeIntf quadtree(spatial_t(0, 0, 0));
 
@@ -30,19 +46,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();
 
-   //Timer t;
-   duration_t t;
-
-   //Two option to get the name
-   PRINTOUTF("Running Bencmark with %s  \n", typeid(container_t).name());
-   // std::cout << typeid(container_t).name() << std::endl;
-   std::cout << __PRETTY_FUNCTION__ << std::endl;
-
-   if (dynamic_cast<PMABatch*>(&container))
-      std::cout << "PMABatch" << std::endl;
-   //else (dynamic_cast<PMABatch*>(&container))
-      //std::cout << "PMABatch" << std::endl;
-      // ...
+   Timer t;
 
    while (it_begin != input_vec.end()) {
       it_curr = std::min(it_begin + batch_size, input_vec.end());
@@ -51,7 +55,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
       // insert batch
       t = container.insert(batch);
-      //PRINTCSVF("Insert", t.milliseconds(),"ms", modifiedKeys.size() );
+      PRINTBENCH("Insert", t.milliseconds(),"ms", modifiedKeys.size() );
 
       // update iterator
       it_begin = it_curr;
@@ -61,12 +65,12 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
       // Creates a map with begin and end of each index in the container.
       t = container.diff(modifiedKeys); //Extract information of new key range boundaries inside the container
-      //      PRINTCSVF("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
+      PRINTBENCH("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
 
-      //      t.start();
+      t.start();
       quadtree.update(modifiedKeys.begin(), modifiedKeys.end());
-      //    t.stop();
-      //    PRINTCSVF("QuadtreeUpdate", t.milliseconds(),"ms");
+      t.stop();
+      PRINTBENCH("QuadtreeUpdate", t.milliseconds(),"ms");
 
    }
 }
