@@ -64,6 +64,14 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
    _end = (*get_last_child())->end();
 }
 
+/**
+ * @brief QuadtreeIntf::query_tile :
+ * @param region
+ * @param subset
+ *
+ * - Goes down the quadtree to the zoom level of the selected region;
+ * - If the node it completly inside the region, puts all the 8-descendents into the returned subset.
+ */
 void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.z() == _el.z && region.cover(_el)) {
       return aggregate_tile(_el.z + 8, subset);
@@ -74,7 +82,11 @@ void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>
       if (_container[3] != nullptr) _container[3]->query_tile(region, subset);
    }
 }
-
+/**
+ * @brief QuadtreeIntf::query_region : finds the smallest set of quadtree-nodes that are completely inside the \a region
+ * @param region
+ * @param subset : the resulting subset
+ */
 void QuadtreeIntf::query_region(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.cover(_el)) {
       subset.emplace_back(this);
@@ -86,6 +98,11 @@ void QuadtreeIntf::query_region(const region_t& region, std::vector<QuadtreeIntf
    }
 }
 
+/**
+ * @brief QuadtreeIntf::aggregate_tile : creates as list with all the "descendent" nodes \a zoom levels deeper in the quadtree.
+ * @param zoom : the relative depth to search for descedants
+ * @param subset : the list os descendents at depth \a zoom or leaf nodes in there is not enough depth.
+ */
 void QuadtreeIntf::aggregate_tile(uint32_t zoom, std::vector<QuadtreeIntf*>& subset) {
    if (_el.leaf || _el.z == zoom) {
       subset.emplace_back(this);

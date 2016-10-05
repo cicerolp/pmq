@@ -24,8 +24,16 @@ template<> struct type<PMABatch> {
 };
 
 
+//Reads the key only
+void inline read_key(const void* el) {
+   uint64_t key = *(uint64_t*)el;
+}
 
-
+//Reads the full element
+void read_element(const void* el) {
+    //HOW TO MAKE SURE THE COMPILIER DOESNT OPTIMIZE THIS ?
+   elttype elemt = *(elttype*)el;
+}
 
 template <typename container_t>
 void run_bench(container_t container, std::vector<elttype>& input_vec, const int batch_size) {
@@ -44,6 +52,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();
 
+   Timer t;
 
    // =====================================
    // Populates container and index
@@ -77,14 +86,48 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
     // Perform the queries
     // ========================================
 
+    // 1 - Creates a region on the map to be queried
+    // Region arround NY
+    // http://localhost:7000/rest/query/region/14/4790/6116/4909/6204
+    region_t q_region(4790,6116,4909,6204,14);
 
-   // defines a region
+    // 2 - gets the minimum set of nodes that are inside the queried region
+    // QueryRegion will traverse the tree and return the intervals to query;
+    // NOTE: when comparing with the octree with pointer to elements the scan will be the traversall on the tree.
+    std::vector<QuadtreeIntf*> q_nodes;
+    quadtree.query_region(q_region, q_nodes);
 
-   // QueryRegion will traverse the tree and return the intervals to query;
-   // Option 1 : measure only the scan on the segments
-   // Option 2 : measure the recursive traversall together.
+    // 3 - access the container to count the number of elements inside the region
 
-   // NOTE: when comparing with the octree with pointer to elements the scan will be the traversall on the tree.
+
+    for (int i = 0; i < 10; i++) {
+       uint32_t count = 0;
+       t.start();
+       for (auto& el : q_nodes) {
+          container.count(el->begin(), el->end(), el->el(), count);
+       }
+       t.stop();
+       PRINTBENCH("Count", t.milliseconds(),"ms", q_nodes.size() );
+}
+    for (int i = 0; i < 10; i++) {
+       // 4 - scans the container executing a function
+       t.start();
+       for (auto& el : q_nodes) {
+          container.apply(el->begin(), el->end(), el->el(), read_key);
+       }
+       t.stop();
+       PRINTBENCH("ReadKeys", t.milliseconds(),"ms", q_nodes.size() );
+}
+    for (int i = 0; i < 10; i++) {
+       t.start();
+       for (auto& el : q_nodes) {
+          container.apply(el->begin(), el->end(), el->el(), read_element);
+       }
+       t.stop();
+       PRINTBENCH("ReadElts", t.milliseconds(),"ms", q_nodes.size() );
+    }
+
+
 
 }
 
@@ -107,25 +150,8 @@ int main(int argc, char* argv[]) {
    std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   for (int i = 0; i < n_exp; i++) {
 
-      run_bench<PMABatch>(pma_container, input_vec, batch_size);
-
-#if 0
-     do_bench_benderPMA(&input_vec[0],input_vec.size(),reference_array,tau_0,tau_h,rho_0,rho_h,seg_size);
-
-     do_bench_stlsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-
-     do_bench_qsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-
-
-
-     do_bench_mergesort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-
-#endif
-
-   }
-
+   run_bench<PMABatch>(pma_container, input_vec, batch_size);
 
 
    return EXIT_SUCCESS;
