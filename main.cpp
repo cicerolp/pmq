@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
    //std::shared_ptr<ContainerIntf> container = std::make_shared<PMABatch>(argc, argv);
    //std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorStdSort>();
-   std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorTimSort>();
+   std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorTimSort>();  
    
    std::shared_ptr<QuadtreeIntf> quadtree = std::make_shared<QuadtreeIntf>(spatial_t(0, 0, 0));
 
