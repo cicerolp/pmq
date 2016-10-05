@@ -26,13 +26,12 @@ template<> struct type<PMABatch> {
 
 //Reads the key only
 void inline read_key(const void* el) {
-   uint64_t key = *(uint64_t*)el;
+   uint64_t volatile key = *(uint64_t*)el;
 }
 
 //Reads the full element
-void read_element(const void* el) {
-    //HOW TO MAKE SURE THE COMPILIER DOESNT OPTIMIZE THIS ?
-   elttype elemt = *(elttype*)el;
+void inline read_element(const void* el) {
+   elttype volatile elemt = *(elttype*)el;
 }
 
 template <typename container_t>
