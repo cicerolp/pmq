@@ -24,6 +24,9 @@
 #include <functional>
 #include <unordered_map>
 
+// sorting algorithms
+#include "sorting/timsort.hpp"
+
 // singleton
 #include "Singleton.h"
 

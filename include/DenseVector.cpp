@@ -1,8 +1,5 @@
 #include "DenseVector.h"
 
-DenseVector::~DenseVector() {
-}
-
 duration_t DenseVector::create(uint32_t size) {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
 
@@ -14,8 +11,10 @@ duration_t DenseVector::create(uint32_t size) {
 duration_t DenseVector::insert(std::vector<elttype> batch) {
    std::chrono::time_point<resolution_t> t_point = resolution_t::now();
 
+   // std algorithm
+
    // we need the batch sorted
-   std::sort(batch.begin(), batch.end());
+   sort(batch);
 
    // first element in batch
    auto ref = batch.front();
@@ -28,7 +27,7 @@ duration_t DenseVector::insert(std::vector<elttype> batch) {
    _container.insert(_container.end(), batch.begin(), batch.end());
 
    // sorting algorithm
-   std::sort(_container.begin(), _container.end());
+   sort(_container);
 
    return resolution_t::now() - t_point;
 }
