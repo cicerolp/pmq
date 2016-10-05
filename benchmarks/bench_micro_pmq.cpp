@@ -32,7 +32,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
 
 #define PRINTBENCH( ... ) do { \
-   std::cout << "Bench " << type<container_t>::name() << " ; ";\
+   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)

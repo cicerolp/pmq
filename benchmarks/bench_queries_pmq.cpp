@@ -4,83 +4,79 @@
  *
  */
 
-#include "PMAInstance.h"
-#include <queue>
+#include "stde.h"
+#include "types.h"
+#include "PMABatch.h"
+
+#include "InputIntf.h"
+#include "QuadtreeIntf.h"
+
 
 uint32_t g_Quadtree_Depth = 25;
-const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
 
-int main(int argc, char* argv[]) {
 
-   cimg_usage("Benchmark inserts elements in batches.");
-   const unsigned int seg_size(cimg_option("-s", 8, "Segment size for the pma"));
-   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
-   const float tau_0(cimg_option("-t0", 0.92, "pma parameter tau_0"));
-   const float tau_h(cimg_option("-th", 0.7, "pma parameter tau_h"));
-   const float rho_0(cimg_option("-r0", 0.08, "pma parameter rho_0"));
-   const float rho_h(cimg_option("-rh", 0.3, "pma parameter rho_0"));
-   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
+template< typename T> struct type {
+   static constexpr const char* name() { return "unknown";  }  // end type< T>::name
+}; // type< T>
 
-   const char* is_help = cimg_option("-h", (char*)0, 0);
+template<> struct type<PMABatch> {
+   static constexpr const char* name() { return "PMABatch";  }
+};
 
-   if (is_help) return false;
 
-   PMAInstance PMQ;
-   Timer t;
 
-   PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
 
-   // Create <key,value> elements
-   std::vector<elttype> input_vec;
-   loadTweetFile(input_vec, fname);
 
-   int nb_elements = input_vec.size();
+template <typename container_t>
+void run_bench(container_t container, std::vector<elttype>& input_vec, const int batch_size) {
+#define PRINTBENCH( ... ) do { \
+   std::cout << "QueriesBench " << type<container_t>::name() << " ; ";\
+   printcsv( __VA_ARGS__ ) ; \
+   std::cout << std::endl ;\
+} while (0)
 
-   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
+   QuadtreeIntf quadtree(spatial_t(0, 0, 0));
 
-   t.start();
-   PMQ.pma = (struct pma_struct *) pma::build_pma(nb_elements, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-   t.stop();
-   PRINTCSVL("build_pma", t.milliseconds(), "ms");
+   //create the pma
+   container.create(input_vec.size());
 
-   global_pma = PMQ.pma;
+   diff_cnt modifiedKeys;
+   std::vector<elttype>::iterator it_begin = input_vec.begin();
+   std::vector<elttype>::iterator it_curr = input_vec.begin();
 
-   if (PMQ.quadtree == nullptr) PMQ.quadtree = std::make_unique<SpatialElement>(spatial_t(0, 0, 0));
 
-   elttype* batch_start;
-   int size = nb_elements / batch_size;
-   int num_batches = 1 + (nb_elements - 1) / batch_size;
+   // =====================================
+   // Populates container and index
+   // =====================================
+   //Fully Populates the container
+   while (it_begin != input_vec.end()) {
+      it_curr = std::min(it_begin + batch_size, input_vec.end());
 
-   //Inserts all the batches at once
-   for (int k = 0; k < num_batches; k++) {
-      PRINTOUT("BATCH %d / %d\n", k, num_batches);
-      batch_start = &input_vec[k * size];
+      std::vector<elttype> batch(it_begin, it_curr);
 
-      if ((nb_elements - k * batch_size) / batch_size == 0) {
-         size = nb_elements % batch_size;
-      } else {
-         size = batch_size;
-      }
-      insert_batch(PMQ.pma, batch_start, size);
-   }
+      // insert batch
+      container.insert(batch);
 
-   //Get all the keys of the pma
-   PMQ.pma->last_rebalanced_segs->clear();
-   PMQ.pma->last_rebalanced_segs->push_back(((PMQ.pma)->nb_segments * 2 - 2)); //PUSHES ROOT INDEX on the list of rebalanced segments.
+      // update insert iterator
+      it_begin = it_curr;
+    }
 
-   // Creates a map with begin and end of each index in the pma.
-   map_t modifiedKeys;
-   t.start();
-   pma_diff(PMQ.pma, modifiedKeys); //Extract information of new key range boundaries inside the pma.
-   t.stop();
-   PRINTCSVL("ModifiedKeys", t.milliseconds(), "ms", modifiedKeys.size());
+    //Populates the quadtree index
+    container.clear_diff();
 
-   t.start();
-   PMQ.quadtree->update(PMQ.pma, modifiedKeys.begin(), modifiedKeys.end());
-   t.stop();
-   PRINTCSVL("Quadtree Update", t.milliseconds(), "ms");
+    //retrieve modified keys
+    modifiedKeys.clear();
 
-   // Preform some queries.
+    // Creates a map with begin and end of each index in the container.
+    // Extract information of new key range boundaries inside the container
+    container.diff(modifiedKeys);
+
+    quadtree.update(modifiedKeys.begin(), modifiedKeys.end());
+
+    // ========================================
+    // Perform the queries
+    // ========================================
+
 
    // defines a region
 
@@ -90,7 +86,48 @@ int main(int argc, char* argv[]) {
 
    // NOTE: when comparing with the octree with pointer to elements the scan will be the traversall on the tree.
 
-   pma::destroy_pma(PMQ.pma);
+}
+
+int main(int argc, char* argv[]) {
+
+   cimg_usage("Queries Benchmark inserts elements in batches.");
+   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
+   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
+   const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
+
+   PMABatch pma_container(argc, argv); //read pma command line parameters
+
+   const char* is_help = cimg_option("-h", (char*)0, 0);
+
+   if (is_help) return false;
+
+   const uint32_t quadtree_depth = 25;
+
+   PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+   std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
+   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
+
+   for (int i = 0; i < n_exp; i++) {
+
+      run_bench<PMABatch>(pma_container, input_vec, batch_size);
+
+#if 0
+     do_bench_benderPMA(&input_vec[0],input_vec.size(),reference_array,tau_0,tau_h,rho_0,rho_h,seg_size);
+
+     do_bench_stlsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
+
+     do_bench_qsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
+
+
+
+     do_bench_mergesort(&input_vec[0],input_vec.size(),batch_size,reference_array);
+
+#endif
+
+   }
+
+
+
    return EXIT_SUCCESS;
 
 }

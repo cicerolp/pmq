@@ -162,6 +162,12 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    return t;
 }
 
+void PMABatch::clear_diff()
+{
+    _pma->last_rebalanced_segs->clear();
+    _pma->last_rebalanced_segs->push_back((_pma->nb_segments * 2 - 2)); //PUSHES ROOT INDEX on the list of rebalanced segments.
+}
+
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
    Timer t;
    if (_pma == nullptr || count >= max) return t;

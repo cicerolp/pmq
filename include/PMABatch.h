@@ -67,6 +67,11 @@ public:
 
    static inline void get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max, uint32_t mCodeSize);
 
+   /**
+    * @brief clear_diff Resets the container diff. This results as all keys beeing marked as modified.
+    */
+   void clear_diff();
+
 private:
    /**
    * @brief get_mcode_range : Computes the min and max values for a geo_hash with prefix \a mCode
