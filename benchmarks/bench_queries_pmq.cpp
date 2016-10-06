@@ -7,6 +7,7 @@
 #include "stde.h"
 #include "types.h"
 #include "PMABatch.h"
+#include "DenseVector.h"
 
 #include "InputIntf.h"
 #include "QuadtreeIntf.h"
@@ -26,6 +27,12 @@ template< typename T> struct type {
 
 template<> struct type<PMABatch> {
    static constexpr const char* name() { return "PMABatch";  }
+};
+template<> struct type<DenseVectorStdSort> {
+   static constexpr const char* name() { return "StdDense";  }
+};
+template<> struct type<DenseVectorTimSort> {
+   static constexpr const char* name() { return "TimDense";  }
 };
 
 //Reads the key only
@@ -162,6 +169,9 @@ int main(int argc, char* argv[]) {
 
    PMABatch pma_container(argc, argv); //read pma command line parameters
 
+//   DenseVectorStdSort vec_cont;
+   DenseVectorTimSort tim_cont;
+
    const char* is_help = cimg_option("-h", (char*)0, 0);
 
    if (is_help) return false;
@@ -173,7 +183,12 @@ int main(int argc, char* argv[]) {
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
 
-   run_bench<PMABatch>(pma_container, input_vec, batch_size, n_exp);
+   run_bench(pma_container, input_vec, batch_size, n_exp);
+
+   //don't need to insert by batch for the dense vector case
+
+  // run_bench(vec_cont, input_vec,  input_vec.size(), n_exp);
+   run_bench(tim_cont, input_vec,  input_vec.size(), n_exp);
 
 
    return EXIT_SUCCESS;

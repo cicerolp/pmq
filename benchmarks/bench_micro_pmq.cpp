@@ -10,6 +10,7 @@
 #include "stde.h"
 #include "types.h"
 #include "PMABatch.h"
+#include "DenseVector.h"
 
 #include "InputIntf.h"
 #include "QuadtreeIntf.h"
@@ -24,6 +25,12 @@ template< typename T> struct type {
 
 template<> struct type<PMABatch> {
    static constexpr const char* name() { return "PMABatch";  }
+};
+template<> struct type<DenseVectorStdSort> {
+   static constexpr const char* name() { return "StdDense";  }
+};
+template<> struct type<DenseVectorTimSort> {
+   static constexpr const char* name() { return "TimDense";  }
 };
 
 
@@ -84,6 +91,8 @@ int main(int argc, char* argv[]) {
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    PMABatch pma_container(argc, argv); //read pma command line parameters
+   DenseVectorStdSort vec_cont;
+   DenseVectorTimSort tim_cont;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
 
@@ -97,7 +106,9 @@ int main(int argc, char* argv[]) {
 
    for (int i = 0; i < n_exp; i++) {
 
-      run_bench<PMABatch>(pma_container, input_vec, batch_size);
+      run_bench(pma_container, input_vec, batch_size);
+      run_bench(vec_cont, input_vec, batch_size);
+      run_bench(tim_cont, input_vec, batch_size);
 
 #if 0
      do_bench_benderPMA(&input_vec[0],input_vec.size(),reference_array,tau_0,tau_h,rho_0,rho_h,seg_size);

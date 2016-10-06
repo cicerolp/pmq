@@ -1,7 +1,9 @@
 
 add_executable(bench_micro_pmq
    bench_micro_pmq.cpp
+
    ../include/PMABatch.cpp
+   ../include/DenseVector.cpp
    ../include/QuadtreeIntf.cpp
 )
 
@@ -12,6 +14,7 @@ add_executable(bench_queries_pmq
    bench_queries_pmq.cpp
 
    ../include/PMABatch.cpp
+   ../include/DenseVector.cpp
    ../include/QuadtreeIntf.cpp
 )
 

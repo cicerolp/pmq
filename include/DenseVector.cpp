@@ -100,3 +100,8 @@ duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const 
    t.stop();
    return t;
 }
+
+void DenseVector::clear_diff()
+{
+   _diff_index = 0;
+}

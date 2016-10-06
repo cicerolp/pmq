@@ -20,7 +20,8 @@ public:
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const override final;
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const override final;
 
-protected:   
+   void clear_diff();
+protected:
    virtual void sort(std::vector<elttype>& cnt) = 0;
 
    uint32_t _diff_index;
