@@ -12,7 +12,7 @@
 
 
 
-* TO-DO List [0/5]
+* TO-DO List [1/5]
     
 ** TODO Related Work - State Of the Art
 *** TODO find other data structure for geospatial data
@@ -21,32 +21,50 @@
 *** TODO What is a meaningfull size of batch for real applications ?
   We should look at the real rate of insertions Tweets / s
 
-** TODO Look at the Twitter API for streaming
-  - how to use it?
+*** TODO Spatial DB GIS                                             :@CICERO:
+Install one of the saptial databases to see if we can use it as
+a reference to compare. 
+http://postgis.net/
 
-  - What are the limits? 
-
+** DONE Look at the Twitter API for streaming
+Documentation about Twitter api : 
+    https://dev.twitter.com/overview/documentation
+Python library to use the Twitte api: 
+    https://github.com/geduldig/TwitterAPI
+    
 ** TODO Profiling the TwitterVis Project
   - Identify and compare costs:
     - PMA Instertion
     - PMA modified key scan ( PMA_diff )
-    - Quadtree update
+    - Quadtree update 
+      
+*** TODO Why does the Quadtree update takes more time than a batch insertion ? 
 
 ** TODO Benchmarks
-*** TODO TwitterVis comparison:
+*** DONE TwitterVis comparison:
 - compare UPD and QUERY performance of different implementations
   
-*** INPROGRESS PMA Micro-benchmarks:                               :@JULIO:
+*** DONE PMA Micro-benchmarks:                                     :@JULIO:
 - compare time spent on INS, DIFF, UPD. 
+ 
+*** TODO Run the benchmarks on experiment machines                 :@JULIO:
+- For the momment we already have the PMA and dense vector
+  implementation. 
   
+*** TODO Set correct initialization parameters for the PMA         :@JULIO:
+For the Querry benchmarks the pma is takling more than the double of
+the size needed to store elements.
+
+Set an option that alows us choose the ratio of occupation of the pma
+at the initialization;
+ 
 ** TODO Developpment:
-*** INPROGRESS Interfaces for using a general storage container with the quadtree: :@CICERO:
-- Cícero is doing it.
+*** DONE Interfaces for using a general storage container with the quadtree: :@CICERO:
 
 *** INPROGRESS Generate files with the queries to apply on the benchmark. :@CICERO:
 
-*** TODO Add TIMSORT to the sorting algorithms on the benchmarks.  :@JULIO:
+*** DONE Add TIMSORT to the sorting algorithms on the benchmarks.
     
-*** TODO Handle deletion of Tweets
+*** TODO Handle deletion of Tweets                                 :@JULIO:
 
    
