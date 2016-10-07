@@ -56,6 +56,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
    Timer t;
    //std::cout << typeid(Timer).name() << std::endl;
 
+   int id = 0;
    while (it_begin != input_vec.end()) {
       it_curr = std::min(it_begin + batch_size, input_vec.end());
 
@@ -63,7 +64,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
       // insert batch
       t = container.insert(batch);
-      PRINTBENCH("Insert", t.milliseconds(),"ms", modifiedKeys.size() );
+      PRINTBENCH("Insert", id ,t.milliseconds(),"ms", modifiedKeys.size() );
 
       // update iterator
       it_begin = it_curr;
@@ -73,13 +74,14 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
       // Creates a map with begin and end of each index in the container.
       t = container.diff(modifiedKeys); //Extract information of new key range boundaries inside the container
-      PRINTBENCH("ModifiedKeys", t.milliseconds(),"ms", modifiedKeys.size() );
+      PRINTBENCH("ModifiedKeys", id, t.milliseconds(),"ms", modifiedKeys.size() );
 
       t.start();
       quadtree.update(modifiedKeys.begin(), modifiedKeys.end());
       t.stop();
-      PRINTBENCH("QuadtreeUpdate", t.milliseconds(),"ms");
+      PRINTBENCH("QuadtreeUpdate", id, t.milliseconds(),"ms");
 
+      id++;
    }
 }
 

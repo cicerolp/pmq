@@ -102,25 +102,37 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
    container.create(input_vec.size());
 
    diff_cnt modifiedKeys;
-   std::vector<elttype>::iterator it_begin = input_vec.begin();
-   std::vector<elttype>::iterator it_curr = input_vec.begin();
+
 
 
    // =====================================
    // Populates container and index
    // =====================================
    //Fully Populates the container
-   while (it_begin != input_vec.end()) {
-      it_curr = std::min(it_begin + batch_size, input_vec.end());
 
-      std::vector<elttype> batch(it_begin, it_curr);
+   if ( dynamic_cast<PMABatch*> (&container) ){
+      std::vector<elttype>::iterator it_begin = input_vec.begin();
+      std::vector<elttype>::iterator it_curr = input_vec.begin();
+      std::cout << "Populates PMA" << std::endl;
+      while (it_begin != input_vec.end()) {
 
-      // insert batch
-      container.insert(batch);
+         it_curr = std::min(it_begin + batch_size, input_vec.end());
 
-      // update insert iterator
-      it_begin = it_curr;
-    }
+         std::vector<elttype> batch(it_begin, it_curr);
+
+         // insert batch
+         container.insert(batch);
+
+         // update insert iterator
+         it_begin = it_curr;
+      }
+   }else{
+      std::cout << "Populates Dense Vector" << std::endl;
+      container.insert(input_vec);
+   }
+
+
+
 
     //Populates the quadtree index
     container.clear_diff();
@@ -158,6 +170,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
     run_queries(container, quadtree, region_t(1249,3071,2501,3226,13), n_exp);
 
     run_queries(container, quadtree, region_t(868,1357,1039,1784,12), n_exp);
+    run_queries(container, quadtree, region_t(0,0,1,1,0), n_exp);
 }
 
 int main(int argc, char* argv[]) {
