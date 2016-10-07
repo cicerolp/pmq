@@ -109,6 +109,7 @@ Documentation about Twitter api :
 Python library to use the Twitte api: 
     https://github.com/geduldig/TwitterAPI
     
+Limits https://dev.twitter.com/streaming/overview/messages-types#limit_notices
 ** TODO Profiling the TwitterVis Project
   - Identify and compare costs:
     - PMA Instertion

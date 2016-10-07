@@ -116,10 +116,15 @@ if __name__ == '__main__':
         response = api.request(args.endpoint, params)
 
         for item in response.get_iterator():
-            js_sub = { key : item[key] if key in item else "none" for key in keys}
-            js_sub["hashtags"] = item["entities"]["hashtags"] if "entities" in item else "none"
-            json.dump(js_sub,sys.stdout,ensure_ascii=False)
-            print("",file=sys.stdout)
+            if ("id" in item) :
+                js_sub = { key : item[key] if key in item else "none" for key in keys}
+                js_sub["hashtags"] = item["entities"]["hashtags"] if "entities" in item else "none"
+                json.dump(js_sub,sys.stdout,ensure_ascii=False)
+                print("",file=sys.stdout)
+            else :
+                json.dump(item,sys.stderr,ensure_ascii=False)
+                print("",file=sys.stderr)
+                
 
     except KeyboardInterrupt:
         print('Terminated by user', file=sys.stderr)
