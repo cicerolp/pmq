@@ -18,8 +18,85 @@
 *** TODO find other data structure for geospatial data
   - find a reference work to which we could compare 
 
-*** TODO What is a meaningfull size of batch for real applications ?
-  We should look at the real rate of insertions Tweets / s
+*** DONE What is a meaningfull size of batch for real applications ?
+We should look at the real rate of insertions Tweets / s
+
+Statistics about amount of tweets:
+http://www.internetlivestats.com/twitter-statistics/
+"Every second, on average, around 6000 tweets are tweeted"
+
+**** Free streaming API of twitter
+
+Number of tweets  got by hour and a subset of them containing
+=Eleições= srtings:
+
+With the free stream we got a peak of 92662/3600 = =25.739= tweets per
+second. A batch of this size / frequency is very small for our usage. 
+
+
+#+RESULTS:
+| File                                       | grepEleicoes | TweetsBrasil |
+| tweets_brazil/Brazil_2016-09-30_22h40.json |           37 |        67749 |
+| tweets_brazil/Brazil_2016-09-30_23h40.json |           42 |        65459 |
+| tweets_brazil/Brazil_2016-10-01_00h40.json |           14 |        50362 |
+| tweets_brazil/Brazil_2016-10-01_01h40.json |           16 |        31550 |
+| tweets_brazil/Brazil_2016-10-01_02h40.json |            6 |        18409 |
+| tweets_brazil/Brazil_2016-10-01_03h40.json |            4 |        10733 |
+| tweets_brazil/Brazil_2016-10-01_04h40.json |            1 |         6906 |
+| tweets_brazil/Brazil_2016-10-01_05h40.json |            5 |         7701 |
+| tweets_brazil/Brazil_2016-10-01_06h40.json |           16 |        10340 |
+| tweets_brazil/Brazil_2016-10-01_07h40.json |           43 |        18054 |
+| tweets_brazil/Brazil_2016-10-01_08h40.json |           73 |        27852 |
+| tweets_brazil/Brazil_2016-10-01_09h40.json |           86 |        38362 |
+| tweets_brazil/Brazil_2016-10-01_10h40.json |          108 |        48539 |
+| tweets_brazil/Brazil_2016-10-01_11h40.json |           95 |        55161 |
+| tweets_brazil/Brazil_2016-10-01_12h40.json |          102 |        56694 |
+| tweets_brazil/Brazil_2016-10-01_13h40.json |           64 |        52458 |
+| tweets_brazil/Brazil_2016-10-01_14h40.json |           55 |        50057 |
+| tweets_brazil/Brazil_2016-10-01_15h40.json |           52 |        49124 |
+| tweets_brazil/Brazil_2016-10-01_16h40.json |           74 |        53309 |
+| tweets_brazil/Brazil_2016-10-01_17h40.json |           92 |        58381 |
+| tweets_brazil/Brazil_2016-10-01_18h40.json |          143 |        54721 |
+| tweets_brazil/Brazil_2016-10-01_19h40.json |          112 |        58223 |
+| tweets_brazil/Brazil_2016-10-01_20h40.json |          133 |        60461 |
+| tweets_brazil/Brazil_2016-10-01_21h40.json |           99 |        63076 |
+| tweets_brazil/Brazil_2016-10-01_22h40.json |           83 |        68843 |
+| tweets_brazil/Brazil_2016-10-01_23h40.json |           99 |        67649 |
+| tweets_brazil/Brazil_2016-10-02_00h40.json |           68 |        51288 |
+| tweets_brazil/Brazil_2016-10-02_01h40.json |           60 |        35174 |
+| tweets_brazil/Brazil_2016-10-02_02h40.json |           28 |        22198 |
+| tweets_brazil/Brazil_2016-10-02_03h40.json |           12 |        13838 |
+| tweets_brazil/Brazil_2016-10-02_04h40.json |           12 |         9486 |
+| tweets_brazil/Brazil_2016-10-02_05h40.json |           63 |         8193 |
+| tweets_brazil/Brazil_2016-10-02_06h40.json |          141 |         9444 |
+| tweets_brazil/Brazil_2016-10-02_07h40.json |          288 |        14171 |
+| tweets_brazil/Brazil_2016-10-02_08h40.json |          316 |        19048 |
+| tweets_brazil/Brazil_2016-10-02_09h31.json |          447 |        34354 |
+| tweets_brazil/Brazil_2016-10-02_10h31.json |          536 |        46623 |
+| tweets_brazil/Brazil_2016-10-02_11h31.json |          515 |        57136 |
+| tweets_brazil/Brazil_2016-10-02_12h31.json |          462 |        60700 |
+| tweets_brazil/Brazil_2016-10-02_13h31.json |          549 |        58340 |
+| tweets_brazil/Brazil_2016-10-02_14h31.json |          445 |        52912 |
+| tweets_brazil/Brazil_2016-10-02_15h31.json |          494 |        51304 |
+| tweets_brazil/Brazil_2016-10-02_16h31.json |          846 |        53476 |
+| tweets_brazil/Brazil_2016-10-02_17h31.json |         1388 |        60381 |
+| tweets_brazil/Brazil_2016-10-02_18h31.json |         1591 |        70227 |
+| tweets_brazil/Brazil_2016-10-02_19h31.json |         1350 |        74208 |
+| tweets_brazil/Brazil_2016-10-02_20h31.json |          962 |        81676 |
+| tweets_brazil/Brazil_2016-10-02_21h31.json |          585 |        90016 |
+| tweets_brazil/Brazil_2016-10-02_22h31.json |          481 |        92662 |
+| tweets_brazil/Brazil_2016-10-02_23h31.json |          255 |        81330 |
+| tweets_brazil/Brazil_2016-10-03_00h31.json |          156 |        55236 |
+| tweets_brazil/Brazil_2016-10-03_01h31.json |           65 |        30545 |
+| tweets_brazil/Brazil_2016-10-03_02h31.json |           27 |        14260 |
+| tweets_brazil/Brazil_2016-10-03_03h31.json |            8 |         6830 |
+| tweets_brazil/Brazil_2016-10-03_04h31.json |            9 |         2379 |
+| tweets_brazil/Brazil_2016-10-03_05h06.json |           23 |         5442 |
+| tweets_brazil/Brazil_2016-10-03_06h06.json |           67 |        15467 |
+| tweets_brazil/Brazil_2016-10-03_07h06.json |          149 |        21384 |
+| tweets_brazil/Brazil_2016-10-03_08h06.json |          157 |        25035 |
+| tweets_brazil/Brazil_2016-10-03_09h06.json |           32 |         7402 |
+|                                            |              |      2482338 |
 
 *** TODO Spatial DB GIS                                             :@CICERO:
 Install one of the saptial databases to see if we can use it as
