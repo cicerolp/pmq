@@ -100,7 +100,7 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 
       // insert batch
       t = container.insert(batch);
-      PRINTBENCH("Insert", g_it_id ,t.milliseconds(),"ms", modifiedKeys.size() );
+      PRINTBENCH("Insert", g_it_id ,t.milliseconds(),"ms" );
 
       // update iterator
       it_begin = it_curr;
