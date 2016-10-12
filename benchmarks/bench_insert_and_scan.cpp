@@ -134,9 +134,12 @@ void run_bench(container_t container, std::vector<elttype>& input_vec, const int
 int main(int argc, char* argv[]) {
 
    cimg_usage("Queries Benchmark inserts elements in batches.");
+   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
    const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
-   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
+   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
+
 
    PMABatch pma_container(argc, argv); //read pma command line parameters
 
@@ -149,10 +152,17 @@ int main(int argc, char* argv[]) {
 
    const uint32_t quadtree_depth = 25;
 
-   PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-   std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
-   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
+   std::vector<elttype> input_vec;
 
+   if (nb_elements == 0){
+      PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+      input_vec = input::load(fname, quadtree_depth);
+      PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
+   }else{
+      PRINTOUT("Generate random keys..");
+      input_vec = input::dist_random(nb_elements, seed);
+      PRINTOUT(" %d teewts generated \n", (uint32_t)input_vec.size());
+   }
 
    run_bench(pma_container, input_vec, batch_size, n_exp);
 

@@ -35,4 +35,31 @@ namespace input {
       return tweets;
    }
 
+
+   inline std::vector<elttype> dist_random(unsigned int nb_el, long rseed){
+      std::vector<elttype> keyVal_vec;
+
+      if (rseed != 0)
+      {
+         srand( rseed);
+      }
+      else
+      {
+         long seed = time(NULL);
+         fprintf(stdout, "Seed : %ld\n", seed);
+         srand ( seed );
+      }
+
+      for(int i = 0; i< nb_el; i++)
+      {
+         elttype el;
+         el.key = rand()%nb_el;
+         el.value = tweet_t();
+
+         keyVal_vec.push_back(el);
+      }
+
+      return keyVal_vec;
+   }
+
 } // namespace input
