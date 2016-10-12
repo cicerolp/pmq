@@ -104,11 +104,9 @@ void QuadtreeIntf::get_child_coords(uint32_t& x, uint32_t& y, uint32_t index) {
    y *= 2;
    if (index == 1) {
       ++x;
-   }
-   else if (index == 2) {
+   } else if (index == 2) {
       ++y;
-   }
-   else if (index == 3) {
+   } else if (index == 3) {
       ++y;
       ++x;
    }

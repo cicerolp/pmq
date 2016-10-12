@@ -12,6 +12,13 @@ get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
 
+include/GeoRunner.cpp
+
+include/GeoCtnIntf.h
+
+include/PMABatchCtn.h
+include/PMABatchCtn.cpp
+
 include/nc_query_util.h
 include/nc_query_util.cpp
 

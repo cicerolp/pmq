@@ -22,8 +22,6 @@ public:
 
    inline uint32_t input_size() const;
 
-   static std::vector<elttype> load_input(const std::string& fname);
-
 private:
    Runner(int argc, char *argv[]);
    Runner() = default;

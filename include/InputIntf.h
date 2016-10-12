@@ -1,11 +1,10 @@
-#ifndef INPUTINTF_H
-#define INPUTINTF_H
+#pragma once
 
 #include "stde.h"
 #include "types.h"
 
 namespace input {
-   std::vector<elttype> load(const std::string& fname,int mCodeSize) {
+   inline std::vector<elttype> load(const std::string& fname,int mCodeSize) {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
@@ -37,6 +36,3 @@ namespace input {
    }
 
 } // namespace input
-
-#endif // INPUTINTF_H
-
