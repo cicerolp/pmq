@@ -1,10 +1,9 @@
 #pragma once
 #include "ContainerIntf.h"
 
-
 class PMABatch : public ContainerIntf {
 public:
-   PMABatch(int argc, char *argv[]);
+   PMABatch(int argc, char* argv[]);
    virtual ~PMABatch();
 
    duration_t create(uint32_t size) override final;
@@ -33,6 +32,11 @@ public:
    duration_t diff(std::vector<elinfo_t>& keys) override final;
 
    /**
+   * @brief clear_diff Resets the container diff. This results as all keys beeing marked as modified.
+   */
+   void clear_diff() override final;
+
+   /**
    * @brief count_elts_pma find in [sbeg, send[ all the elements starting with mcode at level z.
    * @param pma
    * @param sbeg
@@ -45,7 +49,7 @@ public:
    * @return
    */
    duration_t count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const override final;
-   
+
    /**
    * @brief elts_pma Gets the elements in the \a pma between segments [seg_beg , seg_end[ with prefix equal to \a mCode.
    * @param pma
@@ -62,17 +66,12 @@ public:
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const override final;
 
    inline const pma_struct* const get_container() {
-       return _pma;
+      return _pma;
    }
 
    static inline void get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max, uint32_t mCodeSize);
 
-   /**
-    * @brief clear_diff Resets the container diff. This results as all keys beeing marked as modified.
-    */
-   void clear_diff();
-
-private:
+   private:
    /**
    * @brief get_mcode_range : Computes the min and max values for a geo_hash with prefix \a mCode
    * @param mCode : The prefix of the morton code representing a quadtree node.
@@ -83,8 +82,8 @@ private:
 
    uint32_t seg_size;
    float tau_0, tau_h, rho_0, rho_h;
-   
-   pma_struct* _pma {nullptr};
+
+   pma_struct* _pma{nullptr};
 };
 
 void PMABatch::get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max, uint32_t mCodeSize) {

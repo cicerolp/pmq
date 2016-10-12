@@ -35,7 +35,7 @@ duration_t DenseVector::insert(std::vector<elttype> batch) {
 duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
    Timer t;
    t.start();
-   
+
    uint32_t begin_index = _diff_index;
    uint32_t curr_index = _diff_index;
 
@@ -56,6 +56,10 @@ duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
 
    t.stop();
    return t;
+}
+
+void DenseVector::clear_diff() {
+   _diff_index = 0;
 }
 
 duration_t DenseVector::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
@@ -99,9 +103,4 @@ duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const 
    }
    t.stop();
    return t;
-}
-
-void DenseVector::clear_diff()
-{
-   _diff_index = 0;
 }

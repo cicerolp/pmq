@@ -9,8 +9,7 @@ PMABatch::PMABatch(int argc, char* argv[]) {
 }
 
 PMABatch::~PMABatch() {
-   if (_pma != nullptr)
-      pma::destroy_pma(_pma);
+   if (_pma != nullptr) pma::destroy_pma(_pma);
 }
 
 duration_t PMABatch::create(uint32_t size) {
@@ -19,7 +18,7 @@ duration_t PMABatch::create(uint32_t size) {
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    t.stop();
 
-   return t ;
+   return t;
 }
 
 duration_t PMABatch::insert(std::vector<elttype> batch) {
@@ -30,8 +29,8 @@ duration_t PMABatch::insert(std::vector<elttype> batch) {
    // sorting algorithm
    std::sort(batch.begin(), batch.end());
 
-   void *begin = (void *)(&batch[0]);
-   void *end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
+   void* begin = (void *)(&batch[0]);
+   void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
 
    pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
    t.stop();
@@ -103,6 +102,11 @@ duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
    return t;
 }
 
+void PMABatch::clear_diff() {
+   _pma->last_rebalanced_segs->clear();
+   _pma->last_rebalanced_segs->push_back((_pma->nb_segments * 2 - 2)); //PUSHES ROOT INDEX on the list of rebalanced segments.
+}
+
 duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
    Timer t;
    if (_pma == nullptr) return t;
@@ -111,7 +115,7 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
 
    uint64_t mCodeMin = 0;
    uint64_t mCodeMax = 0;
-   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax, 25);
 
    for (unsigned int s = begin; s < end; s++) {
       count += _pma->elts[s];
@@ -126,7 +130,7 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
    for (char* el_pt = (char*)SEGMENT_ELT(_pma, end - 1, _pma->elts[end - 1] - 1); (*(uint64_t*)el_pt) > mCodeMax; el_pt -= _pma->elt_size) {
       count--;
    }
-   
+
    return t;
 }
 
@@ -137,15 +141,14 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    t.start();
 
    uint64_t mCodeMin, mCodeMax;
-   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax, 25);
 
    //Find the first element of the first segment
    char* cur_el_pt = (char*)SEGMENT_START(_pma, begin);
-   while ((*(uint64_t*)cur_el_pt) < mCodeMin)
-      cur_el_pt += _pma->elt_size;
+   while ((*(uint64_t*)cur_el_pt) < mCodeMin) cur_el_pt += _pma->elt_size;
 
    //loop on the first segments (up to one before last)
-   for (unsigned int s = begin; s < end - 1; ++s, cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
+   for (unsigned int s = begin; s < end - 1; ++s , cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
 
       for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, s, _pma->elts[s]); cur_el_pt += _pma->elt_size) {
          _apply((void*)cur_el_pt);
@@ -162,12 +165,6 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    return t;
 }
 
-void PMABatch::clear_diff()
-{
-    _pma->last_rebalanced_segs->clear();
-    _pma->last_rebalanced_segs->push_back((_pma->nb_segments * 2 - 2)); //PUSHES ROOT INDEX on the list of rebalanced segments.
-}
-
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
    Timer t;
    if (_pma == nullptr || count >= max) return t;
@@ -175,21 +172,23 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
    t.start();
 
    uint64_t mCodeMin, mCodeMax;
-   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax,25);
+   get_mcode_range(el.code, el.z, mCodeMin, mCodeMax, 25);
 
    //Find the first element of the first segment
    char* cur_el_pt = (char*)SEGMENT_START(_pma, begin);
-   while ((*(uint64_t*)cur_el_pt) < mCodeMin)
-      cur_el_pt += _pma->elt_size;
+   while ((*(uint64_t*)cur_el_pt) < mCodeMin) cur_el_pt += _pma->elt_size;
 
    //loop on the first segments (up to one before last)
-   for (unsigned int s = begin; s < end - 1; ++s, cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
+   for (unsigned int s = begin; s < end - 1; ++s , cur_el_pt = (char*)SEGMENT_START(_pma, s)) {
 
       for (; cur_el_pt < (char*)SEGMENT_ELT(_pma, s, _pma->elts[s]); cur_el_pt += _pma->elt_size) {
          __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
          count++;
 
-         if (count >= max) {t.stop(); return t;}
+         if (count >= max) {
+            t.stop();
+            return t;
+         }
       }
    }
 
@@ -198,7 +197,10 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
       __apply(*(valuetype*)ELT_TO_CONTENT(cur_el_pt));
       count++;
 
-      if (count >= max) {t.stop(); return t;}
+      if (count >= max) {
+         t.stop();
+         return t;
+      }
    }
    t.stop();
    return t;
