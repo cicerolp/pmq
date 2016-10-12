@@ -16,6 +16,9 @@ include/GeoRunner.cpp
 
 include/GeoCtnIntf.h
 
+include/DenseVectorCtn.h
+include/DenseVectorCtn.cpp
+
 include/PMABatchCtn.h
 include/PMABatchCtn.cpp
 

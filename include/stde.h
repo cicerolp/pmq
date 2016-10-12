@@ -45,3 +45,8 @@
 
 // retrieving command line arguments
 #include "ext/CImg/CImg.h"
+
+// spatial lite
+/*#include <sqlite3.h>
+#include <spatialite/gaiageo.h>
+#include <spatialite.h>*/
