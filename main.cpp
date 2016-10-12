@@ -13,13 +13,13 @@ uint32_t g_Quadtree_Depth = 25;
 int main(int argc, char *argv[]) {
    cimg_usage("command line arguments");
 
-   bool server(cimg_option("-server", true, "program arg : enable server"));
+   bool server(cimg_option("-server", true, "program arg: enable server"));
 
    Runner& runner = Runner::getInstance(argc, argv);
 
-   //std::shared_ptr<ContainerIntf> container = std::make_shared<PMABatch>(argc, argv);
+   std::shared_ptr<ContainerIntf> container = std::make_shared<PMABatch>(argc, argv);
    //std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorStdSort>();
-   std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorTimSort>();  
+   //std::shared_ptr<ContainerIntf> container = std::make_shared<DenseVectorTimSort>();  
    
    std::shared_ptr<QuadtreeIntf> quadtree = std::make_shared<QuadtreeIntf>(spatial_t(0, 0, 0));
 

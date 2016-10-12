@@ -12,6 +12,9 @@ get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST}
 
+include/nc_query_util.h
+include/nc_query_util.cpp
+
 include/DenseVector.cpp
 include/PMABatch.cpp
 
