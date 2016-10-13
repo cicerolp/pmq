@@ -77,7 +77,20 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 FIND_PACKAGE(Threads REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} )
+
+FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
+FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
+
+IF (SPATIALITE_LIBRARY)
+   MESSAGE(" FOUND SpatiaLite")
+
+ELSE (SPATIALITE_LIBRARY)
+
+   MESSAGE(FATAL_ERROR "Could not find SpatiaLite")
+
+ENDIF (SPATIALITE_LIBRARY)
+
+target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY})
 
 ######## Benchmarks
 add_subdirectory(benchmarks)
