@@ -77,10 +77,10 @@ int main(int argc, char *argv[]) {
 
    GeoRunner& runner = GeoRunner::getInstance(argc, argv);
 
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
+   std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
-   std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
+   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
    
 
    const char* is_help = cimg_option("-h", (char*)0, 0);

@@ -38,6 +38,11 @@ struct region_t {
       _x1 = x1;
       _y1 = y1;
       _z = z;
+
+      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
+      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
+      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
+      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
    }
 
    inline bool cover(const spatial_t& el) const {
@@ -67,27 +72,20 @@ struct region_t {
       }
    }
 
-   uint32_t z() const {
-      return _z;
-   }
+   uint32_t z() const { return _z; }
 
-   uint32_t y1() const {
-      return _y1;
-   }
+   uint32_t y1() const { return _y1; }
+   uint32_t x1() const { return _x1; }
+   uint32_t y0() const { return _y0; }
+   uint32_t x0() const { return _x0; }
 
-   uint32_t x1() const {
-      return _x1;
-   }
-
-   uint32_t y0() const {
-      return _y0;
-   }
-
-   uint32_t x0() const {
-      return _x0;
-   }
+   const std::string& xmin() const { return _xmin; }
+   const std::string& xmax() const { return _xmax; }
+   const std::string& ymin() const { return _ymin; }
+   const std::string& ymax() const { return _ymax; }
 
 private:
+   std::string _xmin, _xmax, _ymin, _ymax;
    uint32_t _x0, _y0, _x1, _y1, _z;
 };
 
@@ -108,7 +106,8 @@ struct elttype {
    uint64_t key;
    valuetype value;
 
-   elttype(){};
+   elttype() {
+   };
 
    elttype(const tweet_t& el, uint32_t depth) : value(el) {
       uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
@@ -152,8 +151,6 @@ struct elinfo_t {
 
 using diff_cnt = std::vector<elinfo_t>;
 using diff_it = std::vector<elinfo_t>::iterator;
-
-
 
 #ifdef _POSIX_TIMERS
 using Timer = unixTimer<CLOCK_MONOTONIC>; //POSIX Timers

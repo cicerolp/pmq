@@ -221,7 +221,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
 duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
    timer.start();
-   
+
    if (!init) {
       timer.stop();
       return timer;
@@ -231,22 +231,16 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
    char sql[256];
    char* err_msg = NULL;
 
-   // TODO store lat/lon in region_t
-   std::string xmin = std::to_string(mercator_util::tilex2lon(region.x0(), region.z()));
-   std::string xmax = std::to_string(mercator_util::tilex2lon(region.x1() + 1, region.z()));
-   std::string ymin = std::to_string(mercator_util::tiley2lat(region.y0() + 1, region.z()));
-   std::string ymax = std::to_string(mercator_util::tiley2lat(region.y1(), region.z()));
-
    std::stringstream stream;
    stream << "SELECT value FROM db ";
    stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << xmin << "," << ymin << ",";
-   stream << xmax << "," << ymax << ")) AND ROWID IN (";
+   stream << region.xmin() << "," << region.ymin() << ",";
+   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
    stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << xmin << " AND ";
-   stream << "xmax <= " << xmax << " AND ";
-   stream << "ymin >= " << ymin << " AND ";
-   stream << "ymax <= " << ymax << ")";
+   stream << "xmin >= " << region.xmin() << " AND ";
+   stream << "xmax <= " << region.xmax() << " AND ";
+   stream << "ymin >= " << region.ymin() << " AND ";
+   stream << "ymax <= " << region.ymax() << ")";
 
    sqlite3_stmt* stmt;
 
@@ -265,7 +259,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
    }
 
    sqlite3_finalize(stmt);
-      
+
    timer.stop();
    return timer;
 }
@@ -278,6 +272,63 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
    if (!init) {
       timer.stop();
       return timer;
+   }
+
+   int ret;
+   char sql[256];
+   char* err_msg = NULL;
+
+   uint32_t curr_z = std::min((uint32_t)8, 25 - region.z());
+   uint32_t n = (uint64_t)1 << curr_z;
+
+   uint32_t x_min = region.x0() * n;
+   uint32_t x_max = (region.x1() + 1) * n;
+
+   uint32_t y_min = region.y0() * n;
+   uint32_t y_max = (region.y1() + 1) * n;
+
+   curr_z += region.z();
+
+   for (uint32_t x = x_min; x < x_max; ++x) {
+      for (uint32_t y = y_min; y < y_max; ++y) {
+
+         std::stringstream stream;
+
+         std::string xmin = std::to_string(mercator_util::tilex2lon(x, curr_z));
+         std::string xmax = std::to_string(mercator_util::tilex2lon(x + 1, curr_z));
+
+         std::string ymin = std::to_string(mercator_util::tiley2lat(y + 1, curr_z));
+         std::string ymax = std::to_string(mercator_util::tiley2lat(y, curr_z));
+
+         stream << "SELECT count(*) FROM db ";
+         stream << "WHERE ST_WITHIN(key, BuildMbr(";
+         stream << xmin << "," << ymin << ",";
+         stream << xmax << "," << ymax << ")) AND ROWID IN (";
+         stream << "SELECT pkid FROM idx_db_key WHERE ";
+         stream << "xmin >= " << xmin << " AND ";
+         stream << "xmax <= " << xmax << " AND ";
+         stream << "ymin >= " << ymin << " AND ";
+         stream << "ymax <= " << ymax << ")";
+
+         sqlite3_stmt* stmt;
+
+         // preparing to populate the table
+         ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
+         if (ret != SQLITE_OK) {
+            // an error occurred
+            printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
+
+            timer.stop();
+            return timer;
+         }
+
+         if (sqlite3_step(stmt) == SQLITE_ROW) {
+            int count = sqlite3_column_int(stmt, 0);
+            if (count > 0) __apply(spatial_t(x, y, curr_z), count);
+         }
+
+         sqlite3_finalize(stmt);
+      }
    }
 
    timer.stop();
@@ -297,22 +348,16 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
    char sql[256];
    char* err_msg = NULL;
 
-   // TODO store lat/lon in region_t
-   std::string xmin = std::to_string(mercator_util::tilex2lon(region.x0(), region.z()));
-   std::string xmax = std::to_string(mercator_util::tilex2lon(region.x1() + 1, region.z()));
-   std::string ymin = std::to_string(mercator_util::tiley2lat(region.y0() + 1, region.z()));
-   std::string ymax = std::to_string(mercator_util::tiley2lat(region.y1(), region.z()));
-
    std::stringstream stream;
    stream << "SELECT count(*) FROM db ";
    stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << xmin << "," << ymin << ",";
-   stream << xmax << "," << ymax << ")) AND ROWID IN (";
+   stream << region.xmin() << "," << region.ymin() << ",";
+   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
    stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << xmin << " AND ";
-   stream << "xmax <= " << xmax << " AND ";
-   stream << "ymin >= " << ymin << " AND ";
-   stream << "ymax <= " << ymax << ")";
+   stream << "xmin >= " << region.xmin() << " AND ";
+   stream << "xmax <= " << region.xmax() << " AND ";
+   stream << "ymin >= " << region.ymin() << " AND ";
+   stream << "ymax <= " << region.ymax() << ")";
 
    sqlite3_stmt* stmt;
 
@@ -326,9 +371,13 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
       return timer;
    }
 
-   while (sqlite3_step(stmt) == SQLITE_ROW) {
-      // TODO fix spatia_t
-      __apply(spatial_t(0,0,0), sqlite3_column_int(stmt, 0));      
+   if (sqlite3_step(stmt) == SQLITE_ROW) {
+      int count = sqlite3_column_int(stmt, 0);
+      if (count > 0) {
+         __apply(spatial_t(region.x0() + (uint32_t)((region.x1() - region.x0()) / 2),
+                           region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
+                           0), count);
+      }
    }
 
    sqlite3_finalize(stmt);

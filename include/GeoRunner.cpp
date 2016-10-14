@@ -190,8 +190,8 @@ void GeoRunner::write_tile(json_writer& writer, uint32_t& min, uint32_t& max, co
 
    writer.StartArray();
 
-   writer.Double(mercator_util::tiley2lat(y, area.z));
-   writer.Double(mercator_util::tilex2lon(x, area.z));
+   writer.Double(mercator_util::tiley2lat(y + 0.5, area.z));
+   writer.Double(mercator_util::tilex2lon(x + 0.5, area.z));
 
    writer.Uint(count);
    writer.EndArray();
