@@ -22,6 +22,8 @@ duration_t PMABatchCtn::create(uint32_t size) {
    timer.start();
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    timer.stop();
+
+   return timer;
 }
 
 // update container

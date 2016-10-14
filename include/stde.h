@@ -47,6 +47,7 @@
 #include "ext/CImg/CImg.h"
 
 // spatial lite
-/*#include <sqlite3.h>
-#include <spatialite/gaiageo.h>
-#include <spatialite.h>*/
+#include <geos/geos_c.h>
+#include <sqlite/sqlite3.h>
+#include <spatialite/spatialite/gaiageo.h>
+#include <spatialite/spatialite.h>

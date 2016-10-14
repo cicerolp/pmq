@@ -20,6 +20,9 @@ include/GeoRunner.cpp
 
 include/GeoCtnIntf.h
 
+include/SpatiaLiteCtn.h
+include/SpatiaLiteCtn.cpp
+
 include/DenseVectorCtn.h
 include/DenseVectorCtn.cpp
 
@@ -82,19 +85,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 FIND_PACKAGE(Threads REQUIRED)
 
 
+FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
 FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
 FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
 
-IF (SPATIALITE_LIBRARY)
-   MESSAGE(" FOUND SpatiaLite")
-
-ELSE (SPATIALITE_LIBRARY)
-
-   MESSAGE(FATAL_ERROR "Could not find SpatiaLite")
-
-ENDIF (SPATIALITE_LIBRARY)
-
-target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY})
+target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "include/stde.h")
 cotire(${PROJECT_NAME})
