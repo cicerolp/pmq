@@ -46,6 +46,8 @@ void GeoRunner::run() {
 
       std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
    }
+
+   std::cout << "*Runner* Stopped." << std::endl;
 }
 
 std::string GeoRunner::query(const Query& query) {

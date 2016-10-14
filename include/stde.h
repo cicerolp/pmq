@@ -1,5 +1,6 @@
 #pragma once
 #pragma GCC system_header
+#pragma system_header
 
 // C includes
 #include <cmath>
@@ -47,7 +48,7 @@
 #include "ext/CImg/CImg.h"
 
 // spatial lite
-#include <geos/geos_c.h>
-#include <sqlite/sqlite3.h>
-#include <spatialite/spatialite/gaiageo.h>
-#include <spatialite/spatialite.h>
+#include <geos_c.h>
+#include <sqlite3.h>
+#include <spatialite/gaiageo.h>
+#include <spatialite.h>

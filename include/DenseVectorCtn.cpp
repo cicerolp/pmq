@@ -60,7 +60,6 @@ duration_t DenseVectorCtn::scan_at_region(const region_t& region, scantype_funct
    }
 
    timer.stop();
-
    return timer;
 }
 
