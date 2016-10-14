@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 
 aux_source_directory(. SRC_LIST)
 
-set(PMA_BUILD_DIR "../hppsimulations/pma_cd-release" CACHE PATH "Location of the PMA build tree")
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+
+include(cotire)
+
+set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
 
 #include pma export tree
 include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
@@ -91,6 +95,9 @@ ELSE (SPATIALITE_LIBRARY)
 ENDIF (SPATIALITE_LIBRARY)
 
 target_link_libraries(${PROJECT_NAME} pma  ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "include/stde.h")
+cotire(${PROJECT_NAME})
 
 ######## Benchmarks
 add_subdirectory(benchmarks)
