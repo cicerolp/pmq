@@ -1,7 +1,121 @@
 #include "stde.h"
-#include "SpatiaLiteCtn.h"
+#include "PostGisCtn.h"
 
-SpatiaLiteCtn::SpatiaLiteCtn() {
+/*#include <stdio.h>
+#include <stdlib.h>
+#include <postgresql/libpq-fe.h>
+
+static void
+exit_nicely(PGconn* conn) {
+   PQfinish(conn);
+   exit(1);
+}
+
+int
+main(int argc, char** argv) {
+   const char* conninfo;
+   PGconn* conn;
+   PGresult* res;
+   int nFields;
+   int i,
+      j;
+
+   /*
+   * If the user supplies a parameter on the command line, use it as the
+   * conninfo string; otherwise default to setting dbname=postgres and using
+   * environment variables or defaults for all other connection parameters.
+   #1#
+   if (argc > 1) conninfo = argv[1];
+   else conninfo = "user=postgres password=postgres host=localhost port=5432 dbname=twittervis";
+
+   /* Make a connection to the database #1#
+   conn = PQconnectdb(conninfo);
+
+   /* Check to see that the backend connection was successfully made #1#
+   if (PQstatus(conn) != CONNECTION_OK) {
+      fprintf(stderr, "Connection to database failed: %s",
+         PQerrorMessage(conn));
+      exit_nicely(conn);
+   }
+
+   std::string sql;
+
+   /*
+   * Our test case here involves using a cursor, for which we must be inside
+   * a transaction block.  We could do the whole thing with a single
+   * PQexec() of "select * from pg_database", but that's too trivial to make
+   * a good example.
+   #1#
+
+   sql = "CREATE TABLE db (pk INTEGER NOT NULL PRIMARY KEY, value BLOB NOT NULL)";
+
+   /* Start a transaction block #1#
+   res = PQexec(conn, sql.c_str);
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "BEGIN command failed: %s", PQerrorMessage(conn));
+      PQclear(res);
+      exit_nicely(conn);
+   }
+
+   /*
+   * Should PQclear PGresult whenever it is no longer needed to avoid memory
+   * leaks
+   #1#
+   PQclear(res);
+
+   /*
+   * Fetch rows from pg_database, the system catalog of databases
+   #1#
+   res = PQexec(conn, "DECLARE myportal CURSOR FOR select * from pg_database");
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "DECLARE CURSOR failed: %s", PQerrorMessage(conn));
+      PQclear(res);
+      exit_nicely(conn);
+   }
+   PQclear(res);
+
+   res = PQexec(conn, "FETCH ALL in myportal");
+   if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+      fprintf(stderr, "FETCH ALL failed: %s", PQerrorMessage(conn));
+      PQclear(res);
+      exit_nicely(conn);
+   }
+
+   /* first, print out the attribute names #1#
+   nFields = PQnfields(res);
+   for (i = 0; i < nFields; i++) printf("%-15s", PQfname(res, i));
+   printf("\n\n");
+
+   /* next, print out the rows #1#
+   for (i = 0; i < PQntuples(res); i++) {
+      for (j = 0; j < nFields; j++) printf("%-15s", PQgetvalue(res, i, j));
+      printf("\n");
+   }
+
+   PQclear(res);
+
+   /* close the portal ... we don't bother to check for errors ... #1#
+   res = PQexec(conn, "CLOSE myportal");
+   PQclear(res);
+
+   /* end the transaction #1#
+   res = PQexec(conn, "END");
+   PQclear(res);
+
+   /* close the connection to the database and cleanup #1#
+   PQfinish(conn);
+
+   return 0;
+}*/
+
+PostGisCtn::PostGisCtn() {
+   /*DROP TABLE IF EXISTS db;
+   CREATE TABLE db(pk INTEGER NOT NULL PRIMARY KEY, key geography(Point, 4326), value BYTEA);
+   INSERT INTO db(pk, key, value) VALUES(0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), null);
+   SELECT * FROM db WHERE key && ST_MakeEnvelope(-71.060316, 48.432044, 20.060316, 48.432044);*/
+
+
+
    int ret;
 
    std::string db = ":memory:";
@@ -9,7 +123,7 @@ SpatiaLiteCtn::SpatiaLiteCtn() {
 
    // in-memory database
    ret = sqlite3_open_v2(db.c_str(), &_handle,
-                         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
    if (ret != SQLITE_OK) {
       printf("cannot open '%s': %s\n", db.c_str(), sqlite3_errmsg(_handle));
       sqlite3_close(_handle);
@@ -28,7 +142,7 @@ SpatiaLiteCtn::SpatiaLiteCtn() {
    printf("\n\n");
 }
 
-SpatiaLiteCtn::~SpatiaLiteCtn() {
+PostGisCtn::~PostGisCtn() {
    finishGEOS();
 
    if (_handle) sqlite3_close(_handle);
@@ -38,7 +152,7 @@ SpatiaLiteCtn::~SpatiaLiteCtn() {
 }
 
 // build container
-duration_t SpatiaLiteCtn::create(uint32_t size) {
+duration_t PostGisCtn::create(uint32_t size) {
    Timer timer;
    timer.start();
 
@@ -104,7 +218,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
 }
 
 // update container
-duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
+duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    Timer timer;
    timer.start();
 
@@ -218,7 +332,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
 }
 
 // apply function for every el<valuetype>
-duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_function __apply) {
+duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
    timer.start();
 
@@ -265,7 +379,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
 }
 
 // apply function for every spatial area/region
-duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_function __apply) {
+duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function __apply) {
    Timer timer;
    timer.start();
 
@@ -335,7 +449,7 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
    return timer;
 }
 
-duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_function __apply) {
+duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_function __apply) {
    Timer timer;
    timer.start();
 
@@ -375,8 +489,8 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
       int count = sqlite3_column_int(stmt, 0);
       if (count > 0) {
          __apply(spatial_t(region.x0() + (uint32_t)((region.x1() - region.x0()) / 2),
-                           region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
-                           0), count);
+            region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
+            0), count);
       }
    }
 
@@ -386,7 +500,7 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
    return timer;
 }
 
-void SpatiaLiteCtn::notice(const char* fmt, ...) {
+void PostGisCtn::notice(const char* fmt, ...) {
    va_list ap;
 
    fprintf(stdout, "NOTICE: ");
@@ -397,7 +511,7 @@ void SpatiaLiteCtn::notice(const char* fmt, ...) {
    fprintf(stdout, "\n");
 }
 
-void SpatiaLiteCtn::log_and_exit(const char* fmt, ...) {
+void PostGisCtn::log_and_exit(const char* fmt, ...) {
    va_list ap;
 
    fprintf(stdout, "ERROR: ");
