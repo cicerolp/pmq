@@ -20,12 +20,6 @@ public:
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
 private:
-   static void notice(const char* fmt, ...);
-   static void log_and_exit(const char* fmt, ...);
-
-private:
-   bool init{ false };
-   void* _cache{ nullptr };
-   sqlite3* _handle{ nullptr };
+   bool _init{false};
+   PGconn* _conn;
 };
-#pragma once

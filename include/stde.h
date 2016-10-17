@@ -47,8 +47,13 @@
 // retrieving command line arguments
 #include "ext/CImg/CImg.h"
 
-// spatial lite
+// geos lib
 #include <geos_c.h>
+
+// spatialite
 #include <sqlite3.h>
-#include <spatialite/gaiageo.h>
 #include <spatialite.h>
+#include <spatialite/gaiageo.h>
+
+// postgis
+#include <postgresql/libpq-fe.h>

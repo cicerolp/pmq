@@ -98,7 +98,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       return timer;
    }
 
-   init = true;
+   _init = true;
    timer.stop();
    return timer;
 }
@@ -108,7 +108,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
@@ -222,7 +222,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
@@ -269,7 +269,7 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
@@ -339,7 +339,7 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }

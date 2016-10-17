@@ -1,154 +1,23 @@
 #include "stde.h"
 #include "PostGisCtn.h"
 
-/*#include <stdio.h>
-#include <stdlib.h>
-#include <postgresql/libpq-fe.h>
-
-static void
-exit_nicely(PGconn* conn) {
-   PQfinish(conn);
-   exit(1);
-}
-
-int
-main(int argc, char** argv) {
-   const char* conninfo;
-   PGconn* conn;
-   PGresult* res;
-   int nFields;
-   int i,
-      j;
-
-   /*
-   * If the user supplies a parameter on the command line, use it as the
-   * conninfo string; otherwise default to setting dbname=postgres and using
-   * environment variables or defaults for all other connection parameters.
-   #1#
-   if (argc > 1) conninfo = argv[1];
-   else conninfo = "user=postgres password=postgres host=localhost port=5432 dbname=twittervis";
-
-   /* Make a connection to the database #1#
-   conn = PQconnectdb(conninfo);
-
-   /* Check to see that the backend connection was successfully made #1#
-   if (PQstatus(conn) != CONNECTION_OK) {
-      fprintf(stderr, "Connection to database failed: %s",
-         PQerrorMessage(conn));
-      exit_nicely(conn);
-   }
-
-   std::string sql;
-
-   /*
-   * Our test case here involves using a cursor, for which we must be inside
-   * a transaction block.  We could do the whole thing with a single
-   * PQexec() of "select * from pg_database", but that's too trivial to make
-   * a good example.
-   #1#
-
-   sql = "CREATE TABLE db (pk INTEGER NOT NULL PRIMARY KEY, value BLOB NOT NULL)";
-
-   /* Start a transaction block #1#
-   res = PQexec(conn, sql.c_str);
-   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-      fprintf(stderr, "BEGIN command failed: %s", PQerrorMessage(conn));
-      PQclear(res);
-      exit_nicely(conn);
-   }
-
-   /*
-   * Should PQclear PGresult whenever it is no longer needed to avoid memory
-   * leaks
-   #1#
-   PQclear(res);
-
-   /*
-   * Fetch rows from pg_database, the system catalog of databases
-   #1#
-   res = PQexec(conn, "DECLARE myportal CURSOR FOR select * from pg_database");
-   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-      fprintf(stderr, "DECLARE CURSOR failed: %s", PQerrorMessage(conn));
-      PQclear(res);
-      exit_nicely(conn);
-   }
-   PQclear(res);
-
-   res = PQexec(conn, "FETCH ALL in myportal");
-   if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-      fprintf(stderr, "FETCH ALL failed: %s", PQerrorMessage(conn));
-      PQclear(res);
-      exit_nicely(conn);
-   }
-
-   /* first, print out the attribute names #1#
-   nFields = PQnfields(res);
-   for (i = 0; i < nFields; i++) printf("%-15s", PQfname(res, i));
-   printf("\n\n");
-
-   /* next, print out the rows #1#
-   for (i = 0; i < PQntuples(res); i++) {
-      for (j = 0; j < nFields; j++) printf("%-15s", PQgetvalue(res, i, j));
-      printf("\n");
-   }
-
-   PQclear(res);
-
-   /* close the portal ... we don't bother to check for errors ... #1#
-   res = PQexec(conn, "CLOSE myportal");
-   PQclear(res);
-
-   /* end the transaction #1#
-   res = PQexec(conn, "END");
-   PQclear(res);
-
-   /* close the connection to the database and cleanup #1#
-   PQfinish(conn);
-
-   return 0;
-}*/
-
 PostGisCtn::PostGisCtn() {
-   /*DROP TABLE IF EXISTS db;
-   CREATE TABLE db(pk INTEGER NOT NULL PRIMARY KEY, key geography(Point, 4326), value BYTEA);
-   INSERT INTO db(pk, key, value) VALUES(0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), null);
-   SELECT * FROM db WHERE key && ST_MakeEnvelope(-71.060316, 48.432044, 20.060316, 48.432044);*/
+   std::string conninfo = "user=postgres password=postgres host=localhost port=5432 dbname=twittervis";
 
+   // make a connection to the database
+   _conn = PQconnectdb(conninfo.c_str());
 
-
-   int ret;
-
-   std::string db = ":memory:";
-   //std::string db = "../db/db.sqlite";
-
-   // in-memory database
-   ret = sqlite3_open_v2(db.c_str(), &_handle,
-      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-   if (ret != SQLITE_OK) {
-      printf("cannot open '%s': %s\n", db.c_str(), sqlite3_errmsg(_handle));
-      sqlite3_close(_handle);
-      return;
+   // check to see that the backend connection was successfully made
+   if (PQstatus(_conn) != CONNECTION_OK) {
+      fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(_conn));
+   } else {
+      _init = true;
    }
-   _cache = spatialite_alloc_connection();
-   spatialite_init_ex(_handle, _cache, 0);
-
-   printf("SQLite version: %s\n", sqlite3_libversion());
-
-   printf("SpatiaLite version: %s\n", spatialite_version());
-
-   initGEOS(notice, log_and_exit);
-   printf("GEOS version %s\n", GEOSversion());
-
-   printf("\n\n");
 }
 
 PostGisCtn::~PostGisCtn() {
-   finishGEOS();
-
-   if (_handle) sqlite3_close(_handle);
-   if (_cache) spatialite_cleanup_ex(_cache);
-
-   spatialite_shutdown();
+   // close the connection to the database and cleanup
+   PQfinish(_conn);
 }
 
 // build container
@@ -156,63 +25,21 @@ duration_t PostGisCtn::create(uint32_t size) {
    Timer timer;
    timer.start();
 
-   int ret;
-   char sql[256];
-   char* err_msg = NULL;
+   std::string sql;
 
-   // we are supposing this one is an empty database,
-   // so we have to create the Spatial Metadata
-   strcpy(sql, "SELECT InitSpatialMetadata(1)");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("InitSpatialMetadata() error: %s\n", err_msg);
-      sqlite3_free(err_msg);
+   sql += "DROP TABLE IF EXISTS db;";
+   sql += "CREATE TABLE db(pk BIGSERIAL NOT NULL PRIMARY KEY, key geometry(Point, 4326), value BYTEA);";
+   // spatial index using GIST
+   sql += "CREATE INDEX key_gix ON  db USING GIST (key);";
 
-      timer.stop();
-      return timer;
+   PGresult* res = PQexec(_conn, sql.c_str());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "BEGIN command failed: %s", PQerrorMessage(_conn));
    }
+   PQclear(res);
 
-   // now we can create the table
-   // for simplicity we'll define only one column, the primary key
-   strcpy(sql, "CREATE TABLE db (");
-   strcat(sql, "pk INTEGER NOT NULL PRIMARY KEY,");
-   strcat(sql, "value BLOB NOT NULL)");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("CREATE TABLE 'db' error: %s\n", err_msg);
-      sqlite3_free(err_msg);
+   _init = true;
 
-      timer.stop();
-      return timer;
-   }
-
-   // ... we'll add a Geometry column of POINT type to the table
-   strcpy(sql, "SELECT AddGeometryColumn('db', 'key', 4326, 'POINT', 2)");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("AddGeometryColumn() error: %s\n", err_msg);
-      sqlite3_free(err_msg);
-
-      timer.stop();
-      return timer;
-   }
-
-   // and finally we'll enable this geo-column to have a Spatial Index based on R*Tree
-   strcpy(sql, "SELECT CreateSpatialIndex('db', 'key')");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("CreateSpatialIndex() error: %s\n", err_msg);
-      sqlite3_free(err_msg);
-
-      timer.stop();
-      return timer;
-   }
-
-   init = true;
    timer.stop();
    return timer;
 }
@@ -222,43 +49,31 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
 
-   int ret;
-   char sql[256];
-   char* err_msg = NULL;
-
-   int blob_size;
-   unsigned char* blob;
-
-   sqlite3_stmt* stmt;
-   gaiaGeomCollPtr geo = NULL;
-
-   // beginning a transaction
-   strcpy(sql, "BEGIN");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("BEGIN error: %s\n", err_msg);
-      sqlite3_free(err_msg);
-
-      timer.stop();
-      return timer;
+   PGresult* res;
+   std::string sql;
+   
+   sql = "INSERT INTO db (key, value) VALUES (ST_GeomFromText($1, 4326), $2);";
+   res = PQprepare(_conn, "stmtname", sql.c_str(), 0, nullptr);
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "PQprepare command failed: %s", PQerrorMessage(_conn));
    }
+   PQclear(res);
 
-   // preparing to populate the table
-   strcpy(sql, "INSERT INTO db (pk, key, value) VALUES (?, ?, ?)");
-   ret = sqlite3_prepare_v2(_handle, sql, strlen(sql), &stmt, NULL);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
-
-      timer.stop();
-      return timer;
+   sql = "BEGIN;";
+   res = PQexec(_conn, sql.c_str());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "BEGIN command failed: %s", PQerrorMessage(_conn));
    }
+   PQclear(res);
+
+   int paramLengths[2];
+   int paramFormats[2];
+   char* paramValues[2];
 
    for (uint32_t pk = 0; pk < batch.size(); ++pk) {
       float x = batch[pk].value.longitude;
@@ -266,66 +81,46 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
 
       valuetype value = batch[pk].value;
 
-      // preparing the geometry to insert
-      geo = gaiaAllocGeomColl();
-      geo->Srid = 4326;
-      gaiaAddPointToGeomColl(geo, value.longitude, value.latitude);
+      char buffer[50];
+      sprintf(buffer, "POINT(%f %f)", x, y);
 
-      // transforming this geometry into the SpatiaLite BLOB format
-      gaiaToSpatiaLiteBlobWkb(geo, &blob, &blob_size);
+      paramValues[0] = (char*)buffer;
+      paramValues[1] = (char*)&value;
+      
+      paramFormats[0] = 0;
+      paramFormats[1] = 1;
 
-      // we can now destroy the geometry object
-      gaiaFreeGeomColl(geo);
+      paramLengths[0] = 0;
+      paramLengths[1] = sizeof(valuetype);
 
-      // resetting Prepared Statement and bindings
-      sqlite3_reset(stmt);
-      sqlite3_clear_bindings(stmt);
-
-      // (pk, key, value)
-      // binding parameters to Prepared Statement
-      sqlite3_bind_null(stmt, 1);
-      sqlite3_bind_blob(stmt, 2, blob, blob_size, free);
-      sqlite3_bind_blob(stmt, 3, &value, sizeof(valuetype), SQLITE_TRANSIENT);
-
-      // performing actual row insert
-      ret = sqlite3_step(stmt);
-      if (ret == SQLITE_DONE || ret == SQLITE_ROW);
-      else {
-         // an error occurred
-         printf("sqlite3_step() error: %s\n", sqlite3_errmsg(_handle));
-         sqlite3_finalize(stmt);
-
-         timer.stop();
-         return timer;
+      res = PQexecPrepared(_conn, "stmtname", 2, paramValues, paramLengths, paramFormats, 0);
+      if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+         fprintf(stderr, "PQexecPrepared command failed: %s", PQerrorMessage(_conn));
       }
+      PQclear(res);
    }
 
-   // we have now to finalize the query [memory cleanup]
-   sqlite3_finalize(stmt);
-
-   // committing the transaction
-   strcpy(sql, "COMMIT");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("COMMIT error: %s\n", err_msg);
-      sqlite3_free(err_msg);
-
-      timer.stop();
-      return timer;
+   sql = "COMMIT;";
+   res = PQexec(_conn, sql.c_str());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "COMMIT command failed: %s", PQerrorMessage(_conn));
    }
+   PQclear(res);
 
-   // now we'll optimize the table
-   strcpy(sql, "ANALYZE db");
-   ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("ANALYZE error: %s\n", err_msg);
-      sqlite3_free(err_msg);
-
-      timer.stop();
-      return timer;
+   // reorders the table on disk based on the index 
+   sql = "CLUSTER db USING key_gix;";
+   res = PQexec(_conn, sql.c_str());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "CLUSTER command failed: %s", PQerrorMessage(_conn));
    }
+   PQclear(res);
+
+   sql = "ANALYZE db;";
+   res = PQexec(_conn, sql.c_str());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      fprintf(stderr, "ANALYZE command failed: %s", PQerrorMessage(_conn));
+   }
+   PQclear(res);
 
    timer.stop();
    return timer;
@@ -336,43 +131,27 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
 
-   int ret;
-   char sql[256];
-   char* err_msg = NULL;
+   PGresult* res;
+   std::string sql;
 
-   std::stringstream stream;
-   stream << "SELECT value FROM db ";
-   stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << region.xmin() << "," << region.ymin() << ",";
-   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
-   stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << region.xmin() << " AND ";
-   stream << "xmax <= " << region.xmax() << " AND ";
-   stream << "ymin >= " << region.ymin() << " AND ";
-   stream << "ymax <= " << region.ymax() << ")";
+   sql = "SELECT value from db Where key && ST_MakeEnvelope(" + region.xmin() + ", " + region.ymin() + ", " + region.xmax() + ", " + region.ymax() + ");";
 
-   sqlite3_stmt* stmt;
-
-   // preparing to populate the table
-   ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
-
-      timer.stop();
-      return timer;
+   res = PQexecParams(_conn, sql.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 1);
+   if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+      fprintf(stderr, "SELECT command failed: %s", PQerrorMessage(_conn));
+   }
+   
+   uint32_t n_tuples = PQntuples(res);
+   for (uint32_t row = 0; row < n_tuples; ++row) {      
+      __apply((*(valuetype*)PQgetvalue(res, row, 0)));
    }
 
-   while (sqlite3_step(stmt) == SQLITE_ROW) {
-      __apply((*(valuetype*)sqlite3_column_blob(stmt, 0)));
-   }
-
-   sqlite3_finalize(stmt);
+   PQclear(res);
 
    timer.stop();
    return timer;
@@ -383,14 +162,13 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
 
-   int ret;
-   char sql[256];
-   char* err_msg = NULL;
+   PGresult* res;
+   std::string sql;
 
    uint32_t curr_z = std::min((uint32_t)8, 25 - region.z());
    uint32_t n = (uint64_t)1 << curr_z;
@@ -414,34 +192,18 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
          std::string ymin = std::to_string(mercator_util::tiley2lat(y + 1, curr_z));
          std::string ymax = std::to_string(mercator_util::tiley2lat(y, curr_z));
 
-         stream << "SELECT count(*) FROM db ";
-         stream << "WHERE ST_WITHIN(key, BuildMbr(";
-         stream << xmin << "," << ymin << ",";
-         stream << xmax << "," << ymax << ")) AND ROWID IN (";
-         stream << "SELECT pkid FROM idx_db_key WHERE ";
-         stream << "xmin >= " << xmin << " AND ";
-         stream << "xmax <= " << xmax << " AND ";
-         stream << "ymin >= " << ymin << " AND ";
-         stream << "ymax <= " << ymax << ")";
 
-         sqlite3_stmt* stmt;
+         sql = "SELECT count(*) from db Where key && ST_MakeEnvelope(" + xmin + ", " + xmax + ", " + ymin + ", " + ymax + ");";
 
-         // preparing to populate the table
-         ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
-         if (ret != SQLITE_OK) {
-            // an error occurred
-            printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
-
-            timer.stop();
-            return timer;
+         res = PQexecParams(_conn, sql.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 0);
+         if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+            fprintf(stderr, "SELECT command failed: %s", PQerrorMessage(_conn));
          }
 
-         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            int count = sqlite3_column_int(stmt, 0);
-            if (count > 0) __apply(spatial_t(x, y, curr_z), count);
-         }
+         uint32_t count = std::stoi(PQgetvalue(res, 0, 0));
+         if (count > 0) __apply(spatial_t(x, y, curr_z), count);
 
-         sqlite3_finalize(stmt);
+         PQclear(res);
       }
    }
 
@@ -453,72 +215,30 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    Timer timer;
    timer.start();
 
-   if (!init) {
+   if (!_init) {
       timer.stop();
       return timer;
    }
 
-   int ret;
-   char sql[256];
-   char* err_msg = NULL;
+   PGresult* res;
+   std::string sql;
 
-   std::stringstream stream;
-   stream << "SELECT count(*) FROM db ";
-   stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << region.xmin() << "," << region.ymin() << ",";
-   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
-   stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << region.xmin() << " AND ";
-   stream << "xmax <= " << region.xmax() << " AND ";
-   stream << "ymin >= " << region.ymin() << " AND ";
-   stream << "ymax <= " << region.ymax() << ")";
+   sql = "SELECT count(*) from db Where key && ST_MakeEnvelope(" + region.xmin() + ", " + region.ymin() + ", " + region.xmax() + ", " + region.ymax() + ");";
 
-   sqlite3_stmt* stmt;
-
-   // preparing to populate the table
-   ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
-   if (ret != SQLITE_OK) {
-      // an error occurred
-      printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
-
-      timer.stop();
-      return timer;
+   res = PQexecParams(_conn, sql.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 0);
+   if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+      fprintf(stderr, "SELECT command failed: %s", PQerrorMessage(_conn));
    }
 
-   if (sqlite3_step(stmt) == SQLITE_ROW) {
-      int count = sqlite3_column_int(stmt, 0);
-      if (count > 0) {
-         __apply(spatial_t(region.x0() + (uint32_t)((region.x1() - region.x0()) / 2),
-            region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
-            0), count);
-      }
+   uint32_t count = std::stoi(PQgetvalue(res, 0, 0));
+   if (count > 0) {
+      __apply(spatial_t(region.x0() + (uint32_t)((region.x1() - region.x0()) / 2),
+         region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
+         0), count);
    }
-
-   sqlite3_finalize(stmt);
+   
+   PQclear(res);
 
    timer.stop();
    return timer;
-}
-
-void PostGisCtn::notice(const char* fmt, ...) {
-   va_list ap;
-
-   fprintf(stdout, "NOTICE: ");
-
-   va_start(ap, fmt);
-   vfprintf(stdout, fmt, ap);
-   va_end(ap);
-   fprintf(stdout, "\n");
-}
-
-void PostGisCtn::log_and_exit(const char* fmt, ...) {
-   va_list ap;
-
-   fprintf(stdout, "ERROR: ");
-
-   va_start(ap, fmt);
-   vfprintf(stdout, fmt, ap);
-   va_end(ap);
-   fprintf(stdout, "\n");
-   exit(1);
 }

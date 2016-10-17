@@ -24,7 +24,7 @@ private:
    static void log_and_exit(const char* fmt, ...);
 
 private:
-   bool init{false};
+   bool _init{false};
    void* _cache{nullptr};
    sqlite3* _handle{nullptr};
 };

@@ -20,6 +20,9 @@ include/GeoRunner.cpp
 
 include/GeoCtnIntf.h
 
+include/PostGisCtn.h
+include/PostGisCtn.cpp
+
 include/SpatiaLiteCtn.h
 include/SpatiaLiteCtn.cpp
 
