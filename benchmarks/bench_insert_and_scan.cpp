@@ -50,7 +50,7 @@ void inline read_element(const valuetype& el) {
 }
 
 template <typename container_t>
-void inline run_queries_ctn(container_t& container, const region_t& region, const int id, const int n_exp) {
+void inline run_queries(container_t& container, const region_t& region, const int id, const int n_exp) {
 
    Timer timer;
 
@@ -72,8 +72,8 @@ void inline run_queries_ctn(container_t& container, const region_t& region, cons
 }
 
 template <typename container_t>
-void run_bench_ctn(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
-   //create the pma
+void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
+   //create container
    container.create(input_vec.size());
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
@@ -102,7 +102,7 @@ void run_bench_ctn(container_t& container, std::vector<elttype>& input_vec, cons
       // ========================================
 
       //Run a scan on the whole array
-      run_queries_ctn(container, region_t(0, 0, 0, 0, 0), id, n_exp);
+      run_queries(container, region_t(0, 0, 0, 0, 0), id, n_exp);
 
       id++;
    }
@@ -138,11 +138,11 @@ int main(int argc, char* argv[]) {
       PRINTOUT(" %d teewts generated \n", (uint32_t)input_vec.size());
    }
 
-   run_bench_ctn(container0, input_vec, batch_size, n_exp);
+   run_bench(container0, input_vec, batch_size, n_exp);
 
    // don't need to insert by batch for the dense vector case
-   //run_bench_ctn(container1, input_vec, batch_size, n_exp);
-   run_bench_ctn(container2, input_vec, batch_size, n_exp);
+   //run_bench(container1, input_vec, batch_size, n_exp);
+   run_bench(container2, input_vec, batch_size, n_exp);
 
    return EXIT_SUCCESS;
 

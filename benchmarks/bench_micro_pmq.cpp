@@ -49,7 +49,7 @@ struct type<DenseCtnTimSort> {
 
 template <typename container_t>
 void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size) {
-   //create the pma
+   //create container
    container.create(input_vec.size());
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
