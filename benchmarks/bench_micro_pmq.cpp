@@ -34,12 +34,12 @@ struct type<PMABatchCtn> {
 };
 
 template <>
-struct type<SpatiaLiteCtn> {
+struct type<DenseCtnStdSort> {
    static constexpr const char* name() { return "StdDense"; }
 };
 
 template <>
-struct type<DenseVectorCtn> {
+struct type<DenseCtnTimSort> {
    static constexpr const char* name() { return "TimDense"; }
 };
 
