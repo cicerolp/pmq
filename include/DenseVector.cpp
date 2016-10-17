@@ -5,7 +5,7 @@ duration_t DenseVector::create(uint32_t size) {
    t.start();
    _container.reserve(size);
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t DenseVector::insert(std::vector<elttype> batch) {
@@ -29,7 +29,7 @@ duration_t DenseVector::insert(std::vector<elttype> batch) {
    // sorting algorithm
    sort(_container);
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
@@ -55,7 +55,7 @@ duration_t DenseVector::diff(std::vector<elinfo_t>& keys) {
    keys.emplace_back(last_key, begin_index, curr_index);
 
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 void DenseVector::clear_diff() {
@@ -70,7 +70,7 @@ duration_t DenseVector::count(const uint32_t& begin, const uint32_t& end, const 
 
    count += end - begin;
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
@@ -88,7 +88,7 @@ duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const 
       count++;
    }
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const {
@@ -102,5 +102,5 @@ duration_t DenseVector::apply(const uint32_t& begin, const uint32_t& end, const 
       curr++;
    }
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }

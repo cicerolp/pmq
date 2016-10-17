@@ -18,12 +18,12 @@ duration_t PMABatch::create(uint32_t size) {
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    t.stop();
 
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t PMABatch::insert(std::vector<elttype> batch) {
    Timer t;
-   if (_pma == nullptr) return t;
+   if (_pma == nullptr) return {duration_info("total", t)};
 
    t.start();
    // sorting algorithm
@@ -34,12 +34,12 @@ duration_t PMABatch::insert(std::vector<elttype> batch) {
 
    pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
    Timer t;
-   if (_pma == nullptr) return t;
+   if (_pma == nullptr) return {duration_info("total", t)};
 
    t.start();
 
@@ -99,7 +99,7 @@ duration_t PMABatch::diff(std::vector<elinfo_t>& keys) {
       }
    }
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 void PMABatch::clear_diff() {
@@ -109,7 +109,7 @@ void PMABatch::clear_diff() {
 
 duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count) const {
    Timer t;
-   if (_pma == nullptr) return t;
+   if (_pma == nullptr) return {duration_info("total", t)};
 
    t.start();
 
@@ -131,12 +131,12 @@ duration_t PMABatch::count(const uint32_t& begin, const uint32_t& end, const spa
       count--;
    }
 
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function _apply) const {
    Timer t;
-   if (_pma == nullptr) return t;
+   if (_pma == nullptr) return {duration_info("total", t)};
 
    t.start();
 
@@ -162,12 +162,12 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
 
    }
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }
 
 duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const {
    Timer t;
-   if (_pma == nullptr || count >= max) return t;
+   if (_pma == nullptr || count >= max) return {duration_info("total", t)};
 
    t.start();
 
@@ -187,7 +187,7 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
 
          if (count >= max) {
             t.stop();
-            return t;
+            return {duration_info("total", t)};
          }
       }
    }
@@ -199,9 +199,9 @@ duration_t PMABatch::apply(const uint32_t& begin, const uint32_t& end, const spa
 
       if (count >= max) {
          t.stop();
-         return t;
+         return {duration_info("total", t)};
       }
    }
    t.stop();
-   return t;
+   return {duration_info("total", t)};
 }

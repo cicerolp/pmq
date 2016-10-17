@@ -15,10 +15,12 @@ duration_t DenseVectorCtn::create(uint32_t size) {
 
 // update container
 duration_t DenseVectorCtn::insert(std::vector<elttype> batch) {
-   Timer timer;
-   timer.start();
-   // std algorithm
+   duration_t duration;
 
+   Timer timer;
+
+   // insert start
+   timer.start();
    // we need the batch sorted
    sort(batch);
 
@@ -35,14 +37,27 @@ duration_t DenseVectorCtn::insert(std::vector<elttype> batch) {
    // sorting algorithm
    sort(_container);
 
-   // diff
+   // insert end
+   timer.stop();
+   duration.emplace_back("Insert", timer);
+
+   // diff start
+   timer.start();
    diff_cnt keys = diff();
 
-   // update quadtree
+   // diff end
+   timer.stop();
+   duration.emplace_back("ModifiedKeys", timer);
+
+   // quadtree update start
+   timer.start();
    _quadtree->update(keys.begin(), keys.end());
 
+   // quadtree update end
    timer.stop();
-   return timer;
+   duration.emplace_back("QuadtreeUpdate", timer);
+
+   return duration;
 }
 
 // apply function for every el<valuetype>
@@ -60,7 +75,7 @@ duration_t DenseVectorCtn::scan_at_region(const region_t& region, scantype_funct
    }
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // apply function for every spatial area/region
@@ -77,7 +92,7 @@ duration_t DenseVectorCtn::apply_at_tile(const region_t& region, applytype_funct
 
    timer.stop();
 
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 duration_t DenseVectorCtn::apply_at_region(const region_t& region, applytype_function __apply) {
@@ -93,7 +108,7 @@ duration_t DenseVectorCtn::apply_at_region(const region_t& region, applytype_fun
 
    timer.stop();
 
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 diff_cnt DenseVectorCtn::diff() {

@@ -41,7 +41,7 @@ duration_t PostGisCtn::create(uint32_t size) {
    _init = true;
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // update container
@@ -51,7 +51,7 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    PGresult* res;
@@ -123,7 +123,7 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    PQclear(res);
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // apply function for every el<valuetype>
@@ -133,7 +133,7 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    PGresult* res;
@@ -154,7 +154,7 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
    PQclear(res);
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // apply function for every spatial area/region
@@ -164,7 +164,7 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    PGresult* res;
@@ -208,7 +208,7 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
    }
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_function __apply) {
@@ -217,7 +217,7 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    PGresult* res;
@@ -240,5 +240,5 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    PQclear(res);
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }

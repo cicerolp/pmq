@@ -1,8 +1,9 @@
+/*
 /** @file
  * Benchmark for the queru time
  *
  *
- */
+ #1#
 
 #include "stde.h"
 #include "types.h"
@@ -206,4 +207,19 @@ int main(int argc, char* argv[]) {
 
    return EXIT_SUCCESS;
 
+}
+*/
+
+#include "stde.h"
+#include "types.h"
+#include "PMABatch.h"
+#include "DenseVector.h"
+
+#include "InputIntf.h"
+#include "QuadtreeIntf.h"
+
+uint32_t g_Quadtree_Depth = 25;
+
+int main(int argc, char* argv[]) {
+   return EXIT_SUCCESS;
 }

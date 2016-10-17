@@ -56,7 +56,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    // now we can create the table
@@ -71,7 +71,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    // ... we'll add a Geometry column of POINT type to the table
@@ -83,7 +83,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    // and finally we'll enable this geo-column to have a Spatial Index based on R*Tree
@@ -95,12 +95,12 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    _init = true;
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // update container
@@ -110,7 +110,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    int ret;
@@ -132,7 +132,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    // preparing to populate the table
@@ -143,7 +143,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    for (uint32_t pk = 0; pk < batch.size(); ++pk) {
@@ -182,7 +182,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
          sqlite3_finalize(stmt);
 
          timer.stop();
-         return timer;
+         return {duration_info("total", timer)};
       }
    }
 
@@ -198,7 +198,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    // now we'll optimize the table
@@ -210,11 +210,11 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // apply function for every el<valuetype>
@@ -224,7 +224,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    int ret;
@@ -251,7 +251,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -261,7 +261,7 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
    sqlite3_finalize(stmt);
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 // apply function for every spatial area/region
@@ -271,7 +271,7 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    int ret;
@@ -319,7 +319,7 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
             printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
             timer.stop();
-            return timer;
+            return {duration_info("total", timer)};
          }
 
          if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -332,7 +332,7 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
    }
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_function __apply) {
@@ -341,7 +341,7 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
 
    if (!_init) {
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    int ret;
@@ -368,7 +368,7 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();
-      return timer;
+      return {duration_info("total", timer)};
    }
 
    if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -383,7 +383,7 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
    sqlite3_finalize(stmt);
 
    timer.stop();
-   return timer;
+   return {duration_info("total", timer)};
 }
 
 void SpatiaLiteCtn::notice(const char* fmt, ...) {
