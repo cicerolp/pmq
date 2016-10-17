@@ -11,6 +11,8 @@ duration_t DenseVectorCtn::create(uint32_t size) {
    timer.start();
    _container.reserve(size);
    timer.stop();
+
+   return{ duration_info("create", timer) };
 }
 
 // update container
@@ -18,6 +20,12 @@ duration_t DenseVectorCtn::insert(std::vector<elttype> batch) {
    duration_t duration;
 
    Timer timer;
+   timer.start();
+
+   if (_quadtree == nullptr) {
+      timer.stop();
+      return{ duration_info("Error", timer) };
+   }
 
    // insert start
    timer.start();

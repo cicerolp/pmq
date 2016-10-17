@@ -34,6 +34,8 @@ private:
 };
 
 class DenseCtnStdSort : public DenseVectorCtn {
+public:
+   DenseCtnStdSort() : DenseVectorCtn() {};
 protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       std::sort(cnt.begin(), cnt.end());
@@ -41,6 +43,8 @@ protected:
 };
 
 class DenseCtnTimSort : public DenseVectorCtn {
+public:
+   DenseCtnTimSort() : DenseVectorCtn() {};
 protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       gfx::timsort(cnt.begin(), cnt.end());
