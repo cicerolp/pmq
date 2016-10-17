@@ -24,7 +24,11 @@ add_executable(bench_insert_and_scan bench_insert_and_scan.cpp
 
    ../include/PMABatch.cpp
    ../include/DenseVector.cpp
+   
    ../include/QuadtreeIntf.cpp
+
+   ../include/PMABatchCtn.cpp
+   ../include/DenseVectorCtn.cpp
 )
 
 target_link_libraries(bench_insert_and_scan pma ${CMAKE_THREAD_LIBS_INIT} )

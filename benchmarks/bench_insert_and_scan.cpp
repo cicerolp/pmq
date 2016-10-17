@@ -1,135 +1,111 @@
-/*
 /** @file
- * Benchmark for the queru time
+ * Benchmark for the query time
  *
  *
- #1#
+ */
 
 #include "stde.h"
 #include "types.h"
-#include "PMABatch.h"
-#include "DenseVector.h"
 
 #include "InputIntf.h"
-#include "QuadtreeIntf.h"
 
+#include "GeoCtnIntf.h"
+
+#include "PMABatchCtn.h"
+#include "PostGisCtn.h"
+#include "SpatiaLiteCtn.h"
+#include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
-   std::cout << type<container_t>::name() << " ; ";\
+   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
 
 uint32_t g_Quadtree_Depth = 25;
 
-unsigned int g_it_id = 0;
-
-template< typename T> struct type {
-   static constexpr const char* name() { return "unknown";  }  // end type< T>::name
+template <typename T>
+struct type {
+   static constexpr const char* name() { return "unknown"; } // end type< T>::name
 }; // type< T>
 
-template<> struct type<PMABatch> {
-   static constexpr const char* name() { return "PMABatch";  }
-};
-template<> struct type<DenseVectorStdSort> {
-   static constexpr const char* name() { return "StdDense";  }
-};
-template<> struct type<DenseVectorTimSort> {
-   static constexpr const char* name() { return "TimDense";  }
+template <>
+struct type<PMABatchCtn> {
+   static constexpr const char* name() { return "PMABatch"; }
 };
 
-//Reads the key only
-void inline read_key(const void* el) {
-   uint64_t volatile key = *(uint64_t*)el;
+template <>
+struct type<DenseCtnStdSort> {
+   static constexpr const char* name() { return "StdDense"; }
+};
+
+template <>
+struct type<DenseCtnTimSort> {
+   static constexpr const char* name() { return "TimDense"; }
+};
+
+// reads the full element
+void inline read_element(const valuetype& el) {
+   valuetype volatile elemt = *(valuetype*)&el;
 }
-
-//Reads the full element
-void inline read_element(const void* el) {
-   elttype volatile elemt = *(elttype*)el;
-}
-
 
 template <typename container_t>
-void inline run_queries(const container_t & container, QuadtreeIntf& quadtree, region_t q_region, int n_exp ){
+void inline run_queries_ctn(container_t& container, const region_t& region, const int id, const int n_exp) {
 
-   Timer t;
+   Timer timer;
 
    // 1 - gets the minimum set of nodes that are inside the queried region
    // QueryRegion will traverse the tree and return the intervals to query;
-   // NOTE: when comparing with the octree with pointer to elements the scan will be the traversall on the tree.
-   std::vector<QuadtreeIntf*> q_nodes;
-   quadtree.query_region(q_region, q_nodes);
+   // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
 
-   //WARMUP
-   for (auto& el : q_nodes) {
-      container.apply(el->begin(), el->end(), el->el(), read_element);
-   }
-
+   // wamup
+   container.scan_at_region(region, read_element);
+   
    // access the container to count the number of elements inside the region
    for (int i = 0; i < n_exp; i++) {
-      t.start();
-      for (auto& el : q_nodes) {
-         container.apply(el->begin(), el->end(), el->el(), read_element);
-      }
-      t.stop();
-      PRINTBENCH("ReadElts",g_it_id,t.milliseconds(),"ms");
-   }
+      timer.start();
+      container.scan_at_region(region, read_element);
+      timer.stop();
 
+      PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
+   }
 }
 
 template <typename container_t>
-void run_bench(container_t container, std::vector<elttype>& input_vec, const int batch_size, int n_exp) {
-
-   QuadtreeIntf quadtree(spatial_t(0, 0, 0));
-
+void run_bench_ctn(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
    //create the pma
    container.create(input_vec.size());
-
-   diff_cnt modifiedKeys;
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();
 
-   Timer t;
-   //std::cout << typeid(Timer).name() << std::endl;
+   duration_t timer;
 
-   g_it_id = 0;
+   int id = 0;
    while (it_begin != input_vec.end()) {
       it_curr = std::min(it_begin + batch_size, input_vec.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-      t = container.insert(batch);
-      PRINTBENCH("Insert", g_it_id ,t.milliseconds(),"ms" );
+      timer = container.insert(batch);
+
+      for (auto& info : timer) {
+         PRINTBENCH(info.name, id, info.duration, "ms");
+      }
 
       // update iterator
       it_begin = it_curr;
-
-      // retrieve modified keys
-      modifiedKeys.clear();
-
-      // Creates a map with begin and end of each index in the container.
-      t = container.diff(modifiedKeys); //Extract information of new key range boundaries inside the container
-      PRINTBENCH("ModifiedKeys", g_it_id, t.milliseconds(),"ms", modifiedKeys.size() );
-
-      t.start();
-      quadtree.update(modifiedKeys.begin(), modifiedKeys.end());
-      t.stop();
-      PRINTBENCH("QuadtreeUpdate", g_it_id, t.milliseconds(),"ms");
-
 
       // ========================================
       // Performs global scan
       // ========================================
 
       //Run a scan on the whole array
-      run_queries(container, quadtree, region_t(0,0,1,1,0), n_exp);
+      run_queries_ctn(container, region_t(0, 0, 0, 0, 0), id, n_exp);
 
-      g_it_id++;
+      id++;
    }
-
-
 }
 
 int main(int argc, char* argv[]) {
@@ -141,53 +117,33 @@ int main(int argc, char* argv[]) {
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-
-   PMABatch pma_container(argc, argv); //read pma command line parameters
-
-//   DenseVectorStdSort vec_cont;
-   DenseVectorTimSort tim_cont;
+   PMABatchCtn container0(argc, argv);
+   DenseCtnStdSort container1;
+   DenseCtnTimSort container2;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
-
    if (is_help) return false;
 
    const uint32_t quadtree_depth = 25;
 
    std::vector<elttype> input_vec;
 
-   if (nb_elements == 0){
+   if (nb_elements == 0) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
       input_vec = input::load(fname, quadtree_depth);
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
-   }else{
+   } else {
       PRINTOUT("Generate random keys..");
       input_vec = input::dist_random(nb_elements, seed);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input_vec.size());
    }
 
-   run_bench(pma_container, input_vec, batch_size, n_exp);
+   run_bench_ctn(container0, input_vec, batch_size, n_exp);
 
-   //don't need to insert by batch for the dense vector case
-
-  // run_bench(vec_cont, input_vec,  input_vec.size(), n_exp);
-   run_bench(tim_cont, input_vec,  batch_size, n_exp);
-
+   // don't need to insert by batch for the dense vector case
+   //run_bench_ctn(container1, input_vec, batch_size, n_exp);
+   run_bench_ctn(container2, input_vec, batch_size, n_exp);
 
    return EXIT_SUCCESS;
 
-}
-*/
-
-#include "stde.h"
-#include "types.h"
-#include "PMABatch.h"
-#include "DenseVector.h"
-
-#include "InputIntf.h"
-#include "QuadtreeIntf.h"
-
-uint32_t g_Quadtree_Depth = 25;
-
-int main(int argc, char* argv[]) {
-   return EXIT_SUCCESS;
 }

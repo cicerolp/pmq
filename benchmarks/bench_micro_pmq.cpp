@@ -7,8 +7,6 @@
  *
  */
 
-#include <typeinfo>
-
 #include "stde.h"
 #include "types.h"
 
@@ -20,6 +18,12 @@
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
 #include "DenseVectorCtn.h"
+
+#define PRINTBENCH( ... ) do { \
+   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
+   printcsv( __VA_ARGS__ ) ; \
+   std::cout << std::endl ;\
+} while (0)
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -45,12 +49,6 @@ struct type<DenseCtnTimSort> {
 
 template <typename container_t>
 void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size) {
-#define PRINTBENCH( ... ) do { \
-   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
-   printcsv( __VA_ARGS__ ) ; \
-   std::cout << std::endl ;\
-} while (0)
-
    //create the pma
    container.create(input_vec.size());
 
