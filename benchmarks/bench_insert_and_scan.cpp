@@ -101,6 +101,9 @@ int main(int argc, char* argv[]) {
    DenseCtnStdSort container1;
    DenseCtnTimSort container2;
 
+   SpatiaLiteCtn container3;
+   PostGisCtn container4;
+
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
 
@@ -119,10 +122,10 @@ int main(int argc, char* argv[]) {
    }
 
    run_bench(container0, input_vec, batch_size, n_exp);
-
-   // don't need to insert by batch for the dense vector case
-   //run_bench(container1, input_vec, batch_size, n_exp);
+   run_bench(container1, input_vec, batch_size, n_exp);
    run_bench(container2, input_vec, batch_size, n_exp);
+   run_bench(container3, input_vec, batch_size, n_exp);
+   run_bench(container4, input_vec, batch_size, n_exp);
 
    return EXIT_SUCCESS;
 
