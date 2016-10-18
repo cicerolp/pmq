@@ -34,7 +34,7 @@ SpatiaLiteCtn::~SpatiaLiteCtn() {
    if (_handle) sqlite3_close(_handle);
    if (_cache) spatialite_cleanup_ex(_cache);
 
-   spatialite_shutdown();
+   //spatialite_shutdown();
 }
 
 // build container
