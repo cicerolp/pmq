@@ -17,32 +17,12 @@
 #include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
-   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
+   std::cout << "InsertionBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
 
 uint32_t g_Quadtree_Depth = 25;
-
-template <typename T>
-struct type {
-   static constexpr const char* name() { return "unknown"; } // end type< T>::name
-}; // type< T>
-
-template <>
-struct type<PMABatchCtn> {
-   static constexpr const char* name() { return "PMABatch"; }
-};
-
-template <>
-struct type<DenseCtnStdSort> {
-   static constexpr const char* name() { return "StdDense"; }
-};
-
-template <>
-struct type<DenseCtnTimSort> {
-   static constexpr const char* name() { return "TimDense"; }
-};
 
 // reads the full element
 void inline read_element(const valuetype& el) {

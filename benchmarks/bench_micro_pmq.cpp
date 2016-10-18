@@ -20,32 +20,12 @@
 #include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
-   std::cout << "InsertionBench " << type<container_t>::name() << " ; ";\
+   std::cout << "InsertionBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
 
 uint32_t g_Quadtree_Depth = 25;
-
-template <typename T>
-struct type {
-   static constexpr const char* name() { return "unknown"; } // end type< T>::name
-}; // type< T>
-
-template <>
-struct type<PMABatchCtn> {
-   static constexpr const char* name() { return "PMABatch"; }
-};
-
-template <>
-struct type<DenseCtnStdSort> {
-   static constexpr const char* name() { return "StdDense"; }
-};
-
-template <>
-struct type<DenseCtnTimSort> {
-   static constexpr const char* name() { return "TimDense"; }
-};
 
 template <typename container_t>
 void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size) {
@@ -87,6 +67,8 @@ int main(int argc, char* argv[]) {
    PMABatchCtn container0(argc, argv);
    DenseCtnStdSort container1;
    DenseCtnTimSort container2;
+   SpatiaLiteCtn container3;
+   PostGisCtn container4;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -101,31 +83,7 @@ int main(int argc, char* argv[]) {
       run_bench(container0, input_vec, batch_size);
       run_bench(container1, input_vec, batch_size);
       run_bench(container2, input_vec, batch_size);
+      run_bench(container3, input_vec, batch_size);
+      run_bench(container4, input_vec, batch_size);
    }
-
-   /*PMABatch pma_container(argc, argv); //read pma command line parameters
-   DenseVectorStdSort vec_cont;
-   DenseVectorTimSort tim_cont;
-
-   const char* is_help = cimg_option("-h", (char*)0, 0);
-
-   if (is_help) return false;
-
-   const uint32_t quadtree_depth = 25;
-
-   PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-   std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
-   PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
-
-   for (int i = 0; i < n_exp; i++) {
-      run_bench(pma_container, input_vec, batch_size);
-      run_bench(vec_cont, input_vec, batch_size);
-      run_bench(tim_cont, input_vec, batch_size);
-#if 0
-     do_bench_benderPMA(&input_vec[0],input_vec.size(),reference_array,tau_0,tau_h,rho_0,rho_h,seg_size);
-     do_bench_stlsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-     do_bench_qsort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-     do_bench_mergesort(&input_vec[0],input_vec.size(),batch_size,reference_array);
-#endif
-   }*/
 }

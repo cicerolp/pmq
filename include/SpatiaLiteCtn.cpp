@@ -56,7 +56,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
 
    // now we can create the table
@@ -71,7 +71,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
 
    // ... we'll add a Geometry column of POINT type to the table
@@ -83,7 +83,7 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
 
    // and finally we'll enable this geo-column to have a Spatial Index based on R*Tree
@@ -95,23 +95,25 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
 
    _init = true;
    timer.stop();
-   return {duration_info("total", timer)};
+   return {duration_info("create", timer)};
 }
 
 // update container
 duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
+   duration_t duration;
    Timer timer;
-   timer.start();
 
    if (!_init) {
-      timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
+
+   // insert start
+   timer.start();
 
    int ret;
    char sql[256];
@@ -201,6 +203,13 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       return {duration_info("total", timer)};
    }
 
+   // insert end
+   timer.stop();
+   duration.emplace_back("Insert", timer);
+
+   // analyze start
+   timer.start();
+
    // now we'll optimize the table
    strcpy(sql, "ANALYZE db");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
@@ -210,11 +219,14 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       sqlite3_free(err_msg);
 
       timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("Error", timer)};
    }
 
+   // analyze end
    timer.stop();
-   return {duration_info("total", timer)};
+   duration.emplace_back("Analyze", timer);
+
+   return duration;
 }
 
 // apply function for every el<valuetype>

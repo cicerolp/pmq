@@ -22,4 +22,11 @@ public:
    // apply function for every spatial area/region
    virtual duration_t apply_at_tile(const region_t& region, applytype_function __apply) = 0;
    virtual duration_t apply_at_region(const region_t& region, applytype_function __apply) = 0;
+
+   inline virtual std::string name() const;
 };
+
+std::string GeoCtnIntf::name() const {
+   static auto name_str = "Unknown";
+   return name_str;
+}

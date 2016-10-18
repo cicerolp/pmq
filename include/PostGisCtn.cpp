@@ -38,25 +38,6 @@ duration_t PostGisCtn::create(uint32_t size) {
    }
    PQclear(res);
 
-   _init = true;
-
-   timer.stop();
-   return {duration_info("total", timer)};
-}
-
-// update container
-duration_t PostGisCtn::insert(std::vector<elttype> batch) {
-   Timer timer;
-   timer.start();
-
-   if (!_init) {
-      timer.stop();
-      return {duration_info("total", timer)};
-   }
-
-   PGresult* res;
-   std::string sql;
-   
    sql = "INSERT INTO db (key, value) VALUES (ST_GeomFromText($1, 4326), $2);";
    res = PQprepare(_conn, "stmtname", sql.c_str(), 0, nullptr);
    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -64,6 +45,27 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
+   _init = true;
+
+   timer.stop();
+   return {duration_info("create", timer)};
+}
+
+// update container
+duration_t PostGisCtn::insert(std::vector<elttype> batch) {
+   duration_t duration;
+   Timer timer;
+
+   if (!_init) {
+      return {duration_info("Error", timer)};
+   }
+
+   // insert start
+   timer.start();
+
+   PGresult* res;
+   std::string sql;
+   
    sql = "BEGIN;";
    res = PQexec(_conn, sql.c_str());
    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -107,6 +109,13 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
+   // insert end
+   timer.stop();
+   duration.emplace_back("Insert", timer);
+
+   // clustering start
+   timer.start();
+
    // reorders the table on disk based on the index 
    sql = "CLUSTER db USING key_gix;";
    res = PQexec(_conn, sql.c_str());
@@ -115,6 +124,13 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
+   // clustering end
+   timer.stop();
+   duration.emplace_back("Cluster", timer);
+   
+   // analyze start
+   timer.start();
+
    sql = "ANALYZE db;";
    res = PQexec(_conn, sql.c_str());
    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -122,19 +138,22 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
+   // analyze end
    timer.stop();
-   return {duration_info("total", timer)};
+   duration.emplace_back("Analyze", timer);
+
+   return duration;
 }
 
 // apply function for every el<valuetype>
 duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
-   timer.start();
-
+   
    if (!_init) {
-      timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("scan_at_region", timer)};
    }
+
+   timer.start();
 
    PGresult* res;
    std::string sql;
@@ -154,19 +173,19 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
    PQclear(res);
 
    timer.stop();
-   return {duration_info("total", timer)};
+   return {duration_info("scan_at_region", timer)};
 }
 
 // apply function for every spatial area/region
 duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function __apply) {
    Timer timer;
-   timer.start();
 
    if (!_init) {
-      timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("apply_at_tile", timer)};
    }
 
+   timer.start();
+   
    PGresult* res;
    std::string sql;
 
@@ -208,17 +227,17 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
    }
 
    timer.stop();
-   return {duration_info("total", timer)};
+   return {duration_info("apply_at_tile", timer)};
 }
 
 duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_function __apply) {
    Timer timer;
-   timer.start();
 
    if (!_init) {
-      timer.stop();
-      return {duration_info("total", timer)};
+      return {duration_info("apply_at_region", timer)};
    }
+
+   timer.start();
 
    PGresult* res;
    std::string sql;
@@ -240,5 +259,5 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    PQclear(res);
 
    timer.stop();
-   return {duration_info("total", timer)};
+   return {duration_info("apply_at_region", timer)};
 }

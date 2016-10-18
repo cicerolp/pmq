@@ -21,6 +21,8 @@ public:
    duration_t apply_at_tile(const region_t& region, applytype_function __apply) override;
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
+   inline virtual std::string name() const;
+
 protected:
    diff_cnt diff();
    void clear_diff();
@@ -37,6 +39,11 @@ private:
    pma_struct* _pma{ nullptr };
    std::unique_ptr<QuadtreeIntf> _quadtree;
 };
+
+std::string PMABatchCtn::name() const {
+   static auto name_str = "PMABatch";
+   return name_str;
+}
 
 void PMABatchCtn::get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max, uint32_t mCodeSize) {
    uint32_t diffDepth = mCodeSize - zoom;

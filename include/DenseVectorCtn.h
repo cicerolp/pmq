@@ -21,6 +21,8 @@ public:
    duration_t apply_at_tile(const region_t& region, applytype_function __apply) override;
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
+   inline virtual std::string name() const = 0;
+
 protected:
    diff_cnt diff();
    void clear_diff();
@@ -35,7 +37,11 @@ private:
 
 class DenseCtnStdSort : public DenseVectorCtn {
 public:
-   DenseCtnStdSort() : DenseVectorCtn() {};
+   inline virtual std::string name() const {
+      static auto name_str = "StdDense";
+      return name_str;
+   }
+
 protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       std::sort(cnt.begin(), cnt.end());
@@ -44,7 +50,11 @@ protected:
 
 class DenseCtnTimSort : public DenseVectorCtn {
 public:
-   DenseCtnTimSort() : DenseVectorCtn() {};
+   inline virtual std::string name() const {
+      static auto name_str = "TimDense";
+      return name_str;
+   }
+
 protected:
    inline void sort(std::vector<elttype>& cnt) override final {
       gfx::timsort(cnt.begin(), cnt.end());
