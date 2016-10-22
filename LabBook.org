@@ -146,8 +146,37 @@ at the initialization;
 *** TODO Handle deletion of Tweets                                 :@JULIO:
 
 
+* Source Code
+** Dependencies
+
+Dependencies added for the bechmarks with databases
+#+begin_src sh :results output :exports both
+sudo apt-get install postgis libpq-dev libspatialite-dev libsqlite3-dev libgeos-dev
+#+end_src
+
+** Configuring Postgres
+Start psql console
+#+begin_src sh :results output :exports both
+sudo -u postgres psql postgres
+#+end_src
+
+Configure database in psql console
+#+BEGIN_EXAMPLE
+postgres=# \password postgres
+postgres=# CREATE DATABASE twittervis;
+postgres=# \c twittervis
+postgres=# CREATE EXTENSION postgis;
+#+END_EXAMPLE
+
+To start/stop/restart the Server
+http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
+#+begin_src sh :results output :exports both
+systemctl restart postgresql.service
+#+end_src
+
 * Scripts
-** Script to get info in experiments on grid5000
+** g5k_get_info.sh
+Script to get info in experiments on grid5000
 
 #+begin_src sh :results output :exports both :tangle ./scripts/g5k_get_info.sh :shebang #!/bin/bash
 # Script for to get machine information before doing the experiment
