@@ -341,6 +341,10 @@ fi
 #+end_src
 
 * Data
+Note: Only DATA branch contains entries here; 
+
+Reference about each experiment campaing. Usefull for comparing
+results of different experiments. 
 
 ** Experiments on Idphix
 
