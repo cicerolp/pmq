@@ -152,6 +152,14 @@ struct elinfo_t {
 using diff_cnt = std::vector<elinfo_t>;
 using diff_it = std::vector<elinfo_t>::iterator;
 
+#ifdef _POSIX_TIMERS
+using Timer = unixTimer<CLOCK_MONOTONIC>; //POSIX Timers
+#else
+// time resolution: high_resolution_clock
+// represents the clock with the smallest tick period provided by the implementation.
+using Timer = stdTimer<std::chrono::steady_clock>; //STL timers
+#endif
+
 struct duration_info {
    double duration;
    std::string name;
