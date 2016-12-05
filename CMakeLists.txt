@@ -26,7 +26,7 @@ endif()
 
 aux_source_directory(. SRC_LIST)
 
-file(GLOB_RECURSE HEADERS "src/*.h")
+file(GLOB HEADERS "include/*.h")
 source_group("Header Files" FILES ${HEADERS})
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
