@@ -71,16 +71,21 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
    prefix = prefix >> (depth_diff * 2);
 
 	std::vector<spatial_t> u_codes; // unrefined codes
+   std::vector<spatial_t> t_codes; // temporary codes
+
 	u_codes.emplace_back(prefix, region.z - depth_diff);
 
 	while (!u_codes.empty()) {
-		std::vector<spatial_t> t_codes; // temporary codes
+
+      // clear temporary storage
+      t_codes.clear();
 
 		for(auto& el : u_codes) {
-			if (region.cover(el)) {
-            if (naive_search_pma(el)) {
-               std::cout << el.code << ", z: " << el.z << std::endl;
-            }            
+
+         if (!naive_search_pma(el)) continue;
+
+         if (region.cover(el)) {
+            scan_pma(el, __apply);
 
 			} else if (el.z < region.z) {
             // break code into four
@@ -95,13 +100,6 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
 		u_codes.swap(t_codes);
 	}
 
-	/*std::vector<QuadtreeIntf*> subset;
-	_quadtree->query_region(region, subset);
-
-	for (auto& el : subset) {
-		scan_pma(el->begin(), el->end(), el->el(), __apply);
-	}*/
-
 	timer.stop();
 
 	return {duration_info("scan_at_region", timer)};
@@ -114,13 +112,6 @@ duration_t GeoHash::apply_at_tile(const region_t& region, applytype_function __a
 
 	timer.start();
 
-	/*std::vector<QuadtreeIntf*> subset;
-	_quadtree->query_tile(region, subset);
-
-	for (auto& el : subset) {
-		__apply(el->el(), count_pma(el->begin(), el->end(), el->el()));
-	}*/
-
 	timer.stop();
 
 	return {duration_info("apply_at_tile", timer)};
@@ -131,21 +122,14 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
 
 	if (_pma == nullptr) { return {duration_info("apply_at_region", timer)}; }
 
-	timer.start();
+   timer.start();
 
-	/*std::vector<QuadtreeIntf*> subset;
-	_quadtree->query_region(region, subset);
-
-	for (auto& el : subset) {
-		__apply(el->el(), count_pma(el->begin(), el->end(), el->el()));
-	}*/
-
-	timer.stop();
+   timer.stop();
 
 	return {duration_info("apply_at_region", timer)};
 }
 
-bool GeoHash::naive_search_pma(const spatial_t & el) const {
+bool GeoHash::naive_search_pma(const spatial_t& el) const {
    if (_pma == nullptr) return false;
 
    uint64_t code_min = 0;
@@ -153,17 +137,88 @@ bool GeoHash::naive_search_pma(const spatial_t & el) const {
    get_mcode_range(el, code_min, code_max, 25);
 
    for (uint32_t seg = 0; seg < _pma->nb_segments; ++seg) {
-      
-      uint32_t nb_elts_per_seg = _pma->elts[seg];
 
-      for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
-         char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
+      if (PMA_SEG(SEGMENT_LAST(_pma, seg)) < code_min) {
+         // next segment
+         continue;
+      } else {
+         uint32_t nb_elts_per_seg = _pma->elts[seg];
 
-         if ((*(uint64_t*)el_pt) >= code_min && (*(uint64_t*)el_pt) <= code_max) {
-            return true;
+         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+            char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
+
+            if (PMA_SEG(el_pt) > code_max) {
+               return false;
+            } else if (PMA_SEG(el_pt) >= code_min) {
+               return true;
+            }
+         }
+      }
+   }
+}
+
+uint32_t GeoHash::count_pma(const spatial_t & el) const {
+   if (_pma == nullptr) return 0;
+
+   uint32_t count = 0;
+
+   uint64_t code_min = 0;
+   uint64_t code_max = 0;
+   get_mcode_range(el, code_min, code_max, 25);
+
+   for (uint32_t seg = 0; seg < _pma->nb_segments; ++seg) {
+
+      if (PMA_SEG(SEGMENT_LAST(_pma, seg)) < code_min) {
+         // next segment
+         continue;
+      } else {
+         uint32_t nb_elts_per_seg = _pma->elts[seg];
+
+         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+            char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
+
+            if (PMA_SEG(el_pt) > code_max) {
+               return count;
+            } else if (PMA_SEG(el_pt) >= code_min) {
+
+               if (PMA_SEG(SEGMENT_LAST(_pma, seg)) <= code_max) {
+                  count += nb_elts_per_seg - offset;
+                  break;
+               } else {
+                  count++;
+               }               
+            }
          }
       }
    }
 
-   return false;
+   return count;
+}
+
+void GeoHash::scan_pma(const spatial_t & el, scantype_function _apply) const {
+   if (_pma == nullptr) return;
+
+   uint64_t code_min = 0;
+   uint64_t code_max = 0;
+   get_mcode_range(el, code_min, code_max, 25);
+
+   for (uint32_t seg = 0; seg < _pma->nb_segments; ++seg) {
+
+      if (PMA_SEG(SEGMENT_LAST(_pma, seg)) < code_min) {
+         // next segment
+         continue;
+      } else {
+         uint32_t nb_elts_per_seg = _pma->elts[seg];
+
+         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+            char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
+
+            if (PMA_SEG(el_pt) > code_max) {
+               return;
+            } else if (PMA_SEG(el_pt) >= code_min) {
+               _apply(*(valuetype*)ELT_TO_CONTENT(el_pt));
+            }
+         }
+      }
+   }
 }

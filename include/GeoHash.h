@@ -23,7 +23,11 @@ public:
 	inline virtual std::string name() const;
 
 protected:
+   #define PMA_SEG(x) ((*(uint64_t*)x))
+
    bool naive_search_pma(const spatial_t& el) const;
+   uint32_t count_pma(const spatial_t& el) const;
+   void scan_pma(const spatial_t& el, scantype_function _apply) const;
    void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
 
 	uint32_t seg_size;
