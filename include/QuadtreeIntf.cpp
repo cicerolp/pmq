@@ -73,9 +73,9 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
  * - If the node it completly inside the region, puts all the 8-descendents into the returned subset.
  */
 void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
-   if (region.z() == _el.z && region.cover(_el)) {
+   if (region.z == _el.z && region.cover(_el)) {
       return aggregate_tile(_el.z + 8, subset);
-   } else if (region.z() > _el.z) {
+   } else if (region.z > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_tile(region, subset);
       if (_container[1] != nullptr) _container[1]->query_tile(region, subset);
       if (_container[2] != nullptr) _container[2]->query_tile(region, subset);
@@ -90,7 +90,7 @@ void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>
 void QuadtreeIntf::query_region(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.cover(_el)) {
       subset.emplace_back(this);
-   } else if (region.z() > _el.z) {
+   } else if (region.z > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_region(region, subset);
       if (_container[1] != nullptr) _container[1]->query_region(region, subset);
       if (_container[2] != nullptr) _container[2]->query_region(region, subset);

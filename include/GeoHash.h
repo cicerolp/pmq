@@ -23,6 +23,9 @@ public:
 	inline virtual std::string name() const;
 
 protected:
+   bool naive_search_pma(const spatial_t& el) const;
+   void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
+
 	uint32_t seg_size;
 	float tau_0, tau_h, rho_0, rho_h;
 
@@ -32,4 +35,10 @@ protected:
 std::string GeoHash::name() const {
 	static auto name_str = "GeoHash";
 	return name_str;
+}
+
+inline void GeoHash::get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const {
+   uint32_t diffDepth = morton_size - el.z;
+   min = el.code << 2 * (diffDepth);
+   max = min | ((uint64_t)~0 >> (64 - 2 * diffDepth));
 }

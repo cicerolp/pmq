@@ -49,10 +49,7 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
 
 	timer.start();
 
-	uint64_t code0 = mortonEncode_RAM(region.x0(), region.y0());
-	uint64_t code1 = mortonEncode_RAM(region.x1(), region.y1());
-
-	uint64_t mask = code0 ^ code1;
+	uint64_t mask = region.code0 ^ region.code1;
 	
 	mask |= mask >> 32;
 	mask |= mask >> 16;
@@ -63,7 +60,7 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
 
 	mask = (~mask);
 
-   uint64_t prefix = mask & code1;
+   uint64_t prefix = mask & region.code1;
 
    uint32_t depth_diff = 0;
    while ((mask & 3) == 0) {
@@ -73,23 +70,19 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
 
    prefix = prefix >> (depth_diff * 2);
 
-   struct morton_tuple {
-      morton_tuple(uint64_t _code, uint32_t _z) : code(_code), z(_z) {}
-      uint32_t z;
-      uint64_t code;
-   };
-
-	std::vector<morton_tuple> u_codes; // unrefined codes
-	u_codes.emplace_back(prefix, region.z() - depth_diff);
+	std::vector<spatial_t> u_codes; // unrefined codes
+	u_codes.emplace_back(prefix, region.z - depth_diff);
 
 	while (!u_codes.empty()) {
-		std::vector<morton_tuple> t_codes; // temporary codes
+		std::vector<spatial_t> t_codes; // temporary codes
 
 		for(auto& el : u_codes) {
-			if (region.cover(el.code, el.z)) {
-            std::cout << el.code << ", z: " << el.z << std::endl;
+			if (region.cover(el)) {
+            if (naive_search_pma(el)) {
+               std::cout << el.code << ", z: " << el.z << std::endl;
+            }            
 
-			} else if (el.z < region.z()) {
+			} else if (el.z < region.z) {
             // break code into four
             uint64_t code = el.code << 2;
 				
@@ -150,4 +143,27 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
 	timer.stop();
 
 	return {duration_info("apply_at_region", timer)};
+}
+
+bool GeoHash::naive_search_pma(const spatial_t & el) const {
+   if (_pma == nullptr) return false;
+
+   uint64_t code_min = 0;
+   uint64_t code_max = 0;
+   get_mcode_range(el, code_min, code_max, 25);
+
+   for (uint32_t seg = 0; seg < _pma->nb_segments; ++seg) {
+      
+      uint32_t nb_elts_per_seg = _pma->elts[seg];
+
+      for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+         char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
+
+         if ((*(uint64_t*)el_pt) >= code_min && (*(uint64_t*)el_pt) <= code_max) {
+            return true;
+         }
+      }
+   }
+
+   return false;
 }

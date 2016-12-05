@@ -6,10 +6,15 @@
 extern uint32_t g_Quadtree_Depth;
 
 struct spatial_t {
-   spatial_t(uint32_t x, uint32_t y, uint8_t z, uint8_t l = 1) : z(z), leaf(l) {
-      code = mortonEncode_RAM(x, y);
+   spatial_t(uint64_t _code, uint8_t _z) : code(_code), z(_z), leaf(1) {
       beg_child = 3;
       end_child = 0;
+   }
+
+   spatial_t(uint32_t _x, uint32_t _y, uint8_t _z, uint8_t _l = 1) : z(_z), leaf(_l) {
+      beg_child = 3;
+      end_child = 0;
+      code = mortonEncode_RAM(_x, _y);
    }
 
    inline bool operator==(const spatial_t& rhs) const {
@@ -32,63 +37,44 @@ struct spatial_t {
 struct region_t {
    region_t() = default;
 
-   region_t(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t z) {
-      _x0 = x0;
-      _y0 = y0;
-      _x1 = x1;
-      _y1 = y1;
-      _z = z;
+   region_t(uint64_t _code0, uint64_t _code1, uint8_t _z) {
+      z = _z;
 
-      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
-      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
-      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
-      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
+      code0 = _code0;
+      code1 = _code1;
+      
+      mortonDecode_RAM(code0, x0, y0);
+      mortonDecode_RAM(code1, x1, y1);
    }
 
-   inline bool cover(uint64_t el_code, uint32_t el_z) const {
-      uint32_t x, y;
-      mortonDecode_RAM(el_code, x, y);
+   region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
+      z = _z;
 
-      if (_z <= el_z) {
-         uint64_t n = (uint64_t)1 << (el_z - _z);
+      x0 = _x0;
+      y0 = _y0;
+      x1 = _x1;
+      y1 = _y1;
 
-         uint64_t x_min = _x0 * n;
-         uint64_t x_max = _x1 * n;
-
-         uint64_t y_min = _y0 * n;
-         uint64_t y_max = _y1 * n;
-
-         return x_min <= x && x_max >= x && y_min <= y && y_max >= y;
-      }
-      else {
-         uint64_t n = (uint64_t)1 << (_z - el_z);
-
-         uint64_t x_min = x * n;
-         uint64_t x_max = x_min + n - 1;
-
-         uint64_t y_min = y * n;
-         uint64_t y_max = y_min + n - 1;
-
-         return _x0 <= x_min && _x1 >= x_max && _y0 <= y_min && _y1 >= y_max;
-      }
+      code0 = mortonEncode_RAM(x0, y0);
+      code1 = mortonEncode_RAM(x1, y1);
    }
 
    inline bool cover(const spatial_t& el) const {
       uint32_t x, y;
       mortonDecode_RAM(el.code, x, y);
 
-      if (_z <= el.z) {
-         uint64_t n = (uint64_t)1 << (el.z - _z);
+      if (z <= el.z) {
+         uint64_t n = (uint64_t)1 << (el.z - z);
 
-         uint64_t x_min = _x0 * n;
-         uint64_t x_max = _x1 * n;
+         uint64_t x_min = x0 * n;
+         uint64_t x_max = x1 * n;
 
-         uint64_t y_min = _y0 * n;
-         uint64_t y_max = _y1 * n;
+         uint64_t y_min = y0 * n;
+         uint64_t y_max = y1 * n;
 
          return x_min <= x && x_max >= x && y_min <= y && y_max >= y;
       } else {
-         uint64_t n = (uint64_t)1 << (_z - el.z);
+         uint64_t n = (uint64_t)1 << (z - el.z);
 
          uint64_t x_min = x * n;
          uint64_t x_max = x_min + n - 1;
@@ -96,25 +82,13 @@ struct region_t {
          uint64_t y_min = y * n;
          uint64_t y_max = y_min + n - 1;
 
-         return _x0 <= x_min && _x1 >= x_max && _y0 <= y_min && _y1 >= y_max;
+         return x0 <= x_min && x1 >= x_max && y0 <= y_min && y1 >= y_max;
       }
    }
 
-   uint32_t z() const { return _z; }
-
-   uint32_t y1() const { return _y1; }
-   uint32_t x1() const { return _x1; }
-   uint32_t y0() const { return _y0; }
-   uint32_t x0() const { return _x0; }
-
-   const std::string& xmin() const { return _xmin; }
-   const std::string& xmax() const { return _xmax; }
-   const std::string& ymin() const { return _ymin; }
-   const std::string& ymax() const { return _ymax; }
-
-private:
-   std::string _xmin, _xmax, _ymin, _ymax;
-   uint32_t _x0, _y0, _x1, _y1, _z;
+public:
+   uint64_t code0, code1;
+   uint32_t x0, y0, x1, y1, z;
 };
 
 struct tweet_t {
