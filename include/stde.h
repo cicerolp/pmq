@@ -1,6 +1,12 @@
 #pragma once
-#pragma GCC system_header
-#pragma system_header
+
+#ifdef __GNUC__
+   #pragma GCC system_header
+   #pragma system_header
+#elif _MSC_VER
+   #define NOMINMAX
+   #define _USE_MATH_DEFINES
+#endif
 
 // C includes
 #include <cmath>
@@ -28,32 +34,43 @@
 // sorting algorithms
 #include "sorting/timsort.hpp"
 
-// singleton
-#include "Singleton.h"
-
 // mongoose http server
 #include <mongoose/mongoose.h>
+
+// singleton
+#include "Singleton.h"
 
 // rapidjson
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
 // pma includes
+#ifdef _MSC_VER
+   #pragma warning( push )
+   #pragma warning(disable: 4244; disable: 4018; disable: 4477; disable: 4244; disable: 4267; disable: 4129)
+#endif
 #include "pma/pma.h"
 #include "pma/utils/test_utils.h"
 #include "pma/utils/debugMacros.h"
 #include "pma/utils/benchmark_utils.h"
+#ifdef _MSC_VER
+   #pragma warning( pop ) 
+#endif
 
-// retrieving command line arguments
+#undef sleep
 #include "ext/CImg/CImg.h"
 
-// geos lib
-#include <geos_c.h>
+#ifdef __GNUC__
+   // geos lib
+   #include <geos_c.h>
 
-// spatialite
-#include <sqlite3.h>
-#include <spatialite.h>
-#include <spatialite/gaiageo.h>
+   // spatialite
+   #include <sqlite3.h>
+   #include <spatialite.h>
+   #include <spatialite/gaiageo.h>
 
-// postgis
-#include <postgresql/libpq-fe.h>
+   // postgis
+   #include <postgresql/libpq-fe.h>
+#endif
+
+

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef __GNUC__
 #include "GeoCtnIntf.h"
 
 class PostGisCtn : public GeoCtnIntf {
@@ -30,3 +31,5 @@ std::string PostGisCtn::name() const {
    static auto name_str = "PostgreSQL";
    return name_str;
 }
+
+#endif

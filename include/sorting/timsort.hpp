@@ -1,3 +1,8 @@
+#ifdef _MSC_VER
+   #pragma warning( push )
+   #pragma warning(disable: 4267; disable: 4311; disable: 4312; disable: 4244)
+#endif
+
 /*
  * C++ implementation of timsort
  *
@@ -675,3 +680,7 @@ namespace gfx {
 #undef GFX_TIMSORT_MOVE_RANGE
 #undef GFX_TIMSORT_MOVE_BACKWARD
 #endif // GFX_TIMSORT_HPP
+
+#ifdef _MSC_VER
+   #pragma warning( pop ) 
+#endif

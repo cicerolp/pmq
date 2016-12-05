@@ -1,3 +1,8 @@
+#ifdef _MSC_VER
+   #pragma warning( push )
+   #pragma warning(disable: 4267; disable: 4311; disable: 4312; disable: 4244)
+#endif
+
 #include "mongoose.h"
 #ifdef MG_MODULE_LINES
 #line 1 "mongoose/src/internal.h"
@@ -11329,3 +11334,7 @@ void sl_restart_cb(struct mg_mgr *mgr) {
 }
 
 #endif /* !defined(MG_DISABLE_SOCKET_IF) && defined(MG_SOCKET_SIMPLELINK) */
+
+#ifdef _MSC_VER
+   #pragma warning( pop ) 
+#endif

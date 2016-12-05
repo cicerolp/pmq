@@ -1,4 +1,5 @@
 #include "stde.h"
+#ifdef __GNUC__
 #include "PostGisCtn.h"
 
 PostGisCtn::PostGisCtn() {
@@ -261,3 +262,5 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    timer.stop();
    return {duration_info("apply_at_region", timer)};
 }
+
+#endif

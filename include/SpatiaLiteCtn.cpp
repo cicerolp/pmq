@@ -1,4 +1,5 @@
 #include "stde.h"
+#ifdef __GNUC__
 #include "SpatiaLiteCtn.h"
 
 SpatiaLiteCtn::SpatiaLiteCtn() {
@@ -420,3 +421,5 @@ void SpatiaLiteCtn::log_and_exit(const char* fmt, ...) {
    fprintf(stdout, "\n");
    exit(1);
 }
+
+#endif

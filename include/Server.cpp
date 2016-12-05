@@ -10,9 +10,6 @@ Server::Server(server_opts opts) : nds_opts(opts) {
 }
 
 void Server::run() {
-   setvbuf(stdout, NULL, _IOLBF, 0);
-   setvbuf(stderr, NULL, _IOLBF, 0);
-
    mg_mgr_init(&Server::getInstance().mgr, nullptr);
    Server::getInstance().nc =
          mg_bind(&Server::getInstance().mgr, std::to_string(Server::getInstance().nds_opts.port).c_str(), handler);

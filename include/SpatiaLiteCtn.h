@@ -1,4 +1,5 @@
 #pragma once
+#ifdef __GNUC__
 #include "GeoCtnIntf.h"
 
 class SpatiaLiteCtn : public GeoCtnIntf {
@@ -35,3 +36,5 @@ std::string SpatiaLiteCtn::name() const {
    static auto name_str = "SQLite";
    return name_str;
 }
+
+#endif
