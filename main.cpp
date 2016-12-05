@@ -11,6 +11,7 @@
 #include "GeoRunner.h"
 #include "GeoCtnIntf.h"
 
+#include "GeoHash.h"
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
@@ -25,7 +26,8 @@ int main(int argc, char *argv[]) {
 
    GeoRunner& runner = GeoRunner::getInstance(argc, argv);
 
-   std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
+   std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHash>(argc, argv);
+   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
    

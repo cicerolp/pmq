@@ -80,7 +80,7 @@ duration_t PMABatchCtn::scan_at_region(const region_t& region, scantype_function
 
    std::vector<QuadtreeIntf*> subset;
    _quadtree->query_region(region, subset);
-
+   
    for (auto& el : subset) {
       scan_pma(el->begin(), el->end(), el->el(), __apply);
    }

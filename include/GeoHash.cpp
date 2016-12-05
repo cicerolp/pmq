@@ -63,39 +63,40 @@ duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __a
 
 	mask = (~mask);
 
-   uint64_t prefix = mask & code0;
+   uint64_t prefix = mask & code1;
 
-   uint32_t n = 0;
+   uint32_t depth_diff = 0;
    while ((mask & 3) == 0) {
-      n++;
-      mask >> 2;
+      depth_diff++;
+      mask = mask >> 2;      
    }
 
-	std::vector<spatial_t> u_codes; // unrefined codes
+   prefix = prefix >> (depth_diff * 2);
 
-   uint32_t x, y;
-   uint32_t z = region.z() - n;
-   mortonDecode_RAM(prefix, x, y);
-	u_codes.emplace_back(spatial_t(x, y, z));
+   struct morton_tuple {
+      morton_tuple(uint64_t _code, uint32_t _z) : code(_code), z(_z) {}
+      uint32_t z;
+      uint64_t code;
+   };
+
+	std::vector<morton_tuple> u_codes; // unrefined codes
+	u_codes.emplace_back(prefix, region.z() - depth_diff);
 
 	while (!u_codes.empty()) {
-		std::vector<spatial_t> t_codes; // tmp codes
+		std::vector<morton_tuple> t_codes; // temporary codes
 
 		for(auto& el : u_codes) {
-			if (region.cover(el)) {
-				std::cout << el.code << std::endl;
+			if (region.cover(el.code, el.z)) {
+            std::cout << el.code << ", z: " << el.z << std::endl;
+
 			} else if (el.z < region.z()) {
-            uint32_t x, y;
-            uint32_t z = el.z + 1;
-            mortonDecode_RAM(prefix, x, y);
-            x *= 2;
-            y *= 2;
-           
-				// break code into four
-				t_codes.emplace_back(spatial_t(x + 0, y + 0, z));
-				t_codes.emplace_back(spatial_t(x + 1, y + 0, z));
-				t_codes.emplace_back(spatial_t(x + 0, y + 1, z));
-				t_codes.emplace_back(spatial_t(x + 1, y + 1, z));
+            // break code into four
+            uint64_t code = el.code << 2;
+				
+            t_codes.emplace_back(code | 0, el.z + 1);
+            t_codes.emplace_back(code | 1, el.z + 1);
+            t_codes.emplace_back(code | 2, el.z + 1);
+            t_codes.emplace_back(code | 3, el.z + 1);
 			}
 		}
 		u_codes.swap(t_codes);

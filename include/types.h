@@ -45,6 +45,34 @@ struct region_t {
       _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
    }
 
+   inline bool cover(uint64_t el_code, uint32_t el_z) const {
+      uint32_t x, y;
+      mortonDecode_RAM(el_code, x, y);
+
+      if (_z <= el_z) {
+         uint64_t n = (uint64_t)1 << (el_z - _z);
+
+         uint64_t x_min = _x0 * n;
+         uint64_t x_max = _x1 * n;
+
+         uint64_t y_min = _y0 * n;
+         uint64_t y_max = _y1 * n;
+
+         return x_min <= x && x_max >= x && y_min <= y && y_max >= y;
+      }
+      else {
+         uint64_t n = (uint64_t)1 << (_z - el_z);
+
+         uint64_t x_min = x * n;
+         uint64_t x_max = x_min + n - 1;
+
+         uint64_t y_min = y * n;
+         uint64_t y_max = y_min + n - 1;
+
+         return _x0 <= x_min && _x1 >= x_max && _y0 <= y_min && _y1 >= y_max;
+      }
+   }
+
    inline bool cover(const spatial_t& el) const {
       uint32_t x, y;
       mortonDecode_RAM(el.code, x, y);
