@@ -26,7 +26,10 @@ int main(int argc, char *argv[]) {
 
    GeoRunner& runner = GeoRunner::getInstance(argc, argv);
 
-   std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHash>(argc, argv);
+   // implicit quadtree
+   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
+   std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashBinary>(argc, argv);
+
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();

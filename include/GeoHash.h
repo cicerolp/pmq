@@ -25,7 +25,7 @@ public:
 protected:
    #define PMA_ELT(x) ((*(uint64_t*)x))
 
-   bool naive_search_pma(const spatial_t& el, uint32_t& seg) const;
+   virtual bool search_pma(const spatial_t& el, uint32_t& seg) const = 0;
 
    // apply function for every el<valuetype>
    void scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply);
@@ -80,3 +80,19 @@ inline void GeoHash::get_mcode_range(const spatial_t& el, uint64_t& min, uint64_
    min = el.code << 2 * (diffDepth);
    max = min | ((uint64_t)~0 >> (64 - 2 * diffDepth));
 }
+
+class GeoHashSequential : public GeoHash {
+public:
+   GeoHashSequential(int argc, char* argv[]) : GeoHash(argc, argv) {};
+   virtual ~GeoHashSequential() = default;
+protected:
+   bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
+};
+
+class GeoHashBinary : public GeoHash {
+public:
+   GeoHashBinary(int argc, char* argv[]) : GeoHash(argc, argv) {};
+   virtual ~GeoHashBinary() = default;
+protected:
+   bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
+};

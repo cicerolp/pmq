@@ -82,6 +82,7 @@ duration_t PMABatchCtn::scan_at_region(const region_t& region, scantype_function
    _quadtree->query_region(region, subset);
    
    for (auto& el : subset) {
+      std::cout << el->el().code << ", z: " << el->el().z << std::endl;
       scan_pma(el->begin(), el->end(), el->el(), __apply);
    }
 

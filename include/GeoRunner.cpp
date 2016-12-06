@@ -4,7 +4,7 @@
 #include"InputIntf.h"
 
 GeoRunner::GeoRunner(int argc, char* argv[]) {
-   std::string input_file(cimg_option("-f", "../data/tweet10_6.dat", "program arg: twitter input file"));
+   std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
 
    _input = input::load(input_file, 25);
 

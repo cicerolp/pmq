@@ -37,6 +37,7 @@ private:
 
 class DenseCtnStdSort : public DenseVectorCtn {
 public:
+   virtual ~DenseCtnStdSort() = default;
    inline virtual std::string name() const {
       static auto name_str = "StdDense";
       return name_str;
@@ -50,6 +51,7 @@ protected:
 
 class DenseCtnTimSort : public DenseVectorCtn {
 public:
+   virtual ~DenseCtnTimSort() = default;
    inline virtual std::string name() const {
       static auto name_str = "TimDense";
       return name_str;

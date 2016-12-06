@@ -39,8 +39,7 @@ include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
-   include/GeoRunner.cpp
-   
+   include/GeoRunner.cpp   
    include/QuadtreeIntf.cpp
    
    include/GeoHash.cpp
