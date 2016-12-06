@@ -21,6 +21,10 @@ struct spatial_t {
       return code == rhs.code;
    }
 
+   inline bool operator<(const spatial_t& rhs) const {
+      return code < rhs.code;
+   }
+
    union {
       struct {
          uint64_t code : 50;
@@ -45,6 +49,11 @@ struct region_t {
       
       mortonDecode_RAM(code0, x0, y0);
       mortonDecode_RAM(code1, x1, y1);
+
+      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
+      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
+      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
+      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
    }
 
    region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
@@ -57,6 +66,11 @@ struct region_t {
 
       code0 = mortonEncode_RAM(x0, y0);
       code1 = mortonEncode_RAM(x1, y1);
+
+      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
+      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
+      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
+      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
    }
 
    inline bool cover(const spatial_t& el) const {
@@ -86,9 +100,15 @@ struct region_t {
       }
    }
 
+   const std::string& xmin() const { return _xmin; }
+   const std::string& xmax() const { return _xmax; }
+   const std::string& ymin() const { return _ymin; }
+   const std::string& ymax() const { return _ymax; }
+
 public:
    uint64_t code0, code1;
    uint32_t x0, y0, x1, y1, z;
+   std::string _xmin, _xmax, _ymin, _ymax;
 };
 
 struct tweet_t {

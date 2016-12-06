@@ -190,16 +190,16 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
    PGresult* res;
    std::string sql;
 
-   uint32_t curr_z = std::min((uint32_t)8, 25 - region.z());
+   uint32_t curr_z = std::min((uint32_t)8, 25 - region.z);
    uint32_t n = (uint64_t)1 << curr_z;
 
-   uint32_t x_min = region.x0() * n;
-   uint32_t x_max = (region.x1() + 1) * n;
+   uint32_t x_min = region.x0 * n;
+   uint32_t x_max = (region.x1 + 1) * n;
 
-   uint32_t y_min = region.y0() * n;
-   uint32_t y_max = (region.y1() + 1) * n;
+   uint32_t y_min = region.y0 * n;
+   uint32_t y_max = (region.y1 + 1) * n;
 
-   curr_z += region.z();
+   curr_z += region.z;
 
    for (uint32_t x = x_min; x < x_max; ++x) {
       for (uint32_t y = y_min; y < y_max; ++y) {
@@ -252,8 +252,8 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
 
    uint32_t count = std::stoi(PQgetvalue(res, 0, 0));
    if (count > 0) {
-      __apply(spatial_t(region.x0() + (uint32_t)((region.x1() - region.x0()) / 2),
-         region.y0() + (uint32_t)((region.y1() - region.y0()) / 2),
+      __apply(spatial_t(region.x0 + (uint32_t)((region.x1 - region.x0) / 2),
+         region.y0 + (uint32_t)((region.y1 - region.y0) / 2),
          0), count);
    }
    

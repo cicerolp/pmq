@@ -53,10 +53,10 @@ namespace input {
       std::uniform_real_distribution<> lon(-180, 180);
       std::uniform_real_distribution<> lat(-85, 85);
 
-      for (int i = 0; i < nb_el; i++) {
+      for (unsigned int i = 0; i < nb_el; i++) {
          tweet_t el;
-         el.longitude = lon(gen);
-         el.latitude = lat(gen);
+         el.longitude = (float)lon(gen);
+         el.latitude = (float)lat(gen);
          keyVal_vec.emplace_back(el,25);
       }
 

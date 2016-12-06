@@ -48,5 +48,5 @@ void GeoRunner::stop() {
 }
 
 uint32_t GeoRunner::input_size() const {
-   return _input.size();
+   return (uint32_t)_input.size();
 };

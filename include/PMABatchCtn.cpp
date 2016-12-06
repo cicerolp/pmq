@@ -5,10 +5,10 @@ PMABatchCtn::PMABatchCtn(int argc, char* argv[]) {
    _quadtree = std::make_unique<QuadtreeIntf>(spatial_t(0, 0, 0));
 
    seg_size = cimg_option("-s", 8, "pma::batch arg: segment size");
-   tau_0 = cimg_option("-t0", 0.92, "pma::batch arg: tau_0");
-   tau_h = cimg_option("-th", 0.7, "pma::batch arg: tau_h");
-   rho_0 = cimg_option("-r0", 0.08, "pma::batch arg: rho_0");
-   rho_h = cimg_option("-rh", 0.3, "pma::batch arg: rho_0");
+   tau_0 = cimg_option("-t0", 0.92f, "pma::batch arg: tau_0");
+   tau_h = cimg_option("-th", 0.7f, "pma::batch arg: tau_h");
+   rho_0 = cimg_option("-r0", 0.08f, "pma::batch arg: rho_0");
+   rho_h = cimg_option("-rh", 0.3f, "pma::batch arg: rho_0");
 }
 
 PMABatchCtn::~PMABatchCtn() {
@@ -154,7 +154,7 @@ diff_cnt PMABatchCtn::diff() {
          fstSeg--;
       }
 
-      keys.emplace_back(lastElKey, fstSeg, sStart); //save the start for this key. Initialy end = begin+1 (open interval)
+      keys.emplace_back(lastElKey, (uint32_t)fstSeg, (uint32_t)sStart); //save the start for this key. Initialy end = begin+1 (open interval)
 
       // loop over the segments of the current window
       unsigned int s;
@@ -188,7 +188,7 @@ diff_cnt PMABatchCtn::diff() {
       for (char* seg_pt = (char*)SEGMENT_START(_pma, s); seg_pt < SEGMENT_START(_pma, _pma->nb_segments); seg_pt += (_pma->cap_segments * _pma->elt_size)) {
          // Check the first key of the following segments until we find one that differs;
          if (lastElKey != *(uint64_t*)seg_pt) {
-            keys.back().end = (seg_pt - (char*)_pma->array) / (_pma->cap_segments * _pma->elt_size); //gets they index of segment that differs;
+            keys.back().end = (uint32_t)((seg_pt - (char*)_pma->array) / (_pma->cap_segments * _pma->elt_size)); //gets they index of segment that differs;
             break;
          }
       }

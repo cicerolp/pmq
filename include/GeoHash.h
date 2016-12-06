@@ -23,12 +23,21 @@ public:
 	inline virtual std::string name() const;
 
 protected:
-   #define PMA_SEG(x) ((*(uint64_t*)x))
+   #define PMA_ELT(x) ((*(uint64_t*)x))
 
-   bool naive_search_pma(const spatial_t& el) const;
-   uint32_t count_pma(const spatial_t& el) const;
-   void scan_pma(const spatial_t& el, scantype_function _apply) const;
-   void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
+   bool naive_search_pma(const spatial_t& el, uint32_t& seg) const;
+
+   // apply function for every el<valuetype>
+   void scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply);
+   // apply function for every spatial area/region
+   void apply_pma_at_tile(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
+   void apply_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
+
+   uint32_t count_pma(const spatial_t& el, uint32_t& seg) const;
+   void apply_pma(const spatial_t& el, uint32_t& seg, scantype_function _apply) const;
+   
+   inline spatial_t get_parent_quadrant(const region_t& region) const;
+   inline void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
 
 	uint32_t seg_size;
 	float tau_0, tau_h, rho_0, rho_h;
@@ -41,8 +50,33 @@ std::string GeoHash::name() const {
 	return name_str;
 }
 
+inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
+   uint64_t mask = region.code0 ^ region.code1;
+
+   mask |= mask >> 32;
+   mask |= mask >> 16;
+   mask |= mask >> 8;
+   mask |= mask >> 4;
+   mask |= mask >> 2;
+   mask |= mask >> 1;
+
+   mask = (~mask);
+
+   uint64_t prefix = mask & region.code1;
+
+   uint32_t depth_diff = 0;
+   while ((mask & 3) == 0) {
+      depth_diff++;
+      mask = mask >> 2;
+   }
+
+   prefix = prefix >> (depth_diff * 2);
+
+   return spatial_t(prefix, region.z - depth_diff);
+}
+
 inline void GeoHash::get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const {
-   uint32_t diffDepth = morton_size - el.z;
+   uint32_t diffDepth = (uint32_t)(morton_size - el.z);
    min = el.code << 2 * (diffDepth);
    max = min | ((uint64_t)~0 >> (64 - 2 * diffDepth));
 }

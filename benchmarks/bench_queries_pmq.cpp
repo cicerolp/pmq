@@ -39,7 +39,7 @@ void inline run_queries(container_t& container, region_t region, const int n_exp
    Timer timer;
 
    char qname[50];
-   snprintf(qname, sizeof(qname), "%d-%d-%d-%d-%d", region.z(), region.x0(), region.y0(), region.x1(), region.y1());
+   snprintf(qname, sizeof(qname), "%d-%d-%d-%d-%d", region.z, region.x0, region.y0, region.x1, region.y1);
 
    // 1 - gets the minimum set of nodes that are inside the queried region
    // QueryRegion will traverse the tree and return the intervals to query;

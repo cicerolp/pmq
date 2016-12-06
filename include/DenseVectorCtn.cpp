@@ -34,7 +34,7 @@ duration_t DenseVectorCtn::insert(std::vector<elttype> batch) {
    // find insertion point before sorting
    auto ref_it = std::lower_bound(_container.begin(), _container.end(), ref);
    // store initial diff index
-   _diff_index = ref_it - _container.begin();
+   _diff_index = (uint32_t)(ref_it - _container.begin());
 
    // insert batch at end
    _container.insert(_container.end(), batch.begin(), batch.end());

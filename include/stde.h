@@ -47,18 +47,20 @@
 // pma includes
 #ifdef _MSC_VER
    #pragma warning( push )
-   #pragma warning(disable: 4244; disable: 4018; disable: 4477; disable: 4244; disable: 4267; disable: 4129)
+   #pragma warning(disable: 4005; disable: 4244; disable: 4018; disable: 4477; disable: 4244; disable: 4267; disable: 4129; disable: 4319)
 #endif
+
 #include "pma/pma.h"
 #include "pma/utils/test_utils.h"
 #include "pma/utils/debugMacros.h"
 #include "pma/utils/benchmark_utils.h"
-#ifdef _MSC_VER
-   #pragma warning( pop ) 
-#endif
 
 #undef sleep
 #include "ext/CImg/CImg.h"
+
+#ifdef _MSC_VER
+   #pragma warning( pop ) 
+#endif
 
 #ifdef __GNUC__
    // geos lib

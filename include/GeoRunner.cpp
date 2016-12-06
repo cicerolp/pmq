@@ -4,7 +4,7 @@
 #include"InputIntf.h"
 
 GeoRunner::GeoRunner(int argc, char* argv[]) {
-   std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
+   std::string input_file(cimg_option("-f", "../data/tweet10_6.dat", "program arg: twitter input file"));
 
    _input = input::load(input_file, 25);
 
@@ -171,7 +171,7 @@ void GeoRunner::write_data(json_writer& writer, uint32_t& accum, const valuetype
    if (accum >= max) return;
 
    writer.StartArray();
-   writer.Uint(el.time);
+   writer.Uint((unsigned int)el.time);
    writer.Uint(el.language);
    writer.Uint(el.device);
    writer.Uint(el.app);

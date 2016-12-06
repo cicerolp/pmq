@@ -26,7 +26,7 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
    // node is not a leaf
    _el.leaf = 0;
 
-   uint32_t z_diff_2 = (g_Quadtree_Depth - _el.z - 1) * 2;
+   uint32_t z_diff_2 = (uint32_t)((g_Quadtree_Depth - _el.z - 1) * 2);
 
    uint32_t x, y;
    mortonDecode_RAM(_el.code, x, y);
@@ -44,7 +44,7 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
       int curr_index = (*it_curr).get_index(z_diff_2);
 
       if (curr_index != index) {
-         get_node(x, y, _el.z + 1, index)->update(it_previous_begin, it_curr);
+         get_node(x, y, (uint32_t)(_el.z + 1), index)->update(it_previous_begin, it_curr);
 
          it_previous_begin = it_curr;
          index = curr_index;
@@ -52,7 +52,7 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
    }
 
    // update last valid node
-   get_node(x, y, _el.z + 1, index)->update(it_previous_begin, it_curr);
+   get_node(x, y, (uint32_t)(_el.z + 1), index)->update(it_previous_begin, it_curr);
 
    // update last child index
    set_child_index(index);
@@ -74,7 +74,7 @@ void QuadtreeIntf::update(const diff_it& it_begin, const diff_it& it_end) {
  */
 void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset) {
    if (region.z == _el.z && region.cover(_el)) {
-      return aggregate_tile(_el.z + 8, subset);
+      return aggregate_tile((uint32_t)(_el.z + 8), subset);
    } else if (region.z > _el.z) {
       if (_container[0] != nullptr) _container[0]->query_tile(region, subset);
       if (_container[1] != nullptr) _container[1]->query_tile(region, subset);

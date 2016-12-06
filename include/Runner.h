@@ -45,5 +45,5 @@ void Runner::stop() {
 }
 
 uint32_t Runner::input_size() const {
-   return _input.size();
+   return (uint32_t)_input.size();
 };
