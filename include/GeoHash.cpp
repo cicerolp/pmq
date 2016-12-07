@@ -207,8 +207,7 @@ void GeoHash::apply_pma(const spatial_t & el, uint32_t& seg, scantype_function _
 bool GeoHashSequential::search_pma(const spatial_t& el, uint32_t& seg) const {
    if (_pma == nullptr) return false;
 
-   uint64_t code_min = 0;
-   uint64_t code_max = 0;
+   uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
    for (; seg < _pma->nb_segments; ++seg) {
@@ -243,12 +242,12 @@ bool GeoHashBinary::search_pma(const spatial_t& el, uint32_t& seg) const {
    first = seg;
 
    int32_t count, step;   
-   count = _pma->nb_segments;
+   count = _pma->nb_segments - seg;
 
    while (count > 0) {
       it = first;
       step = count / 2;
-      //std::advance
+      it += step;
       if (PMA_ELT(SEGMENT_LAST(_pma, it)) < code_min) {
          first = ++it;
          count -= step + 1;

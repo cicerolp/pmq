@@ -65,7 +65,7 @@ inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
    uint64_t prefix = mask & region.code1;
 
    uint32_t depth_diff = 0;
-   while ((mask & 3) == 0) {
+   while ((mask & 3) != 3) {
       depth_diff++;
       mask = mask >> 2;
    }
