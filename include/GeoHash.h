@@ -20,7 +20,7 @@ public:
 	duration_t apply_at_tile(const region_t& region, applytype_function __apply) override;
 	duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
-	inline virtual std::string name() const;
+	inline virtual std::string name() const = 0;
 
 protected:
    #define PMA_ELT(x) ((*(uint64_t*)x))
@@ -44,11 +44,6 @@ protected:
 
 	pma_struct* _pma{ nullptr };
 };
-
-std::string GeoHash::name() const {
-	static auto name_str = "GeoHash";
-	return name_str;
-}
 
 inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
    uint64_t mask = region.code0 ^ region.code1;
@@ -85,6 +80,11 @@ class GeoHashSequential : public GeoHash {
 public:
    GeoHashSequential(int argc, char* argv[]) : GeoHash(argc, argv) {};
    virtual ~GeoHashSequential() = default;
+
+   std::string name() const {
+	   static auto name_str = "GeoHashSequential";
+	   return name_str;
+   }
 protected:
    bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
 };
@@ -93,6 +93,11 @@ class GeoHashBinary : public GeoHash {
 public:
    GeoHashBinary(int argc, char* argv[]) : GeoHash(argc, argv) {};
    virtual ~GeoHashBinary() = default;
+
+   std::string name() const {
+	   static auto name_str = "GeoHashBinary";
+	   return name_str;
+   }
 protected:
    bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
 };

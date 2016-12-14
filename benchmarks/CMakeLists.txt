@@ -8,6 +8,7 @@ add_executable(bench_micro_pmq
 
    ../include/QuadtreeIntf.cpp
    
+   ../include/GeoHash.cpp
    ../include/PostGisCtn.cpp
    ../include/PMABatchCtn.cpp
    ../include/SpatiaLiteCtn.cpp
@@ -21,6 +22,7 @@ add_executable(bench_queries_pmq
       
    ../include/QuadtreeIntf.cpp
 
+   ../include/GeoHash.cpp
    ../include/PostGisCtn.cpp
    ../include/PMABatchCtn.cpp
    ../include/SpatiaLiteCtn.cpp
@@ -34,6 +36,7 @@ add_executable(bench_insert_and_scan
 
    ../include/QuadtreeIntf.cpp
 
+   ../include/GeoHash.cpp
    ../include/PostGisCtn.cpp
    ../include/PMABatchCtn.cpp
    ../include/SpatiaLiteCtn.cpp

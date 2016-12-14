@@ -11,6 +11,7 @@
 
 #include "GeoCtnIntf.h"
 
+#include "GeoHash.h"
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
@@ -141,10 +142,14 @@ int main(int argc, char* argv[]) {
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    PMABatchCtn container0(argc, argv);
-   DenseCtnStdSort container1;
+
+   /*DenseCtnStdSort container1;
    DenseCtnTimSort container2;
    SpatiaLiteCtn container3;
-   PostGisCtn container4;
+   PostGisCtn container4;*/
+
+   GeoHashSequential container5(argc, argv);
+   GeoHashBinary container6(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -156,12 +161,15 @@ int main(int argc, char* argv[]) {
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
    run_bench(container0, input_vec, batch_size, n_exp);
+   run_bench(container5, input_vec, batch_size, n_exp);
+   run_bench(container6, input_vec, batch_size, n_exp);
 
    // don't need to insert by batch for the dense vector case
-   run_bench(container1, input_vec, input_vec.size(), n_exp);
+   /*run_bench(container1, input_vec, input_vec.size(), n_exp);
    run_bench(container2, input_vec, input_vec.size(), n_exp);
    run_bench(container3, input_vec, input_vec.size(), n_exp);
-   run_bench(container4, input_vec, input_vec.size(), n_exp);
+   run_bench(container4, input_vec, input_vec.size(), n_exp);*/
+   
 
    return EXIT_SUCCESS;
 }
