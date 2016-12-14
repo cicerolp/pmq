@@ -160,8 +160,8 @@ int main(int argc, char* argv[]) {
    std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   run_bench(container0, input_vec, batch_size, n_exp);
-   run_bench(container5, input_vec, batch_size, n_exp);
+   //run_bench(container0, input_vec, batch_size, n_exp);
+   //run_bench(container5, input_vec, batch_size, n_exp);
    run_bench(container6, input_vec, batch_size, n_exp);
 
    // don't need to insert by batch for the dense vector case
