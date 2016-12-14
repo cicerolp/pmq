@@ -74,13 +74,13 @@ elseif(UNIX)
 
    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
 
-   ######## Benchmarks
-   add_subdirectory(benchmarks)
-
    ######## PMQ Tests
    enable_testing()
    add_subdirectory(tests)
 endif()
+
+######## Benchmarks
+add_subdirectory(benchmarks)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "include/stde.h")
 cotire(${PROJECT_NAME})

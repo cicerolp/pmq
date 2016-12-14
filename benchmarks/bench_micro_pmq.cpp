@@ -31,7 +31,7 @@ uint32_t g_Quadtree_Depth = 25;
 template <typename container_t>
 void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size) {
    //create container
-   container.create(input_vec.size());
+   container.create((uint32_t)input_vec.size());
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
    std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   for (int i = 0; i < n_exp; i++) {
+   for (uint32_t i = 0; i < n_exp; i++) {
       run_bench(container0, input_vec, batch_size);
       run_bench(container5, input_vec, batch_size);
       run_bench(container6, input_vec, batch_size);

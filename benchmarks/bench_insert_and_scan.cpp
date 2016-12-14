@@ -55,7 +55,7 @@ void inline run_queries(container_t& container, const region_t& region, const in
 template <typename container_t>
 void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
    //create container
-   container.create(input_vec.size());
+   container.create((uint32_t)input_vec.size());
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();

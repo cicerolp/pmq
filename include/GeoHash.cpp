@@ -2,11 +2,11 @@
 #include "GeoHash.h"
 
 GeoHash::GeoHash(int argc, char* argv[]) {
-	seg_size = cimg_option("-s", 8, "pma::batch arg: segment size");
-	tau_0 = cimg_option("-t0", 0.92f, "pma::batch arg: tau_0");
-	tau_h = cimg_option("-th", 0.7f, "pma::batch arg: tau_h");
-	rho_0 = cimg_option("-r0", 0.08f, "pma::batch arg: rho_0");
-	rho_h = cimg_option("-rh", 0.3f, "pma::batch arg: rho_0");
+	seg_size = cimg_option("-s", 8, "GeoHash arg: segment size");
+	tau_0 = cimg_option("-t0", 0.92f, "GeoHash arg: tau_0");
+	tau_h = cimg_option("-th", 0.7f, "GeoHash arg: tau_h");
+	rho_0 = cimg_option("-r0", 0.08f, "GeoHash arg: rho_0");
+	rho_h = cimg_option("-rh", 0.3f, "GeoHash arg: rho_0");
 }
 
 GeoHash::~GeoHash() { if (_pma != nullptr) pma::destroy_pma(_pma); }

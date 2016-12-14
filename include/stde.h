@@ -6,6 +6,7 @@
 #elif _MSC_VER
    #define NOMINMAX
    #define _USE_MATH_DEFINES
+   #define _CRT_SECURE_NO_WARNINGS
 #endif
 
 // C includes
