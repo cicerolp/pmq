@@ -23,6 +23,9 @@
    std::cout << std::endl ;\
 } while (0)
 
+/*#define PRINTBENCH( ... ) do { \
+} while (0)*/
+
 uint32_t g_Quadtree_Depth = 25;
 
 void inline count_element(uint32_t& accum, const spatial_t&, uint32_t count) {
@@ -74,6 +77,8 @@ void inline run_queries(container_t& container, region_t region, const int n_exp
       timer.stop();
       PRINTBENCH(qname, "ReadElts", timer.milliseconds(), "ms");
    }
+
+   //std::cout << count << std::endl;
 }
 
 template <typename container_t>
@@ -160,8 +165,8 @@ int main(int argc, char* argv[]) {
    std::vector<elttype> input_vec = input::load(fname, quadtree_depth);
    PRINTOUT(" %d teewts loaded \n", (uint32_t)input_vec.size());
 
-   //run_bench(container0, input_vec, batch_size, n_exp);
-   //run_bench(container5, input_vec, batch_size, n_exp);
+   run_bench(container0, input_vec, batch_size, n_exp);
+   run_bench(container5, input_vec, batch_size, n_exp);
    run_bench(container6, input_vec, batch_size, n_exp);
 
    // don't need to insert by batch for the dense vector case

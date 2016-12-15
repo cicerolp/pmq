@@ -91,7 +91,8 @@ void GeoHash::scan_pma_at_region(const spatial_t& el, uint32_t& seg, const regio
    if (!search_pma(el, seg)) return;
 
    if (region.cover(el)) {
-      apply_pma(el, seg, __apply);
+      //std::cout << el.code << ":" << el.z << std::endl;
+      scan_pma(el, seg, __apply);
 
    } else if (el.z < region.z) {
       // break code into four
@@ -117,6 +118,7 @@ void GeoHash::apply_pma_at_tile(const spatial_t& el, uint32_t& seg, const region
       apply_pma_at_tile(spatial_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
 
    } else if (region.cover(el)) {
+      //std::cout << el.code << ":" << el.z << std::endl;
       __apply(el, count_pma(el, seg));
    }
 }
@@ -125,6 +127,7 @@ void GeoHash::apply_pma_at_region(const spatial_t& el, uint32_t& seg, const regi
    if (!search_pma(el, seg)) return;
 
    if (region.cover(el)) {
+      //std::cout << el.code << ":" << el.z << std::endl;
       __apply(el, count_pma(el, seg));
 
    } else if (el.z < region.z) {
@@ -170,7 +173,7 @@ uint32_t GeoHash::count_pma(const spatial_t & el, uint32_t& seg) const {
    return count;
 }
 
-void GeoHash::apply_pma(const spatial_t & el, uint32_t& seg, scantype_function _apply) const {
+void GeoHash::scan_pma(const spatial_t & el, uint32_t& seg, scantype_function _apply) const {
    if (_pma == nullptr) return;
    
    uint64_t code_min, code_max;
@@ -203,17 +206,7 @@ bool GeoHashSequential::search_pma(const spatial_t& el, uint32_t& seg) const {
          // next segment
          continue;
       } else {
-         uint32_t nb_elts_per_seg = _pma->elts[seg];
-
-         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
-            char* el_pt = (char*)SEGMENT_ELT(_pma, seg, offset);
-
-            if (PMA_ELT(el_pt) > code_max) {
-               return false;
-            } else if (PMA_ELT(el_pt) >= code_min) {
-               return true;
-            }
-         }
+         return find_elt_pma(code_min, code_max, seg);
       }
    }
 
@@ -226,48 +219,33 @@ bool GeoHashBinary::search_pma(const spatial_t& el, uint32_t& seg) const {
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
-   if (PMA_ELT(SEGMENT_START(_pma, seg)) > code_max) {
-      return false;
+   // current segment
+   if (PMA_ELT(SEGMENT_LAST(_pma, seg)) >= code_min) {
+      return find_elt_pma(code_min, code_max, seg);
+   }
 
-   } else if (PMA_ELT(SEGMENT_START(_pma, seg)) < code_min) {
-      //binary search
-      uint32_t it, first;
-      first = seg;
+   // next segment
+   if (++seg >= _pma->nb_segments) return false;
 
+   //binary search
+   if (PMA_ELT(SEGMENT_LAST(_pma, seg)) < code_min) {
+      uint32_t it;
       int32_t count, step;
-      count = _pma->nb_segments - seg;
+      count = (int32_t)_pma->nb_segments - (int32_t)seg;
 
       while (count > 0) {
-         it = first;
+         it = seg;
          step = count / 2;
          it += step;
          if (PMA_ELT(SEGMENT_LAST(_pma, it)) < code_min) {
-            first = ++it;
+            seg = ++it;
             count -= step + 1;
          } else {
             count = step;
          }
       }
-
-      seg = first;
-
-      if (PMA_ELT(SEGMENT_START(_pma, seg)) <= code_max) {
-         uint32_t nb_elts_per_seg = _pma->elts[seg];
-
-         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
-            char* el_pt = SEGMENT_ELT(_pma, seg, offset);
-
-            if (PMA_ELT(el_pt) > code_max) {
-               return false;
-            } else if (PMA_ELT(el_pt) >= code_min) {
-               return true;
-            }
-         }
-         return false;
-      } else {
-         return false;
-      }
-   } else {
-      return true;
    }
+
+   // find at segment
+   return find_elt_pma(code_min, code_max, seg);
 }

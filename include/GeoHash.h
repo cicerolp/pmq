@@ -25,6 +25,7 @@ public:
 protected:
    #define PMA_ELT(x) ((*(uint64_t*)x))
 
+   inline bool find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg) const;
    virtual bool search_pma(const spatial_t& el, uint32_t& seg) const = 0;
 
    // apply function for every el<valuetype>
@@ -34,7 +35,7 @@ protected:
    void apply_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
 
    uint32_t count_pma(const spatial_t& el, uint32_t& seg) const;
-   void apply_pma(const spatial_t& el, uint32_t& seg, scantype_function _apply) const;
+   void scan_pma(const spatial_t& el, uint32_t& seg, scantype_function _apply) const;
    
    inline spatial_t get_parent_quadrant(const region_t& region) const;
    inline void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
@@ -44,6 +45,24 @@ protected:
 
 	pma_struct* _pma{ nullptr };
 };
+
+inline bool GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg) const {
+   if (seg >= _pma->nb_segments) return false;
+
+   uint32_t nb_elts_per_seg = _pma->elts[seg];
+
+   for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+      char* el_pt = SEGMENT_ELT(_pma, seg, offset);
+
+      if (PMA_ELT(el_pt) > code_max) {
+         return false;
+      } else if (PMA_ELT(el_pt) >= code_min) {
+         return true;
+      }
+   }
+
+   return false;
+}
 
 inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
    uint64_t mask = region.code0 ^ region.code1;
@@ -81,7 +100,7 @@ public:
    GeoHashSequential(int argc, char* argv[]) : GeoHash(argc, argv) {};
    virtual ~GeoHashSequential() = default;
 
-   std::string name() const {
+   std::string name() const override {
 	   static auto name_str = "GeoHashSequential";
 	   return name_str;
    }
@@ -94,7 +113,7 @@ public:
    GeoHashBinary(int argc, char* argv[]) : GeoHash(argc, argv) {};
    virtual ~GeoHashBinary() = default;
 
-   std::string name() const {
+   std::string name() const override {
 	   static auto name_str = "GeoHashBinary";
 	   return name_str;
    }
