@@ -244,29 +244,29 @@ bool GeoHashBinary::search_pma(const spatial_t& el, uint32_t& seg) const {
          if (PMA_ELT(SEGMENT_LAST(_pma, it)) < code_min) {
             first = ++it;
             count -= step + 1;
-         }
-         else {
+         } else {
             count = step;
          }
       }
 
       seg = first;
 
-      uint32_t nb_elts_per_seg = _pma->elts[seg];
+      if (PMA_ELT(SEGMENT_START(_pma, seg)) <= code_max) {
+         uint32_t nb_elts_per_seg = _pma->elts[seg];
 
-      for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
-         char* el_pt = SEGMENT_ELT(_pma, seg, offset);
+         for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+            char* el_pt = SEGMENT_ELT(_pma, seg, offset);
 
-         if (PMA_ELT(el_pt) > code_max) {
-            return false;
+            if (PMA_ELT(el_pt) > code_max) {
+               return false;
+            } else if (PMA_ELT(el_pt) >= code_min) {
+               return true;
+            }
          }
-         else if (PMA_ELT(el_pt) >= code_min) {
-            return true;
-         }
+         return false;
+      } else {
+         return false;
       }
-
-      return false;
-
    } else {
       return true;
    }
