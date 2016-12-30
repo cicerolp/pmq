@@ -196,4 +196,3 @@ void GeoRunner::write_tile(json_writer& writer, uint32_t& min, uint32_t& max, co
    writer.Uint(count);
    writer.EndArray();
 }
-

@@ -18,7 +18,7 @@ PMABatchCtn::~PMABatchCtn() {
 // build container
 duration_t PMABatchCtn::create(uint32_t size) {
    Timer timer;
-   
+
    timer.start();
    _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
    timer.stop();
@@ -32,7 +32,7 @@ duration_t PMABatchCtn::insert(std::vector<elttype> batch) {
    Timer timer;
 
    if (_pma == nullptr) {
-      return{ duration_info("Error", timer) };
+      return {duration_info("Error", timer)};
    }
 
    // insert start
@@ -73,14 +73,14 @@ duration_t PMABatchCtn::scan_at_region(const region_t& region, scantype_function
    Timer timer;
 
    if (_pma == nullptr) {
-      return{ duration_info("scan_at_region", timer) };
+      return {duration_info("scan_at_region", timer)};
    }
 
    timer.start();
 
    std::vector<QuadtreeIntf*> subset;
    _quadtree->query_region(region, subset);
-   
+
    for (auto& el : subset) {
       scan_pma(el->begin(), el->end(), el->el(), __apply);
    }
@@ -95,7 +95,7 @@ duration_t PMABatchCtn::apply_at_tile(const region_t& region, applytype_function
    Timer timer;
 
    if (_pma == nullptr) {
-      return{ duration_info("apply_at_tile", timer) };
+      return {duration_info("apply_at_tile", timer)};
    }
 
    timer.start();
@@ -114,9 +114,9 @@ duration_t PMABatchCtn::apply_at_tile(const region_t& region, applytype_function
 
 duration_t PMABatchCtn::apply_at_region(const region_t& region, applytype_function __apply) {
    Timer timer;
-   
+
    if (_pma == nullptr) {
-      return{ duration_info("apply_at_region", timer) };
+      return {duration_info("apply_at_region", timer)};
    }
 
    timer.start();
@@ -124,7 +124,7 @@ duration_t PMABatchCtn::apply_at_region(const region_t& region, applytype_functi
    std::vector<QuadtreeIntf*> subset;
    _quadtree->query_region(region, subset);
 
-   for (auto& el : subset) {      
+   for (auto& el : subset) {
       __apply(el->el(), count_pma(el->begin(), el->end(), el->el()));
    }
 

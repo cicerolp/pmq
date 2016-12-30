@@ -6,6 +6,7 @@
 class QuadtreeIntf {
 public:
    QuadtreeIntf(const spatial_t& tile);
+
    ~QuadtreeIntf() = default;
 
    using node_ptr = std::unique_ptr<QuadtreeIntf>;
@@ -13,10 +14,13 @@ public:
    using container_it = container_t::const_iterator;
 
    void update(const diff_it& it_begin, const diff_it& it_end);
+
    void query_tile(const region_t& region, std::vector<QuadtreeIntf*>& subset);
+
    void query_region(const region_t& region, std::vector<QuadtreeIntf*>& subset);
 
    inline uint32_t begin() const;
+
    inline uint32_t end() const;
 
    inline const spatial_t& el() const;
@@ -24,6 +28,7 @@ public:
    inline const container_t& container() const;
 
    inline container_it get_first_child() const;
+
    inline container_it get_last_child() const;
 
    // get next sibling of the chiled pointed by it

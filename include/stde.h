@@ -4,9 +4,9 @@
    #pragma GCC system_header
    #pragma system_header
 #elif _MSC_VER
-   #define NOMINMAX
-   #define _USE_MATH_DEFINES
-   #define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+#define _USE_MATH_DEFINES
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 // C includes
@@ -47,8 +47,8 @@
 
 // pma includes
 #ifdef _MSC_VER
-   #pragma warning( push )
-   #pragma warning(disable: 4005; disable: 4244; disable: 4018; disable: 4477; disable: 4244; disable: 4267; disable: 4129; disable: 4319)
+#pragma warning( push )
+#pragma warning(disable: 4005; disable: 4244; disable: 4018; disable: 4477; disable: 4244; disable: 4267; disable: 4129; disable: 4319)
 #endif
 
 #include "pma/pma.h"
@@ -60,20 +60,18 @@
 #include "ext/CImg/CImg.h"
 
 #ifdef _MSC_VER
-   #pragma warning( pop ) 
+#pragma warning( pop )
 #endif
 
 #ifdef __GNUC__
-   // geos lib
+// geos lib
    #include <geos_c.h>
 
-   // spatialite
+// spatialite
    #include <sqlite3.h>
    #include <spatialite.h>
    #include <spatialite/gaiageo.h>
 
-   // postgis
+// postgis
    #include <postgresql/libpq-fe.h>
 #endif
-
-

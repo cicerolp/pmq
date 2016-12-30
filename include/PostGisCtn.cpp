@@ -5,10 +5,10 @@
 PostGisCtn::PostGisCtn() {
    std::string conninfo = "user=postgres password=postgres host=localhost port=5432 dbname=twittervis";
 
-   // make a connection to the database
+// make a connection to the database
    _conn = PQconnectdb(conninfo.c_str());
 
-   // check to see that the backend connection was successfully made
+// check to see that the backend connection was successfully made
    if (PQstatus(_conn) != CONNECTION_OK) {
       fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(_conn));
    } else {
@@ -17,7 +17,7 @@ PostGisCtn::PostGisCtn() {
 }
 
 PostGisCtn::~PostGisCtn() {
-   // close the connection to the database and cleanup
+// close the connection to the database and cleanup
    PQfinish(_conn);
 }
 
@@ -30,7 +30,7 @@ duration_t PostGisCtn::create(uint32_t size) {
 
    sql += "DROP TABLE IF EXISTS db;";
    sql += "CREATE TABLE db(pk BIGSERIAL NOT NULL PRIMARY KEY, key geometry(Point, 4326), value BYTEA);";
-   // spatial index using GIST
+// spatial index using GIST
    sql += "CREATE INDEX key_gix ON  db USING GIST (key);";
 
    PGresult* res = PQexec(_conn, sql.c_str());
@@ -61,7 +61,7 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
       return {duration_info("Error", timer)};
    }
 
-   // insert start
+// insert start
    timer.start();
 
    PGresult* res;
@@ -110,14 +110,14 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-   // insert end
+// insert end
    timer.stop();
    duration.emplace_back("Insert", timer);
 
-   // clustering start
+// clustering start
    timer.start();
 
-   // reorders the table on disk based on the index 
+// reorders the table on disk based on the index 
    sql = "CLUSTER db USING key_gix;";
    res = PQexec(_conn, sql.c_str());
    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -125,11 +125,11 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-   // clustering end
+// clustering end
    timer.stop();
    duration.emplace_back("Cluster", timer);
    
-   // analyze start
+// analyze start
    timer.start();
 
    sql = "ANALYZE db;";
@@ -139,7 +139,7 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-   // analyze end
+// analyze end
    timer.stop();
    duration.emplace_back("Analyze", timer);
 

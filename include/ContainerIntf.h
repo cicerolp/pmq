@@ -9,10 +9,12 @@ class ContainerIntf {
 public:
    // building
    virtual duration_t create(uint32_t size) = 0;
-   
+
    // updating
    virtual duration_t insert(std::vector<elttype> batch) = 0;
+
    virtual duration_t diff(std::vector<elinfo_t>& keys) = 0;
+
    virtual void clear_diff() = 0;
 
    // acessing
@@ -20,5 +22,6 @@ public:
 
    // iterating
    virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const = 0;
+
    virtual duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const = 0;
 };

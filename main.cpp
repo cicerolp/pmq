@@ -19,7 +19,7 @@
 
 uint32_t g_Quadtree_Depth = 25;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
    cimg_usage("command line arguments");
 
    bool server(cimg_option("-server", true, "program arg: enable server"));
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
-   
+
    // SQL
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
    //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PostGisCtn>();   
@@ -67,8 +67,7 @@ int main(int argc, char *argv[]) {
 
       Server::getInstance().stop();
       server_ptr->join();
-   }
-   else {
+   } else {
       std::cout << "*Runner* Executing... press any key to terminate." << std::endl;
       getchar();
    }

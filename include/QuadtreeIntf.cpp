@@ -82,6 +82,7 @@ void QuadtreeIntf::query_tile(const region_t& region, std::vector<QuadtreeIntf*>
       if (_container[3] != nullptr) _container[3]->query_tile(region, subset);
    }
 }
+
 /**
  * @brief QuadtreeIntf::query_region : finds the smallest set of quadtree-nodes that are completely inside the \a region
  * @param region

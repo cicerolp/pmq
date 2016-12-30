@@ -8,6 +8,7 @@ using applytype_function = std::function<void(const spatial_t& /*spatial area*/,
 class GeoCtnIntf {
 public:
    GeoCtnIntf() = default;
+
    virtual ~GeoCtnIntf() = default;
 
    // build container
@@ -21,6 +22,7 @@ public:
 
    // apply function for every spatial area/region
    virtual duration_t apply_at_tile(const region_t& region, applytype_function __apply) = 0;
+
    virtual duration_t apply_at_region(const region_t& region, applytype_function __apply) = 0;
 
    inline virtual std::string name() const;

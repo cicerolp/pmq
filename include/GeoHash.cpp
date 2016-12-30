@@ -2,80 +2,80 @@
 #include "GeoHash.h"
 
 GeoHash::GeoHash(int argc, char* argv[]) {
-	seg_size = cimg_option("-s", 8, "GeoHash arg: segment size");
-	tau_0 = cimg_option("-t0", 0.92f, "GeoHash arg: tau_0");
-	tau_h = cimg_option("-th", 0.7f, "GeoHash arg: tau_h");
-	rho_0 = cimg_option("-r0", 0.08f, "GeoHash arg: rho_0");
-	rho_h = cimg_option("-rh", 0.3f, "GeoHash arg: rho_0");
+   seg_size = cimg_option("-s", 8, "GeoHash arg: segment size");
+   tau_0 = cimg_option("-t0", 0.92f, "GeoHash arg: tau_0");
+   tau_h = cimg_option("-th", 0.7f, "GeoHash arg: tau_h");
+   rho_0 = cimg_option("-r0", 0.08f, "GeoHash arg: rho_0");
+   rho_h = cimg_option("-rh", 0.3f, "GeoHash arg: rho_0");
 }
 
 GeoHash::~GeoHash() { if (_pma != nullptr) pma::destroy_pma(_pma); }
 
 duration_t GeoHash::create(uint32_t size) {
-	Timer timer;
+   Timer timer;
 
-	timer.start();
-	_pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
-	timer.stop();
+   timer.start();
+   _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
+   timer.stop();
 
-	return {duration_info("Create", timer)};
+   return {duration_info("Create", timer)};
 }
 
 duration_t GeoHash::insert(std::vector<elttype> batch) {
-	Timer timer;
+   Timer timer;
 
-	if (_pma == nullptr) { return {duration_info("Error", timer)}; }
+   if (_pma == nullptr) { return {duration_info("Error", timer)}; }
 
-	// insert start
-	timer.start();
+   // insert start
+   timer.start();
 
-	std::sort(batch.begin(), batch.end());
+   std::sort(batch.begin(), batch.end());
 
-	void* begin = (void *)(&batch[0]);
-	void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
+   void* begin = (void *)(&batch[0]);
+   void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
 
-	pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
+   pma::batch::add_array_elts(_pma, begin, end, comp<uint64_t>);
 
-	// insert end
-	timer.stop();
+   // insert end
+   timer.stop();
 
-	return {duration_info("Insert", timer)};
+   return {duration_info("Insert", timer)};
 }
 
 duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __apply) {
-	Timer timer;
+   Timer timer;
 
    if (_pma == nullptr) { return {duration_info("scan_at_region", timer)}; }
 
-	timer.start();
+   timer.start();
 
    uint32_t curr_seg = 0;
    scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
 
-	timer.stop();
+   timer.stop();
 
-	return {duration_info("scan_at_region", timer)};
+   return {duration_info("scan_at_region", timer)};
 }
 
 duration_t GeoHash::apply_at_tile(const region_t& region, applytype_function __apply) {
-	Timer timer;
+   Timer timer;
 
-	if (_pma == nullptr) { return {duration_info("apply_at_tile", timer)}; }
+   if (_pma == nullptr) { return {duration_info("apply_at_tile", timer)}; }
 
-	timer.start();
+   timer.start();
 
    uint32_t curr_seg = 0;
    apply_pma_at_tile(get_parent_quadrant(region), curr_seg, region, __apply);
 
-	timer.stop();
+   timer.stop();
 
-	return {duration_info("apply_at_tile", timer)};
+   return {duration_info("apply_at_tile", timer)};
 }
 
 duration_t GeoHash::apply_at_region(const region_t& region, applytype_function __apply) {
-	Timer timer;
+   Timer timer;
 
-	if (_pma == nullptr) { return {duration_info("apply_at_region", timer)}; }
+   if (_pma == nullptr) { return {duration_info("apply_at_region", timer)}; }
 
    timer.start();
 
@@ -84,7 +84,7 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
 
    timer.stop();
 
-	return {duration_info("apply_at_region", timer)};
+   return {duration_info("apply_at_region", timer)};
 }
 
 void GeoHash::scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply) {
@@ -141,7 +141,7 @@ void GeoHash::apply_pma_at_region(const spatial_t& el, uint32_t& seg, const regi
    }
 }
 
-uint32_t GeoHash::count_pma(const spatial_t & el, uint32_t& seg) const {
+uint32_t GeoHash::count_pma(const spatial_t& el, uint32_t& seg) const {
    if (_pma == nullptr) return 0;
 
    uint64_t code_min, code_max;
@@ -149,7 +149,7 @@ uint32_t GeoHash::count_pma(const spatial_t & el, uint32_t& seg) const {
 
    uint32_t count = 0;
    uint32_t prev_seg = seg;
-   
+
    while (seg < _pma->nb_segments && PMA_ELT(SEGMENT_START(_pma, seg)) <= code_max) {
       count += _pma->elts[seg];
       seg++;
@@ -173,12 +173,12 @@ uint32_t GeoHash::count_pma(const spatial_t & el, uint32_t& seg) const {
    return count;
 }
 
-void GeoHash::scan_pma(const spatial_t & el, uint32_t& seg, scantype_function _apply) const {
+void GeoHash::scan_pma(const spatial_t& el, uint32_t& seg, scantype_function _apply) const {
    if (_pma == nullptr) return;
-   
+
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
-   
+
    for (; seg < _pma->nb_segments; ++seg) {
 
       uint32_t nb_elts_per_seg = _pma->elts[seg];

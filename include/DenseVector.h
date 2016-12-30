@@ -4,6 +4,7 @@
 class DenseVector : public ContainerIntf {
 public:
    DenseVector() = default;
+
    virtual ~DenseVector() = default;
 
    // building
@@ -11,7 +12,9 @@ public:
 
    // updating
    duration_t insert(std::vector<elttype> batch) override final;
+
    duration_t diff(std::vector<elinfo_t>& keys) override final;
+
    void clear_diff() override final;
 
    // acessing
@@ -19,9 +22,9 @@ public:
 
    // iterating
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, uint32_t& count, uint32_t max, valuetype_function __apply) const override final;
+
    duration_t apply(const uint32_t& begin, const uint32_t& end, const spatial_t& el, elttype_function __apply) const override final;
 
-   
 protected:
    virtual void sort(std::vector<elttype>& cnt) = 0;
 

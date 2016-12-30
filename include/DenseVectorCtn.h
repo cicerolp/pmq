@@ -6,6 +6,7 @@
 class DenseVectorCtn : public GeoCtnIntf {
 public:
    DenseVectorCtn();
+
    virtual ~DenseVectorCtn() = default;
 
    // build container
@@ -19,18 +20,20 @@ public:
 
    // apply function for every spatial area/region
    duration_t apply_at_tile(const region_t& region, applytype_function __apply) override;
+
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
    inline virtual std::string name() const = 0;
 
 protected:
    diff_cnt diff();
+
    void clear_diff();
 
 private:
    virtual void sort(std::vector<elttype>& cnt) = 0;
 
-   uint32_t _diff_index {0};
+   uint32_t _diff_index{0};
    std::vector<elttype> _container;
    std::unique_ptr<QuadtreeIntf> _quadtree;
 };
@@ -38,6 +41,7 @@ private:
 class DenseCtnStdSort : public DenseVectorCtn {
 public:
    virtual ~DenseCtnStdSort() = default;
+
    inline virtual std::string name() const {
       static auto name_str = "StdDense";
       return name_str;
@@ -52,6 +56,7 @@ protected:
 class DenseCtnTimSort : public DenseVectorCtn {
 public:
    virtual ~DenseCtnTimSort() = default;
+
    inline virtual std::string name() const {
       static auto name_str = "TimDense";
       return name_str;

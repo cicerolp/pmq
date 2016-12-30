@@ -12,7 +12,7 @@ Server::Server(server_opts opts) : nds_opts(opts) {
 void Server::run() {
    mg_mgr_init(&Server::getInstance().mgr, nullptr);
    Server::getInstance().nc =
-         mg_bind(&Server::getInstance().mgr, std::to_string(Server::getInstance().nds_opts.port).c_str(), handler);
+      mg_bind(&Server::getInstance().mgr, std::to_string(Server::getInstance().nds_opts.port).c_str(), handler);
 
    mg_set_protocol_http_websocket(Server::getInstance().nc);
 
@@ -169,4 +169,3 @@ void Server::printJson(mg_connection* conn, const std::string& content) {
                 (int)content.size(), content.c_str());
    }
 }
-

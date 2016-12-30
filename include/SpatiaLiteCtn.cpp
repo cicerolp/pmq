@@ -6,9 +6,9 @@ SpatiaLiteCtn::SpatiaLiteCtn() {
    int ret;
 
    std::string db = ":memory:";
-   //std::string db = "../db/db.sqlite";
+//std::string db = "../db/db.sqlite";
 
-   // in-memory database
+// in-memory database
    ret = sqlite3_open_v2(db.c_str(), &_handle,
                          SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
    if (ret != SQLITE_OK) {
@@ -35,7 +35,7 @@ SpatiaLiteCtn::~SpatiaLiteCtn() {
    if (_handle) sqlite3_close(_handle);
    if (_cache) spatialite_cleanup_ex(_cache);
 
-   //spatialite_shutdown();
+//spatialite_shutdown();
 }
 
 // build container
@@ -47,12 +47,12 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
    char sql[256];
    char* err_msg = NULL;
 
-   // we are supposing this one is an empty database,
-   // so we have to create the Spatial Metadata
+// we are supposing this one is an empty database,
+// so we have to create the Spatial Metadata
    strcpy(sql, "SELECT InitSpatialMetadata(1)");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("InitSpatialMetadata() error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -60,14 +60,14 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       return {duration_info("Error", timer)};
    }
 
-   // now we can create the table
-   // for simplicity we'll define only one column, the primary key
+// now we can create the table
+// for simplicity we'll define only one column, the primary key
    strcpy(sql, "CREATE TABLE db (");
    strcat(sql, "pk INTEGER NOT NULL PRIMARY KEY,");
    strcat(sql, "value BLOB NOT NULL)");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("CREATE TABLE 'db' error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -75,11 +75,11 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       return {duration_info("Error", timer)};
    }
 
-   // ... we'll add a Geometry column of POINT type to the table
+// ... we'll add a Geometry column of POINT type to the table
    strcpy(sql, "SELECT AddGeometryColumn('db', 'key', 4326, 'POINT', 2)");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("AddGeometryColumn() error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -87,11 +87,11 @@ duration_t SpatiaLiteCtn::create(uint32_t size) {
       return {duration_info("Error", timer)};
    }
 
-   // and finally we'll enable this geo-column to have a Spatial Index based on R*Tree
+// and finally we'll enable this geo-column to have a Spatial Index based on R*Tree
    strcpy(sql, "SELECT CreateSpatialIndex('db', 'key')");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("CreateSpatialIndex() error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -113,7 +113,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       return {duration_info("Error", timer)};
    }
 
-   // insert start
+// insert start
    timer.start();
 
    int ret;
@@ -126,11 +126,11 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
    sqlite3_stmt* stmt;
    gaiaGeomCollPtr geo = NULL;
 
-   // beginning a transaction
+// beginning a transaction
    strcpy(sql, "BEGIN");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("BEGIN error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -138,11 +138,11 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       return {duration_info("total", timer)};
    }
 
-   // preparing to populate the table
+// preparing to populate the table
    strcpy(sql, "INSERT INTO db (pk, key, value) VALUES (?, ?, ?)");
    ret = sqlite3_prepare_v2(_handle, sql, strlen(sql), &stmt, NULL);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();
@@ -155,32 +155,32 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
 
       valuetype value = batch[pk].value;
 
-      // preparing the geometry to insert
+// preparing the geometry to insert
       geo = gaiaAllocGeomColl();
       geo->Srid = 4326;
       gaiaAddPointToGeomColl(geo, value.longitude, value.latitude);
 
-      // transforming this geometry into the SpatiaLite BLOB format
+// transforming this geometry into the SpatiaLite BLOB format
       gaiaToSpatiaLiteBlobWkb(geo, &blob, &blob_size);
 
-      // we can now destroy the geometry object
+// we can now destroy the geometry object
       gaiaFreeGeomColl(geo);
 
-      // resetting Prepared Statement and bindings
+// resetting Prepared Statement and bindings
       sqlite3_reset(stmt);
       sqlite3_clear_bindings(stmt);
 
-      // (pk, key, value)
-      // binding parameters to Prepared Statement
+// (pk, key, value)
+// binding parameters to Prepared Statement
       sqlite3_bind_null(stmt, 1);
       sqlite3_bind_blob(stmt, 2, blob, blob_size, free);
       sqlite3_bind_blob(stmt, 3, &value, sizeof(valuetype), SQLITE_TRANSIENT);
 
-      // performing actual row insert
+// performing actual row insert
       ret = sqlite3_step(stmt);
       if (ret == SQLITE_DONE || ret == SQLITE_ROW);
       else {
-         // an error occurred
+// an error occurred
          printf("sqlite3_step() error: %s\n", sqlite3_errmsg(_handle));
          sqlite3_finalize(stmt);
 
@@ -189,14 +189,14 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       }
    }
 
-   // we have now to finalize the query [memory cleanup]
+// we have now to finalize the query [memory cleanup]
    sqlite3_finalize(stmt);
 
-   // committing the transaction
+// committing the transaction
    strcpy(sql, "COMMIT");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("COMMIT error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -204,18 +204,18 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       return {duration_info("total", timer)};
    }
 
-   // insert end
+// insert end
    timer.stop();
    duration.emplace_back("Insert", timer);
 
-   // analyze start
+// analyze start
    timer.start();
 
-   // now we'll optimize the table
+// now we'll optimize the table
    strcpy(sql, "ANALYZE db");
    ret = sqlite3_exec(_handle, sql, NULL, NULL, &err_msg);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("ANALYZE error: %s\n", err_msg);
       sqlite3_free(err_msg);
 
@@ -223,7 +223,7 @@ duration_t SpatiaLiteCtn::insert(std::vector<elttype> batch) {
       return {duration_info("Error", timer)};
    }
 
-   // analyze end
+// analyze end
    timer.stop();
    duration.emplace_back("Analyze", timer);
 
@@ -257,10 +257,10 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
 
    sqlite3_stmt* stmt;
 
-   // preparing to populate the table
+// preparing to populate the table
    ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();
@@ -325,10 +325,10 @@ duration_t SpatiaLiteCtn::apply_at_tile(const region_t& region, applytype_functi
 
          sqlite3_stmt* stmt;
 
-         // preparing to populate the table
+// preparing to populate the table
          ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
          if (ret != SQLITE_OK) {
-            // an error occurred
+// an error occurred
             printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
             timer.stop();
@@ -374,10 +374,10 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
 
    sqlite3_stmt* stmt;
 
-   // preparing to populate the table
+// preparing to populate the table
    ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
    if (ret != SQLITE_OK) {
-      // an error occurred
+// an error occurred
       printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
 
       timer.stop();

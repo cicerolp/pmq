@@ -57,7 +57,7 @@ namespace input {
          tweet_t el;
          el.longitude = (float)lon(gen);
          el.latitude = (float)lat(gen);
-         keyVal_vec.emplace_back(el,25);
+         keyVal_vec.emplace_back(el, 25);
       }
 
       return keyVal_vec;

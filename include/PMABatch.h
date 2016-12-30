@@ -4,6 +4,7 @@
 class PMABatch : public ContainerIntf {
 public:
    PMABatch(int argc, char* argv[]);
+
    virtual ~PMABatch();
 
    duration_t create(uint32_t size) override final;
@@ -71,7 +72,7 @@ public:
 
    static inline void get_mcode_range(uint64_t code, uint32_t zoom, uint64_t& min, uint64_t& max, uint32_t mCodeSize);
 
-   private:
+private:
    /**
    * @brief get_mcode_range : Computes the min and max values for a geo_hash with prefix \a mCode
    * @param mCode : The prefix of the morton code representing a quadtree node.

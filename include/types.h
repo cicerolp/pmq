@@ -46,7 +46,7 @@ struct region_t {
 
       code0 = _code0;
       code1 = _code1;
-      
+
       mortonDecode_RAM(code0, x0, y0);
       mortonDecode_RAM(code1, x1, y1);
 
@@ -186,11 +186,10 @@ struct duration_info {
    double duration;
    std::string name;
 
-   duration_info(const std::string& _name, Timer& _timer)
-      : name(_name), duration(_timer.milliseconds()) {
+   duration_info(const std::string& _name, Timer& _timer) : name(_name), duration(_timer.milliseconds()) {
    };
-   duration_info(const std::string& _name, double _duration)
-      : name(_name), duration(_duration) {
+
+   duration_info(const std::string& _name, double _duration) : name(_name), duration(_duration) {
    };
 };
 
