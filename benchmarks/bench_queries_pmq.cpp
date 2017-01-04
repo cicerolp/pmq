@@ -69,7 +69,7 @@ void inline run_queries(container_t& container, region_t region, const int n_exp
       container.scan_at_region(region, read_keys);
       timer.stop();
       PRINTBENCH(qname, "ReadKeys", timer.milliseconds(), "ms");
-   }*/   
+   }*/
 
    for (int i = 0; i < n_exp; i++) {
       timer.start();
@@ -174,7 +174,6 @@ int main(int argc, char* argv[]) {
    run_bench(container2, input_vec, input_vec.size(), n_exp);
    run_bench(container3, input_vec, input_vec.size(), n_exp);
    run_bench(container4, input_vec, input_vec.size(), n_exp);*/
-   
 
    return EXIT_SUCCESS;
 }
