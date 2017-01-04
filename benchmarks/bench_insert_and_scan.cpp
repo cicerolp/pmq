@@ -39,9 +39,9 @@ void inline run_queries(container_t& container, const region_t& region, const in
    // QueryRegion will traverse the tree and return the intervals to query;
    // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
 
-   // wamup
+   // warm up
    container.scan_at_region(region, read_element);
-   
+
    // access the container to count the number of elements inside the region
    for (int i = 0; i < n_exp; i++) {
       timer.start();
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
    /*run_bench(container1, input_vec, batch_size, n_exp);
    run_bench(container2, input_vec, batch_size, n_exp);
    run_bench(container3, input_vec, batch_size, n_exp);
-   run_bench(container4, input_vec, batch_size, n_exp);*/   
+   run_bench(container4, input_vec, batch_size, n_exp);*/
 
    return EXIT_SUCCESS;
 
