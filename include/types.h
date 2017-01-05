@@ -41,6 +41,33 @@ struct spatial_t {
 struct region_t {
    region_t() = default;
 
+   region_t(uint32_t _x, uint32_t _y, uint8_t _z, double km) {
+      static const double PI_180_INV = 180.0 / M_PI;
+      static const double PI_180 = M_PI / 180.0;
+      static const double r_earth = 6378;
+
+      double lon = mercator_util::tilex2lon(_x + 0.5, _z);
+      double lat = mercator_util::tiley2lat(_y + 0.5, _z);
+
+      double distance = km / 2.0;
+
+      double lat0 = lat - (distance / r_earth) * (PI_180_INV);
+      double lon0 = lon - (distance / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
+
+      double lat1 = lat + (distance / r_earth) * (PI_180_INV);
+      double lon1 = lon + (distance / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+
+      z = 25;
+
+      x0 = mercator_util::lon2tilex(lon0, z);
+      y0 = mercator_util::lat2tiley(lat0, z);
+      x1 = mercator_util::lon2tilex(lon1, z);
+      y1 = mercator_util::lat2tiley(lat1, z);
+
+      code0 = mortonEncode_RAM(x0, y0);
+      code1 = mortonEncode_RAM(x1, y1);
+   }
+
    region_t(uint64_t _code0, uint64_t _code1, uint8_t _z) {
       z = _z;
 
@@ -49,11 +76,6 @@ struct region_t {
 
       mortonDecode_RAM(code0, x0, y0);
       mortonDecode_RAM(code1, x1, y1);
-
-      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
-      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
-      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
-      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
    }
 
    region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
@@ -66,11 +88,16 @@ struct region_t {
 
       code0 = mortonEncode_RAM(x0, y0);
       code1 = mortonEncode_RAM(x1, y1);
+   }
 
-      _xmin = std::to_string(mercator_util::tilex2lon(x0, z));
-      _xmax = std::to_string(mercator_util::tilex2lon(x1 + 1, z));
-      _ymin = std::to_string(mercator_util::tiley2lat(y1 + 1, z));
-      _ymax = std::to_string(mercator_util::tiley2lat(y0, z));
+   friend inline std::ostream& operator<<(std::ostream& out, const region_t& e) {
+      out << "[y0: " << e.y0 << " lat0: " << mercator_util::tiley2lat(e.y0, e.z) << "], "
+         << "[x0: " << e.x0 << " lon0: " << mercator_util::tilex2lon(e.x0, e.z) << "], "
+         << "[y1:" << e.y1 << " lat1: " << mercator_util::tiley2lat(e.y1, e.z) << "], "
+         << "[x1: " << e.x1 << " lon1: " << mercator_util::tilex2lon(e.x1, e.z) << "], "
+         << "z: " << e.z;
+
+      return out;
    }
 
    inline bool cover(const spatial_t& el) const {
@@ -100,15 +127,9 @@ struct region_t {
       }
    }
 
-   const std::string& xmin() const { return _xmin; }
-   const std::string& xmax() const { return _xmax; }
-   const std::string& ymin() const { return _ymin; }
-   const std::string& ymax() const { return _ymax; }
-
 public:
    uint64_t code0, code1;
    uint32_t x0, y0, x1, y1, z;
-   std::string _xmin, _xmax, _ymin, _ymax;
 };
 
 struct tweet_t {

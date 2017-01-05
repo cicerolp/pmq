@@ -244,16 +244,21 @@ duration_t SpatiaLiteCtn::scan_at_region(const region_t& region, scantype_functi
    char sql[256];
    char* err_msg = NULL;
 
+   std::string region_xmin = std::to_string(mercator_util::tilex2lon(region.x0, region.z));
+   std::string region_xmax = std::to_string(mercator_util::tilex2lon(region.x1 + 1, region.z));
+   std::string region_ymin = std::to_string(mercator_util::tiley2lat(region.y1 + 1, region.z));
+   std::string region_ymax = std::to_string(mercator_util::tiley2lat(region.y0, region.z));
+
    std::stringstream stream;
    stream << "SELECT value FROM db ";
    stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << region.xmin() << "," << region.ymin() << ",";
-   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
+   stream << region_xmin << "," << region_ymin << ",";
+   stream << region_xmax << "," << region_ymax << ")) AND ROWID IN (";
    stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << region.xmin() << " AND ";
-   stream << "xmax <= " << region.xmax() << " AND ";
-   stream << "ymin >= " << region.ymin() << " AND ";
-   stream << "ymax <= " << region.ymax() << ")";
+   stream << "xmin >= " << region_xmin << " AND ";
+   stream << "xmax <= " << region_xmax << " AND ";
+   stream << "ymin >= " << region_ymin << " AND ";
+   stream << "ymax <= " << region_ymax << ")";
 
    sqlite3_stmt* stmt;
 
@@ -361,16 +366,21 @@ duration_t SpatiaLiteCtn::apply_at_region(const region_t& region, applytype_func
    char sql[256];
    char* err_msg = NULL;
 
+   std::string region_xmin = std::to_string(mercator_util::tilex2lon(region.x0, region.z));
+   std::string region_xmax = std::to_string(mercator_util::tilex2lon(region.x1 + 1, region.z));
+   std::string region_ymin = std::to_string(mercator_util::tiley2lat(region.y1 + 1, region.z));
+   std::string region_ymax = std::to_string(mercator_util::tiley2lat(region.y0, region.z));
+
    std::stringstream stream;
    stream << "SELECT count(*) FROM db ";
    stream << "WHERE MbrWithin(key, BuildMbr(";
-   stream << region.xmin() << "," << region.ymin() << ",";
-   stream << region.xmax() << "," << region.ymax() << ")) AND ROWID IN (";
+   stream << region_xmin << "," << region_ymin << ",";
+   stream << region_xmax << "," << region_ymax << ")) AND ROWID IN (";
    stream << "SELECT pkid FROM idx_db_key WHERE ";
-   stream << "xmin >= " << region.xmin() << " AND ";
-   stream << "xmax <= " << region.xmax() << " AND ";
-   stream << "ymin >= " << region.ymin() << " AND ";
-   stream << "ymax <= " << region.ymax() << ")";
+   stream << "xmin >= " << region_xmin << " AND ";
+   stream << "xmax <= " << region_xmax << " AND ";
+   stream << "ymin >= " << region_ymin << " AND ";
+   stream << "ymax <= " << region_ymax << ")";
 
    sqlite3_stmt* stmt;
 

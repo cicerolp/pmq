@@ -159,7 +159,12 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
    PGresult* res;
    std::string sql;
 
-   sql = "SELECT value from db Where key && ST_MakeEnvelope(" + region.xmin() + ", " + region.ymin() + ", " + region.xmax() + ", " + region.ymax() + ");";
+   std::string region_xmin = std::to_string(mercator_util::tilex2lon(region.x0, region.z));
+   std::string region_xmax = std::to_string(mercator_util::tilex2lon(region.x1 + 1, region.z));
+   std::string region_ymin = std::to_string(mercator_util::tiley2lat(region.y1 + 1, region.z));
+   std::string region_ymax = std::to_string(mercator_util::tiley2lat(region.y0, region.z));
+
+   sql = "SELECT value from db Where key && ST_MakeEnvelope(" + region_xmin + ", " + region_ymin + ", " + region_xmax + ", " + region_ymax + ");";
 
    res = PQexecParams(_conn, sql.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 1);
    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
@@ -243,7 +248,12 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    PGresult* res;
    std::string sql;
 
-   sql = "SELECT count(*) from db Where key && ST_MakeEnvelope(" + region.xmin() + ", " + region.ymin() + ", " + region.xmax() + ", " + region.ymax() + ");";
+   std::string region_xmin = std::to_string(mercator_util::tilex2lon(region.x0, region.z));
+   std::string region_xmax = std::to_string(mercator_util::tilex2lon(region.x1 + 1, region.z));
+   std::string region_ymin = std::to_string(mercator_util::tiley2lat(region.y1 + 1, region.z));
+   std::string region_ymax = std::to_string(mercator_util::tiley2lat(region.y0, region.z));
+
+   sql = "SELECT count(*) from db Where key && ST_MakeEnvelope(" + region_xmin + ", " + region_ymin + ", " + region_xmax + ", " + region_ymax + ");";
 
    res = PQexecParams(_conn, sql.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 0);
    if (PQresultStatus(res) != PGRES_TUPLES_OK) {

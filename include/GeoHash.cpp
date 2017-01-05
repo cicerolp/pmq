@@ -87,6 +87,104 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
    return {duration_info("apply_at_region", timer)};
 }
 
+duration_t GeoHash::topk_search(const region_t& region, std::vector<valuetype>& output, float alpha, uint64_t now, uint64_t time) {
+   Timer timer;
+
+   if (_pma == nullptr) { return{ duration_info("topk_search", timer) }; }
+
+   timer.start();
+
+   struct cell_t {
+      cell_t(pma_struct* pma, uint32_t _seg, uint32_t _offset, float alpha, float _spatial_distance, uint64_t now, uint64_t time) {
+         spatial_distance = _spatial_distance;
+
+         seg = _seg;
+         offset = _offset;
+
+         update_score(pma, alpha, now, time);
+      }
+
+      inline bool update_score(pma_struct* pma, float alpha, uint64_t now, uint64_t time) {
+         uint64_t m_time = (*(valuetype*)ELT_TO_CONTENT(SEGMENT_ELT(pma, seg, offset))).time;
+
+         if (now - m_time > time) {
+            return false;
+         }
+
+         float temporal_distance = float((now - m_time) / time);
+         score = (alpha * spatial_distance) + ((1.f - alpha) * temporal_distance);
+
+         return true;
+      }
+
+      inline static float get_spatial_distance(float lat0, float lon0, float lat1, float lon1) {
+         static const float PI_180_INV = 180.0f / (float)M_PI;
+         static const float PI_180 = (float)M_PI / 180.0f;
+         static const float r_earth = 6378.f;
+
+         float d_lat = (lat1 - lat0) * PI_180;
+         float d_lon = (lon1 - lon0) * PI_180;
+
+         float a = std::sin(d_lat / 2.0f) * std::sin(d_lat / 2.0f) +
+            std::cos(lat0 * PI_180) * std::cos(lat1 * PI_180) *
+            std::sin(d_lon / 2.0f) * std::sin(d_lon / 2);
+
+         float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
+
+         return r_earth * c;
+      }
+
+      inline bool operator>(const cell_t& e) const {
+         return score > e.score;
+      }
+
+      inline bool operator<(const cell_t& e) const {
+         return score < e.score;
+      }
+
+      inline valuetype elt(pma_struct* pma) {
+         return (*(valuetype*)ELT_TO_CONTENT(SEGMENT_ELT(pma, seg, offset)));
+      }
+
+      inline void next(pma_struct* pma, float alpha, uint64_t now, uint64_t time) {
+         seg = 0;
+         offset = 0;
+
+         update_score(pma, alpha, now, time);
+      }
+
+      float score;
+      float spatial_distance;
+      uint32_t seg;
+      uint32_t offset;
+   };
+
+   std::priority_queue<cell_t, std::vector<cell_t>, std::greater<cell_t>> heap;
+
+   float max_score = 1.0;
+   while (!heap.empty()) {
+      cell_t cell = heap.top();
+      heap.pop();
+
+      if (cell.score > max_score) {
+         break;
+      }
+
+      while (cell.score <= max_score && (heap.empty() || cell.score <= heap.top().score)) {
+         output.emplace_back(cell.elt(_pma));
+         cell.next(_pma, alpha, now, time);
+      }
+
+      if (cell.score <= max_score) {
+         heap.push(cell);
+      }
+   }
+
+   timer.stop();
+
+   return{ duration_info("topk_search", timer) };
+}
+
 void GeoHash::scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply) {
    if (!search_pma(el, seg)) return;
 
