@@ -1,3 +1,13 @@
+	add_executable(bench_topk_search
+      bench_topk_search.cpp
+
+	  ../include/GeoHash.cpp
+	  ../include/string_util.cpp
+      ../include/QuadtreeIntf.cpp
+   )
+
+   target_link_libraries(bench_topk_search pma ${CMAKE_THREAD_LIBS_INIT})
+
 if(WIN32)
    add_executable(bench_queries_region
       bench_queries_region.cpp

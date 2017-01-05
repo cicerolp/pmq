@@ -29,9 +29,14 @@ public:
 protected:
 #define PMA_ELT(x) ((*(uint64_t*)x))
 
-   inline bool find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg) const;
+   inline bool find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg, uint32_t& offset) const;
 
-   virtual bool search_pma(const spatial_t& el, uint32_t& seg) const = 0;
+   inline virtual bool search_pma(const spatial_t& el, uint32_t& seg) const {
+      uint32_t offset;
+      return search_pma(el, seg, offset);
+   }
+
+   virtual bool search_pma(const spatial_t& el, uint32_t& seg, uint32_t& offset) const = 0;
 
    // apply function for every el<valuetype>
    void scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply);
@@ -40,6 +45,8 @@ protected:
    void apply_pma_at_tile(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
 
    void apply_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
+
+   //void topk_pma_search()
 
    uint32_t count_pma(const spatial_t& el, uint32_t& seg) const;
 
@@ -55,12 +62,12 @@ protected:
    pma_struct* _pma{nullptr};
 };
 
-inline bool GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg) const {
+inline bool GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const uint32_t seg, uint32_t& offset) const {
    if (seg >= _pma->nb_segments) return false;
 
    uint32_t nb_elts_per_seg = _pma->elts[seg];
 
-   for (uint32_t offset = 0; offset < nb_elts_per_seg; ++offset) {
+   for (offset = 0; offset < nb_elts_per_seg; ++offset) {
       char* el_pt = SEGMENT_ELT(_pma, seg, offset);
 
       if (PMA_ELT(el_pt) > code_max) {
@@ -117,7 +124,7 @@ public:
    }
 
 protected:
-   bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
+   bool search_pma(const spatial_t& el, uint32_t& seg, uint32_t& offset) const override final;
 };
 
 class GeoHashBinary : public GeoHash {
@@ -133,5 +140,5 @@ public:
    }
 
 protected:
-   bool search_pma(const spatial_t& el, uint32_t& seg) const override final;
+   bool search_pma(const spatial_t& el, uint32_t& seg, uint32_t& offset) const override final;
 };

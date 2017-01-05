@@ -4,6 +4,8 @@
 #include "types.h"
 #include <random>
 
+#include "date_util.h"
+
 namespace input {
    inline std::vector<elttype> load(const std::string& fname, int mCodeSize) {
       std::vector<elttype> tweets;
@@ -57,6 +59,7 @@ namespace input {
          tweet_t el;
          el.longitude = (float)lon(gen);
          el.latitude = (float)lat(gen);
+         el.time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
          keyVal_vec.emplace_back(el, 25);
       }
 
