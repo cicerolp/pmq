@@ -63,7 +63,7 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
       timer.start();
       container.apply_at_tile(region, _apply);
       timer.stop();
-      PRINTBENCH("apply_at_tile", id, count, timer.milliseconds(), "ms");
+      PRINTBENCH("apply_at_tile", id, timer.milliseconds(), "ms");
    }
 
    // warm up
@@ -74,7 +74,7 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
       timer.start();
       container.apply_at_region(region, _apply);
       timer.stop();
-      PRINTBENCH("apply_at_region", id, count, timer.milliseconds(), "ms");
+      PRINTBENCH("apply_at_region", id, timer.milliseconds(), "ms");
    }
 }
 
