@@ -134,7 +134,11 @@ void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec
                zoom = std::stoi(url[7]);
             }
 
-            queries_vec.emplace_back(region_t(std::stoi(url[8]), std::stoi(url[9]), std::stoi(url[10]), std::stoi(url[11]), zoom));
+            int x0 = std::stoi(url[8]), y0 = std::stoi(url[9]), x1 = std::stoi(url[10]), y1 = std::stoi(url[11]), z = zoom;
+
+            if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0 || z < 0) continue;
+
+            queries_vec.emplace_back(region_t(x0, y0, x1, y1, z));
          }
       } catch (std::invalid_argument) {
          std::cerr << "error: invalid query log [" << line << "]" << std::endl;
