@@ -3,8 +3,8 @@
 #include "Server.h"
 #include "Runner.h"
 
-#include "PMABatch.h"
-#include "DenseVector.h"
+#include "PMABatchCtn.h"
+#include "DenseVectorCtn.h"
 
 #include "QuadtreeIntf.h"
 

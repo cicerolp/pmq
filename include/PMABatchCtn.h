@@ -42,6 +42,9 @@ private:
 
    pma_struct* _pma{nullptr};
    std::unique_ptr<QuadtreeIntf> _quadtree;
+
+   friend class TEST_PMABatchCtn ; //gives access to private and protected method for testing purposes
+
 };
 
 std::string PMABatchCtn::name() const {

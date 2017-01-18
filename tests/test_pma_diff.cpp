@@ -16,11 +16,25 @@
 
 #include <stde.h>
 #include "types.h"
-#include "PMABatch.h"
+#include "PMABatchCtn.h"
 
 #include "InputIntf.h"
 
 const struct pma_struct* global_pma; //global reference to the pma, for debuging purpose
+
+uint32_t g_Quadtree_Depth = 25;
+
+class  TEST_PMABatchCtn : public PMABatchCtn {
+
+    using PMABatchCtn::PMABatchCtn;
+
+public:
+    using PMABatchCtn::diff;
+    using PMABatchCtn::_pma;
+    using PMABatchCtn::_quadtree;
+
+};
+
 
 int main(int argc, char* argv[]) {
 
@@ -28,7 +42,7 @@ int main(int argc, char* argv[]) {
    const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
    std::string fname(cimg_option("-f", "../data/tweet100.dat", "file with tweets"));
 
-   PMABatch pma(argc, argv);
+   TEST_PMABatchCtn pma(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -61,7 +75,7 @@ int main(int argc, char* argv[]) {
 
 #ifndef NDEBUG
       PRINTOUT("PMA WINDOWS : ");
-      for (auto k: *(pma.get_container()->last_rebalanced_segs)) {
+      for (auto k: *(pma._pma->last_rebalanced_segs)) {
          std::cout << k << " "; //<< std::endl;
       }
       std::cout << "\n";
@@ -70,7 +84,7 @@ int main(int argc, char* argv[]) {
       // retrieve modified keys
       modifiedKeys.clear();
       // Creates a map with begin and end of each index in the pma.
-      pma.diff(modifiedKeys); //Extract information of new key range boundaries inside the pma.
+      modifiedKeys = pma.diff(); //Extract information of new key range boundaries inside the pma.
 
 #ifndef NDEBUG
       PRINTOUT("ModifiedKeys %d : ", modifiedKeys.size());
@@ -81,7 +95,7 @@ int main(int argc, char* argv[]) {
       std::cout << "\n";
 
       PRINTOUT("pma keys: ");
-      print_pma_keys(pma.get_container());
+      print_pma_keys(pma._pma);
       std::cout << "\n";
 #endif
 
@@ -92,16 +106,16 @@ int main(int argc, char* argv[]) {
          if (k.begin == 0) continue;
 
          //check if key exists in previous segment ->> ERROR
-         if (k.key <= *(int64_t*) SEGMENT_LAST(pma.get_container(), k.begin - 1)) {
+         if (k.key <= *(int64_t*) SEGMENT_LAST(pma._pma, k.begin - 1)) {
             PRINTOUT("ERROR BEG Key: %lu (%d %d) \n", k.key, k.begin, k.end);
             errors++;
             //return EXIT_FAILURE;
          }
 
-         if (k.end = pma.get_container()->nb_segments) continue;
+         if (k.end = pma._pma->nb_segments) continue;
 
          //check if key exists in segment end ->> ERROR
-         if (k.key >= *(int64_t*) SEGMENT_START(pma.get_container(), k.end)) {
+         if (k.key >= *(int64_t*) SEGMENT_START(pma._pma, k.end)) {
             PRINTOUT("ERROR END Key: %lu (%d %d) \n", k.key, k.begin, k.end);
             errors++;
             //return EXIT_FAILURE;
