@@ -2,6 +2,10 @@
 #include "stde.h"
 #include "types.h"
 
+/**
+ * DEPRECATED ???
+ */
+
 using valuetype_function = std::function<void(const valuetype&)>;
 using elttype_function = std::function<void(const void*)>;
 
@@ -12,6 +16,7 @@ public:
 
    // updating
    virtual duration_t insert(std::vector<elttype> batch) = 0;
+   virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed ) = 0;
 
    virtual duration_t diff(std::vector<elinfo_t>& keys) = 0;
 

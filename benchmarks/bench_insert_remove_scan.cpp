@@ -1,6 +1,6 @@
 /** @file
- * Benchmark for the query time
- *
+ * 1: Inserts a batch and deletes with a remove function
+ * 2: Scan the whole pma.
  *
  */
 
@@ -8,17 +8,14 @@
 #include "types.h"
 
 #include "InputIntf.h"
-
 #include "GeoCtnIntf.h"
 
 #include "GeoHash.h"
 #include "PMABatchCtn.h"
-#include "PostGisCtn.h"
-#include "SpatiaLiteCtn.h"
 #include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
-   std::cout << "InsertionBench " << container.name() << " ; ";\
+   std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
@@ -53,7 +50,7 @@ void inline run_queries(container_t& container, const region_t& region, const in
 }
 
 template <typename container_t>
-void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
+void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp, uint64_t rm_time_limit) {
    //create container
    container.create((uint32_t)input_vec.size());
 
@@ -62,17 +59,24 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
 
    duration_t timer;
 
-   int id = 0;
+   uint64_t t = 0;
    while (it_begin != input_vec.end()) {
       it_curr = std::min(it_begin + batch_size, input_vec.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-      timer = container.insert(batch);
+      uint64_t oldest_time  = 0;
+      if (t > rm_time_limit){
+         oldest_time++;
+      }
+
+      timer = container.insert_rm(batch, [ oldest_time ]( const void* el) {
+          return ((elttype*)el)->value.time < oldest_time;
+      });
 
       for (auto& info : timer) {
-         PRINTBENCH(info.name, id, info.duration, "ms");
+         PRINTBENCH(info.name, t, info.duration, "ms");
       }
 
       // update iterator
@@ -83,9 +87,9 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
       // ========================================
 
       //Run a scan on the whole array
-      run_queries(container, region_t(0, 0, 0, 0, 0), id, n_exp);
+      run_queries(container, region_t(0, 0, 0, 0, 0), t, n_exp);
 
-      id++;
+      t++;
    }
 }
 
@@ -95,18 +99,13 @@ int main(int argc, char* argv[]) {
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
    const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
+   const int rm_time(cimg_option("-rm", 10, "The 'time' difference used to delete tweets"));
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    PMABatchCtn container0(argc, argv);
-
-   /*DenseCtnStdSort container1;
-   DenseCtnTimSort container2;
-   SpatiaLiteCtn container3;
-   PostGisCtn container4;*/
-
-   GeoHashSequential container5(argc, argv);
-   GeoHashBinary container6(argc, argv);
+//   GeoHashSequential container5(argc, argv);
+//   GeoHashBinary container6(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -133,14 +132,9 @@ int main(int argc, char* argv[]) {
 #endif
 
 
-   run_bench(container0, input_vec, batch_size, n_exp);
-   run_bench(container5, input_vec, batch_size, n_exp);
-   run_bench(container6, input_vec, batch_size, n_exp);
-
-   /*run_bench(container1, input_vec, batch_size, n_exp);
-   run_bench(container2, input_vec, batch_size, n_exp);
-   run_bench(container3, input_vec, batch_size, n_exp);
-   run_bench(container4, input_vec, batch_size, n_exp);*/
+   run_bench(container0, input_vec, batch_size, n_exp, rm_time);
+//   run_bench(container5, input_vec, batch_size, n_exp);
+//   run_bench(container6, input_vec, batch_size, n_exp);
 
    return EXIT_SUCCESS;
 

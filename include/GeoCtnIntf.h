@@ -16,6 +16,7 @@ public:
 
    // update container
    virtual duration_t insert(std::vector<elttype> batch) = 0;
+//   virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed );
 
    // apply function for every el<valuetype>
    virtual duration_t scan_at_region(const region_t& region, scantype_function __apply) = 0;

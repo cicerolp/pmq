@@ -68,6 +68,47 @@ duration_t PMABatchCtn::insert(std::vector<elttype> batch) {
    return duration;
 }
 
+duration_t PMABatchCtn::insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed ) {
+   duration_t duration;
+   Timer timer;
+
+   if (_pma == nullptr) {
+      return {duration_info("Error", timer)};
+   }
+
+   // insert start
+   timer.start();
+
+   std::sort(batch.begin(), batch.end());
+
+   void* begin = (void *)(&batch[0]);
+   void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
+
+   pma::batch::add_rm_array_elts(_pma, begin, end, comp<uint64_t>, is_removed);
+
+   // insert end
+   timer.stop();
+   duration.emplace_back("InsertRm", timer);
+
+   // diff start
+   timer.start();
+   diff_cnt keys = diff();
+
+   // diff end
+   timer.stop();
+   duration.emplace_back("ModifiedKeys", timer);
+
+   // quadtree update start
+   timer.start();
+   _quadtree->update(keys.begin(), keys.end());
+
+   // quadtree update end
+   timer.stop();
+   duration.emplace_back("QuadtreeUpdate", timer);
+
+   return duration;
+}
+
 // apply function for every el<valuetype>
 duration_t PMABatchCtn::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;

@@ -66,4 +66,30 @@ namespace input {
       return keyVal_vec;
    }
 
+   /**
+    * @brief dist_random Create a synthetic input for benchmark
+    * @param nb_el
+    * @param rseed
+    * @param time_res Tweets created will have the time incremented every time_res;
+    * @return
+    */
+   inline std::vector<elttype> dist_random(unsigned int nb_el, long rseed, unsigned int time_res) {
+      std::vector<elttype> keyVal_vec;
+
+      std::mt19937 gen(rseed);
+
+      std::uniform_real_distribution<> lon(-180, 180);
+      std::uniform_real_distribution<> lat(-85, 85);
+
+      for (unsigned int i = 0; i < nb_el; i++) {
+         tweet_t el;
+         el.longitude = (float)lon(gen);
+         el.latitude = (float)lat(gen);
+         el.time = i / time_res;
+         keyVal_vec.emplace_back(el, 25);
+      }
+
+      return keyVal_vec;
+   }
+
 } // namespace input

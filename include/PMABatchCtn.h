@@ -14,6 +14,7 @@ public:
 
    // update container
    duration_t insert(std::vector<elttype> batch) override;
+   duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed ) ;
 
    // apply function for every el<valuetype>
    duration_t scan_at_region(const region_t& region, scantype_function __apply) override;
