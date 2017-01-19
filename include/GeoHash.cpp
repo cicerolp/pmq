@@ -62,7 +62,12 @@ duration_t GeoHash::insert_rm(std::vector<elttype> batch,  std::function< int (c
 
    return {duration_info("Insert RM", timer)};
 }
-
+/**
+ * @brief GeoHash::scan_at_region applies the function __apply on the elements inside a region of the implicit quadtree.
+ * @param region A square region in the implict quadtree.
+ * @param __apply
+ * @return
+ */
 duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
 
@@ -224,12 +229,21 @@ duration_t GeoHash::topk_search(const region_t& region, std::vector<valuetype>& 
 
    return{ duration_info("topk_search", timer) };
 }
-
+/**
+ * @brief GeoHash::scan_pma_at_region
+ * @param el : a prefix mortonCode on the implicit quadtree and is detph (z)
+ * @param seg : a lower bound on the segment that contains the elements inside region;
+ * @param region : a square region on implicit quadtree.
+ * @param __apply
+ *
+ * Applies function __apply in every element inside region r;
+ *
+ */
 void GeoHash::scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply) {
    if (!search_pma(el, seg)) return;
 
    if (region.cover(el)) {
-      //std::cout << el.code << ":" << el.z << std::endl;
+      DBG_PRINTOUT("code: %ul , depth: %d\n",el.code , el.z)
       scan_pma(el, seg, __apply);
 
    } else if (el.z < region.z) {

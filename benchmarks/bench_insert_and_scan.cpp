@@ -1,6 +1,8 @@
 /** @file
  * Benchmark for the query time
  *
+ * - Measures the time for inserting each batch
+ * - After each batch insertion measures the time to scan the whole array
  *
  */
 

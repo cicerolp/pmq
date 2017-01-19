@@ -81,6 +81,14 @@ inline bool GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_m
    return false;
 }
 
+/**
+ * @brief GeoHash::get_parent_quadrant
+ * @param region : a square region represented by upper left , lower right points (motron codes)
+ * @return A spatial_t structure ( with the correct morton code ) that completley covers the given region.
+ *
+ * Example between two morton codes of 4 bits , 1110 and 1101 , returns a two-bit motronCode 11.
+ *
+ */
 inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
    uint64_t mask = region.code0 ^ region.code1;
 

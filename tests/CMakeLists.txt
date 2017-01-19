@@ -21,3 +21,13 @@ add_test(pma_diff_b10 test_pma_diff -f ${CMAKE_SOURCE_DIR}/data/tweet10_4.dat -b
 #add_test(pma_quadtree_counts_b10 test_pma_quadtree_counts -f ${CMAKE_SOURCE_DIR}/data/tweet10_4.dat -b 10)
 
 
+#######################################################
+add_executable(test_geohash
+   test_geohash.cpp
+
+   ../include/QuadtreeIntf.cpp
+   ../include/GeoHash.cpp
+
+)
+
+target_link_libraries(test_geohash pma  ${CMAKE_THREAD_LIBS_INIT} )

@@ -1,5 +1,8 @@
 /** @file
  * Benchmark for the query time
+ * Loads a file of queries to execute
+ *
+ *
  */
 
 #include "stde.h"

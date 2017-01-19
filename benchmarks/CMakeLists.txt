@@ -137,7 +137,6 @@ elseif(UNIX)
 
       ../include/QuadtreeIntf.cpp
       ../include/GeoHash.cpp
-      ../include/GeoHash.cpp
       ../include/PMABatchCtn.cpp
       ../include/DenseVectorCtn.cpp
 )
