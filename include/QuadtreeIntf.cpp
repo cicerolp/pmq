@@ -144,7 +144,8 @@ uint32_t QuadtreeIntf::check_child_level() const {
    return 0;
 }
 
-uint32_t QuadtreeIntf::check_count(const ContainerIntf& container) const {
+/* DEPRECATED
+uint32_t QuadtreeIntf::check_count(const GeoCtnIntf& container) const {
    if (!_el.leaf) {
       // count elements in this node
       uint32_t curr_count = 0;
@@ -162,3 +163,4 @@ uint32_t QuadtreeIntf::check_count(const ContainerIntf& container) const {
 
    return 0;
 }
+*/

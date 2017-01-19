@@ -2,7 +2,7 @@
 #include "Singleton.h"
 #include "Query.h"
 #include "QuadtreeIntf.h"
-#include "ContainerIntf.h"
+#include "GeoCtnIntf.h"
 
 class Runner : public Singleton<Runner> {
    friend class Singleton<Runner>;
@@ -13,7 +13,7 @@ public:
       bool hint_server{true};
    };
 
-   void set(std::shared_ptr<ContainerIntf> container, std::shared_ptr<QuadtreeIntf>& quadtree);
+   void set(std::shared_ptr<GeoCtnIntf> container, std::shared_ptr<QuadtreeIntf>& quadtree);
 
    void run();
 
@@ -40,7 +40,7 @@ private:
    std::vector<elttype> _input;
 
    std::shared_ptr<QuadtreeIntf> _quadtree;
-   std::shared_ptr<ContainerIntf> _container;
+   std::shared_ptr<GeoCtnIntf> _container;
 };
 
 void Runner::stop() {

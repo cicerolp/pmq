@@ -1,6 +1,6 @@
 #pragma once
 #include "types.h"
-#include "ContainerIntf.h"
+#include "GeoCtnIntf.h"
 
 // Quadtree node
 class QuadtreeIntf {
@@ -42,12 +42,12 @@ public:
 
    uint32_t check_child_level() const;
 
-   /**
+   /** DEPRECATED : existed on old interface only
     * @brief check_count checks it the count of element in parent is equal to summation of elements on the childs
     * @param ContainerInterface
     * @return returns the difference between parent an child.
     */
-   uint32_t check_count(const ContainerIntf& container) const;
+    // uint32_t check_count(const GeoCtnIntf& container) const;
 
 private:
    void aggregate_tile(uint32_t zoom, std::vector<QuadtreeIntf*>& subset);
