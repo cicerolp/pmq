@@ -27,6 +27,12 @@ void inline read_element(const valuetype& el) {
    valuetype volatile elemt = *(valuetype*)&el;
 }
 
+
+void inline print_values(const valuetype& el) {
+   valuetype volatile elemt = *(valuetype*)&el;
+   std::cout << elemt.time << " " ;
+}
+
 template <typename container_t>
 void inline run_queries(container_t& container, const region_t& region, const int id, const int n_exp) {
 
@@ -42,8 +48,10 @@ void inline run_queries(container_t& container, const region_t& region, const in
    // access the container to count the number of elements inside the region
    for (int i = 0; i < n_exp; i++) {
       timer.start();
-      container.scan_at_region(region, read_element);
+      container.scan_at_region(region, print_values);
       timer.stop();
+
+      std::cout << "\n";
 
       PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
    }
@@ -67,7 +75,6 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-
       if (t > rm_time_limit){
          oldest_time++;
       }
@@ -90,8 +97,10 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
       // ========================================
 
       //Run a scan on the whole array
+      DBG_PRINTOUT("Scanning container:\n");
       run_queries(container, region_t(0, 0, 0, 0, 0), t, n_exp);
 
+      DBG_PRINTOUT("\n\n===================================================\n \n");
       t++;
    }
 }
@@ -106,9 +115,7 @@ int main(int argc, char* argv[]) {
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-//   PMABatchCtn container0(argc, argv);
    GeoHashSequential container5(argc, argv);
-//   GeoHashBinary container6(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -135,9 +142,7 @@ int main(int argc, char* argv[]) {
 #endif
 
 
-//   run_bench(container0, input_vec, batch_size, n_exp, rm_time );
-     run_bench(container5, input_vec, batch_size, n_exp, rm_time );
-//   run_bench(container6, input_vec, batch_size, n_exp);
+   run_bench(container5, input_vec, batch_size, n_exp, rm_time );
 
    return EXIT_SUCCESS;
 

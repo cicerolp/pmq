@@ -11,14 +11,7 @@
 #include "GeoCtnIntf.h"
 
 #include "GeoHash.h"
-#include "PMABatchCtn.h"
-#include "DenseVectorCtn.h"
 
-#define PRINTBENCH( ... ) do { \
-   std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
-   printcsv( __VA_ARGS__ ) ; \
-   std::cout << std::endl ;\
-} while (0)
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -27,37 +20,14 @@ void inline read_element(const valuetype& el) {
    valuetype volatile elemt = *(valuetype*)&el;
 }
 
-template <typename container_t>
-void inline run_queries(container_t& container, const region_t& region, const int id, const int n_exp) {
-
-   Timer timer;
-
-   // 1 - gets the minimum set of nodes that are inside the queried region
-   // QueryRegion will traverse the tree and return the intervals to query;
-   // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
-
-   // warm up
-   container.scan_at_region(region, read_element);
-
-   // access the container to count the number of elements inside the region
-   for (int i = 0; i < n_exp; i++) {
-      timer.start();
-      container.scan_at_region(region, read_element);
-      timer.stop();
-
-      PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
-   }
-}
 
 template <typename container_t>
-void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp, uint64_t rm_time_limit) {
+void fill_container(container_t& container, std::vector<elttype>& input_vec, const int batch_size, uint64_t rm_time_limit ) {
    //create container
    container.create((uint32_t)input_vec.size());
 
    std::vector<elttype>::iterator it_begin = input_vec.begin();
    std::vector<elttype>::iterator it_curr = input_vec.begin();
-
-   duration_t timer;
 
    uint64_t t = 0;
    uint64_t oldest_time  = 0;
@@ -66,33 +36,20 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
 
       std::vector<elttype> batch(it_begin, it_curr);
 
-      // insert batch
 
+      // insert batch
       if (t > rm_time_limit){
          oldest_time++;
       }
 
-      DBG_PRINTOUT("Removing with oldest time %u\n",oldest_time);
+      PRINTOUT("Removing with oldest time %u\n",oldest_time);
 
-      timer = container.insert_rm(batch, [ oldest_time ]( const void* el) {
-          return ((elttype*)el)->value.time < oldest_time;
-      });
+      container.insert_rm(batch, [ oldest_time ]( const void* el) {
+               return ((elttype*)el)->value.time < oldest_time;
+           });
 
-      for (auto& info : timer) {
-         PRINTBENCH(info.name, t, info.duration, "ms");
-      }
-
-      // update iterator
       it_begin = it_curr;
-
-      // ========================================
-      // Performs global scan
-      // ========================================
-
-      //Run a scan on the whole array
-      run_queries(container, region_t(0, 0, 0, 0, 0), t, n_exp);
-
-      t++;
+      t++ ;
    }
 }
 
@@ -106,9 +63,7 @@ int main(int argc, char* argv[]) {
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-//   PMABatchCtn container0(argc, argv);
-   GeoHashSequential container5(argc, argv);
-//   GeoHashBinary container6(argc, argv);
+   GeoHashSequential container(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -131,13 +86,20 @@ int main(int argc, char* argv[]) {
    for (elttype & e : input_vec){
        std::cout << "[" << e.key << "," << e.value.time << "] \n" ;
    }
-
 #endif
 
+   ////////////////////////////////////////////////////////////////////
 
-//   run_bench(container0, input_vec, batch_size, n_exp, rm_time );
-     run_bench(container5, input_vec, batch_size, n_exp, rm_time );
-//   run_bench(container6, input_vec, batch_size, n_exp);
+
+
+   fill_container(container, input_vec, batch_size,rm_time);
+
+   container.scan_at_region( region_t(0, 0, 0, 0, 0) , read_element);
+
+   //container.scan_at_region( region_t(139, 330, 341, 446, 10) , read_element);
+  // container.scan_at_region( region_t(557, 1320, 1366, 1786, 12) , read_element);
+  // container.scan_at_region( region_t(2231, 5280, 5464, 7144, 14) , read_element);
+
 
    return EXIT_SUCCESS;
 

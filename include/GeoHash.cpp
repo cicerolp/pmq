@@ -240,6 +240,8 @@ duration_t GeoHash::topk_search(const region_t& region, std::vector<valuetype>& 
  *
  */
 void GeoHash::scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply) {
+
+   // Search in the PMA if there is an element starting with prefix el ; (starts the search at segment seg )
    if (!search_pma(el, seg)) return;
 
    if (region.cover(el)) {
@@ -347,6 +349,15 @@ void GeoHash::scan_pma(const spatial_t& el, uint32_t& seg, scantype_function _ap
    }
 }
 
+/**
+ * @brief GeoHashSequential::search_pma
+ * @param el
+ * @param seg
+ * @param offset
+ * @return
+ *
+ * Sequential search on the pma.
+ */
 bool GeoHashSequential::search_pma(const spatial_t& el, uint32_t& seg, uint32_t& offset) const {
    if (_pma == nullptr || seg >= _pma->nb_segments) return false;
 
