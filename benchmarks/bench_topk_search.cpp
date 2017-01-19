@@ -111,8 +111,8 @@ void run_bench(container_t& container, const std::vector<elttype>& input, const 
    std::vector<valuetype> output;
 
    float alpha = 0.5;
-   uint64_t now = 1483644389;
-   uint64_t time = 1483644389;
+   uint64_t now = 0;
+   uint64_t time = 1000;
 
    container.topk_search(region, output, alpha, now, time);
 
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
-      input = input::dist_random(nb_elements, seed);
+      input = input::dist_random(nb_elements, seed, 100);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input.size());
    }
 
