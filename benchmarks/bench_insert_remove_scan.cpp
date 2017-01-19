@@ -103,8 +103,8 @@ int main(int argc, char* argv[]) {
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
    const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-   PMABatchCtn container0(argc, argv);
-//   GeoHashSequential container5(argc, argv);
+//   PMABatchCtn container0(argc, argv);
+   GeoHashSequential container5(argc, argv);
 //   GeoHashBinary container6(argc, argv);
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
@@ -132,8 +132,8 @@ int main(int argc, char* argv[]) {
 #endif
 
 
-   run_bench(container0, input_vec, batch_size, n_exp, rm_time);
-//   run_bench(container5, input_vec, batch_size, n_exp);
+//   run_bench(container0, input_vec, batch_size, n_exp, rm_time );
+     run_bench(container5, input_vec, batch_size, n_exp, rm_time );
 //   run_bench(container6, input_vec, batch_size, n_exp);
 
    return EXIT_SUCCESS;

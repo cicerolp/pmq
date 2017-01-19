@@ -16,6 +16,7 @@ public:
 
    // update container
    virtual duration_t insert(std::vector<elttype> batch) = 0;
+   // Only for GeoHash
 //   virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed );
 
    // apply function for every el<valuetype>

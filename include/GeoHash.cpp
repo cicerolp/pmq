@@ -42,6 +42,27 @@ duration_t GeoHash::insert(std::vector<elttype> batch) {
    return {duration_info("Insert", timer)};
 }
 
+duration_t GeoHash::insert_rm(std::vector<elttype> batch,  std::function< int (const void*) > is_removed) {
+   Timer timer;
+
+   if (_pma == nullptr) { return {duration_info("Error", timer)}; }
+
+   // insert start
+   timer.start();
+
+   std::sort(batch.begin(), batch.end());
+
+   void* begin = (void *)(&batch[0]);
+   void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
+
+   pma::batch::add_rm_array_elts(_pma, begin, end, comp<uint64_t>, is_removed);
+
+   // insert end
+   timer.stop();
+
+   return {duration_info("Insert RM", timer)};
+}
+
 duration_t GeoHash::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
 
