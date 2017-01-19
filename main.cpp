@@ -20,6 +20,8 @@
 uint32_t g_Quadtree_Depth = 25;
 
 int main(int argc, char* argv[]) {
+   freopen("out.txt", "w", stdout);
+
    cimg_usage("command line arguments");
 
    bool server(cimg_option("-server", true, "program arg: enable server"));

@@ -30,28 +30,23 @@ public:
 protected:
 #define PMA_ELT(x) ((*(uint64_t*)x))
 
-   inline bool find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg, uint32_t& offset) const;
+   inline pma_offset_it find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg) const;
 
-   inline virtual bool search_pma(const spatial_t& el, pma_seg_it& seg) const {
-      uint32_t offset;
-      return search_pma(el, seg, offset);
-   }
-
-   virtual bool search_pma(const spatial_t& el, pma_seg_it& seg, uint32_t& offset) const = 0;
+   virtual pma_offset_it search_pma(const spatial_t& el, pma_seg_it& seg) const = 0;
 
    // apply function for every el<valuetype>
-   void scan_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, scantype_function __apply);
+   void scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply);
 
    // apply function for every spatial area/region
    void apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
 
-   void apply_pma_at_region(const spatial_t& el, uint32_t& seg, const region_t& region, applytype_function __apply);
+   void apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
 
    //void topk_pma_search()
 
    uint32_t count_pma(const spatial_t& el, pma_seg_it& seg) const;
 
-   void scan_pma(const spatial_t& el, uint32_t& seg, scantype_function _apply) const;
+   void scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _apply) const;
 
    inline spatial_t get_parent_quadrant(const region_t& region) const;
 
@@ -63,19 +58,18 @@ protected:
    pma_struct* _pma{nullptr};
 };
 
-inline bool GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg, uint32_t& offset) const {
-   /*if (seg >= _pma->nb_segments) return false;
-
+pma_offset_it GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg) const {
    auto begin = pma_offset_it::begin(_pma, seg);
    auto end = pma_offset_it::end(_pma, seg);
 
-   auto it = std::lower_bound(begin, end, code_min, [](void* elt, uint64_t value) {
-                                 return PMA_ELT(elt) < value;
-                              });
+   auto it = std::lower_bound(begin, end, code_min,
+                           [](void* elt, uint64_t value) {
+                              return PMA_ELT(elt) < value;
+                           });
 
-   return PMA_ELT(*it) <= code_max;*/
-
-   return true;
+   if (it == end) return it;
+   else if (PMA_ELT(*it) <= code_max) return it;
+   else return end;
 }
 
 inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
@@ -122,7 +116,7 @@ public:
    }
 
 protected:
-   bool search_pma(const spatial_t& el, pma_seg_it& seg, uint32_t& offset) const override final;
+   pma_offset_it search_pma(const spatial_t& el, pma_seg_it& seg) const override final;
 };
 
 class GeoHashBinary : public GeoHash {
@@ -138,5 +132,5 @@ public:
    }
 
 protected:
-   bool search_pma(const spatial_t& el, pma_seg_it& seg, uint32_t& offset) const override final;
+   pma_offset_it search_pma(const spatial_t& el, pma_seg_it& seg) const override final;
 };

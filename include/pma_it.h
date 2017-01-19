@@ -106,109 +106,11 @@ protected:
 };
 */
 
-class pma_offset_it {
-public:
-   typedef std::ptrdiff_t difference_type;
-   typedef void* value_type;
-   typedef void* reference;
-   typedef void* pointer;
-   typedef uint64_t size_type;
-   typedef std::forward_iterator_tag iterator_category;
-
-   static pma_offset_it begin(pma_struct* pma, size_t seg) {
-      return pma_offset_it(pma, seg);
-   }
-
-   static pma_offset_it end(pma_struct* pma, size_t seg) {
-      return pma_offset_it(pma, seg) += pma->elts[seg];
-
-   }
-
-   pma_offset_it(pma_struct* pma, size_t seg) : _pma(pma), _seg(seg) {
-      _offset = 0;
-   }
-
-   pma_offset_it(const pma_offset_it&) = default;
-
-   ~pma_offset_it() = default;
-
-   pma_offset_it& operator=(const pma_offset_it&) = default;
-
-   bool operator==(const pma_offset_it& other) const {
-      return _seg == other._seg && _offset == other._offset;
-   }
-
-   bool operator!=(const pma_offset_it& other) const {
-      return _seg != other._seg || _offset != other._offset;
-   };
-
-   bool operator<(const pma_offset_it& other) const {
-      return _seg == other._seg && _offset < other._offset;
-   }
-
-   bool operator>(const pma_offset_it& other) const {
-      return _seg == other._seg && _offset > other._offset;
-   }
-
-   bool operator<=(const pma_offset_it& other) const {
-      return _seg == other._seg && _offset <= other._offset;
-   }
-
-   bool operator>=(const pma_offset_it& other) const {
-      return _seg == other._seg && _offset >= other._offset;
-   }
-
-   pma_offset_it& operator++() {
-      if (_offset <= _pma->elts[_seg]) {
-         ++_offset;
-      }
-      return *this;
-   }
-
-   pma_offset_it operator++(int) {
-      pma_offset_it old(*this);
-      operator++();
-      return old;
-   }
-
-   pma_offset_it& operator+=(size_type value) {
-      if (_offset < _pma->elts[_seg]) {
-         _offset = std::min((size_type)_pma->elts[_seg], _offset + value);
-      }
-      return *this;
-   }
-
-   //pma_offset_it operator+(size_type) const; //optional
-   //friend pma_offset_it operator+(size_type, const pma_offset_it&); //optional
-
-   difference_type operator-(const pma_offset_it& other) const {
-      return (difference_type)std::abs((int64_t)_offset - (int64_t)other._offset);
-   }
-
-   reference operator*() const {
-      if (_offset < _pma->elts[_seg]) {
-         return SEGMENT_ELT(_pma, _seg, _offset);
-      } else {
-         return nullptr;
-      }
-   }
-
-   pointer operator->() const {
-      if (_offset < _pma->elts[_seg]) {
-         return SEGMENT_ELT(_pma, _seg, _offset);
-      } else {
-         return nullptr;
-      }
-   }
-
-protected:
-   size_type _seg;
-   pma_struct* _pma;
-   size_type _offset;
-};
 
 class pma_seg_it {
 public:
+   friend class pma_offset_it;
+
    typedef std::ptrdiff_t difference_type;
    typedef void* value_type;
    typedef void* reference;
@@ -319,7 +221,125 @@ public:
       }
    }
 
+   size_type size() const {
+      if (_seg < _pma->nb_segments) {
+         return _pma->elts[_seg];
+      } else {
+         return 0;
+      }
+   }
+
 protected:
    size_type _seg;
    pma_struct* _pma;
+};
+
+class pma_offset_it {
+public:
+   typedef std::ptrdiff_t difference_type;
+   typedef void* value_type;
+   typedef void* reference;
+   typedef void* pointer;
+   typedef uint64_t size_type;
+   typedef std::forward_iterator_tag iterator_category;
+
+   static pma_offset_it begin(pma_struct* pma, const pma_seg_it& it) {
+      return pma_offset_it(pma, it._seg);
+   }
+
+   static pma_offset_it begin(pma_struct* pma, size_t seg) {
+      return pma_offset_it(pma, seg);
+   }
+
+   static pma_offset_it end(pma_struct* pma, size_t seg) {
+      return pma_offset_it(pma, seg) += pma->elts[seg];
+   }
+
+   static pma_offset_it end(pma_struct* pma, const pma_seg_it& it) {
+      return pma_offset_it(pma, it._seg) += pma->elts[it._seg];
+   }
+
+   pma_offset_it() : _pma(nullptr), _seg(0), _offset(0) {}
+
+   pma_offset_it(pma_struct* pma, size_t seg) : _pma(pma), _seg(seg), _offset(0) {}
+
+   pma_offset_it(const pma_offset_it&) = default;
+
+   ~pma_offset_it() = default;
+
+   pma_offset_it& operator=(const pma_offset_it&) = default;
+
+   bool operator==(const pma_offset_it& other) const {
+      return _seg == other._seg && _offset == other._offset;
+   }
+
+   bool operator!=(const pma_offset_it& other) const {
+      return _seg != other._seg || _offset != other._offset;
+   };
+
+   bool operator<(const pma_offset_it& other) const {
+      return _seg == other._seg && _offset < other._offset;
+   }
+
+   bool operator>(const pma_offset_it& other) const {
+      return _seg == other._seg && _offset > other._offset;
+   }
+
+   bool operator<=(const pma_offset_it& other) const {
+      return _seg == other._seg && _offset <= other._offset;
+   }
+
+   bool operator>=(const pma_offset_it& other) const {
+      return _seg == other._seg && _offset >= other._offset;
+   }
+
+   pma_offset_it& operator++() {
+      if (_offset <= _pma->elts[_seg]) {
+         ++_offset;
+      }
+      return *this;
+   }
+
+   pma_offset_it operator++(int) {
+      pma_offset_it old(*this);
+      operator++();
+      return old;
+   }
+
+   pma_offset_it& operator+=(size_type value) {
+      if (_offset < _pma->elts[_seg]) {
+         _offset = std::min((size_type)_pma->elts[_seg], _offset + value);
+      }
+      return *this;
+   }
+
+   //pma_offset_it operator+(size_type) const; //optional
+   //friend pma_offset_it operator+(size_type, const pma_offset_it&); //optional
+
+   difference_type operator-(const pma_offset_it& other) const {
+      return (difference_type)std::abs((int64_t)_offset - (int64_t)other._offset);
+   }
+
+   reference operator*() const {
+      if (_offset < _pma->elts[_seg]) {
+         return SEGMENT_ELT(_pma, _seg, _offset);
+      }
+      else {
+         return nullptr;
+      }
+   }
+
+   pointer operator->() const {
+      if (_offset < _pma->elts[_seg]) {
+         return SEGMENT_ELT(_pma, _seg, _offset);
+      }
+      else {
+         return nullptr;
+      }
+   }
+
+protected:
+   size_type _seg;
+   pma_struct* _pma;
+   size_type _offset;
 };
