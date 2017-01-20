@@ -157,16 +157,27 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
    uint32_t count = 0;
    auto prev_seg = seg;
 
-   while (seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= code_max) {
+   do {
       count += seg.size();
-      ++seg;
-   }
-
-   if (prev_seg == seg) count += prev_seg.size();
+   } while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= code_max);
 
    assert(count != 0);
 
    pma_offset_it off_begin, off_end;
+
+   if (seg != pma_seg_it::end(_pma)) {
+      count += seg.size();
+
+      //subtract extra elements for last segment
+      off_end = pma_offset_it::end(_pma, seg);
+      off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), code_max + 1,
+                                   [](void* elt, uint64_t value) {
+                                      return PMA_ELT(elt) < value;
+                                   });
+      count -= seg.size() - (off_end - off_begin);
+
+      assert(count != 0);
+   }
 
    //subtract extra elements for first segment
    off_begin = pma_offset_it::begin(_pma, prev_seg);
@@ -174,17 +185,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
                               [](void* elt, uint64_t value) {
                                  return PMA_ELT(elt) < value;
                               });
-   count -= off_end - off_begin;
-
-   assert(count != 0);
-
-   //subtract extra elements for last segment
-   off_end = pma_offset_it::end(_pma, seg);
-   off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), code_max + 1,
-                              [](void* elt, uint64_t value) {
-                                 return PMA_ELT(elt) < value;
-                              });
-   count -= seg.size() - (off_end - off_begin);
+   count -= (off_end - off_begin);
 
    assert(count != 0);
 
@@ -210,7 +211,7 @@ void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _
          ++off_it;
       }
       ++seg;
-   }   
+   }
 }
 
 pma_offset_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg) const {
