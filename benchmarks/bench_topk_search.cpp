@@ -98,25 +98,18 @@ void run_bench(container_t& container, const std::vector<elttype>& input, const 
 
    region_t region(0, 0, 1, 100);
 
-   std::cout << region.lat << std::endl;
-   std::cout << region.lon << std::endl;
-   std::cout << region.z << std::endl;
-
-   std::cout << region.x0 << std::endl;
-   std::cout << region.x1 << std::endl;
-
-   std::cout << region.y0 << std::endl;
-   std::cout << region.y1 << std::endl;
-
    std::vector<valuetype> output;
 
-   float alpha = 0.5;
-   uint64_t now = 0;
-   uint64_t time = 1000;
+   topk_t topk_info;
+   topk_info.alpha = 0.5;
+   topk_info.k = 100;
+   topk_info.now = 10000000;   
+   topk_info.time = 10000000;
+   topk_info.distance = 100;
 
-   container.topk_search(region, output, alpha, now, time);
+   container.topk_search(region, topk_info, output);
 
-   std::cout << output.size() << std::endl;
+   std::cout << output.size() << std::endl;   
 }
 
 void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec) {
@@ -188,7 +181,7 @@ int main(int argc, char* argv[]) {
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
-      input = input::dist_random(nb_elements, seed, 100);
+      input = input::dist_random(nb_elements, seed, batch_size);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input.size());
    }
 

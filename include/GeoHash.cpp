@@ -29,7 +29,8 @@ duration_t GeoHash::insert(std::vector<elttype> batch) {
    // insert start
    timer.start();
 
-   std::sort(batch.begin(), batch.end());
+   gfx::timsort(batch.begin(), batch.end());
+   //std::sort(batch.begin(), batch.end());
 
    void* begin = (void *)(&batch[0]);
    void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));
@@ -87,12 +88,59 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
    return {duration_info("apply_at_region", timer)};
 }
 
-duration_t GeoHash::topk_search(const region_t& region, std::vector<valuetype>& output, float alpha, uint64_t now, uint64_t time) {
+duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std::vector<valuetype>& output) {
    Timer timer;
 
-   if (_pma == nullptr || region.z != 25) { return {duration_info("topk_search", timer)}; }
+   if (_pma == nullptr) { return {duration_info("topk_search", timer)}; }
 
    timer.start();
+
+   std::vector<topk_elt> container;
+
+   scantype_function __apply = std::bind(
+      [](const region_t& region, const topk_t& topk, std::vector<topk_elt>& container, const valuetype& el) {
+         static const float PI_180_INV = 180.0f / (float)M_PI;
+         static const float PI_180 = (float)M_PI / 180.0f;
+         static const float r_earth = 6378.f;
+
+         float d_lat = (el.latitude - region.lat) * PI_180;
+         float d_lon = (el.longitude - region.lon) * PI_180;
+
+         float a = std::sin(d_lat / 2.0f) * std::sin(d_lat / 2.0f) +
+            std::cos(region.lat * PI_180) * std::cos(el.latitude * PI_180) *
+            std::sin(d_lon / 2.0f) * std::sin(d_lon / 2);
+
+         float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
+
+         float spatial_score = (r_earth * c) / float(topk.distance);
+
+         if (spatial_score > 1.f) return;
+
+         float temporal_score;
+         if (topk.now - el.time > topk.time) {
+            return;
+         } else {
+            temporal_score = (topk.now - el.time) / float(topk.time);
+         }
+
+         float score = (topk.alpha * spatial_score) + ((1.f - topk.alpha) * temporal_score);
+
+         container.emplace_back(el, score);
+
+      }, std::ref(region), std::ref(topk), std::ref(container), std::placeholders::_1);
+
+   auto curr_seg = pma_seg_it::begin(_pma);
+   scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
+
+   gfx::timsort(container.begin(), container.end(),
+                [](const topk_elt& lhs, const topk_elt& rhs) {
+                   return lhs.score < rhs.score;
+                });
+
+   size_t size = std::min(container.size(), (size_t)topk.k);
+   output.resize(size);
+
+   std::copy(container.begin(), container.begin() + size, output.begin());
 
    timer.stop();
 
@@ -100,7 +148,7 @@ duration_t GeoHash::topk_search(const region_t& region, std::vector<valuetype>& 
 }
 
 void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply) {
-   if (search_pma(el, seg) == pma_offset_it::end(_pma, seg)) return;
+   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
 
    if (region.cover(el)) {
       scan_pma(el, seg, __apply);
@@ -117,7 +165,7 @@ void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const reg
 }
 
 void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (search_pma(el, seg) == pma_offset_it::end(_pma, seg)) return;
+   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
 
    if ((el.z < 25) && ((int)el.z - (int)region.z) < 8) {
       // break morton code into four
@@ -134,7 +182,7 @@ void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const regi
 }
 
 void GeoHash::apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (search_pma(el, seg) == pma_offset_it::end(_pma, seg)) return;
+   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
 
    if (region.cover(el)) {
       __apply(el, count_pma(el, seg));
@@ -214,7 +262,7 @@ void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _
    }
 }
 
-pma_offset_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg) const {
+pma_seg_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg) const {
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
@@ -227,10 +275,10 @@ pma_offset_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg
 
    if (seg != end) return find_elt_pma(code_min, code_max, seg);
 
-   return pma_offset_it::end(_pma, seg);
+   return end;
 }
 
-pma_offset_it GeoHashBinary::search_pma(const spatial_t& el, pma_seg_it& seg) const {
+pma_seg_it GeoHashBinary::search_pma(const spatial_t& el, pma_seg_it& seg) const {
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
@@ -248,5 +296,5 @@ pma_offset_it GeoHashBinary::search_pma(const spatial_t& el, pma_seg_it& seg) co
 
    if (seg != end) return find_elt_pma(code_min, code_max, seg);
 
-   return pma_offset_it::end(_pma, seg);
+   return end;
 }
