@@ -234,6 +234,11 @@ pma_offset_it GeoHashBinary::search_pma(const spatial_t& el, pma_seg_it& seg) co
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
+   // current segment
+   if (PMA_ELT(*seg) >= code_min) {
+      return find_elt_pma(code_min, code_max, seg);
+   }
+
    auto end = pma_seg_it::end(_pma);
 
    seg = std::lower_bound(seg, end, code_min,

@@ -18,7 +18,7 @@ public:
 
    pma_seg_it(pma_struct* pma) : _pma(pma) {
       _seg = 0;
-      //while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;
+      while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;
    }
 
    pma_seg_it(const pma_seg_it&) = default;
@@ -53,7 +53,7 @@ public:
 
    pma_seg_it& operator++() {
       ++_seg;
-      //while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;
+      while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;
       return *this;
    }
 
@@ -65,7 +65,7 @@ public:
 
    pma_seg_it& operator+=(size_type value) {
       _seg += value;
-      //while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;    
+      while (_seg < _pma->nb_segments && _pma->elts[_seg] == 0) ++_seg;    
       return *this;
    }
 
@@ -73,12 +73,12 @@ public:
    //friend pma_seg_it operator+(size_type, const pma_seg_it&); //optional
 
    difference_type operator-(const pma_seg_it& other) const {
-      return _seg - other._seg;
-      /*difference_type diff = 0;
+      //return _seg - other._seg;
+      difference_type diff = 0;
       for (size_type it = other._seg; it < _seg; ++it) {
          if (_pma->elts[it] != 0) diff++;
       }
-      return diff;*/
+      return diff;
    }
 
    reference operator*() const {
