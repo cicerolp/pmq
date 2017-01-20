@@ -96,20 +96,28 @@ void run_bench(container_t& container, const std::vector<elttype>& input, const 
       //run_queries(container, queries[id], id, n_exp);
    }
 
-   region_t region(0, 0, 1, 100);
+   region_t region(1013, 1541, 1098, 1634, 12);
+   //region_t region(0, 0, 1, 100);
 
    std::vector<valuetype> output;
 
    topk_t topk_info;
    topk_info.alpha = 0.5;
    topk_info.k = 100;
-   topk_info.now = 10000000;   
-   topk_info.time = 10000000;
-   topk_info.distance = 100;
+   topk_info.now = 14849362950;
+   topk_info.time = 14849362950;
+   topk_info.distance = 1000;
 
    container.topk_search(region, topk_info, output);
 
+   uint32_t count = 0;
+   applytype_function _apply = std::bind(count_element, std::ref(count),
+      std::placeholders::_1, std::placeholders::_2);
+
+   container.apply_at_region(region, _apply);
+
    std::cout << output.size() << std::endl;   
+   std::cout << count << std::endl;
 }
 
 void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec) {

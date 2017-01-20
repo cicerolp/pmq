@@ -29,8 +29,8 @@ duration_t GeoHash::insert(std::vector<elttype> batch) {
    // insert start
    timer.start();
 
-   gfx::timsort(batch.begin(), batch.end());
-   //std::sort(batch.begin(), batch.end());
+   //gfx::timsort(batch.begin(), batch.end());
+   std::sort(batch.begin(), batch.end());
 
    void* begin = (void *)(&batch[0]);
    void* end = (void *)((char *)(&batch[0]) + (batch.size()) * sizeof(elttype));

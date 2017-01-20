@@ -46,6 +46,7 @@ struct region_t {
       static const double PI_180 = M_PI / 180.0;
       static const double r_earth = 6378;
 
+      // temporary bb center
       lon = mercator_util::tilex2lon(_x + 0.5, _z);
       lat = mercator_util::tiley2lat(_y + 0.5, _z);
 
@@ -64,6 +65,10 @@ struct region_t {
 
       code0 = mortonEncode_RAM(x0, y0);
       code1 = mortonEncode_RAM(x1, y1);
+
+      // final bb center
+      lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
+      lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
    }
 
    region_t(uint64_t _code0, uint64_t _code1, uint8_t _z) {
@@ -75,8 +80,8 @@ struct region_t {
       mortonDecode_RAM(code0, x0, y0);
       mortonDecode_RAM(code1, x1, y1);
 
-      lon = mercator_util::tilex2lon((x1 - x0) + 0.5, z);
-      lat = mercator_util::tiley2lat((y1 - y0) + 0.5, z);
+      lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
+      lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
    }
 
    region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
@@ -90,8 +95,8 @@ struct region_t {
       code0 = mortonEncode_RAM(x0, y0);
       code1 = mortonEncode_RAM(x1, y1);
 
-      lon = mercator_util::tilex2lon((x1 - x0) + 0.5, z);
-      lat = mercator_util::tiley2lat((y1 - y0) + 0.5, z);
+      lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
+      lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
    }
 
    friend inline std::ostream& operator<<(std::ostream& out, const region_t& e) {
@@ -170,17 +175,27 @@ struct topk_elt {
 };
 
 struct topk_cnt {
-   float worst_score {0.f};
+   uint32_t count {0};
+   float worst_score {0.f}, batch_score{0.f};
    std::vector<topk_elt> ctn;
 
    inline void insert(const topk_t& topk, const valuetype& el, float score) {
       if (ctn.size() >= topk.k) {
          if (score <= worst_score) {
             ctn.emplace_back(el, score);
+            batch_score = std::max(batch_score, score);
+
+            ++count;
+            
+            if(count == topk.k) {
+               worst_score = std::min(worst_score, batch_score);
+               batch_score = 0.f;
+               count = 0;
+            }
          }
       } else {
-         worst_score = std::max(worst_score, score);
          ctn.emplace_back(el, score);
+         worst_score = std::max(worst_score, score);
       }
    }
 };
