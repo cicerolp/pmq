@@ -154,7 +154,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
    uint64_t code_min, code_max;
    get_mcode_range(el, code_min, code_max, 25);
 
-   uint32_t count = 0;
+   size_t count = 0;
    auto prev_seg = seg;
 
    do {
@@ -189,7 +189,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
 
    assert(count != 0);
 
-   return count;
+   return (uint32_t)count;
 }
 
 void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _apply) const {
