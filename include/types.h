@@ -41,7 +41,7 @@ struct spatial_t {
 struct region_t {
    region_t() = default;
 
-   region_t(uint32_t _x, uint32_t _y, uint8_t _z, double km) {
+   region_t(uint32_t _x, uint32_t _y, uint8_t _z, double d) {
       static const double PI_180_INV = 180.0 / M_PI;
       static const double PI_180 = M_PI / 180.0;
       static const double r_earth = 6378;
@@ -49,13 +49,11 @@ struct region_t {
       lon = mercator_util::tilex2lon(_x + 0.5, _z);
       lat = mercator_util::tiley2lat(_y + 0.5, _z);
 
-      double distance = km / 2.0;
+      double lat0 = lat + (d / r_earth) * (PI_180_INV);
+      double lon0 = lon - (d / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
 
-      double lat0 = lat + (distance / r_earth) * (PI_180_INV);
-      double lon0 = lon - (distance / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
-
-      double lat1 = lat - (distance / r_earth) * (PI_180_INV);
-      double lon1 = lon + (distance / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+      double lat1 = lat - (d / r_earth) * (PI_180_INV);
+      double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
 
       z = 25;
 
@@ -151,6 +149,23 @@ struct tweet_t {
 };
 
 using valuetype = tweet_t;
+
+struct topk_t {
+   float alpha;
+   uint32_t k;
+   uint32_t now;
+   uint32_t time;
+   uint32_t distance;
+};
+
+struct topk_elt {
+   topk_elt(const valuetype& _elt, float _score) : elt(_elt), score(_score) {}
+
+   operator valuetype() { return elt; }
+
+   float score;
+   valuetype elt;   
+};
 
 struct elttype {
    uint64_t key;

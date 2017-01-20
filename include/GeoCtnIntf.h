@@ -27,7 +27,7 @@ public:
 
    virtual duration_t apply_at_region(const region_t& region, applytype_function __apply) = 0;
 
-   virtual duration_t topk_search(const region_t& region, std::vector<valuetype>& output, float alpha, uint64_t now, uint64_t time) {
+   virtual duration_t topk_search(const region_t& region, const topk_t& topk, std::vector<valuetype>& output) {
       return duration_t();
    };
 
