@@ -161,10 +161,28 @@ struct topk_t {
 struct topk_elt {
    topk_elt(const valuetype& _elt, float _score) : elt(_elt), score(_score) {}
 
-   operator valuetype() { return elt; }
+   operator valuetype() const {
+      return elt;
+   }
 
    float score;
    valuetype elt;   
+};
+
+struct topk_cnt {
+   float worst_score {0.f};
+   std::vector<topk_elt> ctn;
+
+   inline void insert(const topk_t& topk, const valuetype& el, float score) {
+      if (ctn.size() >= topk.k) {
+         if (score <= worst_score) {
+            ctn.emplace_back(el, score);
+         }
+      } else {
+         worst_score = std::max(worst_score, score);
+         ctn.emplace_back(el, score);
+      }
+   }
 };
 
 struct elttype {

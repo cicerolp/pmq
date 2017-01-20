@@ -122,10 +122,13 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
 
    timer.start();
 
-   std::vector<topk_elt> container;
+   // store intermediate results
+   topk_cnt container;
 
+   // ranking function
    scantype_function __apply = std::bind(
-      [](const region_t& region, const topk_t& topk, std::vector<topk_elt>& container, const valuetype& el) {
+      [](const region_t& region, const topk_t& topk, topk_cnt& container, const valuetype& el) {
+         // spatial distance
          static const float PI_180_INV = 180.0f / (float)M_PI;
          static const float PI_180 = (float)M_PI / 180.0f;
          static const float r_earth = 6378.f;
@@ -143,6 +146,7 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
 
          if (spatial_score > 1.f) return;
 
+         // temporal distance
          float temporal_score;
          if (topk.now - el.time > topk.time) {
             return;
@@ -150,24 +154,27 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
             temporal_score = (topk.now - el.time) / float(topk.time);
          }
 
+         // ranking score
          float score = (topk.alpha * spatial_score) + ((1.f - topk.alpha) * temporal_score);
 
-         container.emplace_back(el, score);
+         container.insert(topk, el, score);
 
       }, std::ref(region), std::ref(topk), std::ref(container), std::placeholders::_1);
 
    auto curr_seg = pma_seg_it::begin(_pma);
    scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
 
-   gfx::timsort(container.begin(), container.end(),
+   // sort elements by score
+   gfx::timsort(container.ctn.begin(), container.ctn.end(),
                 [](const topk_elt& lhs, const topk_elt& rhs) {
                    return lhs.score < rhs.score;
                 });
 
-   size_t size = std::min(container.size(), (size_t)topk.k);
+   size_t size = std::min(container.ctn.size(), (size_t)topk.k);
    output.resize(size);
 
-   std::copy(container.begin(), container.begin() + size, output.begin());
+   // copy to output vector
+   std::copy(container.ctn.begin(), container.ctn.begin() + size, output.begin());
 
    timer.stop();
 
@@ -303,11 +310,6 @@ void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _
 
 /**
  * @brief GeoHashSequential::search_pma
- * @param el
- * @param seg
- * @param offset
- * @return
- *
  * Sequential search on the pma.
  */
 pma_seg_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg) const {
