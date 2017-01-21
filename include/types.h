@@ -56,7 +56,7 @@ struct region_t {
       double lat1 = lat - (d / r_earth) * (PI_180_INV);
       double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
 
-      z = 25;
+      z = std::min(25, _z + 8);
 
       x0 = mercator_util::lon2tilex(lon0, z);
       y0 = mercator_util::lat2tiley(lat0, z);
@@ -157,44 +157,89 @@ using valuetype = tweet_t;
 
 struct topk_t {
    float alpha;
+   float distance;
    uint32_t k;
-   uint32_t now;
-   uint32_t time;
-   uint32_t distance;
+   uint64_t now;
+   uint64_t time;
 };
 
 struct topk_elt {
-   topk_elt(const valuetype& _elt, float _score) : elt(_elt), score(_score) {}
+   topk_elt(const valuetype& _elt, float _score) : elt(_elt), score(_score) {
+   }
 
    operator valuetype() const {
       return elt;
    }
 
    float score;
-   valuetype elt;   
+   valuetype elt;
 };
 
 struct topk_cnt {
-   uint32_t count {0};
-   float worst_score {0.f}, batch_score{0.f};
-   std::vector<topk_elt> ctn;
+private:
+   float worst_score{0.f};
+   std::vector<topk_elt> buffer1, buffer2;;
 
-   inline void insert(const topk_t& topk, const valuetype& el, float score) {
-      if (ctn.size() >= topk.k) {
-         if (score <= worst_score) {
-            ctn.emplace_back(el, score);
-            batch_score = std::max(batch_score, score);
+   inline void shrink_buffers(const topk_t& topk) {
+      // insert buffer2 into buffer1
+      buffer1.insert(buffer1.end(), buffer2.begin(), buffer2.end());
 
-            ++count;
-            
-            if(count == topk.k) {
-               worst_score = std::min(worst_score, batch_score);
-               batch_score = 0.f;
-               count = 0;
+      // clear
+      buffer2.clear();
+
+      // sort buffer1
+      // sort elements by score
+      gfx::timsort(buffer1.begin(), buffer1.end(),
+         [](const topk_elt& lhs, const topk_elt& rhs) {
+         return lhs.score < rhs.score;
+      });
+
+      // remove elements out of topk
+      buffer1.erase(buffer1.begin() + topk.k, buffer1.end());
+
+      // sets worst_score to biggest score
+      worst_score = buffer1.back().score;
+   }
+
+public:
+   topk_cnt(const topk_t& topk) {
+      buffer2.reserve(topk.k);
+      buffer1.reserve(topk.k * 2);      
+   }
+
+   inline std::vector<valuetype> get_output(const topk_t& topk) {
+      if (buffer2.size() != 0)
+         shrink_buffers(topk);
+
+      std::vector<valuetype> output;
+      output.reserve(topk.k);
+
+      output.insert(output.begin(), buffer1.begin(), buffer1.end());
+
+      return output;
+   }
+
+   inline void insert(topk_t& topk, const valuetype& el, float score) {
+      if (buffer1.size() >= topk.k) {
+         if (score <= worst_score) {            
+            buffer2.emplace_back(el, score);
+
+            if (buffer2.size() == topk.k) {
+               shrink_buffers(topk);
+
+               // spatial boundary tightening
+               if (worst_score < topk.alpha) {
+                  topk.distance = (worst_score / topk.alpha) * topk.distance;
+               }
+
+               // temporal boundary tightening
+               if (worst_score < (1.f - topk.alpha)) {
+                  topk.time = (uint64_t)((worst_score / (1.f - topk.alpha)) * topk.time);
+               }
             }
          }
       } else {
-         ctn.emplace_back(el, score);
+         buffer1.emplace_back(el, score);
          worst_score = std::max(worst_score, score);
       }
    }

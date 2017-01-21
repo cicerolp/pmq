@@ -98,26 +98,36 @@ void run_bench(container_t& container, const std::vector<elttype>& input, const 
 
    region_t region(1013, 1541, 1098, 1634, 12);
    //region_t region(0, 0, 1, 100);
-
    std::vector<valuetype> output;
 
-   topk_t topk_info;
-   topk_info.alpha = 0.5;
-   topk_info.k = 100;
-   topk_info.now = 14849362950;
-   topk_info.time = 14849362950;
-   topk_info.distance = 1000;
+   topk_t topk_info;  
 
-   container.topk_search(region, topk_info, output);
+   while (n_exp-- != 0) {
+      topk_info.alpha = 0.2f;
+      topk_info.k = 100;
+      topk_info.now = 14849362950;
+      topk_info.time = 14849362950;
+      topk_info.distance = 1000;
 
-   uint32_t count = 0;
-   applytype_function _apply = std::bind(count_element, std::ref(count),
-      std::placeholders::_1, std::placeholders::_2);
+      duration_t time = container.topk_search(region, topk_info, output);
 
-   container.apply_at_region(region, _apply);
+      std::cout << time[0].name << std::endl;
+      std::cout << time[0].duration << std::endl;
+      std::cout << output.size() << std::endl;
 
-   std::cout << output.size() << std::endl;   
-   std::cout << count << std::endl;
+      /*uint32_t count = 0;
+      applytype_function _apply = std::bind(count_element, std::ref(count),
+         std::placeholders::_1, std::placeholders::_2);
+
+      time = container.apply_at_region(region, _apply);
+
+      std::cout << time[0].name << std::endl;
+      std::cout << time[0].duration << std::endl;
+      std::cout << count << std::endl;*/
+   }
+
+   
+   //region_t region(0, 0, 1, 100);
 }
 
 void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec) {
@@ -168,10 +178,10 @@ int main(int argc, char* argv[]) {
    cimg_usage("Queries Benchmark inserts elements in batches.");
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
-   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
-   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
+   const int batch_size(cimg_option("-b", 1000000, "Batch size used in batched insertions"));
+   std::string fname(cimg_option("-f", "C:/Users/cicer/Desktop/projects/twittervis/data/tweet10_6.dat", "file with tweets"));
    std::string bench_file(cimg_option("-bf", "./data/log.csv", "file with logs"));
-   const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
+   const unsigned int n_exp(cimg_option("-x", 1000000, "Number of repetitions of each experiment"));
 
    GeoHashSequential container5(argc, argv);
    GeoHashBinary container6(argc, argv);

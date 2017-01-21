@@ -24,7 +24,7 @@ public:
 
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
-   duration_t topk_search(const region_t& region, const topk_t& topk, std::vector<valuetype>& output) override;
+   duration_t topk_search(const region_t& region, topk_t& topk, std::vector<valuetype>& output) override;
 
    inline virtual std::string name() const = 0;
 
@@ -60,7 +60,18 @@ protected:
 };
 
 pma_seg_it GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg) const {
-   auto begin = pma_offset_it::begin(_pma, seg);
+   auto it = pma_offset_it::begin(_pma, seg);
+   auto end = pma_offset_it::end(_pma, seg);
+
+   while (it != end) {
+      if (PMA_ELT(*it) > code_max) return pma_seg_it::end(_pma);
+      else if (PMA_ELT(*it) >= code_min) return seg;
+      ++it;
+   }
+
+   return pma_seg_it::end(_pma);
+   
+   /*auto begin = pma_offset_it::begin(_pma, seg);
    auto end = pma_offset_it::end(_pma, seg);
 
    auto it = std::lower_bound(begin, end, code_min,
@@ -70,7 +81,7 @@ pma_seg_it GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_ma
 
    if (it == end) return pma_seg_it::end(_pma);
    else if (PMA_ELT(*it) <= code_max) return seg;
-   else return pma_seg_it::end(_pma);
+   else return pma_seg_it::end(_pma);*/
 }
 
 /**

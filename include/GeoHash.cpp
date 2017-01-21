@@ -115,7 +115,7 @@ duration_t GeoHash::apply_at_region(const region_t& region, applytype_function _
    return {duration_info("apply_at_region", timer)};
 }
 
-duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std::vector<valuetype>& output) {
+duration_t GeoHash::topk_search(const region_t& region, topk_t& topk, std::vector<valuetype>& output) {
    Timer timer;
 
    if (_pma == nullptr) { return {duration_info("topk_search", timer)}; }
@@ -123,12 +123,21 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
    timer.start();
 
    // store intermediate results
-   topk_cnt container;
+   topk_cnt container(topk);
 
    // ranking function
    scantype_function __apply = std::bind(
-      [](const region_t& region, const topk_t& topk, topk_cnt& container, const valuetype& el) {
-         // spatial distance
+      [](const region_t& region, topk_t& topk, topk_cnt& container, const valuetype& el) {
+         // temporal ranking
+         uint64_t temporal_distance = topk.now - el.time;
+
+         // element is out of region
+         if (temporal_distance > topk.time) return;
+
+         // temporal score
+         float temporal_score = (float)(temporal_distance / topk.time);
+
+         // spatial ranking
          static const float PI_180_INV = 180.0f / (float)M_PI;
          static const float PI_180 = (float)M_PI / 180.0f;
          static const float r_earth = 6378.f;
@@ -142,17 +151,13 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
 
          float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
 
-         float spatial_score = (r_earth * c) / float(topk.distance);
+         float spatial_distance = (r_earth * c);
 
-         if (spatial_score > 1.f) return;
+         // element is out of time window
+         if (spatial_distance > topk.distance) return;
 
-         // temporal distance
-         float temporal_score;
-         if (topk.now - el.time > topk.time) {
-            return;
-         } else {
-            temporal_score = (topk.now - el.time) / float(topk.time);
-         }
+         // spatial score
+         float spatial_score = spatial_distance / topk.distance;
 
          // ranking score
          float score = (topk.alpha * spatial_score) + ((1.f - topk.alpha) * temporal_score);
@@ -164,17 +169,7 @@ duration_t GeoHash::topk_search(const region_t& region, const topk_t& topk, std:
    auto curr_seg = pma_seg_it::begin(_pma);
    scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
 
-   // sort elements by score
-   gfx::timsort(container.ctn.begin(), container.ctn.end(),
-                [](const topk_elt& lhs, const topk_elt& rhs) {
-                   return lhs.score < rhs.score;
-                });
-
-   size_t size = std::min(container.ctn.size(), (size_t)topk.k);
-   output.resize(size);
-
-   // copy to output vector
-   std::copy(container.ctn.begin(), container.ctn.begin() + size, output.begin());
+   output = container.get_output(topk);
 
    timer.stop();
 
