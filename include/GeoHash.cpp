@@ -154,10 +154,10 @@ duration_t GeoHash::topk_search(const region_t& region, topk_t& topk, std::vecto
          float spatial_distance = (r_earth * c);
 
          // element is out of time window
-         if (spatial_distance > topk.distance) return;
+         if (spatial_distance > topk.radius) return;
 
          // spatial score
-         float spatial_score = spatial_distance / topk.distance;
+         float spatial_score = spatial_distance / topk.radius;
 
          // ranking score
          float score = (topk.alpha * spatial_score) + ((1.f - topk.alpha) * temporal_score);

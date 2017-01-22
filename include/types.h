@@ -41,6 +41,31 @@ struct spatial_t {
 struct region_t {
    region_t() = default;
 
+   region_t(float _lat, float _lon, float radius) {
+      static const float PI_180_INV = 180.f / (float)M_PI;
+      static const float PI_180 = (float)M_PI / 180.f;
+      static const float r_earth = 6378.f;
+
+      lon = _lon;
+      lat = _lat;
+
+      float lat0 = lat + (radius / r_earth) * (PI_180_INV);
+      float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
+
+      float lat1 = lat - (radius / r_earth) * (PI_180_INV);
+      float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+
+      z = 8;
+
+      x0 = mercator_util::lon2tilex(lon0, z);
+      y0 = mercator_util::lat2tiley(lat0, z);
+      x1 = mercator_util::lon2tilex(lon1, z);
+      y1 = mercator_util::lat2tiley(lat1, z);
+
+      code0 = mortonEncode_RAM(x0, y0);
+      code1 = mortonEncode_RAM(x1, y1);
+   }
+
    region_t(uint32_t _x, uint32_t _y, uint8_t _z, double d) {
       static const double PI_180_INV = 180.0 / M_PI;
       static const double PI_180 = M_PI / 180.0;
@@ -157,7 +182,7 @@ using valuetype = tweet_t;
 
 struct topk_t {
    float alpha;
-   float distance;
+   float radius;
    uint32_t k;
    uint64_t now;
    uint64_t time;
@@ -229,12 +254,12 @@ public:
 
                // spatial boundary tightening
                if (worst_score < topk.alpha) {
-                  topk.distance = (worst_score / topk.alpha) * topk.distance;
+                  //topk.radius = (worst_score / topk.alpha) * topk.radius;
                }
 
                // temporal boundary tightening
                if (worst_score < (1.f - topk.alpha)) {
-                  topk.time = (uint64_t)((worst_score / (1.f - topk.alpha)) * topk.time);
+                  //topk.time = (uint64_t)((worst_score / (1.f - topk.alpha)) * topk.time);
                }
             }
          }
