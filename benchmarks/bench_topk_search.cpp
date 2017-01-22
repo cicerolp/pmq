@@ -58,6 +58,12 @@ struct bench_t {
 
       return topk_info;
    }
+   void print() {
+      PRINTOUT("k-> enable: %s, default: %d, interval: [%d,%d], increment: %d\n", var_k ? "true" : "false", def_k, min_k, max_k, inc_k);
+      PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);
+      PRINTOUT("t-> enable: %s, default: %lld, interval: [%lld,%lld], increment: %lld\n", var_t ? "true" : "false", def_t, min_t, max_t, inc_t);
+      PRINTOUT("a-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_a ? "true" : "false", def_a, min_a, max_a, inc_a);
+   }
 };
 
 template <typename container_t>
@@ -67,6 +73,10 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
 
    topk_t topk_info;
    std::vector<valuetype> output;
+
+   uint32_t count = 0;
+   applytype_function _apply = std::bind(count_element, std::ref(count),
+      std::placeholders::_1, std::placeholders::_2);
 
    if (parameters.var_k) {
       for (uint32_t k = parameters.min_k; k <= parameters.max_k; k += parameters.inc_k) {
@@ -85,12 +95,9 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            uint32_t count = 0;
-            applytype_function _apply = std::bind(count_element, std::ref(count),
-               std::placeholders::_1, std::placeholders::_2);
+            count = 0;
             container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
 
-            //std::cout << region_t(center.lat, center.lon, topk_info.radius) << std::endl;
             PRINTBENCH("topk_search_k", id, k, output.size(), count, timer.milliseconds(), "ms");
          }
       }
@@ -113,7 +120,10 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_r", id, r, output.size(), timer.milliseconds(), "ms");
+            count = 0;
+            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+
+            PRINTBENCH("topk_search_r", id, r, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -135,7 +145,10 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_t", id, t, output.size(), timer.milliseconds(), "ms");
+            count = 0;
+            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+
+            PRINTBENCH("topk_search_t", id, t, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -157,7 +170,10 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_a", id, a, output.size(), timer.milliseconds(), "ms");
+            count = 0;
+            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+
+            PRINTBENCH("topk_search_a", id, a, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -223,8 +239,8 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
             uint32_t x1 = std::stoi(url[10]);
             uint32_t y1 = std::stoi(url[11]);
 
-            if (x1 >= std::pow(2, zoom)) x1 = std::pow(2, zoom) - 1;
-            if (y1 >= std::pow(2, zoom)) y1 = std::pow(2, zoom) - 1;
+            if (x1 >= std::pow(2, zoom)) x1 = (uint32_t)std::pow(2, zoom) - 1;
+            if (y1 >= std::pow(2, zoom)) y1 = (uint32_t)std::pow(2, zoom) - 1;
 
             if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > "+ std::to_string(x1) +" ]");
             if (y0 > y1) throw std::invalid_argument("[y: " + std::to_string(y0) + " > " + std::to_string(y1) + " ]");
@@ -236,8 +252,6 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
             if (lon < -180.f || lon > 180.f) throw std::invalid_argument("[lon: " + std::to_string(lon) + "]");
             
             queries.emplace_back(lat, lon);
-
-            break;
          }
       } catch (const std::invalid_argument& e) {
          std::cerr << "error: [" << line << "]" << std::endl;
@@ -309,6 +323,8 @@ int main(int argc, char* argv[]) {
 
    // set now to last valid time
    parameters.now = input.back().value.time;
+
+   parameters.print();   
 
    std::vector<center_t> queries;
    load_bench_file(bench_file, queries);
