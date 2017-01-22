@@ -224,7 +224,20 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
          auto url = string_util::split(record[0], "/");
 
          if (url[5] == "tile") {
-            continue;
+            uint32_t x = std::stoi(url[8]);
+            uint32_t y = std::stoi(url[9]);
+            uint32_t zoom = std::stoi(url[6]);
+
+            if (x >= std::pow(2, zoom)) x = (uint32_t)std::pow(2, zoom) - 1;
+            if (y >= std::pow(2, zoom)) y = (uint32_t)std::pow(2, zoom) - 1;
+            
+            float lon = mercator_util::tilex2lon(x + 0.5f, zoom);
+            float lat = mercator_util::tiley2lat(y + 0.5f, zoom);
+
+            if (lat < -85.051132f || lat > 85.051132f) throw std::invalid_argument("[lat: " + std::to_string(lat) + "]");
+            if (lon < -180.f || lon > 180.f) throw std::invalid_argument("[lon: " + std::to_string(lon) + "]");
+
+            queries.emplace_back(lat, lon);
 
          } else if (url[5] == "query") {
             uint32_t zoom;
