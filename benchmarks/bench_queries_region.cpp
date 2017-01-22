@@ -7,18 +7,14 @@
 
 #include "stde.h"
 #include "types.h"
-#include "string_util.h"
-
 #include "InputIntf.h"
-
-#include "GeoCtnIntf.h"
+#include "string_util.h"
 
 #include "GeoHash.h"
 #include "PMABatchCtn.h"
-#include "DenseVectorCtn.h"
-
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
+#include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
    std::cout << "QueryBench " << container.name() << " ; ";\
@@ -28,6 +24,12 @@
 
 /*#define PRINTBENCH( ... ) do { \
 } while (0)*/
+
+struct bench_t {
+   // benchmark parameters
+   uint32_t n_exp;
+   uint32_t batch_size;
+};
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -40,8 +42,8 @@ void inline read_element(const valuetype& el) {
    valuetype volatile elemt = *(valuetype*)&el;
 }
 
-template <typename container_t>
-void inline run_queries(container_t& container, const region_t& region, uint32_t id, uint32_t n_exp) {
+template <typename T>
+void inline run_queries(T& container, const region_t& region, uint32_t id, const bench_t& parameters) {
 
    Timer timer;
 
@@ -51,7 +53,7 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
    // warm up
    container.scan_at_region(region, read_element);
 
-   for (uint32_t i = 0; i < n_exp; i++) {
+   for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer.start();
       container.scan_at_region(region, read_element);
       timer.stop();
@@ -61,7 +63,7 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
    // warm up
    container.apply_at_tile(region, _apply);
 
-   for (uint32_t i = 0; i < n_exp; i++) {
+   for (uint32_t i = 0; i < parameters.n_exp; i++) {
       count = 0;
       timer.start();
       container.apply_at_tile(region, _apply);
@@ -72,7 +74,7 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
    // warm up
    container.apply_at_region(region, _apply);
 
-   for (uint32_t i = 0; i < n_exp; i++) {
+   for (uint32_t i = 0; i < parameters.n_exp; i++) {
       count = 0;
       timer.start();
       container.apply_at_region(region, _apply);
@@ -81,34 +83,35 @@ void inline run_queries(container_t& container, const region_t& region, uint32_t
    }
 }
 
-template <typename container_t>
-void run_bench(container_t& container, const std::vector<elttype>& input, const std::vector<region_t>& queries, uint32_t batch_size, uint32_t n_exp) {
+template <typename T>
+void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const std::vector<region_t>& queries, const bench_t& parameters) {
    //create container
-   container.create((uint32_t)input.size());
+   std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
+   container->create((uint32_t)input.size());
 
    std::vector<elttype>::const_iterator it_begin = input.begin();
    std::vector<elttype>::const_iterator it_curr = input.begin();
 
    while (it_begin != input.end()) {
-      it_curr = std::min(it_begin + batch_size, input.end());
+      it_curr = std::min(it_begin + parameters.batch_size, input.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-      container.insert(batch);
+      container->insert(batch);
 
       // update iterator
       it_begin = it_curr;
    }
 
    for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries(container, queries[id], id, n_exp);
+      run_queries((*container.get()), queries[id], id, parameters);
    }
 }
 
 void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec) {
    PRINTOUT("Loading log file: %s \n", file.c_str());
-   
+
    std::ifstream infile(file);
 
    while (!infile.eof()) {
@@ -150,7 +153,7 @@ void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec
 
             queries_vec.emplace_back(region_t(x0, y0, x1, y1, zoom));
          }
-      } catch (std::invalid_argument) {
+      } catch (const std::invalid_argument& e) {
          std::cerr << "error: [" << line << "]" << std::endl;
          std::cerr << "error: " + std::string(e.what()) << std::endl;
       }
@@ -162,24 +165,18 @@ void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec
 }
 
 int main(int argc, char* argv[]) {
+   bench_t parameters;
 
    cimg_usage("Queries Benchmark inserts elements in batches.");
+
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
-   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
+
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
    std::string bench_file(cimg_option("-bf", "./data/log.csv", "file with logs"));
-   const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-   PMABatchCtn container0(argc, argv);
-
-   /*DenseCtnStdSort container1;
-   DenseCtnTimSort container2;
-   SpatiaLiteCtn container3;
-   PostGisCtn container4;*/
-
-   GeoHashSequential container5(argc, argv);
-   GeoHashBinary container6(argc, argv);
+   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
+   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -194,21 +191,20 @@ int main(int argc, char* argv[]) {
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
-      input = input::dist_random(nb_elements, seed);
+      input = input::dist_random(nb_elements, seed, parameters.batch_size);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input.size());
    }
 
    std::vector<region_t> queries;
    load_bench_file(bench_file, queries);
 
-   run_bench(container0, input, queries, batch_size, n_exp);
-   run_bench(container5, input, queries, batch_size, n_exp);
-   run_bench(container6, input, queries, batch_size, n_exp);
-
-   /*run_bench(container1, input, queries_vec, batch_size, n_exp);
-   run_bench(container2, input, queries_vec, batch_size, n_exp);
-   run_bench(container3, input, queries_vec, batch_size, n_exp);
-   run_bench(container4, input, queries_vec, batch_size, n_exp);*/
+   run_bench<PMABatchCtn>(argc, argv, input, queries, parameters);
+   run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
+   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+   //run_bench<DenseCtnStdSort>(argc, argv, input, queries, parameters);
+   //run_bench<DenseCtnTimSort>(argc, argv, input, queries, parameters);
+   //run_bench<SpatiaLiteCtn>(argc, argv, input, queries, parameters);
+   //run_bench<PostGisCtn>(argc, argv, input, queries, parameters);
 
    return EXIT_SUCCESS;
 }

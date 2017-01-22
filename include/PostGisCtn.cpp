@@ -1,36 +1,42 @@
 #include "stde.h"
-#ifdef __GNUC__
 #include "PostGisCtn.h"
 
-PostGisCtn::PostGisCtn() {
+PostGisCtn::PostGisCtn(int argc, char* argv[]) {
+#ifdef __GNUC__
    std::string conninfo = "user=postgres password=postgres host=localhost port=5432 dbname=twittervis";
 
-// make a connection to the database
+   // make a connection to the database
    _conn = PQconnectdb(conninfo.c_str());
 
-// check to see that the backend connection was successfully made
+   // check to see that the backend connection was successfully made
    if (PQstatus(_conn) != CONNECTION_OK) {
       fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(_conn));
    } else {
       _init = true;
    }
+#endif // __GNUC__
 }
 
 PostGisCtn::~PostGisCtn() {
-// close the connection to the database and cleanup
+#ifdef __GNUC__
+   // close the connection to the database and cleanup
    PQfinish(_conn);
+#endif // __GNUC__
 }
 
 // build container
 duration_t PostGisCtn::create(uint32_t size) {
    Timer timer;
+
+#ifdef __GNUC__
+
    timer.start();
 
    std::string sql;
 
    sql += "DROP TABLE IF EXISTS db;";
    sql += "CREATE TABLE db(pk BIGSERIAL NOT NULL PRIMARY KEY, key geometry(Point, 4326), value BYTEA);";
-// spatial index using GIST
+   // spatial index using GIST
    sql += "CREATE INDEX key_gix ON  db USING GIST (key);";
 
    PGresult* res = PQexec(_conn, sql.c_str());
@@ -49,19 +55,25 @@ duration_t PostGisCtn::create(uint32_t size) {
    _init = true;
 
    timer.stop();
+
+#endif // __GNUC__
+
    return {duration_info("create", timer)};
 }
 
 // update container
 duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    duration_t duration;
+
+#ifdef __GNUC__
+
    Timer timer;
 
    if (!_init) {
       return {duration_info("Error", timer)};
    }
 
-// insert start
+   // insert start
    timer.start();
 
    PGresult* res;
@@ -110,14 +122,14 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-// insert end
+   // insert end
    timer.stop();
    duration.emplace_back("Insert", timer);
 
-// clustering start
+   // clustering start
    timer.start();
 
-// reorders the table on disk based on the index 
+   // reorders the table on disk based on the index 
    sql = "CLUSTER db USING key_gix;";
    res = PQexec(_conn, sql.c_str());
    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -125,11 +137,11 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-// clustering end
+   // clustering end
    timer.stop();
    duration.emplace_back("Cluster", timer);
    
-// analyze start
+   // analyze start
    timer.start();
 
    sql = "ANALYZE db;";
@@ -139,9 +151,11 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
    }
    PQclear(res);
 
-// analyze end
+   // analyze end
    timer.stop();
    duration.emplace_back("Analyze", timer);
+
+#endif // __GNUC__
 
    return duration;
 }
@@ -149,6 +163,8 @@ duration_t PostGisCtn::insert(std::vector<elttype> batch) {
 // apply function for every el<valuetype>
 duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function __apply) {
    Timer timer;
+
+#ifdef __GNUC__
    
    if (!_init) {
       return {duration_info("scan_at_region", timer)};
@@ -179,12 +195,17 @@ duration_t PostGisCtn::scan_at_region(const region_t& region, scantype_function 
    PQclear(res);
 
    timer.stop();
+
+#endif // __GNUC__
+
    return {duration_info("scan_at_region", timer)};
 }
 
 // apply function for every spatial area/region
 duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function __apply) {
    Timer timer;
+
+#ifdef __GNUC__
 
    if (!_init) {
       return {duration_info("apply_at_tile", timer)};
@@ -233,11 +254,16 @@ duration_t PostGisCtn::apply_at_tile(const region_t& region, applytype_function 
    }
 
    timer.stop();
+
+#endif // __GNUC__
+
    return {duration_info("apply_at_tile", timer)};
 }
 
 duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_function __apply) {
    Timer timer;
+
+#ifdef __GNUC__
 
    if (!_init) {
       return {duration_info("apply_at_region", timer)};
@@ -270,7 +296,8 @@ duration_t PostGisCtn::apply_at_region(const region_t& region, applytype_functio
    PQclear(res);
 
    timer.stop();
+
+#endif // __GNUC__
+
    return {duration_info("apply_at_region", timer)};
 }
-
-#endif

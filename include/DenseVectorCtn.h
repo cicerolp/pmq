@@ -40,6 +40,7 @@ private:
 
 class DenseCtnStdSort : public DenseVectorCtn {
 public:
+   DenseCtnStdSort(int argc, char* argv[]) : DenseVectorCtn() {};
    virtual ~DenseCtnStdSort() = default;
 
    inline virtual std::string name() const {
@@ -55,6 +56,7 @@ protected:
 
 class DenseCtnTimSort : public DenseVectorCtn {
 public:
+   DenseCtnTimSort(int argc, char* argv[]) : DenseVectorCtn() {};
    virtual ~DenseCtnTimSort() = default;
 
    inline virtual std::string name() const {

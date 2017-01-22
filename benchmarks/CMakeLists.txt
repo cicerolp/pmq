@@ -37,34 +37,6 @@ if(WIN32)
 
    target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT})
 
-   add_executable(bench_micro_pmq
-      bench_micro_pmq.cpp
-
-      ../include/QuadtreeIntf.cpp
-      
-      ../include/GeoHash.cpp
-      ../include/PostGisCtn.cpp
-      ../include/PMABatchCtn.cpp
-      ../include/SpatiaLiteCtn.cpp
-      ../include/DenseVectorCtn.cpp
-   )
-
-   target_link_libraries(bench_micro_pmq pma ${CMAKE_THREAD_LIBS_INIT})
-
-   add_executable(bench_queries_pmq
-      bench_queries_pmq.cpp
-         
-      ../include/QuadtreeIntf.cpp
-
-      ../include/GeoHash.cpp
-      ../include/PostGisCtn.cpp
-      ../include/PMABatchCtn.cpp
-      ../include/SpatiaLiteCtn.cpp
-      ../include/DenseVectorCtn.cpp
-   )
-
-   target_link_libraries(bench_queries_pmq pma ${CMAKE_THREAD_LIBS_INIT})
-
    add_executable(bench_insert_and_scan 
       bench_insert_and_scan.cpp
 
@@ -100,34 +72,6 @@ elseif(UNIX)
    )
 
    target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
-
-   add_executable(bench_micro_pmq
-      bench_micro_pmq.cpp
-
-      ../include/QuadtreeIntf.cpp
-      
-      ../include/GeoHash.cpp
-      ../include/PostGisCtn.cpp
-      ../include/PMABatchCtn.cpp
-      ../include/SpatiaLiteCtn.cpp
-      ../include/DenseVectorCtn.cpp
-   )
-
-   target_link_libraries(bench_micro_pmq pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
-
-   add_executable(bench_queries_pmq
-      bench_queries_pmq.cpp
-         
-      ../include/QuadtreeIntf.cpp
-
-      ../include/GeoHash.cpp
-      ../include/PostGisCtn.cpp
-      ../include/PMABatchCtn.cpp
-      ../include/SpatiaLiteCtn.cpp
-      ../include/DenseVectorCtn.cpp
-   )
-
-   target_link_libraries(bench_queries_pmq pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
 
    add_executable(bench_insert_and_scan 
       bench_insert_and_scan.cpp

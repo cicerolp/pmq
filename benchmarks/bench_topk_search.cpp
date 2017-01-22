@@ -4,12 +4,14 @@
 
 #include "stde.h"
 #include "types.h"
+#include "InputIntf.h"
 #include "string_util.h"
 
-#include "InputIntf.h"
-#include "GeoCtnIntf.h"
-
 #include "GeoHash.h"
+#include "PMABatchCtn.h"
+#include "PostGisCtn.h"
+#include "SpatiaLiteCtn.h"
+#include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
    std::cout << "TopkSearchBench " << container.name() << " ; ";\
@@ -21,10 +23,6 @@
 } while (0)*/
 
 uint32_t g_Quadtree_Depth = 25;
-
-void inline count_element(uint32_t& accum, const spatial_t&, uint32_t count) {
-   accum += count;
-}
 
 struct center_t {
    center_t(float _lat, float _lon) : lat(_lat), lon(_lon) {
@@ -58,6 +56,7 @@ struct bench_t {
 
       return topk_info;
    }
+
    void print() {
       PRINTOUT("k-> enable: %s, default: %d, interval: [%d,%d], increment: %d\n", var_k ? "true" : "false", def_k, min_k, max_k, inc_k);
       PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);
@@ -66,9 +65,12 @@ struct bench_t {
    }
 };
 
-template <typename container_t>
-void inline run_queries(container_t& container, const center_t& center, uint32_t id, const bench_t& parameters) {
+void inline count_element(uint32_t& accum, const spatial_t&, uint32_t count) {
+   accum += count;
+}
 
+template <typename T>
+void inline run_queries(T& container, const center_t& center, uint32_t id, const bench_t& parameters) {
    Timer timer;
 
    topk_t topk_info;
@@ -76,7 +78,7 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
 
    uint32_t count = 0;
    applytype_function _apply = std::bind(count_element, std::ref(count),
-      std::placeholders::_1, std::placeholders::_2);
+                                         std::placeholders::_1, std::placeholders::_2);
 
    if (parameters.var_k) {
       for (uint32_t k = parameters.min_k; k <= parameters.max_k; k += parameters.inc_k) {
@@ -84,6 +86,9 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
          output.clear();
          topk_info = parameters.reset_topk();
          topk_info.k = k;
+
+         count = 0;
+         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
          container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
@@ -94,9 +99,6 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             timer.start();
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
-
-            count = 0;
-            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
 
             PRINTBENCH("topk_search_k", id, k, output.size(), count, timer.milliseconds(), "ms");
          }
@@ -109,6 +111,9 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
          output.clear();
          topk_info = parameters.reset_topk();
          topk_info.radius = r;
+
+         count = 0;
+         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
          container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
@@ -119,9 +124,6 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             timer.start();
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
-
-            count = 0;
-            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
 
             PRINTBENCH("topk_search_r", id, r, output.size(), count, timer.milliseconds(), "ms");
          }
@@ -134,6 +136,9 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
          output.clear();
          topk_info = parameters.reset_topk();
          topk_info.time = t;
+
+         count = 0;
+         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
          container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
@@ -144,9 +149,6 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             timer.start();
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
-
-            count = 0;
-            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
 
             PRINTBENCH("topk_search_t", id, t, output.size(), count, timer.milliseconds(), "ms");
          }
@@ -159,6 +161,9 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
          output.clear();
          topk_info = parameters.reset_topk();
          topk_info.alpha = a;
+
+         count = 0;
+         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
          container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
@@ -170,19 +175,17 @@ void inline run_queries(container_t& container, const center_t& center, uint32_t
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            count = 0;
-            container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-
             PRINTBENCH("topk_search_a", id, a, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
 }
 
-template <typename container_t>
-void run_bench(container_t& container, const std::vector<elttype>& input, const std::vector<center_t>& queries, const bench_t& parameters) {
+template <typename T>
+void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const std::vector<center_t>& queries, const bench_t& parameters) {
    //create container
-   container.create((uint32_t)input.size());
+   std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
+   container->create((uint32_t)input.size());
 
    std::vector<elttype>::const_iterator it_begin = input.begin();
    std::vector<elttype>::const_iterator it_curr = input.begin();
@@ -193,14 +196,14 @@ void run_bench(container_t& container, const std::vector<elttype>& input, const 
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-      container.insert(batch);
+      container->insert(batch);
 
       // update iterator
       it_begin = it_curr;
    }
 
    for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries(container, queries[id], id, parameters);
+      run_queries((*container.get()), queries[id], id, parameters);
    }
 }
 
@@ -230,7 +233,7 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
 
             if (x >= std::pow(2, zoom)) x = (uint32_t)std::pow(2, zoom) - 1;
             if (y >= std::pow(2, zoom)) y = (uint32_t)std::pow(2, zoom) - 1;
-            
+
             float lon = mercator_util::tilex2lon(x + 0.5f, zoom);
             float lat = mercator_util::tiley2lat(y + 0.5f, zoom);
 
@@ -255,7 +258,7 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
             if (x1 >= std::pow(2, zoom)) x1 = (uint32_t)std::pow(2, zoom) - 1;
             if (y1 >= std::pow(2, zoom)) y1 = (uint32_t)std::pow(2, zoom) - 1;
 
-            if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > "+ std::to_string(x1) +" ]");
+            if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > " + std::to_string(x1) + " ]");
             if (y0 > y1) throw std::invalid_argument("[y: " + std::to_string(y0) + " > " + std::to_string(y1) + " ]");
 
             float lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, zoom);
@@ -263,7 +266,7 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
 
             if (lat < -85.051132f || lat > 85.051132f) throw std::invalid_argument("[lat: " + std::to_string(lat) + "]");
             if (lon < -180.f || lon > 180.f) throw std::invalid_argument("[lon: " + std::to_string(lon) + "]");
-            
+
             queries.emplace_back(lat, lon);
          }
       } catch (const std::invalid_argument& e) {
@@ -278,9 +281,9 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
 }
 
 int main(int argc, char* argv[]) {
-   cimg_usage("Topk Search Benchmark.");
-
    bench_t parameters;
+
+   cimg_usage("Topk Search Benchmark.");
 
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
@@ -314,9 +317,6 @@ int main(int argc, char* argv[]) {
    parameters.max_a = (cimg_option("-max_a", 1.f, "a: Max"));
    parameters.inc_a = (cimg_option("-inc_a", 0.2f, "a: Increment"));
 
-   GeoHashSequential container5(argc, argv);
-   GeoHashBinary container6(argc, argv);
-
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
 
@@ -337,13 +337,18 @@ int main(int argc, char* argv[]) {
    // set now to last valid time
    parameters.now = input.back().value.time;
 
-   parameters.print();   
+   parameters.print();
 
    std::vector<center_t> queries;
    load_bench_file(bench_file, queries);
 
-   //run_bench(container5, input, queries, parameters);
-   run_bench(container6, input, queries, parameters);
+   //run_bench<PMABatchCtn>(argc, argv, input, queries, parameters);
+   run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
+   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+   //run_bench<DenseCtnStdSort>(argc, argv, input, queries, parameters);
+   //run_bench<DenseCtnTimSort>(argc, argv, input, queries, parameters);
+   //run_bench<SpatiaLiteCtn>(argc, argv, input, queries, parameters);
+   //run_bench<PostGisCtn>(argc, argv, input, queries, parameters);
 
    return EXIT_SUCCESS;
 }

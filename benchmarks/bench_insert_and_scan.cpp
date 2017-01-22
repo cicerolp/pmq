@@ -8,10 +8,8 @@
 
 #include "stde.h"
 #include "types.h"
-
 #include "InputIntf.h"
-
-#include "GeoCtnIntf.h"
+#include "string_util.h"
 
 #include "GeoHash.h"
 #include "PMABatchCtn.h"
@@ -25,6 +23,21 @@
    std::cout << std::endl ;\
 } while (0)
 
+#define PRINTBENCH_PTR( ... ) do { \
+   std::cout << "InsertionRemoveBench " << container->name() << " ; ";\
+   printcsv( __VA_ARGS__ ) ; \
+   std::cout << std::endl ;\
+} while (0)
+
+/*#define PRINTBENCH( ... ) do { \
+} while (0)*/
+
+struct bench_t {
+   // benchmark parameters
+   uint32_t n_exp;
+   uint32_t batch_size;
+};
+
 uint32_t g_Quadtree_Depth = 25;
 
 // reads the full element
@@ -32,8 +45,8 @@ void inline read_element(const valuetype& el) {
    valuetype volatile elemt = *(valuetype*)&el;
 }
 
-template <typename container_t>
-void inline run_queries(container_t& container, const region_t& region, const int id, const int n_exp) {
+template <typename T>
+void inline run_queries(T& container, const region_t& region, uint32_t id, const bench_t& parameters) {
 
    Timer timer;
 
@@ -45,7 +58,7 @@ void inline run_queries(container_t& container, const region_t& region, const in
    container.scan_at_region(region, read_element);
 
    // access the container to count the number of elements inside the region
-   for (int i = 0; i < n_exp; i++) {
+   for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer.start();
       container.scan_at_region(region, read_element);
       timer.stop();
@@ -54,27 +67,28 @@ void inline run_queries(container_t& container, const region_t& region, const in
    }
 }
 
-template <typename container_t>
-void run_bench(container_t& container, std::vector<elttype>& input_vec, const int batch_size, const int n_exp) {
+template <typename T>
+void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const bench_t& parameters) {
    //create container
-   container.create((uint32_t)input_vec.size());
+   std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
+   container->create((uint32_t)input.size());
 
-   std::vector<elttype>::iterator it_begin = input_vec.begin();
-   std::vector<elttype>::iterator it_curr = input_vec.begin();
+   std::vector<elttype>::const_iterator it_begin = input.begin();
+   std::vector<elttype>::const_iterator it_curr = input.begin();
 
    duration_t timer;
 
    int id = 0;
-   while (it_begin != input_vec.end()) {
-      it_curr = std::min(it_begin + batch_size, input_vec.end());
+   while (it_begin != input.end()) {
+      it_curr = std::min(it_begin + parameters.batch_size, input.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
 
       // insert batch
-      timer = container.insert(batch);
+      timer = container->insert(batch);
 
       for (auto& info : timer) {
-         PRINTBENCH(info.name, id, info.duration, "ms");
+         PRINTBENCH_PTR(info.name, id, info.duration, "ms");
       }
 
       // update iterator
@@ -85,64 +99,56 @@ void run_bench(container_t& container, std::vector<elttype>& input_vec, const in
       // ========================================
 
       //Run a scan on the whole array
-      run_queries(container, region_t(0, 0, 0, 0, 0), id, n_exp);
+      run_queries((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
 
-      id++;
+      ++id;
    }
 }
 
 int main(int argc, char* argv[]) {
+   bench_t parameters;
 
    cimg_usage("Queries Benchmark inserts elements in batches.");
+
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
-   const int batch_size(cimg_option("-b", 10, "Batch size used in batched insertions"));
+
    std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
-   const unsigned int n_exp(cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
-   PMABatchCtn container0(argc, argv);
-
-   /*DenseCtnStdSort container1;
-   DenseCtnTimSort container2;
-   SpatiaLiteCtn container3;
-   PostGisCtn container4;*/
-
-   GeoHashSequential container5(argc, argv);
-   GeoHashBinary container6(argc, argv);
+   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
+   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
 
    const uint32_t quadtree_depth = 25;
 
-   std::vector<elttype> input_vec;
+   std::vector<elttype> input;
 
    if (nb_elements == 0) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input_vec = input::load(fname, quadtree_depth);
-      PRINTOUT("%d teewts loaded \n", (uint32_t)input_vec.size());
+      input = input::load(fname, quadtree_depth);
+      PRINTOUT("%d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys...\n");
       //Use the batch id as timestamp
-      input_vec = input::dist_random(nb_elements, seed, batch_size);
-      PRINTOUT("%d teewts generated \n", (uint32_t)input_vec.size());
+      input = input::dist_random(nb_elements, seed, parameters.batch_size);
+      PRINTOUT("%d teewts generated \n", (uint32_t)input.size());
    }
 #ifndef NDEBUG
-   for (elttype & e : input_vec){
-       std::cout << "[" << e.key << "," << e.value.time << "] \n" ;
+   for (elttype& e : input) {
+      std::cout << "[" << e.key << "," << e.value.time << "] \n";
    }
 
 #endif
 
-
-   run_bench(container0, input_vec, batch_size, n_exp);
-   run_bench(container5, input_vec, batch_size, n_exp);
-   run_bench(container6, input_vec, batch_size, n_exp);
-
-   /*run_bench(container1, input_vec, batch_size, n_exp);
-   run_bench(container2, input_vec, batch_size, n_exp);
-   run_bench(container3, input_vec, batch_size, n_exp);
-   run_bench(container4, input_vec, batch_size, n_exp);*/
+   run_bench<PMABatchCtn>(argc, argv, input, parameters);
+   run_bench<GeoHashSequential>(argc, argv, input, parameters);
+   run_bench<GeoHashBinary>(argc, argv, input, parameters);
+   run_bench<DenseCtnStdSort>(argc, argv, input, parameters);
+   run_bench<DenseCtnTimSort>(argc, argv, input, parameters);
+   run_bench<SpatiaLiteCtn>(argc, argv, input, parameters);
+   run_bench<PostGisCtn>(argc, argv, input, parameters);
 
    return EXIT_SUCCESS;
 
