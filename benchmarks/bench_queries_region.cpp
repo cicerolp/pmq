@@ -137,14 +137,22 @@ void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec
                zoom = std::stoi(url[7]);
             }
 
-            int x0 = std::stoi(url[8]), y0 = std::stoi(url[9]), x1 = std::stoi(url[10]), y1 = std::stoi(url[11]), z = zoom;
+            uint32_t x0 = std::stoi(url[8]);
+            uint32_t y0 = std::stoi(url[9]);
+            uint32_t x1 = std::stoi(url[10]);
+            uint32_t y1 = std::stoi(url[11]);
 
-            if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0 || z < 0) continue;
+            if (x1 >= std::pow(2, zoom)) x1 = (uint32_t)std::pow(2, zoom) - 1;
+            if (y1 >= std::pow(2, zoom)) y1 = (uint32_t)std::pow(2, zoom) - 1;
 
-            queries_vec.emplace_back(region_t(x0, y0, x1, y1, z));
+            if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > " + std::to_string(x1) + " ]");
+            if (y0 > y1) throw std::invalid_argument("[y: " + std::to_string(y0) + " > " + std::to_string(y1) + " ]");
+
+            queries_vec.emplace_back(region_t(x0, y0, x1, y1, zoom));
          }
       } catch (std::invalid_argument) {
-         std::cerr << "error: invalid query log [" << line << "]" << std::endl;
+         std::cerr << "error: [" << line << "]" << std::endl;
+         std::cerr << "error: " + std::string(e.what()) << std::endl;
       }
    }
 
