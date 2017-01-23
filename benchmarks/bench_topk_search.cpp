@@ -327,7 +327,7 @@ int main(int argc, char* argv[]) {
 
    if (nb_elements == 0) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input = input::load(fname, quadtree_depth);
+      input = input::load(fname, quadtree_depth, parameters.batch_size);
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
