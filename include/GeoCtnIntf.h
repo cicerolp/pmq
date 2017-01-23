@@ -2,7 +2,10 @@
 
 #include "types.h"
 
+// Function that access a reference to the element in the container
 using scantype_function = std::function<void(const valuetype&)>;
+
+// Function that counts elements in spatial areas.
 using applytype_function = std::function<void(const spatial_t& /*spatial area*/, uint32_t /*area count*/)>;
 
 class GeoCtnIntf {
@@ -17,14 +20,24 @@ public:
    // update container
    virtual duration_t insert(std::vector<elttype> batch) = 0;
    // Only for GeoHash
-//   virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed );
+   //virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed );
 
-   // apply function for every el<valuetype>
+   /** @brief Applies a scantype_function on the elements contained on a selection region .
+    *
+    *  Finds all the elements contained in the region and run function __apply with their values as parameter.
+    */
    virtual duration_t scan_at_region(const region_t& region, scantype_function __apply) = 0;
 
-   // apply function for every spatial area/region
+   /** @brief Uses the applytype function to count elements on tiles (spatial_t)
+    *
+    * This function decomposed the selected 'region' using a grid of 2^8 tiles (256 X 256)
+    */
    virtual duration_t apply_at_tile(const region_t& region, applytype_function __apply) = 0;
 
+   /** @brief Uses the applytype function to count elements on tiles (spatial_t)
+    *
+    *  This function decomposes the region into the coarset possible tiles that represent the region.
+    */
    virtual duration_t apply_at_region(const region_t& region, applytype_function __apply) = 0;
 
    virtual duration_t topk_search(const region_t& region, topk_t& topk, std::vector<valuetype>& output) {
