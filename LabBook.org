@@ -357,7 +357,7 @@ A starting point to create an exepriment on the labbook:
 - [ ] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
-#expId=$(date +%s)
+#expId=$(date +%Y%m%d%H%M%S)
 machineDesc=$(hostname)
 expFolder=./data/$machineDesc/exp$expId
 mkdir -p $expFolder
