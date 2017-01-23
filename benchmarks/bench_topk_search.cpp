@@ -58,6 +58,7 @@ struct bench_t {
    }
 
    void print() {
+      PRINTOUT("parameters-> n_exp: %d, batch_size: %d, now: %lld\n", n_exp, batch_size, now);
       PRINTOUT("k-> enable: %s, default: %d, interval: [%d,%d], increment: %d\n", var_k ? "true" : "false", def_k, min_k, max_k, inc_k);
       PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);
       PRINTOUT("t-> enable: %s, default: %lld, interval: [%lld,%lld], increment: %lld\n", var_t ? "true" : "false", def_t, min_t, max_t, inc_t);
@@ -286,11 +287,11 @@ int main(int argc, char* argv[]) {
    cimg_usage("Topk Search Benchmark.");
 
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
-   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
+   const long seed(cimg_option("-r", 123, "Random seed to generate elements"));
    std::string fname(cimg_option("-f", "./data/tweet10_6.dat", "file with tweets"));
    std::string bench_file(cimg_option("-bf", "./data/log.csv", "file with logs"));
 
-   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
+   parameters.batch_size = (cimg_option("-b", 1000, "Batch size used in batched insertions"));
    parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    parameters.var_k = (cimg_option("-var_k", false, "K: Enable benchmark"));
@@ -306,10 +307,10 @@ int main(int argc, char* argv[]) {
    parameters.inc_r = (cimg_option("-inc_r", 39.975f, "R: Increment"));
 
    parameters.var_t = (cimg_option("-var_t", false, "T: Enable benchmark"));
-   parameters.def_t = (cimg_option("-def_t", 6, "T: Default value (hours)"));
-   parameters.min_t = (cimg_option("-min_t", 3, "T: Min"));
-   parameters.max_t = (cimg_option("-max_t", 12, "T: Max"));
-   parameters.inc_t = (cimg_option("-inc_t", 3, "T: Increment"));
+   parameters.def_t = (cimg_option("-def_t", 21600, "T: Default value (in seconds)"));
+   parameters.min_t = (cimg_option("-min_t", 10800, "T: Min"));
+   parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
+   parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
    parameters.var_a = (cimg_option("-var_a", false, "a: Enable benchmark"));
    parameters.def_a = (cimg_option("-def_a", 0.2f, "a: Default value"));
