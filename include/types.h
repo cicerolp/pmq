@@ -254,12 +254,12 @@ public:
 
                // spatial boundary tightening
                if (worst_score < topk.alpha) {
-                  //topk.radius = (worst_score / topk.alpha) * topk.radius;
+                  topk.radius = (worst_score / topk.alpha) * topk.radius;
                }
 
                // temporal boundary tightening
                if (worst_score < (1.f - topk.alpha)) {
-                  //topk.time = (uint64_t)((worst_score / (1.f - topk.alpha)) * topk.time);
+                  topk.time = (uint64_t)((worst_score / (1.f - topk.alpha)) * topk.time);
                }
             }
          }

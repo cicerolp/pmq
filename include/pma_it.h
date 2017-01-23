@@ -83,7 +83,7 @@ public:
    size_type size() const {
       return _pma->elts[_seg];
    }
-
+   
 protected:
    size_type _seg;
    pma_struct* _pma;

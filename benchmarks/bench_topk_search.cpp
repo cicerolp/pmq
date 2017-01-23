@@ -343,13 +343,8 @@ int main(int argc, char* argv[]) {
    std::vector<center_t> queries;
    load_bench_file(bench_file, queries);
 
-   //run_bench<PMABatchCtn>(argc, argv, input, queries, parameters);
-   run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
+   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
    run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-   //run_bench<DenseCtnStdSort>(argc, argv, input, queries, parameters);
-   //run_bench<DenseCtnTimSort>(argc, argv, input, queries, parameters);
-   //run_bench<SpatiaLiteCtn>(argc, argv, input, queries, parameters);
-   //run_bench<PostGisCtn>(argc, argv, input, queries, parameters);
 
    return EXIT_SUCCESS;
 }

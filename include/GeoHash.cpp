@@ -188,10 +188,10 @@ duration_t GeoHash::topk_search(const region_t& region, topk_t& topk, std::vecto
  */
 
 void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply) {
-   // search in the PMA if there is an element starting with prefix el ; (starts the search at segment seg )
-   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
-
+   if (seg == pma_seg_it::end(_pma)) return;
+   
    if (region.cover(el)) {
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       scan_pma(el, seg, __apply);
 
    } else if (el.z < region.z) {
@@ -206,8 +206,8 @@ void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const reg
 }
 
 void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
-
+   if (seg == pma_seg_it::end(_pma)) return;
+   
    if ((el.z < 25) && ((int)el.z - (int)region.z) < 8) {
       // break morton code into four
       uint64_t code = el.code << 2;
@@ -218,14 +218,16 @@ void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const regi
       apply_pma_at_tile(spatial_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
 
    } else if (region.cover(el)) {
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       __apply(el, count_pma(el, seg));
    }
 }
 
 void GeoHash::apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
+   if (seg == pma_seg_it::end(_pma)) return;
 
    if (region.cover(el)) {
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       __apply(el, count_pma(el, seg));
 
    } else if (el.z < region.z) {
