@@ -134,6 +134,46 @@ struct region_t {
       return out;
    }
 
+   enum overlap { none, full, partial };
+
+   overlap test(const spatial_t& el) const {
+      uint32_t x, y;
+      mortonDecode_RAM(el.code, x, y);
+
+      // region cover el?
+      if (z <= el.z) {
+         uint64_t n = (uint64_t)1 << (el.z - z);
+
+         uint64_t x_min = x0 * n;
+         uint64_t x_max = x1 * n;
+
+         uint64_t y_min = y0 * n;
+         uint64_t y_max = y1 * n;
+
+         return (x_min <= x && x_max >= x && y_min <= y && y_max >= y) ? full : none;
+
+      } else {
+         //
+         uint64_t n = (uint64_t)1 << (z - el.z);
+
+         uint64_t x_min = x * n;
+         uint64_t x_max = x_min + n - 1;
+
+         uint64_t y_min = y * n;
+         uint64_t y_max = y_min + n - 1;
+                  
+         if (x0 <= x_min && x1 >= x_max && y0 <= y_min && y1 >= y_max) {
+            // el is covered by region, but el.z < region.z
+            return full;
+         } else if (x0 <= x_max && x1 >= x_min && y0 <= y_max && y1 >= y_min) {
+            // el and region intersect
+            return partial;
+         } else {
+            return none;
+         }
+      }
+   }
+
    inline bool cover(const spatial_t& el) const {
       uint32_t x, y;
       mortonDecode_RAM(el.code, x, y);
