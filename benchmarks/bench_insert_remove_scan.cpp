@@ -44,6 +44,11 @@ void inline read_element(const valuetype& el) {
    valuetype volatile elemt = *(valuetype*)&el;
 }
 
+// counts the amount of elements
+void inline count_element(uint32_t& accum, const spatial_t&, uint32_t count) {
+   accum += count;
+}
+
 template <typename T>
 void inline run_queries(T& container, const region_t& region, uint64_t id, const bench_t& parameters) {
 
@@ -52,6 +57,7 @@ void inline run_queries(T& container, const region_t& region, uint64_t id, const
    // 1 - gets the minimum set of nodes that are inside the queried region
    // QueryRegion will traverse the tree and return the intervals to query;
    // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
+
 
    // warm up
    container.scan_at_region(region, read_element);
@@ -64,6 +70,13 @@ void inline run_queries(T& container, const region_t& region, uint64_t id, const
 
       PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
    }
+
+   uint32_t count = 0;
+   applytype_function count_element_wrapper = std::bind(count_element, std::ref(count),
+                                         std::placeholders::_1, std::placeholders::_2);
+   container.apply_at_region(region, count_element_wrapper);
+   PRINTBENCH("ElementsCount", id , count);
+
 }
 
 template <typename T>
