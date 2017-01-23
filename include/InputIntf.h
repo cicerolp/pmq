@@ -37,6 +37,41 @@ namespace input {
       return tweets;
    }
 
+
+   inline std::vector<elttype> load(const std::string& fname, int mCodeSize, unsigned int time_res) {
+      std::vector<elttype> tweets;
+
+      std::ifstream infile(fname, std::ios::binary);
+      infile.unsetf(std::ios_base::skipws);
+
+      // skip file header
+      for (int i = 0; i < 32; ++i) {
+         infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      }
+
+      tweet_t record;
+      size_t record_size = 19; //file record size
+
+      unsigned int i = 0; //time counter;
+
+      while (true) {
+         try {
+            infile.read((char*)&record, record_size);
+
+            if (infile.eof()) break;
+
+            record.time = i / time_res;
+            tweets.emplace_back(record, mCodeSize);
+         } catch (...) {
+            break;
+         }
+         i++;
+      }
+      infile.close();
+
+      return tweets;
+   }
+
    inline std::vector<elttype> dist_random(unsigned int nb_el, long rseed) {
       std::vector<elttype> keyVal_vec;
 

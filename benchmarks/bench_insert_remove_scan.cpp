@@ -35,6 +35,7 @@ struct bench_t {
    uint32_t n_exp;
    uint32_t batch_size;
    uint64_t rm_time_limit;
+   uint32_t insert_ratio;
 };
 
 uint32_t g_Quadtree_Depth = 25;
@@ -138,6 +139,7 @@ int main(int argc, char* argv[]) {
    parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
    parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
    parameters.rm_time_limit = (cimg_option("-rm", 10, "The 'time' difference used to delete tweets"));
+//   parameters.insert_ratio = (uint32_t) (cimg_option("-ir", (uint32_t) parameters.batch_size, "Number of tweets inserted by time unit."));
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -148,7 +150,7 @@ int main(int argc, char* argv[]) {
 
    if (nb_elements == 0) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input = input::load(fname, quadtree_depth);
+      input = input::load(fname, quadtree_depth,parameters.batch_size);
       PRINTOUT("%d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys...\n");
