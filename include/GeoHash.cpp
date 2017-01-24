@@ -135,7 +135,16 @@ duration_t GeoHash::topk_search(const region_t& region, topk_t& topk, std::vecto
          if (temporal_distance > topk.time) return;
 
          // temporal score
-         float temporal_score = (float)(temporal_distance / topk.time);
+         float temporal_score;
+         if (topk.time != 0) {
+            temporal_score = (float)(temporal_distance / topk.time);
+         } else {
+            if (temporal_distance == 0) {
+               temporal_score = 0.f;
+            } else {
+               return;
+            }
+         }
 
          // spatial ranking
          static const float PI_180_INV = 180.0f / (float)M_PI;
@@ -191,7 +200,7 @@ void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const reg
    if (seg == pma_seg_it::end(_pma)) return;
 
    region_t::overlap overlap = region.test(el);
-      
+
    if (overlap == region_t::full) {
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       scan_pma(el, seg, __apply);
@@ -211,7 +220,7 @@ void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const regi
    if (seg == pma_seg_it::end(_pma)) return;
 
    region_t::overlap overlap = region.test(el);
-   
+
    if (overlap == region_t::none) return;
 
    if ((el.z < 25) && ((int)el.z - (int)region.z) < 8) {
