@@ -94,7 +94,7 @@ struct region_t {
       if (lat0 < -85.051132f) lat0 = -85.051132f;
       else if (lat0 > 85.051132f) lat0 = 85.051132f;
 
-      double lon0 = lon - (d / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
+      double lon0 = lon - (d / r_earth) * (PI_180_INV) / cos(lat * PI_180);
 
       if (lon0 < -180.f) lon0 = -180.f;
       else if (lon0 > 180.f) lon0 = 180.f;
@@ -104,7 +104,7 @@ struct region_t {
       if (lat1 < -85.051132f) lat1 = -85.051132f;
       else if (lat1 > 85.051132f) lat1 = 85.051132f;
 
-      double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+      double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat * PI_180);
 
       if (lon1 < -180.f) lon1 = -180.f;
       else if (lon1 > 180.f) lon1 = 180.f;
