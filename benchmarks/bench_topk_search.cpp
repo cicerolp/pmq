@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
    parameters.var_r = (cimg_option("-var_r", false, "r: Enable benchmark"));
    parameters.def_r = (cimg_option("-def_r", 30.f, "R: Default value (radius in km)"));
    parameters.min_r = (cimg_option("-min_r", 0.25f, "R: Min"));
-   parameters.max_r = (cimg_option("-max_r", 400.f, "R: Max"));
+   parameters.max_r = (cimg_option("-max_r", 400.1f, "R: Max"));
    parameters.inc_r = (cimg_option("-inc_r", 39.975f, "R: Increment"));
 
    parameters.var_t = (cimg_option("-var_t", false, "T: Enable benchmark"));
