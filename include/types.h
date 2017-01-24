@@ -50,10 +50,24 @@ struct region_t {
       lat = _lat;
 
       float lat0 = lat + (radius / r_earth) * (PI_180_INV);
-      float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
+      
+      if (lat0 < -85.051132f) lat0 = -85.051132f;
+      else if (lat0 > 85.051132f) lat0 = 85.051132f;
+
+      float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
+
+      if (lon0 < -180.f) lon0 = -180.f;
+      else if (lon0 > 180.f) lon0 = 180.f;
 
       float lat1 = lat - (radius / r_earth) * (PI_180_INV);
-      float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+
+      if (lat1 < -85.051132f) lat1 = -85.051132f;
+      else if (lat1 > 85.051132f) lat1 = 85.051132f;
+
+      float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
+
+      if (lon1 < -180.f) lon1 = -180.f;
+      else if (lon1 > 180.f) lon1 = 180.f;
 
       z = 8;
 
@@ -76,10 +90,24 @@ struct region_t {
       lat = mercator_util::tiley2lat(_y + 0.5, _z);
 
       double lat0 = lat + (d / r_earth) * (PI_180_INV);
+
+      if (lat0 < -85.051132f) lat0 = -85.051132f;
+      else if (lat0 > 85.051132f) lat0 = 85.051132f;
+
       double lon0 = lon - (d / r_earth) * (PI_180_INV) / cos(lat0 * PI_180);
 
+      if (lon0 < -180.f) lon0 = -180.f;
+      else if (lon0 > 180.f) lon0 = 180.f;
+
       double lat1 = lat - (d / r_earth) * (PI_180_INV);
+
+      if (lat1 < -85.051132f) lat1 = -85.051132f;
+      else if (lat1 > 85.051132f) lat1 = 85.051132f;
+
       double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat1 * PI_180);
+
+      if (lon1 < -180.f) lon1 = -180.f;
+      else if (lon1 > 180.f) lon1 = 180.f;
 
       z = std::min(25, _z + 8);
 
