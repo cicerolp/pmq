@@ -25,6 +25,7 @@
 uint32_t g_Quadtree_Depth = 25;
 
 struct center_t {
+   center_t() = default;
    center_t(float _lat, float _lon) : lat(_lat), lon(_lon) {
    }
 
@@ -211,70 +212,15 @@ void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const 
 void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
    PRINTOUT("Loading log file: %s \n", file.c_str());
 
-   std::ifstream infile(file);
+   std::ifstream infile(file, std::ios::in | std::ifstream::binary);
 
-   while (!infile.eof()) {
+   // number of elts - header
+   uint32_t elts = 0;
+   infile.read((char*)&elts, sizeof(uint32_t));
 
-      std::string line;
-      std::getline(infile, line);
+   queries.resize(elts);
 
-      try {
-         if (line.empty()) continue;
-
-         auto record = string_util::split(line, ",");
-
-         if (record.size() != 3) continue;
-
-         auto url = string_util::split(record[0], "/");
-
-         if (url[5] == "tile") {
-            uint32_t x = std::stoi(url[8]);
-            uint32_t y = std::stoi(url[9]);
-            uint32_t zoom = std::stoi(url[6]);
-
-            if (x >= std::pow(2, zoom)) x = (uint32_t)std::pow(2, zoom) - 1;
-            if (y >= std::pow(2, zoom)) y = (uint32_t)std::pow(2, zoom) - 1;
-
-            float lon = mercator_util::tilex2lon(x + 0.5f, zoom);
-            float lat = mercator_util::tiley2lat(y + 0.5f, zoom);
-
-            if (lat < -85.051132f || lat > 85.051132f) throw std::invalid_argument("[lat: " + std::to_string(lat) + "]");
-            if (lon < -180.f || lon > 180.f) throw std::invalid_argument("[lon: " + std::to_string(lon) + "]");
-
-            queries.emplace_back(lat, lon);
-
-         } else if (url[5] == "query") {
-            uint32_t zoom;
-            if (url[7] == "undefined") {
-               zoom = 1;
-            } else {
-               zoom = std::stoi(url[7]);
-            }
-
-            uint32_t x0 = std::stoi(url[8]);
-            uint32_t y0 = std::stoi(url[9]);
-            uint32_t x1 = std::stoi(url[10]);
-            uint32_t y1 = std::stoi(url[11]);
-
-            if (x1 >= std::pow(2, zoom)) x1 = (uint32_t)std::pow(2, zoom) - 1;
-            if (y1 >= std::pow(2, zoom)) y1 = (uint32_t)std::pow(2, zoom) - 1;
-
-            if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > " + std::to_string(x1) + " ]");
-            if (y0 > y1) throw std::invalid_argument("[y: " + std::to_string(y0) + " > " + std::to_string(y1) + " ]");
-
-            float lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, zoom);
-            float lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, zoom);
-
-            if (lat < -85.051132f || lat > 85.051132f) throw std::invalid_argument("[lat: " + std::to_string(lat) + "]");
-            if (lon < -180.f || lon > 180.f) throw std::invalid_argument("[lon: " + std::to_string(lon) + "]");
-
-            queries.emplace_back(lat, lon);
-         }
-      } catch (const std::invalid_argument& e) {
-         std::cerr << "error: [" << line << "]" << std::endl;
-         std::cerr << "error: " + std::string(e.what()) << std::endl;
-      }
-   }
+   infile.read(reinterpret_cast<char*>(&queries[0]), sizeof(center_t) * elts);
 
    infile.close();
 
