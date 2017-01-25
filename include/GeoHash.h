@@ -33,25 +33,23 @@ protected:
 
    inline pma_seg_it find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg) const;
 
-   virtual pma_seg_it search_pma(const spatial_t& el, pma_seg_it& seg) const = 0;
+   virtual pma_seg_it search_pma(const code_t& el, pma_seg_it& seg) const = 0;
 
    // apply function for every el<valuetype>
-   void scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply);
+   void scan_pma_at_region(const code_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply);
 
    // apply function for every spatial area/region
-   void apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
+   void apply_pma_at_tile(const code_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
 
-   void apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
+   void apply_pma_at_region(const code_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply);
 
    //void topk_pma_search()
 
-   uint32_t count_pma(const spatial_t& el, pma_seg_it& seg) const;
+   uint32_t count_pma(const code_t& el, pma_seg_it& seg) const;
 
-   void scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _apply) const;
+   void scan_pma(const code_t& el, pma_seg_it& seg, scantype_function _apply) const;
 
-   inline spatial_t get_parent_quadrant(const region_t& region) const;
-
-   inline void get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const;
+   inline code_t get_parent_quadrant(const region_t& region) const;
 
    uint32_t seg_size;
    float tau_0, tau_h, rho_0, rho_h;
@@ -87,12 +85,12 @@ pma_seg_it GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_ma
 /**
  * @brief GeoHash::get_parent_quadrant
  * @param region : a square region represented by upper left , lower right points (motron codes)
- * @return A spatial_t structure ( with the correct morton code ) that completley covers the given region.
+ * @return A code_t structure ( with the correct morton code ) that completley covers the given region.
  *
  * Example between two morton codes of 4 bits , 1110 and 1101 , returns a two-bit motronCode 11.
  *
  */
-inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
+inline code_t GeoHash::get_parent_quadrant(const region_t& region) const {
    uint64_t mask = region.code0 ^ region.code1;
 
    mask |= mask >> 32;
@@ -114,13 +112,7 @@ inline spatial_t GeoHash::get_parent_quadrant(const region_t& region) const {
 
    prefix = prefix >> (depth_diff * 2);
 
-   return spatial_t(prefix, region.z - depth_diff);
-}
-
-inline void GeoHash::get_mcode_range(const spatial_t& el, uint64_t& min, uint64_t& max, uint32_t morton_size) const {
-   uint32_t diffDepth = (uint32_t)(morton_size - el.z);
-   min = el.code << 2 * (diffDepth);
-   max = min | ((uint64_t)~0 >> (64 - 2 * diffDepth));
+   return code_t(prefix, region.z - depth_diff);
 }
 
 class GeoHashSequential : public GeoHash {
@@ -136,7 +128,7 @@ public:
    }
 
 protected:
-   pma_seg_it search_pma(const spatial_t& el, pma_seg_it& seg) const override final;
+   pma_seg_it search_pma(const code_t& el, pma_seg_it& seg) const override final;
 };
 
 class GeoHashBinary : public GeoHash {
@@ -152,5 +144,5 @@ public:
    }
 
 protected:
-   pma_seg_it search_pma(const spatial_t& el, pma_seg_it& seg) const override final;
+   pma_seg_it search_pma(const code_t& el, pma_seg_it& seg) const override final;
 };

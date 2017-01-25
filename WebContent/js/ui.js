@@ -468,7 +468,7 @@ function update() {
    heatmap_updating = true;
    
    // /x0/y0/x1/y1/
-   var query = "/query/region/0/0/0/1/1";      
+   var query = "/query/region/0/0/0/0/0";      
    call_assync_query(query, set_progressbar_max);
    
    update_marker();

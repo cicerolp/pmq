@@ -72,6 +72,14 @@ public:
       return _seg - other._seg;
    }
 
+   reference front() const {
+      return SEGMENT_START(_pma, _seg);
+   }
+
+   reference back() const {
+      return SEGMENT_LAST(_pma, _seg);
+   }
+
    reference operator*() const {
       return SEGMENT_LAST(_pma, _seg);
    }

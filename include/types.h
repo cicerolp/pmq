@@ -38,6 +38,30 @@ struct spatial_t {
    };
 };
 
+struct code_t {
+   code_t(uint64_t _code, uint32_t _z) : code(_code), z(_z) {
+      uint32_t diffDepth = 25 - z;
+
+      min_code = code << 2 * (diffDepth);
+      max_code = min_code | ((uint64_t)~0 >> (64 - 2 * diffDepth));
+   }
+
+   /*inline bool operator==(const spatial_t& rhs) const {
+   return code == rhs.code;
+   }
+
+   inline bool operator<(const spatial_t& rhs) const {
+   return code < rhs.code;
+   }*/
+
+   operator spatial_t() const {
+      return spatial_t(code, z);
+   }
+
+   uint32_t z;
+   uint64_t code, min_code, max_code;
+};
+
 struct region_t {
    region_t() = default;
 
@@ -164,12 +188,11 @@ struct region_t {
 
    enum overlap { none, full, partial };
 
-   overlap test(const spatial_t& el) const {
+   overlap test(const code_t& el) const {
       uint32_t x, y;
       mortonDecode_RAM(el.code, x, y);
 
-      // region cover el?
-      if (z <= el.z) {
+      if (z < el.z) {
          uint64_t n = (uint64_t)1 << (el.z - z);
 
          uint64_t x_min = x0 * n;
@@ -180,8 +203,7 @@ struct region_t {
 
          return (x_min <= x && x_max >= x && y_min <= y && y_max >= y) ? full : none;
 
-      } else {
-         //
+      } else if (z > el.z) {
          uint64_t n = (uint64_t)1 << (z - el.z);
 
          uint64_t x_min = x * n;
@@ -189,9 +211,9 @@ struct region_t {
 
          uint64_t y_min = y * n;
          uint64_t y_max = y_min + n - 1;
-                  
+
          if (x0 <= x_min && x1 >= x_max && y0 <= y_min && y1 >= y_max) {
-            // el is covered by region, but el.z < region.z
+            // el is covered by region, but region.z > el.z 
             return full;
          } else if (x0 <= x_max && x1 >= x_min && y0 <= y_max && y1 >= y_min) {
             // el and region intersect
@@ -199,6 +221,8 @@ struct region_t {
          } else {
             return none;
          }
+      } else {
+         return (x0 <= x && x1 >= x && y0 <= y && y1 >= y) ? full : none;
       }
    }
 

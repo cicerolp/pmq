@@ -196,8 +196,10 @@ duration_t GeoHash::topk_search(const region_t& region, topk_t& topk, std::vecto
  *
  */
 
-void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply) {
-   if (seg == pma_seg_it::end(_pma)) return;
+void GeoHash::scan_pma_at_region(const code_t& el, pma_seg_it& seg, const region_t& region, scantype_function __apply) {
+   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return;
+   
+   if (el.z > region.z) return;
 
    region_t::overlap overlap = region.test(el);
 
@@ -205,41 +207,44 @@ void GeoHash::scan_pma_at_region(const spatial_t& el, pma_seg_it& seg, const reg
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       scan_pma(el, seg, __apply);
 
-   } else if (overlap == region_t::partial && el.z < region.z) {
+   } else if (overlap == region_t::partial) {
       // break code into four
       uint64_t code = el.code << 2;
 
-      scan_pma_at_region(spatial_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
-      scan_pma_at_region(spatial_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
-      scan_pma_at_region(spatial_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
-      scan_pma_at_region(spatial_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
    }
 }
 
-void GeoHash::apply_pma_at_tile(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (seg == pma_seg_it::end(_pma)) return;
+void GeoHash::apply_pma_at_tile(const code_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
+   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return;
+   
+   if (el.z >= 25 || (int)el.z - (int)region.z > 8) return;
 
    region_t::overlap overlap = region.test(el);
 
-   if (overlap == region_t::none) return;
+   if ((int)el.z - (int)region.z < 8) {
+      if (overlap != region_t::none) {
+         // break morton code into four
+         uint64_t code = el.code << 2;
 
-   if ((el.z < 25) && ((int)el.z - (int)region.z) < 8) {
-      // break morton code into four
-      uint64_t code = el.code << 2;
-
-      apply_pma_at_tile(spatial_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_tile(spatial_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_tile(spatial_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_tile(spatial_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
-
+         apply_pma_at_tile(code_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
+         apply_pma_at_tile(code_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
+         apply_pma_at_tile(code_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
+         apply_pma_at_tile(code_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
+      }
    } else if (overlap == region_t::full) {
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       __apply(el, count_pma(el, seg));
    }
 }
 
-void GeoHash::apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
-   if (seg == pma_seg_it::end(_pma)) return;
+void GeoHash::apply_pma_at_region(const code_t& el, pma_seg_it& seg, const region_t& region, applytype_function __apply) {
+   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return;
+   
+   if (el.z > region.z) return;
 
    region_t::overlap overlap = region.test(el);
 
@@ -247,27 +252,24 @@ void GeoHash::apply_pma_at_region(const spatial_t& el, pma_seg_it& seg, const re
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       __apply(el, count_pma(el, seg));
 
-   } else if (overlap == region_t::partial && el.z < region.z) {
+   } else if (overlap == region_t::partial) {
       // break morton code into four
       uint64_t code = el.code << 2;
 
-      apply_pma_at_region(spatial_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_region(spatial_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_region(spatial_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
-      apply_pma_at_region(spatial_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 0, (uint32_t)(el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 1, (uint32_t)(el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 2, (uint32_t)(el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 3, (uint32_t)(el.z + 1)), seg, region, __apply);
    }
 }
 
-uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
-   uint64_t code_min, code_max;
-   get_mcode_range(el, code_min, code_max, 25);
-
+uint32_t GeoHash::count_pma(const code_t& el, pma_seg_it& seg) const {
    size_t count = 0;
    auto prev_seg = seg;
 
    do {
       count += seg.size();
-   } while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= code_max);
+   } while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code);
 
    assert(count != 0);
 
@@ -278,7 +280,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
 
       //subtract extra elements for last segment
       off_end = pma_offset_it::end(_pma, seg);
-      off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), code_max + 1,
+      off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), el.max_code + 1,
                                    [](void* elt, uint64_t value) {
                                       return PMA_ELT(elt) < value;
                                    });
@@ -289,7 +291,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
 
    //subtract extra elements for first segment
    off_begin = pma_offset_it::begin(_pma, prev_seg);
-   off_end = std::lower_bound(off_begin, pma_offset_it::end(_pma, prev_seg), code_min,
+   off_end = std::lower_bound(off_begin, pma_offset_it::end(_pma, prev_seg), el.min_code,
                               [](void* elt, uint64_t value) {
                                  return PMA_ELT(elt) < value;
                               });
@@ -300,10 +302,7 @@ uint32_t GeoHash::count_pma(const spatial_t& el, pma_seg_it& seg) const {
    return (uint32_t)count;
 }
 
-void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _apply) const {
-   uint64_t code_min, code_max;
-   get_mcode_range(el, code_min, code_max, 25);
-
+void GeoHash::scan_pma(const code_t& el, pma_seg_it& seg, scantype_function _apply) const {
    auto seg_end = pma_seg_it::end(_pma);
 
    while (seg != seg_end) {
@@ -311,9 +310,9 @@ void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _
       auto off_end = pma_offset_it::end(_pma, seg);
 
       while (off_it != off_end) {
-         if (PMA_ELT(*off_it) > code_max) {
+         if (PMA_ELT(*off_it) > el.max_code) {
             return;
-         } else if (PMA_ELT(*off_it) >= code_min) {
+         } else if (PMA_ELT(*off_it) >= el.min_code) {
             _apply(*(valuetype*)ELT_TO_CONTENT(*off_it));
          }
          ++off_it;
@@ -326,39 +325,33 @@ void GeoHash::scan_pma(const spatial_t& el, pma_seg_it& seg, scantype_function _
  * @brief GeoHashSequential::search_pma
  * Sequential search on the pma.
  */
-pma_seg_it GeoHashSequential::search_pma(const spatial_t& el, pma_seg_it& seg) const {
-   uint64_t code_min, code_max;
-   get_mcode_range(el, code_min, code_max, 25);
-
+pma_seg_it GeoHashSequential::search_pma(const code_t& el, pma_seg_it& seg) const {
    auto end = pma_seg_it::end(_pma);
 
    while (seg != end) {
-      if (PMA_ELT(*seg) >= code_min) break;
+      if (PMA_ELT(*seg) >= el.min_code) break;
       ++seg;
    }
 
-   if (seg != end) return find_elt_pma(code_min, code_max, seg);
+   if (seg != end) return find_elt_pma(el.min_code, el.max_code, seg);
 
    return end;
 }
 
-pma_seg_it GeoHashBinary::search_pma(const spatial_t& el, pma_seg_it& seg) const {
-   uint64_t code_min, code_max;
-   get_mcode_range(el, code_min, code_max, 25);
-
+pma_seg_it GeoHashBinary::search_pma(const code_t& el, pma_seg_it& seg) const {
    // current segment
-   if (PMA_ELT(*seg) >= code_min) {
-      return find_elt_pma(code_min, code_max, seg);
+   if (PMA_ELT(*seg) >= el.min_code) {
+      return find_elt_pma(el.min_code, el.max_code, seg);
    }
 
    auto end = pma_seg_it::end(_pma);
 
-   seg = std::lower_bound(seg, end, code_min,
+   seg = std::lower_bound(seg, end, el.min_code,
                           [](void* elt, uint64_t value) {
                              return PMA_ELT(elt) < value;
                           });
 
-   if (seg != end) return find_elt_pma(code_min, code_max, seg);
+   if (seg != end) return find_elt_pma(el.min_code, el.max_code, seg);
 
    return end;
 }
