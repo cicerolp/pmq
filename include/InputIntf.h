@@ -23,9 +23,8 @@ namespace input {
 
       while (true) {
          try {
-            infile.read((char*)&record, record_size);
-
             if (infile.eof()) break;
+            infile.read((char*)&record, record_size);
 
             tweets.emplace_back(record, mCodeSize);
          } catch (...) {
@@ -37,8 +36,8 @@ namespace input {
       return tweets;
    }
 
-
-   inline std::vector<elttype> load(const std::string& fname, int mCodeSize, unsigned int time_res) {
+   inline std::vector<elttype> load(const std::string& fname, int mCodeSize,
+                                    uint64_t time_res, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
@@ -54,11 +53,10 @@ namespace input {
 
       unsigned int i = 0; //time counter;
 
-      while (true) {
+      while (n_elts--) {
          try {
-            infile.read((char*)&record, record_size);
-
             if (infile.eof()) break;
+            infile.read((char*)&record, record_size);
 
             record.time = i / time_res;
             tweets.emplace_back(record, mCodeSize);
@@ -72,35 +70,6 @@ namespace input {
       return tweets;
    }
 
-   inline std::vector<elttype> dist_random(unsigned int nb_el, long rseed) {
-      std::vector<elttype> keyVal_vec;
-
-      std::mt19937 gen(rseed);
-      /*
-      std::random_device rd;
-
-      if (rseed != 0) {
-         gen.seed(rseed);
-      } else {
-         gen.seed(rd);
-         fprintf(stdout, "Random seed ");
-      }
-*/
-
-      std::uniform_real_distribution<> lon(-180, 180);
-      std::uniform_real_distribution<> lat(-85, 85);
-
-      for (unsigned int i = 0; i < nb_el; i++) {
-         tweet_t el;
-         el.longitude = (float)lon(gen);
-         el.latitude = (float)lat(gen);
-         el.time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-         keyVal_vec.emplace_back(el, 25);
-      }
-
-      return keyVal_vec;
-   }
-
    /**
     * @brief dist_random Create a synthetic input for benchmark
     * @param nb_el
@@ -108,7 +77,7 @@ namespace input {
     * @param time_res Tweets created will have the time incremented every time_res;
     * @return
     */
-   inline std::vector<elttype> dist_random(unsigned int nb_el, long rseed, unsigned int time_res) {
+   inline std::vector<elttype> dist_random(uint64_t nb_el, long rseed, uint64_t time_res) {
       std::vector<elttype> keyVal_vec;
 
       std::mt19937 gen(rseed);
@@ -116,7 +85,7 @@ namespace input {
       std::uniform_real_distribution<> lon(-180, 180);
       std::uniform_real_distribution<> lat(-85, 85);
 
-      for (unsigned int i = 0; i < nb_el; i++) {
+      for (uint64_t i = 0; i < nb_el; i++) {
          tweet_t el;
          el.longitude = (float)lon(gen);
          el.latitude = (float)lat(gen);

@@ -25,10 +25,21 @@
 /*#define PRINTBENCH( ... ) do { \
 } while (0)*/
 
-struct bench_t {
-   // benchmark parameters
+struct center_t {
+   center_t() = default;
+   center_t(float _lat, float _lon) : lat(_lat), lon(_lon) {
+   }
+
+   float lat, lon;
+};
+
+struct bench_t {   
+   float def_r, min_r, max_r, inc_r;
+   uint64_t min_t, max_t, inc_t;
+
+   // benchmark parameters   
    uint32_t n_exp;
-   uint32_t batch_size;
+   uint64_t rate;
 };
 
 uint32_t g_Quadtree_Depth = 25;
@@ -43,125 +54,103 @@ void inline read_element(const valuetype& el) {
 }
 
 template <typename T>
-void inline run_queries(T& container, const region_t& region, uint32_t id, const bench_t& parameters) {
+void inline run_queries(T& container, const center_t& center, uint32_t id, uint64_t t, const bench_t& parameters) {
 
    Timer timer;
 
    uint32_t count = 0;
    applytype_function _apply = std::bind(count_element, std::ref(count),
                                          std::placeholders::_1, std::placeholders::_2);
-   // warm up
-   container.scan_at_region(region, read_element);
+   
+   for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
+      region_t region(center.lat, center.lon, r);
 
-   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-      timer.start();
+      // warm up
       container.scan_at_region(region, read_element);
-      timer.stop();
-      PRINTBENCH("scan_at_region", id, timer.milliseconds(), "ms");
+
+      for (uint32_t i = 0; i < parameters.n_exp; i++) {
+         timer.start();
+         container.scan_at_region(region, read_element);
+         timer.stop();
+         PRINTBENCH("scan_at_region", id, t, r, timer.milliseconds(), "ms");
+      }
    }
+   
+   for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
+      region_t region(center.lat, center.lon, r);
 
-   // warm up
-   container.apply_at_tile(region, _apply);
-
-   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-      count = 0;
-      timer.start();
+      // warm up
       container.apply_at_tile(region, _apply);
-      timer.stop();
-      PRINTBENCH("apply_at_tile", id, timer.milliseconds(), "ms");
+
+      for (uint32_t i = 0; i < parameters.n_exp; i++) {
+         count = 0;
+         timer.start();
+         container.apply_at_tile(region, _apply);
+         timer.stop();
+         PRINTBENCH("apply_at_tile", id, t, r, timer.milliseconds(), "ms");
+      }
    }
+   
+   for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
+      region_t region(center.lat, center.lon, r);
 
-   // warm up
-   container.apply_at_region(region, _apply);
-
-   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-      count = 0;
-      timer.start();
+      // warm up
       container.apply_at_region(region, _apply);
-      timer.stop();
-      PRINTBENCH("apply_at_region", id, timer.milliseconds(), "ms");
+
+      for (uint32_t i = 0; i < parameters.n_exp; i++) {
+         count = 0;
+         timer.start();
+         container.apply_at_region(region, _apply);
+         timer.stop();
+         PRINTBENCH("apply_at_region", id, t, r, timer.milliseconds(), "ms");
+      }
    }
 }
 
 template <typename T>
-void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const std::vector<region_t>& queries, const bench_t& parameters) {
-   //create container
-   std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
-   container->create((uint32_t)input.size());
+void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const std::vector<center_t>& queries, const bench_t& parameters) {
+   for (uint64_t t = parameters.min_t; t <= parameters.max_t; t += parameters.inc_t) {
+      
+      // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
+      uint64_t ctn_size = std::min((uint64_t)input.size(), parameters.rate * t);
 
-   std::vector<elttype>::const_iterator it_begin = input.begin();
-   std::vector<elttype>::const_iterator it_curr = input.begin();
+      //create container
+      std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
+      container->create((uint32_t)ctn_size);
 
-   while (it_begin != input.end()) {
-      it_curr = std::min(it_begin + parameters.batch_size, input.end());
-
-      std::vector<elttype> batch(it_begin, it_curr);
+      std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
       // insert batch
       container->insert(batch);
 
-      // update iterator
-      it_begin = it_curr;
-   }
+      for (uint32_t id = 0; id < queries.size(); id++) {
+         run_queries((*container.get()), queries[id], id, t, parameters);
+      }
 
-   for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries((*container.get()), queries[id], id, parameters);
+      // delete container
+      container.reset();
    }
 }
 
-void load_bench_file(const std::string& file, std::vector<region_t>& queries_vec) {
+void load_bench_file(const std::string& file, std::vector<center_t>& queries, int32_t n_queries) {
    PRINTOUT("Loading log file: %s \n", file.c_str());
 
-   std::ifstream infile(file);
+   std::ifstream infile(file, std::ios::in | std::ifstream::binary);
 
-   while (!infile.eof()) {
+   // number of elts - header
+   uint32_t elts = 0;
+   infile.read((char*)&elts, sizeof(uint32_t));
 
-      std::string line;
-      std::getline(infile, line);
-
-      try {
-         if (line.empty()) continue;
-
-         auto record = string_util::split(line, ",");
-
-         if (record.size() != 3) continue;
-
-         auto url = string_util::split(record[0], "/");
-
-         if (url[5] == "tile") {
-            continue;
-
-         } else if (url[5] == "query") {
-
-            uint32_t zoom;
-            if (url[7] == "undefined") {
-               zoom = 1;
-            } else {
-               zoom = std::stoi(url[7]);
-            }
-
-            uint32_t x0 = std::stoi(url[8]);
-            uint32_t y0 = std::stoi(url[9]);
-            uint32_t x1 = std::stoi(url[10]);
-            uint32_t y1 = std::stoi(url[11]);
-
-            if (x1 >= std::pow(2, zoom)) x1 = (uint32_t)std::pow(2, zoom) - 1;
-            if (y1 >= std::pow(2, zoom)) y1 = (uint32_t)std::pow(2, zoom) - 1;
-
-            if (x0 > x1) throw std::invalid_argument("[x: " + std::to_string(x0) + " > " + std::to_string(x1) + " ]");
-            if (y0 > y1) throw std::invalid_argument("[y: " + std::to_string(y0) + " > " + std::to_string(y1) + " ]");
-
-            queries_vec.emplace_back(region_t(x0, y0, x1, y1, zoom));
-         }
-      } catch (const std::invalid_argument& e) {
-         std::cerr << "error: [" << line << "]" << std::endl;
-         std::cerr << "error: " + std::string(e.what()) << std::endl;
-      }
+   if (n_queries > 0) {
+      elts = std::min(elts, (uint32_t)n_queries);
    }
+   queries.resize(elts);
+
+   infile.read(reinterpret_cast<char*>(&queries[0]), sizeof(center_t) * elts);
 
    infile.close();
 
-   PRINTOUT(" %d quries loaded. \n", (uint32_t)queries_vec.size());
+   PRINTOUT(" %d quries loaded. \n", (uint32_t)queries.size());
 }
 
 int main(int argc, char* argv[]) {
@@ -169,34 +158,45 @@ int main(int argc, char* argv[]) {
 
    cimg_usage("Queries Benchmark inserts elements in batches.");
 
-   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
-   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
-
-   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets"));
-   std::string bench_file(cimg_option("-bf", "./data/log.csv", "file with logs"));
-
-   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
+   std::string fname(cimg_option("-f", "", "File with tweets"));
+   const long seed(cimg_option("-seed", 123, "Random seed to generate elements"));
+   
+   int32_t n_queries(cimg_option("-n_queries", -1, "Number of queries"));
+   std::string bench_file(cimg_option("-bf", "./data/checkins_global.dat", "file with logs"));
+      
+   parameters.rate = (cimg_option("-rate", 1000, "Insertion rate"));
    parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
+
+   parameters.def_r = (cimg_option("-def_r", 30.f, "R: Default value (radius in km)"));
+   parameters.min_r = (cimg_option("-min_r", 0.25f, "R: Min"));
+   parameters.max_r = (cimg_option("-max_r", 400.1f, "R: Max"));
+   parameters.inc_r = (cimg_option("-inc_r", 39.975f, "R: Increment"));
+
+   parameters.min_t = (cimg_option("-min_t", 10800, "T: Min"));
+   parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
+   parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
+
+   uint64_t n_elts = parameters.rate * parameters.max_t;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
 
    const uint32_t quadtree_depth = 25;
-
+     
    std::vector<elttype> input;
 
-   if (nb_elements == 0) {
+   if (!fname.empty()) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input = input::load(fname, quadtree_depth);
+      input = input::load(fname, quadtree_depth, parameters.rate, n_elts);
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
-      input = input::dist_random(nb_elements, seed, parameters.batch_size);
+      input = input::dist_random(n_elts, seed, parameters.rate);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input.size());
    }
 
-   std::vector<region_t> queries;
-   load_bench_file(bench_file, queries);
+   std::vector<center_t> queries;
+   load_bench_file(bench_file, queries, n_queries);
 
    run_bench<PMABatchCtn>(argc, argv, input, queries, parameters);
    run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);

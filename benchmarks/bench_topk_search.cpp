@@ -235,7 +235,7 @@ int main(int argc, char* argv[]) {
    const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
    const long seed(cimg_option("-r", 123, "Random seed to generate elements"));
    std::string fname(cimg_option("-f", "./data/tweet10_6.dat", "file with tweets"));
-   std::string bench_file(cimg_option("-bf", "./data/log.csv", "file with logs"));
+   std::string bench_file(cimg_option("-bf", "./data/checkins_global.dat", "file with logs"));
 
    parameters.batch_size = (cimg_option("-b", 1000, "Batch size used in batched insertions"));
    parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
