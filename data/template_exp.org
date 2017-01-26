@@ -1,14 +1,14 @@
-# -*- org-export-babel-evaluate: nil; -*-
+# -*- org-export-babel-evaluate: t; -*-
 #+TITLE: Experiment Diary
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
 #+TAGS: @JULIO(J)
-#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n)
 #+CATEGORY: exp
 #+OPTIONS: ^:{}
-#+PROPERTY: header-args :cache no :eval no-export
+#+PROPERTY: header-args :cache no :eval no-export 
 
 * TODO Description 
 - Describe what are you doing
