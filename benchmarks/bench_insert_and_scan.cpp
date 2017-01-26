@@ -24,7 +24,7 @@
 } while (0)
 
 #define PRINTBENCH_PTR( ... ) do { \
-   std::cout << "InsertionRemoveBench " << container->name() << " ; ";\
+   std::cout << "InsertionBench " << container->name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
@@ -139,7 +139,6 @@ int main(int argc, char* argv[]) {
    for (elttype& e : input) {
       std::cout << "[" << e.key << "," << e.value.time << "] \n";
    }
-
 #endif
 
    run_bench<PMABatchCtn>(argc, argv, input, parameters);
