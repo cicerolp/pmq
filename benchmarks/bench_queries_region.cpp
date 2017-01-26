@@ -102,7 +102,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, uint6
          timer.start();
          container.apply_at_region(region, _apply);
          timer.stop();
-         PRINTBENCH("apply_at_region", id, t, r, timer.milliseconds(), "ms");
+         PRINTBENCH("apply_at_region", id, t, r, timer.milliseconds(), "ms",count);
       }
    }
 }
