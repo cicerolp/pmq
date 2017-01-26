@@ -140,6 +140,7 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries, in
    // number of elts - header
    uint32_t elts = 0;
    infile.read((char*)&elts, sizeof(uint32_t));
+   PRINTOUT("Max queries in file: %d\n",elts);
 
    if (n_queries > 0) {
       elts = std::min(elts, (uint32_t)n_queries);
@@ -150,7 +151,7 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries, in
 
    infile.close();
 
-   PRINTOUT(" %d quries loaded. \n", (uint32_t)queries.size());
+   PRINTOUT(" %d queries loaded. \n", (uint32_t)queries.size());
 }
 
 int main(int argc, char* argv[]) {
