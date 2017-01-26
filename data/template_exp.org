@@ -72,6 +72,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
  1 file changed, 32 insertions(+), 2 deletions(-)
 #+end_example
 
+Check Log
 #+begin_src sh :results output :exports both :var expId=expId
 git la -3 
 #+end_src
@@ -82,6 +83,32 @@ git la -3
 : | *   a7f2592 (refs/stash) WIP on master: 208d730 optimize GeoHash binary search (2)
 : | |\  
 : |/ /  
+
+
+** OAR Reservation                                                  :remote:
+#+begin_src sh :session g5k :results output :exports both 
+ssh digitalis.grenoble.g5k
+oarsub -p "machine = 'idphix'" -l walltime=1 -t redeploy "sleep 1h"
+
+#+end_src
+
+#+RESULTS:
+
+*** Loop script to renew a reservation 
+#+begin_src sh :results output :exports both :tangle ext_oarsub.sh :shebang #!/bin/sh
+while true
+do 
+oarsub -p "machine = 'idphix'" -l walltime=1 -t redeploy "sleep 1h"
+sleep 55m 
+done 
+#+end_src
+
+
+** Deploy custom image
+#+begin_src sh :session g5k :results output :exports both 
+kadeploy3 -m idphix -a ~/g5kUtils/images/jessie-x64-nfs-my.env -k &
+#+end_src 
+ 
 
 ** Export run script 
 
@@ -104,20 +131,24 @@ TMPDIR=/tmp/$expId
 mkdir -p $TMPDIR
 #mkdir -p $DATADIR
 
-# generate output name
-OUT=exec_$(date +%s).log
-
 cd $BUILDIR 
 
 cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
 make
 
-# EXECUTE BENCHMARK
+# generate output name
+EXEC_ID=$(date +%s)
+OUT=exec_$EXECID.log
+OUT2=exec2_$EXECID.log
+# EXECUTE BENCHMARK ->>> CHANGE HERE
 ./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT
+#./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT2
 
 cd $DATADIR
 
-cp $TMPDIR/$OUT .
+tar xvzf log_$EXECID.tgz *_$EXECID.log
+cp $TMPDIR/log_$EXECID.tgz .
+
 
 git checkout $expId
 
@@ -125,10 +156,99 @@ git checkout $expId
 echo "" > info.org
 ~/Projects/twitterVis/scripts/g5k_get_info.sh info.org 
 
-git add info.org $OUT 
-git commit -m "Finish execution of $OUT"
+git add info.org log_$EXECID.log 
+git commit -m "Finish execution $EXECID"
 #git push origin $expId
 #+end_src 
+
+** Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp1476928803
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+	modified:   run.sh
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	exp.org~
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+
+#+begin_src sh :results output :exports both
+git add run.sh
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** Get new changes on remote                                        :remote:
+#+begin_src sh :session g5k :results output :exports both 
+ssh -A digitalis.grenoble.g5k
+#+end_src
+
+#+RESULTS:
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session g5k :results output :exports both :var expId=expId
+cd ~/Projects/twitterVis/
+git fetch
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+** Execute on idphix                                                :remote:
+
+Opens ssh connection and a tmux session
+#+begin_src sh :results output :exports both :session tmux :var expId=expId
+ssh -A digitalis.grenoble.g5k 
+tmux new -d -s idphix " ssh -A idphix \"cd ~/Projects/twitterVis/data/idphix/$expId; ./run.sh &> run_$(date +%s) \" "
+exit
+#+end_src
+
+#+RESULTS:
+: 
+: [jtoss@digitalis ~]$ logout
+: Connection to digitalis.grenoble.g5k closed.
+
+Check process running
+#+begin_src sh :results output :exports both :session tmux
+ssh digitalis.grenoble.g5k 
+ssh idphix
+ps ux
+exit
+exit
+#+end_src
+
+#+RESULTS:
+: 
+: [jtoss@idphix ~]$ USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+: jtoss    15251  0.0  0.0  13700  3572 pts/1    Ss+  14:02   0:00 -bash
+: jtoss    15372  0.0  0.0  13228  2760 ?        Ss   14:40   0:00 bash -c cd ~/Pr
+: jtoss    15373  0.0  0.0  13228  2896 ?        S    14:40   0:00 /bin/bash ./run
+: jtoss    15421 99.7  0.5 484308 356684 ?       R    14:40   3:03 ./benchmarks/be
+: jtoss    15428  0.0  0.0  13728  3540 pts/0    Ss+  14:42   0:00 -bash
+: jtoss    15445  0.0  0.0  13700  3568 pts/2    Ss   14:43   0:00 -bash
+: jtoss    15457  0.0  0.0  10892  2172 pts/2    R+   14:43   0:00 ps ux
 
 
 ** Execute on local Machine
