@@ -23,8 +23,9 @@ namespace input {
 
       while (true) {
          try {
+
+            infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
             if (infile.eof()) break;
-            infile.read((char*)&record, record_size);
 
             tweets.emplace_back(record, mCodeSize);
          } catch (...) {
@@ -55,8 +56,9 @@ namespace input {
 
       while (n_elts--) {
          try {
+
+            infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
             if (infile.eof()) break;
-            infile.read((char*)&record, record_size);
 
             record.time = i / time_res;
             tweets.emplace_back(record, mCodeSize);
