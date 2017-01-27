@@ -40,6 +40,7 @@ struct bench_t {
    // benchmark parameters   
    uint32_t n_exp;
    uint64_t rate;
+   bool dryrun;
 };
 
 uint32_t g_Quadtree_Depth = 25;
@@ -66,11 +67,11 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, uint6
       region_t region(center.lat, center.lon, r);
 
       // warm up
-      container.scan_at_region(region, read_element);
+      if (!parameters.dryrun) container.scan_at_region(region, read_element);
 
       for (uint32_t i = 0; i < parameters.n_exp; i++) {
          timer.start();
-         container.scan_at_region(region, read_element);
+         if (!parameters.dryrun) container.scan_at_region(region, read_element);
          timer.stop();
          PRINTBENCH("scan_at_region", id, t, r, timer.milliseconds(), "ms");
       }
@@ -80,12 +81,12 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, uint6
       region_t region(center.lat, center.lon, r);
 
       // warm up
-      container.apply_at_tile(region, _apply);
+      if (!parameters.dryrun)      container.apply_at_tile(region, _apply);
 
       for (uint32_t i = 0; i < parameters.n_exp; i++) {
          count = 0;
          timer.start();
-         container.apply_at_tile(region, _apply);
+         if (!parameters.dryrun)        container.apply_at_tile(region, _apply);
          timer.stop();
          PRINTBENCH("apply_at_tile", id, t, r, timer.milliseconds(), "ms");
       }
@@ -95,12 +96,12 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, uint6
       region_t region(center.lat, center.lon, r);
 
       // warm up
-      container.apply_at_region(region, _apply);
+      if (!parameters.dryrun) container.apply_at_region(region, _apply);
 
       for (uint32_t i = 0; i < parameters.n_exp; i++) {
          count = 0;
          timer.start();
-         container.apply_at_region(region, _apply);
+         if (!parameters.dryrun)  container.apply_at_region(region, _apply);
          timer.stop();
          PRINTBENCH("apply_at_region", id, t, r, timer.milliseconds(), "ms",count);
       }
@@ -121,7 +122,7 @@ void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const 
       std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
       // insert batch
-      container->insert(batch);
+      if (!parameters.dryrun) container->insert(batch);
 
       for (uint32_t id = 0; id < queries.size(); id++) {
          run_queries((*container.get()), queries[id], id, t, parameters);
@@ -177,6 +178,8 @@ int main(int argc, char* argv[]) {
    parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
    parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
+   parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
+
    uint64_t n_elts = parameters.rate * parameters.max_t;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
@@ -185,6 +188,8 @@ int main(int argc, char* argv[]) {
    const uint32_t quadtree_depth = 25;
      
    std::vector<elttype> input;
+
+   if (parameters.dryrun) PRINTOUT("==== DRY RUN ====\n");
 
    if (!fname.empty()) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
