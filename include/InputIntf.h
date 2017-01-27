@@ -42,6 +42,13 @@ namespace input {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
+
+      if (! infile.is_open() ){
+         PRINTOUT("ERROR OPENING FILE\n");
+         return tweets;
+      }
+
+
       infile.unsetf(std::ios_base::skipws);
 
       // skip file header
