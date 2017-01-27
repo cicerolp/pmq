@@ -42,8 +42,13 @@ struct code_t {
    code_t(uint64_t _code, uint32_t _z) : code(_code), z(_z) {
       uint32_t diffDepth = 25 - z;
 
-      min_code = code << 2 * (diffDepth);
-      max_code = min_code | ((uint64_t)~0 >> (64 - 2 * diffDepth));
+      if (diffDepth == 0) {
+         min_code = code;
+         max_code = code;
+      } else {
+         min_code = code << 2 * (diffDepth);
+         max_code = min_code | ((uint64_t)~0 >> (64 - 2 * diffDepth));
+      }
    }
 
    /*inline bool operator==(const spatial_t& rhs) const {
@@ -64,6 +69,45 @@ struct code_t {
 
 struct region_t {
    region_t() = default;
+
+   region_t(float _lat, float _lon, float radius, uint32_t zoom) {
+      static const float PI_180_INV = 180.f / (float)M_PI;
+      static const float PI_180 = (float)M_PI / 180.f;
+      static const float r_earth = 6378.f;
+
+      lon = _lon;
+      lat = _lat;
+
+      float lat0 = lat + (radius / r_earth) * (PI_180_INV);
+
+      if (lat0 < -85.051132f) lat0 = -85.051132f;
+      else if (lat0 > 85.051132f) lat0 = 85.051132f;
+
+      float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
+
+      if (lon0 < -180.f) lon0 = -180.f;
+      else if (lon0 > 180.f) lon0 = 180.f;
+
+      float lat1 = lat - (radius / r_earth) * (PI_180_INV);
+
+      if (lat1 < -85.051132f) lat1 = -85.051132f;
+      else if (lat1 > 85.051132f) lat1 = 85.051132f;
+
+      float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
+
+      if (lon1 < -180.f) lon1 = -180.f;
+      else if (lon1 > 180.f) lon1 = 180.f;
+
+      z = zoom;
+
+      x0 = mercator_util::lon2tilex(lon0, z);
+      y0 = mercator_util::lat2tiley(lat0, z);
+      x1 = mercator_util::lon2tilex(lon1, z);
+      y1 = mercator_util::lat2tiley(lat1, z);
+
+      code0 = mortonEncode_RAM(x0, y0);
+      code1 = mortonEncode_RAM(x1, y1);
+   }
 
    region_t(float _lat, float _lon, float radius) {
       static const float PI_180_INV = 180.f / (float)M_PI;

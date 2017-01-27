@@ -59,9 +59,8 @@ protected:
 
 pma_seg_it GeoHash::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it& seg) const {
    auto it = pma_offset_it::begin(_pma, seg);
-   auto end = pma_offset_it::end(_pma, seg);
 
-   while (it != end) {
+   while (it < pma_offset_it::end(_pma, seg)) {
       if (PMA_ELT(*it) > code_max) return pma_seg_it::end(_pma);
       else if (PMA_ELT(*it) >= code_min) return seg;
       ++it;

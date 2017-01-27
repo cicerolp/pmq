@@ -131,27 +131,27 @@ public:
    pma_offset_it& operator=(const pma_offset_it&) = default;
 
    bool operator==(const pma_offset_it& other) const {
-      return _offset == other._offset && _seg == other._seg;
+      return _offset == other._offset/* && _seg == other._seg*/;
    }
 
    bool operator!=(const pma_offset_it& other) const {
-      return _offset != other._offset || _seg != other._seg;
+      return _offset != other._offset/* || _seg != other._seg*/;
    };
 
    bool operator<(const pma_offset_it& other) const {
-      return _offset < other._offset && _seg == other._seg;
+      return _offset < other._offset/* && _seg == other._seg*/;
    }
 
    bool operator>(const pma_offset_it& other) const {
-      return _offset > other._offset && _seg == other._seg;
+      return _offset > other._offset/* && _seg == other._seg*/;
    }
 
    bool operator<=(const pma_offset_it& other) const {
-      return _offset <= other._offset && _seg == other._seg;
+      return _offset <= other._offset/* && _seg == other._seg*/;
    }
 
    bool operator>=(const pma_offset_it& other) const {
-      return _offset >= other._offset && _seg == other._seg;
+      return _offset >= other._offset/* && _seg == other._seg*/;
    }
 
    pma_offset_it& operator++() {

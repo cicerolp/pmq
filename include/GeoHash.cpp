@@ -207,7 +207,7 @@ void GeoHash::scan_pma_at_region(const code_t& el, pma_seg_it& seg, const region
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       scan_pma(el, seg, __apply);
 
-   } else if (overlap == region_t::partial) {
+   } else if (overlap != region_t::none) {
       // break code into four
       uint64_t code = el.code << 2;
 
@@ -252,7 +252,7 @@ void GeoHash::apply_pma_at_region(const code_t& el, pma_seg_it& seg, const regio
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) return;
       __apply(el, count_pma(el, seg));
 
-   } else if (overlap == region_t::partial) {
+   } else if (overlap != region_t::none) {
       // break morton code into four
       uint64_t code = el.code << 2;
 
@@ -267,15 +267,17 @@ uint32_t GeoHash::count_pma(const code_t& el, pma_seg_it& seg) const {
    size_t count = 0;
    auto prev_seg = seg;
 
-   do {
-      count += seg.size();
-   } while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code);
+   count += seg.size();
 
+   while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code) {
+      count += seg.size();
+   }
+   
    assert(count != 0);
 
    pma_offset_it off_begin, off_end;
 
-   if (seg != pma_seg_it::end(_pma)) {
+   if (seg != pma_seg_it::end(_pma) && PMA_ELT(*pma_offset_it::begin(_pma, seg)) >= el.min_code) {
       count += seg.size();
 
       //subtract extra elements for last segment
@@ -284,7 +286,7 @@ uint32_t GeoHash::count_pma(const code_t& el, pma_seg_it& seg) const {
                                    [](void* elt, uint64_t value) {
                                       return PMA_ELT(elt) < value;
                                    });
-      count -= seg.size() - (off_end - off_begin);
+      count -= (off_end - off_begin);
 
       assert(count != 0);
    }
@@ -303,19 +305,17 @@ uint32_t GeoHash::count_pma(const code_t& el, pma_seg_it& seg) const {
 }
 
 void GeoHash::scan_pma(const code_t& el, pma_seg_it& seg, scantype_function _apply) const {
-   auto seg_end = pma_seg_it::end(_pma);
+   while (seg < pma_seg_it::end(_pma)) {
 
-   while (seg != seg_end) {
-      auto off_it = pma_offset_it::begin(_pma, seg);
-      auto off_end = pma_offset_it::end(_pma, seg);
+      auto it = pma_offset_it::begin(_pma, seg);
 
-      while (off_it != off_end) {
-         if (PMA_ELT(*off_it) > el.max_code) {
+      while (it < pma_offset_it::end(_pma, seg)) {
+         if (PMA_ELT(*it) > el.max_code) {
             return;
-         } else if (PMA_ELT(*off_it) >= el.min_code) {
-            _apply(*(valuetype*)ELT_TO_CONTENT(*off_it));
+         } else if (PMA_ELT(*it) >= el.min_code) {
+            _apply(*(valuetype*)ELT_TO_CONTENT(*it));
          }
-         ++off_it;
+         ++it;
       }
       ++seg;
    }
@@ -326,16 +326,15 @@ void GeoHash::scan_pma(const code_t& el, pma_seg_it& seg, scantype_function _app
  * Sequential search on the pma.
  */
 pma_seg_it GeoHashSequential::search_pma(const code_t& el, pma_seg_it& seg) const {
-   auto end = pma_seg_it::end(_pma);
-
-   while (seg != end) {
+   while (seg < pma_seg_it::end(_pma)) {
       if (PMA_ELT(*seg) >= el.min_code) break;
       ++seg;
    }
 
-   if (seg != end) return find_elt_pma(el.min_code, el.max_code, seg);
+   if (seg < pma_seg_it::end(_pma)) return find_elt_pma(el.min_code, el.max_code, seg);
 
-   return end;
+   // not found
+   return pma_seg_it::end(_pma);
 }
 
 pma_seg_it GeoHashBinary::search_pma(const code_t& el, pma_seg_it& seg) const {
@@ -344,14 +343,13 @@ pma_seg_it GeoHashBinary::search_pma(const code_t& el, pma_seg_it& seg) const {
       return find_elt_pma(el.min_code, el.max_code, seg);
    }
 
-   auto end = pma_seg_it::end(_pma);
-
-   seg = std::lower_bound(seg, end, el.min_code,
-                          [](void* elt, uint64_t value) {
+   seg = std::lower_bound(seg, pma_seg_it::end(_pma), el.min_code,
+                          [](void* elt, uint64_t value) {                              
                              return PMA_ELT(elt) < value;
                           });
 
-   if (seg != end) return find_elt_pma(el.min_code, el.max_code, seg);
+   if (seg < pma_seg_it::end(_pma)) return find_elt_pma(el.min_code, el.max_code, seg);
 
-   return end;
+   // not found
+   return pma_seg_it::end(_pma);
 }
