@@ -13,12 +13,18 @@ add_executable(bench_insert_remove_scan
 
       ../include/QuadtreeIntf.cpp
       ../include/GeoHash.cpp
-      ../include/GeoHash.cpp
-      ../include/PMABatchCtn.cpp
-      ../include/DenseVectorCtn.cpp
    )
 
    target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(bench_insert_remove_count
+      bench_insert_remove_count.cpp
+
+      ../include/QuadtreeIntf.cpp
+      ../include/GeoHash.cpp
+   )
+
+   target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 
 if(WIN32)
    add_executable(bench_queries_region
