@@ -131,22 +131,24 @@ TMPDIR=/tmp/$expId
 mkdir -p $TMPDIR
 #mkdir -p $DATADIR
 
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" ../pma_cd
+
+mkdir -p $BUILDIR
 cd $BUILDIR 
 
 cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
 make
 
 # generate output name
-EXEC_ID=$(date +%s)
-OUT=exec_$EXECID.log
-OUT2=exec2_$EXECID.log
+EXECID=$(date +%s)
 # EXECUTE BENCHMARK ->>> CHANGE HERE
-./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT
+./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/bench_insert_$EXECID.log
 #./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT2
 
 cd $DATADIR
 
-tar xvzf log_$EXECID.tgz *_$EXECID.log
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
 cp $TMPDIR/log_$EXECID.tgz .
 
 
@@ -210,7 +212,8 @@ Get the last script on the remote machine (require entering a password
 for bitbucket)
 #+begin_src sh :session g5k :results output :exports both :var expId=expId
 cd ~/Projects/twitterVis/
-git fetch
+git config remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
 git checkout $expId
 git pull origin $expId
 git log -1 | cat 
@@ -262,12 +265,13 @@ tmux ls
 * TODO Analisys
 ** Generate csv files
 List logFiles
+
+#+NAME: logFile
 #+begin_src sh :results table :exports both
 ls *log
 #+end_src
 
-#+NAME: logFile
-#+RESULTS:
+#+RESULTS: logFile
 | exec_1483481139.log |
 
 Create CSV using logFile 

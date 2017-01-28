@@ -349,11 +349,6 @@ results of different experiments.
 ** Sample machine
 *** TODO Template Experiment
 
-A starting point to create an exepriment on the labbook:
-- [ ] clone (copy /paste) this subtree and 
-  
-- [ ] put a singnificative name
-
 - [ ] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
@@ -373,5 +368,4 @@ echo "[[$expFolder/exp.org]]"
 
   #+RESULTS:
 
-[[./data/inf-desktop/exp1483472768/exp.org]]
-
+[[file:data/template_exp.org]]
