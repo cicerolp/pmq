@@ -46,6 +46,8 @@ struct bench_t {
    uint64_t rate;
    uint64_t now;
 
+   bool dryrun;
+
    topk_t reset_topk() const {
       topk_t topk_info;
 
@@ -90,8 +92,8 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
          topk_info.k = k;
 
          count = 0;
-         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+         if (!parameters.dryrun)   container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+         if (!parameters.dryrun)   container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
             output.clear();
@@ -99,7 +101,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             topk_info.k = k;
 
             timer.start();
-            container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+            if (!parameters.dryrun)   container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
             PRINTBENCH("topk_search_k", id, parameters.def_t, k, output.size(), count, timer.milliseconds(), "ms");
@@ -115,8 +117,8 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
          topk_info.radius = r;
 
          count = 0;
-         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+  if (!parameters.dryrun)        container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+   if (!parameters.dryrun)       container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
             output.clear();
@@ -124,7 +126,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             topk_info.radius = r;
 
             timer.start();
-            container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+    if (!parameters.dryrun)         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
             PRINTBENCH("topk_search_r", id, parameters.def_t, r, output.size(), count, timer.milliseconds(), "ms");
@@ -140,8 +142,8 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
          topk_info.alpha = a;
 
          count = 0;
-         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+     if (!parameters.dryrun)     container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+      if (!parameters.dryrun)    container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
             output.clear();
@@ -149,7 +151,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             topk_info.alpha = a;
 
             timer.start();
-            container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+       if (!parameters.dryrun)      container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
             PRINTBENCH("topk_search_a", id, parameters.def_t, a, output.size(), count, timer.milliseconds(), "ms");
@@ -170,7 +172,7 @@ void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const 
    std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
    // insert batch
-   container->insert(batch);
+   if (!parameters.dryrun) container->insert(batch);
 
    for (uint32_t id = 0; id < queries.size(); id++) {
       run_queries((*container.get()), queries[id], id, parameters);
@@ -236,6 +238,8 @@ int main(int argc, char* argv[]) {
    parameters.max_a = (cimg_option("-max_a", 1.f, "a: Max"));
    parameters.inc_a = (cimg_option("-inc_a", 0.2f, "a: Increment"));
 
+   parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
+
    uint64_t n_elts = parameters.rate * parameters.def_t;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
@@ -244,6 +248,8 @@ int main(int argc, char* argv[]) {
    const uint32_t quadtree_depth = 25;
 
    std::vector<elttype> input;
+
+   if (parameters.dryrun) PRINTOUT("==== DRY RUN ====\n");
 
    if (!fname.empty()) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
