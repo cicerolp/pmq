@@ -34,16 +34,16 @@ struct center_t {
 
 struct bench_t {
    // topk parameters
-   bool var_k, var_r, var_t, var_a;
+   bool var_k, var_r, var_a;
 
    uint32_t def_k, min_k, max_k, inc_k;
    float def_r, min_r, max_r, inc_r;
-   uint64_t def_t, min_t, max_t, inc_t;
+   uint64_t def_t;
    float def_a, min_a, max_a, inc_a;
 
    // benchmark parameters
    uint32_t n_exp;
-   uint32_t batch_size;
+   uint64_t rate;
    uint64_t now;
 
    topk_t reset_topk() const {
@@ -59,10 +59,10 @@ struct bench_t {
    }
 
    void print() {
-      PRINTOUT("parameters-> n_exp: %d, batch_size: %d, now: %lld\n", n_exp, batch_size, now);
+      PRINTOUT("parameters-> n_exp: %d, rate: %lld, now: %lld\n", n_exp, rate, now);
+      PRINTOUT("t-> default: %lld\n", def_t);
       PRINTOUT("k-> enable: %s, default: %d, interval: [%d,%d], increment: %d\n", var_k ? "true" : "false", def_k, min_k, max_k, inc_k);
-      PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);
-      PRINTOUT("t-> enable: %s, default: %lld, interval: [%lld,%lld], increment: %lld\n", var_t ? "true" : "false", def_t, min_t, max_t, inc_t);
+      PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);      
       PRINTOUT("a-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_a ? "true" : "false", def_a, min_a, max_a, inc_a);
    }
 };
@@ -102,7 +102,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_k", id, k, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_k", id, parameters.def_t, k, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -127,32 +127,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_r", id, r, output.size(), count, timer.milliseconds(), "ms");
-         }
-      }
-   }
-
-   if (parameters.var_t) {
-      for (uint64_t t = parameters.min_t; t <= parameters.max_t; t += parameters.inc_t) {
-         // warm up
-         output.clear();
-         topk_info = parameters.reset_topk();
-         topk_info.time = t;
-
-         count = 0;
-         container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
-
-         for (uint32_t i = 0; i < parameters.n_exp; i++) {
-            output.clear();
-            topk_info = parameters.reset_topk();
-            topk_info.time = t;
-
-            timer.start();
-            container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
-            timer.stop();
-
-            PRINTBENCH("topk_search_t", id, t, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_r", id, parameters.def_t, r, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -177,7 +152,7 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
             container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
             timer.stop();
 
-            PRINTBENCH("topk_search_a", id, a, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_a", id, parameters.def_t, a, output.size(), count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -185,31 +160,27 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
 
 template <typename T>
 void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const std::vector<center_t>& queries, const bench_t& parameters) {
+   // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
+   uint64_t ctn_size = std::min((uint64_t)input.size(), parameters.rate * parameters.def_t);
+
    //create container
    std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
-   container->create((uint32_t)input.size());
+   container->create((uint32_t)ctn_size);
 
-   std::vector<elttype>::const_iterator it_begin = input.begin();
-   std::vector<elttype>::const_iterator it_curr = input.begin();
+   std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
-   while (it_begin != input.end()) {
-      it_curr = std::min(it_begin + parameters.batch_size, input.end());
-
-      std::vector<elttype> batch(it_begin, it_curr);
-
-      // insert batch
-      container->insert(batch);
-
-      // update iterator
-      it_begin = it_curr;
-   }
+   // insert batch
+   container->insert(batch);
 
    for (uint32_t id = 0; id < queries.size(); id++) {
       run_queries((*container.get()), queries[id], id, parameters);
    }
+
+   // delete container
+   container.reset();
 }
 
-void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
+void load_bench_file(const std::string& file, std::vector<center_t>& queries, int32_t n_queries) {
    PRINTOUT("Loading log file: %s \n", file.c_str());
 
    std::ifstream infile(file, std::ios::in | std::ifstream::binary);
@@ -217,14 +188,18 @@ void load_bench_file(const std::string& file, std::vector<center_t>& queries) {
    // number of elts - header
    uint32_t elts = 0;
    infile.read((char*)&elts, sizeof(uint32_t));
+   PRINTOUT("Max queries in file: %d\n", elts);
 
+   if (n_queries > 0) {
+      elts = std::min(elts, (uint32_t)n_queries);
+   }
    queries.resize(elts);
 
    infile.read(reinterpret_cast<char*>(&queries[0]), sizeof(center_t) * elts);
 
    infile.close();
 
-   PRINTOUT(" %d quries loaded. \n", (uint32_t)queries.size());
+   PRINTOUT(" %d queries loaded. \n", (uint32_t)queries.size());
 }
 
 int main(int argc, char* argv[]) {
@@ -232,12 +207,13 @@ int main(int argc, char* argv[]) {
 
    cimg_usage("Topk Search Benchmark.");
 
-   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+   std::string fname(cimg_option("-f", "", "file with tweets"));
    const long seed(cimg_option("-r", 123, "Random seed to generate elements"));
-   std::string fname(cimg_option("-f", "./data/tweet10_6.dat", "file with tweets"));
+
+   int32_t n_queries(cimg_option("-n_queries", -1, "Number of queries"));
    std::string bench_file(cimg_option("-bf", "./data/checkins_global.dat", "file with logs"));
 
-   parameters.batch_size = (cimg_option("-b", 1000, "Batch size used in batched insertions"));
+   parameters.rate = (cimg_option("-rate", 1000, "Insertion rate"));
    parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
    parameters.var_k = (cimg_option("-var_k", false, "K: Enable benchmark"));
@@ -252,17 +228,15 @@ int main(int argc, char* argv[]) {
    parameters.max_r = (cimg_option("-max_r", 400.1f, "R: Max"));
    parameters.inc_r = (cimg_option("-inc_r", 39.975f, "R: Increment"));
 
-   parameters.var_t = (cimg_option("-var_t", false, "T: Enable benchmark"));
    parameters.def_t = (cimg_option("-def_t", 21600, "T: Default value (in seconds)"));
-   parameters.min_t = (cimg_option("-min_t", 10800, "T: Min"));
-   parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
-   parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
    parameters.var_a = (cimg_option("-var_a", false, "a: Enable benchmark"));
    parameters.def_a = (cimg_option("-def_a", 0.2f, "a: Default value"));
    parameters.min_a = (cimg_option("-min_a", 0.f, "a: Min"));
    parameters.max_a = (cimg_option("-max_a", 1.f, "a: Max"));
    parameters.inc_a = (cimg_option("-inc_a", 0.2f, "a: Increment"));
+
+   uint64_t n_elts = parameters.rate * parameters.def_t;
 
    const char* is_help = cimg_option("-h", (char*)0, 0);
    if (is_help) return false;
@@ -271,13 +245,13 @@ int main(int argc, char* argv[]) {
 
    std::vector<elttype> input;
 
-   if (nb_elements == 0) {
+   if (!fname.empty()) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input = input::load(fname, quadtree_depth, parameters.batch_size);
+      input = input::load(fname, quadtree_depth, parameters.rate, n_elts);
       PRINTOUT(" %d teewts loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys..");
-      input = input::dist_random(nb_elements, seed, parameters.batch_size);
+      input = input::dist_random(n_elts, seed, parameters.rate);
       PRINTOUT(" %d teewts generated \n", (uint32_t)input.size());
    }
 
@@ -287,9 +261,9 @@ int main(int argc, char* argv[]) {
    parameters.print();
 
    std::vector<center_t> queries;
-   load_bench_file(bench_file, queries);
+   load_bench_file(bench_file, queries, n_queries);
 
-   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
+   run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
    run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
 
    return EXIT_SUCCESS;
