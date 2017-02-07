@@ -5,9 +5,9 @@
 #+STARTUP: logdrawer hideblocks
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
-#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
 #+CATEGORY: TwitterVis
-#+OPTIONS: ^:{}
+#+OPTIONS: ^:{} H:3
 #+PROPERTY: header-args :cache no :eval no-export
 
 
@@ -341,6 +341,9 @@ fi
 #+end_src
 
 * Data
+:PROPERTIES:
+:EXPORT_OPTIONS: H:2
+:END:
 Note: Only DATA branch contains entries here; 
 
 Reference about each experiment campaing. Usefull for comparing
@@ -369,3 +372,445 @@ echo "[[$expFolder/exp.org]]"
   #+RESULTS:
 
 [[file:data/template_exp.org]]
+
+
+** idphix
+
+*** DONE exp1476715297
+  
+[[file:data/idphix/exp1476715297/exp.org]]
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git merge exp1476715297
+#+end_src
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git checkout DATA
+git branch -d exp1476715297
+git tag exp1476715297
+#+end_src
+
+*** DONE exp1476822779                                :exp1476822779:
+[[file:data/idphix/exp1476822779/exp.org]]
+
+COMMENTS: 
+- In this experiment the uniform distribution was not correctly
+  computed for the database versions.
+  
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v
+#+end_src
+
+#+RESULTS:
+#+begin_example
+DATA              d16ac93 [ahead 13] Merge branch 'exp1476715297' into DATA
+  containers_branch f5312fc *up and running*
+  count_bug         b0881c9 BUGFIX: spatial element update
+  debug_cicero      20cf087 BUG: Counts on the pma are not correct
+  diff_bug          15d3f43 Add comments
+> exp1476822779     83b332e WIP: analyzing results ...
+  exp1476879656     763870f ADD: detailed plots on analysis
+  exp1476897663     3b3745e WIP: running experiment on idphix
+  exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+  master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+#+end_example
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476822779
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 13 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476822779
+git tag exp1476822779
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476822779 (was 83b332e).
+
+*** DONE exp1476879656                                               :pres:
+:COMMENTS: 
+This branch was the first correct overview with the database
+benchmarks.
+This results were presented on the group meeting [2016-10-20 Qui]
+:END:
+
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476879656
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476879656'
+
+[[file:data/idphix/exp1476879656/exp.org]]
+
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v
+#+end_src
+
+#+RESULTS:
+: DATA              1281670 [ahead 21] Merge branch 'exp1476822779' into DATA
+:   containers_branch f5312fc *up and running*
+:   count_bug         b0881c9 BUGFIX: spatial element update
+:   debug_cicero      20cf087 BUG: Counts on the pma are not correct
+:   diff_bug          15d3f43 Add comments
+: * exp1476879656     b48b74a UPD: plots for twitter dataset
+:   exp1476897663     3b3745e WIP: running experiment on idphix
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476879656
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 21 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476879656
+git tag exp1476879656
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476879656 (was b48b74a).
+
+*** DONE exp1476897663
+
+:COMMENTS: 
+This is an unfinished experiment, aborted because sqltie benchmark was
+taking too much time.
+
+But I still have complete results for the bench_insert_and_scan
+benchmark for PMABatch, StdDense and TimDense. Partial results for sqlite. 
+:END:
+
+[[file:data/idphix/exp1476897663/exp.org]]
+
+**** Merging
+#+begin_src sh :session g5k :results output :exports both 
+ssh -A digitalis.grenoble.g5k
+#+end_src
+
+#+begin_src sh :session g5k :results output :exports both 
+cd ./Projects/twitterVis/
+git status -uno
+git commit -m "Exp: partial results, experiment canceled"
+#+end_src
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476897663
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476897663'
+
+
+#+begin_src sh :session exp :results output :exports both 
+git branch -v | grep "DATA\|master\|exp*"
+#+end_src
+
+#+RESULTS:
+: DATA              38317be [ahead 32] Merge branch 'exp1476879656' into DATA
+: * exp1476897663     58adc33 Exp: partial results, experiment canceled
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476897663
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 32 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476897663
+git tag exp1476897663
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476897663 (was 546e8fd).
+
+*** DONE exp1476928803                                               :pres:
+
+:COMMENTS: 
+- use Bench_micro_pmq to evaluate the updates without doing
+  queries.
+- Removed the slow postgreSQL form the comparison
+- These results were presented on [2016-10-20 Qui]
+  [[file:data/presentations/twitterVis-perf.pdf]] 
+- Added amortized insertion time analysis 
+:END:
+
+[[file:data/idphix/exp1476928803/exp.org]]
+
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v | grep "DATA\|master\|exp*"
+#+end_src
+
+#+RESULTS:
+: * DATA              66cd5c1 [ahead 39] Merge branch 'exp1476897663' into DATA
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476928803
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476928803'
+: Your branch is ahead of 'origin/exp1476928803' by 4 commits.
+:   (use "git push" to publish your local commits)
+
+
+
+
+note: finish commit "by hand" after the merge
+#+begin_src sh :session exp :resu lts output :exports both 
+git checkout DATA
+git merge exp1476928803
+#+end_src
+
+#+RESULTS:
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476928803
+git tag exp1476928803
+#+end_src
+
+#+RESULTS:
+: warning: not deleting branch 'exp1476928803' that is not yet merged to
+:          'refs/remotes/origin/exp1476928803', even though it is merged to HEAD.
+: error: The branch 'exp1476928803' is not fully merged.
+: If you are sure you want to delete it, run 'git branch -D exp1476928803'.
+
+*** CANCELED Experiments for the TwitterVis paper       :exp20170126011645:
+[2017-01-26 Qui]
+
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc="idphix"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/idphix/exp20170126011645/exp.org]]
+
+
+**** TODO Machine comparison                          
+
+The perfomance of our application varies a lot depeneding on the
+machine.
+We discovered that on idphix, the times were much larger, probably due
+to slower processor. 
+
+
+#+begin_src sh :results output raw :exports both
+expFolder=./data/exp$(date +%Y%m%d%H%M%S)
+mkdir -p $expFolder 
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/exp20170127140737/exp.org]]
+
+
+** inf-desktop
+
+*** [2017-01-03 Ter] exp1483478591
+  
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%s)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp1483478591/exp.org]]
+
+*** [2017-01-07 Sáb] Bench queries on regions
+
+Test several "real world queries" from log.csv
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%s)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp1483835412/exp.org]]
+
+*** [2017-01-23 Seg] Bencmarks with removal of elements 
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170123134710/exp.org]]
+
+*** DONE TOPK - benchmarks
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170123215338/exp.org]]
+
+  
+** cicero
+
+*** TwitterVis Experiement - bench_query_regions
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170128002234/exp.org]]
+
+*** DONE Bench Insert and remove :                      :exp20170128175749:
+Inserts elements until filling the buffer. 
+Buffer size is $Time Window X Rate$ 
+
+[[./data/cicero/exp20170128175749/exp.org]]
+
+*** TODO Topk benchmark                                 :exp20170130113312: 
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170130113312/exp.org]]
+
+*** DONE Bench Insert and remove - V2 (corrected benchmarks) :exp20170201161635:
+
+[[./data/cicero/exp20170201161635/exp.org]]
+
