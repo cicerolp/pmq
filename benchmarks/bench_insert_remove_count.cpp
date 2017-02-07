@@ -58,22 +58,37 @@ void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const 
     for (uint64_t temp_window = parameters.min_t; temp_window <= parameters.max_t; temp_window += parameters.inc_t) {
 
 
+
        // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
-       uint64_t ctn_size = std::min((uint64_t)input.size(), parameters.rate * temp_window);
+       uint64_t ctn_size =  parameters.rate * temp_window;
 
 
-       //create container
+       //create container with the size of temporal window
        std::unique_ptr<T> container = std::make_unique<T>(argc, argv);
        container->create((uint32_t)ctn_size);
 
+       //We insert all the elements of the dataset, the container should delete the oldest to keep place for everything
        std::vector<elttype>::const_iterator it_begin = input.begin();
        std::vector<elttype>::const_iterator it_curr = input.begin();
-       std::vector<elttype>::const_iterator it_end = input.begin() + ctn_size;
+       std::vector<elttype>::const_iterator it_end = input.end();
 
        duration_t timer;
 
-       uint64_t t_now = 0; //current time counter
+       uint64_t t_now = temp_window; //current time counter
        uint64_t oldest_time = 0;
+
+       // INITIALIZE THE CONTAINER TO FILL IT UNTIL THE STEADY STATE
+       // Fills the time window
+       it_curr = std::min(it_begin + ctn_size, it_end);
+       std::vector<elttype> initBatch(it_begin, it_curr);
+       container->insert_rm(initBatch, [ oldest_time ]( const void* el) {
+                return ((elttype*)el)->value.time < oldest_time;
+             });
+
+       it_begin = it_curr;
+       t_now++;
+
+       // Continues inserting by batches.
        while (it_begin != it_end) {
           it_curr = std::min(it_begin + parameters.rate, it_end);
 
@@ -120,10 +135,10 @@ int main(int argc, char* argv[]) {
 
    cimg_usage("Queries Benchmark inserts elements in batches.");
 
-   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to insert"));
    const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-   std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
+   std::string fname(cimg_option("-f", "", "file with tweets to load"));
 
 
 //   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -141,14 +156,18 @@ int main(int argc, char* argv[]) {
 
    const uint32_t quadtree_depth = 25;
 
-   uint64_t n_elts = parameters.rate * parameters.max_t;
+//   uint64_t n_elts = parameters.rate * parameters.max_t;
+// We want to load everything, not just the timewindow.
 
    std::vector<elttype> input;
 
-   if (nb_elements == 0) {
+   if (fname != "") {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-      input = input::load(fname, quadtree_depth,parameters.rate,n_elts);
-      PRINTOUT("%d teewts loaded \n", (uint32_t)input.size());
+      if (nb_elements != 0)
+         input = input::load(fname, quadtree_depth,parameters.rate,nb_elements);
+      else
+         input = input::load(fname, quadtree_depth,parameters.rate);
+      PRINTOUT("%d tweets loaded \n", (uint32_t)input.size());
    } else {
       PRINTOUT("Generate random keys...\n");
       //Use the batch id as timestamp
