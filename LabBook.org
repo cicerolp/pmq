@@ -845,3 +845,38 @@ echo "[[$expFolder/exp.org]]"
 
 #+RESULTS:
 [[./data/cicero/exp20170208204511/exp.org]]
+*** TODO Bench Insert and remove (fixe pma bug) :exp20170210223303:
+**** Setup                                                      :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports none :session template
+set -e
+expId=exp20170210223303
+machineDesc=cicero
+expFolder=./data/$machineDesc/$expId
+mkdir -p $expFolder
+set +e
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output :exports both :session template
+  git checkout exp20170208204511 ./data/cicero/exp20170208204511/exp.org
+  mv ./data/cicero/exp20170208204511/exp.org $expFolder  
+# git show exp20170208204511:data/cicero/exp20170208204511/exp.org > $expFolder/exp.org
+  #+end_src
+
+  #+RESULTS:
+  
+**** Description 
+
+Re-run experiments [[*Bench Insert and remove - V2 (corrected benchmarks)][Bench Insert and remove - V2 (corrected benchmarks)]]
+with corrected PMA removal algorithm. 
+
+#+begin_src sh :session template :results output raw :exports result 
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170210223303/exp.org]]
+
