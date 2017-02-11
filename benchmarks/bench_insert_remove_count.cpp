@@ -108,18 +108,12 @@ void run_bench(int argc, char* argv[], const std::vector<elttype>& input, const 
 
           // ========================================
           // Count elements on the container
-          uint32_t count = 0;
-          applytype_function count_element_wrapper = std::bind(count_element, std::ref(count),
-                                                               std::placeholders::_1, std::placeholders::_2);
-
-          if (!parameters.dryrun) {
-             container->apply_at_region( region_t(0, 0, 0, 0, 0) , count_element_wrapper);
-
+                   if (!parameters.dryrun) {
              for (auto& info : timer) {
-                PRINTBENCH_PTR(info.name, parameters.rate, temp_window, t_now, info.duration, "ms", count);
+                PRINTBENCH_PTR(info.name, parameters.rate, temp_window, t_now, info.duration, "ms", container->size());
              }
           }else{
-                PRINTBENCH_PTR("dryrun", parameters.rate, temp_window, t_now, 0, "ms", count);
+                PRINTBENCH_PTR("dryrun", parameters.rate, temp_window, t_now, 0, "ms", container->size());
           }
 
           // update iterator

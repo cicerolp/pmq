@@ -28,6 +28,9 @@ public:
 
    inline virtual std::string name() const = 0;
 
+   size_t size() const { return _pma->nb_elements() ; }
+   size_t capacity() const { return _pma->array_size; }
+
 protected:
 #define PMA_ELT(x) ((*(uint64_t*)x))
 
