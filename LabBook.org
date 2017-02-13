@@ -818,7 +818,7 @@ echo "[[$expFolder/exp.org]]"
 
 [[file:data/cicero/exp20170207004746/exp.org]]
 
-*** TODO PMA with Rho_h insertions                      :exp20170208204511:
+*** DONE PMA with Rho_h insertions                      :exp20170208204511:
 Change the initialization of the PMA based on \rho_{h} in stead of \tau_{h}
 
 - [X] Create a direcorty for this experiment 
@@ -845,7 +845,7 @@ echo "[[$expFolder/exp.org]]"
 
 #+RESULTS:
 [[./data/cicero/exp20170208204511/exp.org]]
-*** TODO Bench Insert and remove (fixe pma bug) :exp20170210223303:
+*** DONE Bench Insert and remove (fixed pma bug)        :exp20170210223303:
 **** Setup                                                      :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports none :session template
