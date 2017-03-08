@@ -152,6 +152,31 @@ std::string GeoRunner::query(const Query& query) {
       }
          break;
 
+      case Query::TOPK: {
+         writer.StartObject();
+
+         topk_t topk_info = query.topk_info;
+
+         uint32_t count = 0;
+         scantype_function _apply = std::bind(GeoRunner::write_data, std::ref(writer),
+                                              std::ref(count), std::placeholders::_1);
+
+         writer.String("data");
+         writer.StartArray();
+
+         // lock mutex
+         _mutex.lock();
+
+         _container->topk_search(query.region, topk_info, _apply);
+
+         // unlock mutex
+         _mutex.unlock();
+
+         writer.EndArray();
+         writer.EndObject();
+      }
+         break;
+
       default: {
          return ("[]");
       }
@@ -166,7 +191,7 @@ void GeoRunner::accum_region(uint32_t& accum, const spatial_t& area, uint32_t co
 }
 
 void GeoRunner::write_data(json_writer& writer, uint32_t& accum, const valuetype& el) {
-   static const uint32_t max = 1000;
+   static const uint32_t max = 100;
 
    if (accum >= max) return;
 

@@ -56,6 +56,7 @@ function reset_defaults() {
 
 function ws_init() {
    var ws = new WebSocket(WS_URL);
+   console.log(WS_URL);
          
    ws.onopen = function (ev) {
       reset_defaults();      
@@ -70,6 +71,7 @@ function ws_init() {
    };
    ws.onmessage = function (ev) {
       up_to_date = false;
+      console.log("onmessage");
    };   
 }
 

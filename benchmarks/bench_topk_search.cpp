@@ -26,6 +26,7 @@ uint32_t g_Quadtree_Depth = 25;
 
 struct center_t {
    center_t() = default;
+
    center_t(float _lat, float _lon) : lat(_lat), lon(_lon) {
    }
 
@@ -64,47 +65,48 @@ struct bench_t {
       PRINTOUT("parameters-> n_exp: %d, rate: %lld, now: %lld\n", n_exp, rate, now);
       PRINTOUT("t-> default: %lld\n", def_t);
       PRINTOUT("k-> enable: %s, default: %d, interval: [%d,%d], increment: %d\n", var_k ? "true" : "false", def_k, min_k, max_k, inc_k);
-      PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);      
+      PRINTOUT("r-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_r ? "true" : "false", def_r, min_r, max_r, inc_r);
       PRINTOUT("a-> enable: %s, default: %f, interval: [%f,%f], increment: %f\n", var_a ? "true" : "false", def_a, min_a, max_a, inc_a);
    }
 };
-
-void inline count_element(uint32_t& accum, const spatial_t&, uint32_t count) {
-   accum += count;
-}
 
 template <typename T>
 void inline run_queries(T& container, const center_t& center, uint32_t id, const bench_t& parameters) {
    Timer timer;
 
    topk_t topk_info;
-   std::vector<valuetype> output;
 
    uint32_t count = 0;
-   applytype_function _apply = std::bind(count_element, std::ref(count),
-                                         std::placeholders::_1, std::placeholders::_2);
+   applytype_function _apply = std::bind([](uint32_t& accum, const spatial_t&, uint32_t count) {
+                                            accum += count;
+                                         }, std::ref(count), std::placeholders::_1, std::placeholders::_2);
+
+   uint32_t topk_count = 0;
+   scantype_function _scan_fn = std::bind([](uint32_t& accum, const valuetype&) {
+                                             ++accum;
+                                          }, std::ref(topk_count), std::placeholders::_1);
 
    if (parameters.var_k) {
       for (uint32_t k = parameters.min_k; k <= parameters.max_k; k += parameters.inc_k) {
          // warm up
-         output.clear();
          topk_info = parameters.reset_topk();
          topk_info.k = k;
 
          count = 0;
-         if (!parameters.dryrun)   container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-         if (!parameters.dryrun)   container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+         if (!parameters.dryrun) container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+         topk_count = 0;
+         if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
-            output.clear();
             topk_info = parameters.reset_topk();
             topk_info.k = k;
 
             timer.start();
-            if (!parameters.dryrun)   container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+            topk_count = 0;
+            if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
             timer.stop();
 
-            PRINTBENCH("topk_search_k", id, parameters.def_t, k, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_k", id, parameters.def_t, k, topk_count, count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -112,24 +114,24 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
    if (parameters.var_r) {
       for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
          // warm up
-         output.clear();
          topk_info = parameters.reset_topk();
          topk_info.radius = r;
 
          count = 0;
-  if (!parameters.dryrun)        container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-   if (!parameters.dryrun)       container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+         if (!parameters.dryrun) container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+         topk_count = 0;
+         if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
-            output.clear();
             topk_info = parameters.reset_topk();
             topk_info.radius = r;
 
             timer.start();
-    if (!parameters.dryrun)         container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+            topk_count = 0;
+            if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
             timer.stop();
 
-            PRINTBENCH("topk_search_r", id, parameters.def_t, r, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_r", id, parameters.def_t, r, topk_count, count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -137,24 +139,24 @@ void inline run_queries(T& container, const center_t& center, uint32_t id, const
    if (parameters.var_a) {
       for (float a = parameters.min_a; a <= parameters.max_a; a += parameters.inc_a) {
          // warm up
-         output.clear();
          topk_info = parameters.reset_topk();
          topk_info.alpha = a;
 
          count = 0;
-     if (!parameters.dryrun)     container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
-      if (!parameters.dryrun)    container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+         if (!parameters.dryrun) container.apply_at_region(region_t(center.lat, center.lon, topk_info.radius), _apply);
+         topk_count = 0;
+         if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
 
          for (uint32_t i = 0; i < parameters.n_exp; i++) {
-            output.clear();
             topk_info = parameters.reset_topk();
             topk_info.alpha = a;
 
             timer.start();
-       if (!parameters.dryrun)      container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, output);
+            topk_count = 0;
+            if (!parameters.dryrun) container.topk_search(region_t(center.lat, center.lon, topk_info.radius), topk_info, _scan_fn);
             timer.stop();
 
-            PRINTBENCH("topk_search_a", id, parameters.def_t, a, output.size(), count, timer.milliseconds(), "ms");
+            PRINTBENCH("topk_search_a", id, parameters.def_t, a, topk_count, count, timer.milliseconds(), "ms");
          }
       }
    }
@@ -249,7 +251,8 @@ int main(int argc, char* argv[]) {
 
    std::vector<elttype> input;
 
-   if (parameters.dryrun) PRINTOUT("==== DRY RUN ====\n");
+   if (parameters.dryrun)
+   PRINTOUT("==== DRY RUN ====\n");
 
    if (!fname.empty()) {
       PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());

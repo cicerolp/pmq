@@ -24,7 +24,7 @@ public:
 
    duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
 
-   duration_t topk_search(const region_t& region, topk_t& topk, std::vector<valuetype>& output) override;
+   duration_t topk_search(const region_t& region, topk_t& topk, scantype_function __apply) override;
 
    inline virtual std::string name() const = 0;
 
