@@ -1,0 +1,43 @@
+@import '~@angular/material/core/theming/prebuilt/deeppurple-amber.css';
+
+/* You can add global styles to this file, and also import other style files */
+
+.over-map {
+    z-index: 9000;
+}
+
+.on-map {
+    position: absolute;
+    z-index: 900;
+}
+
+.leaflet-clickable {
+  cursor: crosshair !important;
+}
+
+body {
+  padding-top: 51px;
+}
+
+html, body {
+    height: 100%;
+}
+
+.fill {
+    min-height: 100%;
+    height: 100%;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    text-align: left !important;
+    float: left !important;
+
+}
+
+.mat-slider-horizontal {
+  width: 100%;
+}
+
+.mat-slider-vertical {
+  height: 100%;
+}
