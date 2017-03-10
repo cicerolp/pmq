@@ -3,6 +3,7 @@
 import sys
 from __future__ import print_function
 import json
+import struct
 
 keys = ["coordinates","created_at","text"]
 
@@ -12,7 +13,8 @@ output_to_file = False;
 #files = !ls eleicoes_*.json
 #files = !ls Brazil_*.json
 
-files = ["/mnt/disk2/Julio/tweets_hc/twitter_us_2012-05-22_14h.json"]
+#files = ["/mnt/disk2/Julio/tweets_hc/twitter_us_2012-05-22_14h.json"]
+files = ["twitter_us_2012-05-22_14h.json"]
 print(files)
 
 for f in files:
@@ -28,18 +30,22 @@ for f in files:
     # print(tweets)
     # print(tweets[1])
    
-    for t in tweets:
+    for t in tweets[0:10]:
         if t == "" :
             continue
-#       print (t) 
+        #print (t) 
 
         js = json.loads(t)
         js_sub = { key : js[key] if key in js else "none" for key in keys}
         js_sub["coordinates"] = js["coordinates"]["coordinates"] if "coordinates" in js else "none"
-#        json.dumps(js_sub,ensure_ascii=False)
-#        json.dump(js_sub,outfile,ensure_ascii=False)
+       # json.dumps(js_sub,ensure_ascii=False)
+        #json.dump(js_sub,outfile,ensure_ascii=False)
+        d = js_sub['created_at']
+        ts = !date -d"$d" +%s
+        #print(ts)
+        #print(float(js_sub["coordinates"][0]),js_sub["coordinates"][1],ts[0],js_sub["text"],file=outfile)
+        #print(float(js_sub["coordinates"][0]),js_sub["coordinates"][1],ts[0],js_sub["text"])
+# http://stackoverflow.com/questions/25168616/writing-binary-data-to-a-file-in-python
+        outfile.write(struct.pack())
 
-        print("",file=outfile)
-
-
-#outfile.close()
+   # outfile.close()
