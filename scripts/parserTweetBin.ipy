@@ -1,6 +1,7 @@
 #!/usr/bin/ipython3
 
 import sys
+import os
 from __future__ import print_function
 import json
 import struct
@@ -11,23 +12,25 @@ keys = ["coordinates","created_at","text"]
 
 #files = []
 #files = !ls eleicoes_*.json
-#files = !ls Brazil_*.json
+files = !ls *h.json
 
 #files = ["/mnt/disk2/Julio/tweets_hc/twitter_us_2012-05-22_14h.json"]
-files = ["twitter_us_2012-05-22_14h.json"]
+#files = ["twitter_us_2012-05-22_14h.json"]
 print(files)
 
 for f in files:
-    outfile = open(f.split(".")[0]+".dmp", 'wb')
-
+    outfn = f.split(".")[0]+".dmp"
+    if os.path.isfile(outfn):
+        print("Skipping ", outfn)
+        continue
+        
+    outfile = open(outfn, 'wb')
     #tweets = !head eleicoes_2016-09-30_22h53.json -n2 | sed -n '/^{/p'
-    # print(f)
+    print("parsing", f)
     tweets = !cat $f
-
-    # print(tweets)
-    # print(tweets[1])
    
-    for t in tweets[0:10]:
+    #for t in tweets[0:10]:
+    for t in tweets:
         if t == "" :
             continue
 #        print (t) 
