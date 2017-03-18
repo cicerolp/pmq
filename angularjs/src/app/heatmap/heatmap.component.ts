@@ -60,7 +60,7 @@ export class HeatmapComponent implements OnInit {
   }
 
   private onViewReset(): void {
-    this.addNextSubject();
+    this.addNextSubject('{"renew", true}');
   }
 
   private onMouseDown(ev: any): void {
@@ -74,7 +74,11 @@ export class HeatmapComponent implements OnInit {
     this.mapService.map.dragging.enable();
   }
 
-  public addNextSubject = () => {
+  public addNextSubject = (evt: any) => {
+    if (evt.renew !== true) {
+      return;
+    }
+
     const region = this.mapService.get_coords_bounds();
 
     const action = 'tile/' + region.z + '/' + region.x0

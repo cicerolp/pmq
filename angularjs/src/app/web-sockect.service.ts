@@ -11,7 +11,7 @@ export class WebSockectService {
     this.ws.getDataStream().subscribe(
       msg => {
         for (const callback of this.callbacks) {
-          callback();
+          callback(JSON.parse(msg.data));
         }
       }
     );

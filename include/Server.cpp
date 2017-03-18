@@ -7,6 +7,16 @@
 Server::Server(server_opts opts) : nds_opts(opts) {
    std::cout << "Server Options:" << std::endl;
    std::cout << "\t" << opts << std::endl;
+
+   rapidjson::StringBuffer buffer;
+   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+   writer.StartObject();
+   writer.Key("renew");
+   writer.Bool(true);
+   writer.EndObject();
+
+   renew_json = std::string(buffer.GetString());   
 }
 
 void Server::run() {
@@ -97,18 +107,67 @@ void Server::renew_data() {
    mutex.unlock();
 }
 
-void Server::broadcast() {
+void Server::push_trigger(uint32_t index) {
    if (!running) return;
 
-   static const std::string msg = "renew";
+   mutex.lock();
+   for (auto& pair : triggers) {
+      pair.second.emplace_back(index);
+   }
+   mutex.unlock();
+}
+
+void Server::broadcast() {
+   if (!running) return;
 
    mutex.lock();
    for (auto& pair : up_to_date) {
       mg_connection* conn = pair.first;
 
       if (pair.second == false) {
-         mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, msg.c_str(), msg.size());
+         mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, renew_json.c_str(), renew_json.size());
          pair.second = true;
+      }
+   }
+   mutex.unlock();
+}
+
+void Server::broadcast_triggers() {
+   if (!running) return;
+
+   mutex.lock();
+   for (auto& pair : triggers) {
+      mg_connection* conn = pair.first;
+
+      if (!pair.second.empty()) {
+         rapidjson::StringBuffer buffer;
+         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+         writer.StartObject();
+         writer.Key("renew");
+         writer.Bool(false);
+
+         writer.Key("triggers");
+
+         writer.StartArray();
+
+         for (auto& el: pair.second) {
+            auto coord = GeoRunner::getInstance().convert_grid_index(el);
+
+            writer.StartArray();
+            writer.Double(coord.first);
+            writer.Double(coord.second);
+            writer.EndArray();
+         }
+
+         writer.EndArray();
+         writer.EndObject();
+
+         auto output = std::string(buffer.GetString());
+
+         mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, output.c_str(), output.size());
+
+         pair.second.clear();
       }
    }
    mutex.unlock();

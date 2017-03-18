@@ -32,10 +32,15 @@ public:
 
    void renew_data();
 
+   void push_trigger(uint32_t index);
+
    void stop() { running = false; };
 
 private:
+   std::string renew_json;
    void broadcast();
+
+   void broadcast_triggers();
 
    bool running{true};
 
@@ -51,6 +56,7 @@ private:
 
    virtual ~Server() = default;
 
+   std::unordered_map<mg_connection*, std::vector<uint32_t>> triggers;
    std::unordered_map<mg_connection*, bool> up_to_date;
    std::mutex mutex;
 };

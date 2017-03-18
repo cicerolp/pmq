@@ -5,11 +5,19 @@
 
 GeoRunner::GeoRunner(int argc, char* argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
-
+   _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
+   _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
+   _trigger_alert = std::max(cimg_option("-alert", 20, "program arg: trigger alert"), 0);
+   _trigger_n_batch = std::max(cimg_option("-alert_batch", 1, "program arg: _trigger_n_batch"), 0);
+   
    _input = input::load(input_file, 25);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
+
+   _grid.resize(_x_grid * _y_grid, 0);
+
+   _grid_thread = std::make_unique<std::thread>(&GeoRunner::grid_runner, this);
 }
 
 void GeoRunner::set(std::shared_ptr<GeoCtnIntf> container) {
@@ -29,6 +37,12 @@ void GeoRunner::run() {
 
       std::vector<elttype> batch(it_begin, it_curr);
 
+      std::unique_lock<std::mutex> lock(_grid_mutex);
+      // add tweets to grid buffer
+      _grid_buffer.emplace(batch);
+      lock.unlock();
+      _grid_condition.notify_all();
+
       // lock container
       _mutex.lock();
 
@@ -38,14 +52,18 @@ void GeoRunner::run() {
       // unlock container
       _mutex.unlock();
 
-      // FIX remove comment
-      if (_opts.hint_server /*&& keys.size() != 0*/) Server::getInstance().renew_data();
+      if (_opts.hint_server) Server::getInstance().renew_data();
 
       // update iterator
       it_begin = it_curr;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
    }
+
+   _running = false;
+   _grid_condition.notify_all();
+
+   _grid_thread->join();
 
    std::cout << "*Runner* Stopped." << std::endl;
 }
@@ -184,6 +202,49 @@ std::string GeoRunner::query(const Query& query) {
    }
 
    return buffer.GetString();
+}
+
+void GeoRunner::grid_runner() {
+   while (true) {
+      std::unique_lock<std::mutex> lock(_grid_mutex);
+
+      _grid_condition.wait(lock, [this] { return !_running || _grid_buffer.size() != 0; });
+
+      if (!_running && _grid_buffer.empty()) return;
+
+      auto item = _grid_buffer.front();
+      _grid_buffer.pop();
+
+      lock.unlock();
+
+      _n_grid++;
+
+      std::unordered_map<uint32_t, uint32_t> grid_map;
+
+      for (auto& el : item) {
+         uint32_t x = uint32_t(el.value.longitude + 180.0);
+         uint32_t y = uint32_t(el.value.latitude + 90.0);
+
+         grid_map[y * _x_grid + x]++;
+      }
+
+      for (auto& el : grid_map) {
+         //auto total = el.second + _grid[el.first];
+
+         _grid[el.first] = _grid[el.first] + el.second;
+
+         if (_grid[el.first] / _n_grid > _trigger_alert) {
+            int32_t x = (int32_t)std::floor(el.first / _y_grid);
+            int32_t y = el.first - (x * _y_grid);
+
+            std::cout << "alert!: [" << el.first << "]" << _grid[el.first] << std::endl;            
+         }
+      }
+
+      if (_n_grid >= _trigger_n_batch) {
+         _n_grid = 1;
+      }
+   }
 }
 
 void GeoRunner::accum_region(uint32_t& accum, const spatial_t& area, uint32_t count) {

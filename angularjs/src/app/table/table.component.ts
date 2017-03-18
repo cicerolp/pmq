@@ -37,7 +37,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   setData(data: any[]): void {
     this.data = data;
 
-    var datatable = $('#async_table').dataTable().api();
+    let datatable = $('#async_table').dataTable().api();
 
     datatable.clear();
     datatable.rows.add(this.data);
@@ -45,7 +45,10 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   public redraw = (): void => {
-    const height = Math.max($(this.ref.nativeElement).parent().height() - 65, 50);
+  console.log();
+    const topk_h = Math.max($('#topk').height() || 0, 0);
+
+    const height = Math.max($(this.ref.nativeElement).parent().height() - topk_h - 65, 50);
 
     if (this.height === height) {
       return;

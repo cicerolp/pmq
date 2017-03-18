@@ -23,11 +23,11 @@ const routes: Routes = [
   {
     path: 'app-demo3',
     component: Demo3Component
-  },
+  }/*,
   {
     path: 'app-demo4',
     component: Demo4Component
-  }
+  }*/
 ];
 
 @NgModule({
