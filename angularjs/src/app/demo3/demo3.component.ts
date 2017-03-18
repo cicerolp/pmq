@@ -1,3 +1,4 @@
+import { Pin } from './../heatmap/pin';
 import { WebSockectService } from './../web-sockect.service';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Rx';
@@ -13,10 +14,18 @@ import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular
   styleUrls: ['./demo3.component.css']
 })
 export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
+  private alpha = 0.2;
+  private radius = 30.0;
+  private k = 100;
+  private now = 1000;
+  private time = 1000;
+  private currLatlng: any = null;
+
   @ViewChild(TableComponent)
   private tableComponent: TableComponent;
 
-  private marker: Marker;
+  private pin: Pin;
+
   private triggers: Marker[] = new Array<Marker>();
 
   private data: Observable<any>;
@@ -54,23 +63,59 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.marker = new Marker(this.mapService, true);
-    this.marker.register(this.topk_cb);
+    this.pin = new Pin(this.mapService);
+    this.pin.register(this.callback);
 
     this.socketService.register(this.topk_ws);
   }
 
   public callback = (latlng: any, zoom: number): void => {
-    const z = zoom + 8;
-    const region = this.mapService.get_coords_bounds(latlng, z);
+    this.currLatlng = 'topk/' + zoom
+      + '/' + latlng.lat
+      + '/' + latlng.lng;
 
-    const action = 'topk/' + z
-      + '/' + region.x0
-      + '/' + region.y0
-      + '/' + region.x1
-      + '/' + region.y1;
+    this.request();
+  }
+
+  private request() {
+    const action = this.currLatlng
+      + '/' + this.alpha
+      + '/' + this.radius
+      + '/' + this.k
+      + '/' + this.now
+      + '/' + this.time;
 
     this.queries.next(action);
+  }
+
+  private onAlphaChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onRadiusChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onKChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onNowChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onTimeChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
   }
 
   public topk_ws = (evt: any) => {

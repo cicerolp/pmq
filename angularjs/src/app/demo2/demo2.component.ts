@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Rx';
-import { Marker } from './../heatmap/marker';
+import { Pin } from './../heatmap/pin';
 import { MapService } from './../map.service';
 import { DataService } from './../data.service';
 import { TableComponent } from './../table/table.component';
@@ -12,10 +12,17 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
   styleUrls: ['./demo2.component.css']
 })
 export class Demo2Component implements OnInit, AfterViewInit {
+  private alpha = 0.2;
+  private radius = 30.0;
+  private k = 100;
+  private now = 1000;
+  private time = 1000;
+  private currLatlng: any = null;
+
   @ViewChild(TableComponent)
   private tableComponent: TableComponent;
 
-  private marker: Marker;
+  private pin: Pin;
 
   private data: Observable<any>;
   private queries = new Subject<any>();
@@ -44,20 +51,56 @@ export class Demo2Component implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.marker = new Marker(this.mapService, true);
-    this.marker.register(this.callback);
+    this.pin = new Pin(this.mapService);
+    this.pin.register(this.callback);
   }
 
   public callback = (latlng: any, zoom: number): void => {
-    const z = zoom + 8;
-    const region = this.mapService.get_coords_bounds(latlng, z);
+    this.currLatlng = 'topk/' + zoom
+      + '/' + latlng.lat
+      + '/' + latlng.lng;
 
-    const action = 'topk/' + z
-      + '/' + region.x0
-      + '/' + region.y0
-      + '/' + region.x1
-      + '/' + region.y1;
+    this.request();
+  }
+
+  private request() {
+    const action = this.currLatlng
+      + '/' + this.alpha
+      + '/' + this.radius
+      + '/' + this.k
+      + '/' + this.now
+      + '/' + this.time;
 
     this.queries.next(action);
+  }
+
+  private onAlphaChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onRadiusChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onKChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onNowChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
+  }
+
+  private onTimeChange(evt: any) {
+    if (this.currLatlng !== null) {
+      this.request();
+    }
   }
 }

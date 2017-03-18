@@ -11,6 +11,7 @@ public:
       uint32_t batch{100}; //batch size
       uint32_t interval{100}; //insertion interval between batches in milliseconds
       bool hint_server{true};
+      uint64_t now{0};
    };
 
    struct grid_coord {

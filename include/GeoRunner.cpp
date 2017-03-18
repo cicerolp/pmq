@@ -9,10 +9,10 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
    _trigger_alert = std::max(cimg_option("-alert", 20, "program arg: trigger alert"), 0);
 
-   _input = input::load(input_file, 25);
-
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
+
+   _input = input::load(input_file, 25, _opts.batch);
 
    _grid.resize(_x_grid * _y_grid, 0);
 
@@ -35,6 +35,8 @@ void GeoRunner::run() {
       it_curr = std::min(it_begin + _opts.batch, _input.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
+
+      _opts.now = batch.back().value.time;
 
       std::unique_lock<std::mutex> lock(_grid_mutex);
       // add tweets to grid buffer
@@ -173,6 +175,7 @@ std::string GeoRunner::query(const Query& query) {
          writer.StartObject();
 
          topk_t topk_info = query.topk_info;
+         topk_info.now = _opts.now;
 
          uint32_t count = 0;
          scantype_function _apply = std::bind(GeoRunner::write_data, std::ref(writer),
