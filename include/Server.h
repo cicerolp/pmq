@@ -1,5 +1,6 @@
 #pragma once
 #include "Singleton.h"
+#include "GeoRunner.h"
 
 class Server: public Singleton<Server> {
    friend class Singleton<Server>;
@@ -32,7 +33,7 @@ public:
 
    void renew_data();
 
-   void push_trigger(uint32_t index);
+   void push_trigger(GeoRunner::grid_coord index);
 
    void stop() { running = false; };
 
@@ -56,7 +57,7 @@ private:
 
    virtual ~Server() = default;
 
-   std::unordered_map<mg_connection*, std::vector<uint32_t>> triggers;
+   std::unordered_map<mg_connection*, std::vector<GeoRunner::grid_coord>> triggers;
    std::unordered_map<mg_connection*, bool> up_to_date;
    std::mutex mutex;
 };

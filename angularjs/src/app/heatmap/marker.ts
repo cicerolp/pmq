@@ -8,7 +8,7 @@ export class Marker {
 
   private callbacks: any[] = [];
 
-  private marker_opt = {
+  public marker_opt = {
     color: '#ffffff',
     weight: 1,
     interactive: false
@@ -25,6 +25,24 @@ export class Marker {
       this.mapService.map.on('mousemove', this.onMouseMove, this);
       this.mapService.map.on('mouseout', this.onMouseUp, this);
     }
+  }
+
+  public insert(p0: any, p1: any, timeout: number) {
+    this.remove();
+
+    this.marker = L.rectangle(L.latLngBounds(p0, p1), this.marker_opt);
+    this.mapService.map.addLayer(this.marker);
+
+    setTimeout(this.remove, timeout);
+  }
+
+  public remove = () => {
+    if (this.marker != null) {
+      this.mapService.map.removeLayer(this.marker);
+      this.marker = null;
+    }
+
+    this.broadcast();
   }
 
   public register(callback: any): void {
@@ -44,12 +62,18 @@ export class Marker {
   }
 
   private broadcast(): void {
-    if (this.p0 === undefined || this.p1 === undefined) {
-      return;
-    }
+    if (this.raster) {
+      if (this.p0 === undefined || this.p1 === undefined) {
+        return;
+      }
 
-    for (const callback of this.callbacks) {
-      callback(L.latLngBounds(this.p0, this.p1), this.mapService.map.getZoom());
+      for (const callback of this.callbacks) {
+        callback(L.latLngBounds(this.p0, this.p1), this.mapService.map.getZoom());
+      }
+    } else {
+      for (const callback of this.callbacks) {
+        callback(this);
+      }
     }
   }
 

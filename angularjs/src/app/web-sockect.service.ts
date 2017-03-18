@@ -8,6 +8,18 @@ export class WebSockectService {
   private callbacks: any[] = [];
 
   constructor() {
+    this.resetConn();
+  }
+
+  public register(callback: any): void {
+    this.callbacks.push(callback);
+  }
+
+  public unregister(callback: any): void {
+    this.callbacks = this.callbacks.filter(el => el !== callback);
+  }
+
+  private onOpen() {
     this.ws.getDataStream().subscribe(
       msg => {
         for (const callback of this.callbacks) {
@@ -17,11 +29,22 @@ export class WebSockectService {
     );
   }
 
-  public register(callback: any): void {
-    this.callbacks.push(callback);
+  private onError() {
+    this.ws = new $WebSocket('ws://localhost:7000');
+    this.resetConn();
   }
 
-  public unregister(callback: any): void {
-    this.callbacks = this.callbacks.filter(el => el !== callback);
+  private resetConn() {
+    this.ws.onError((cb) => {
+      this.onError();
+    });
+
+    this.ws.onClose((cb) => {
+      this.onError();
+    });
+
+    this.ws.onOpen((cb) => {
+      this.onOpen();
+    });
   }
 }

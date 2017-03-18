@@ -35,6 +35,7 @@ void Server::run() {
    while (Server::getInstance().running) {
       mg_mgr_poll(&Server::getInstance().mgr, 1);
       Server::getInstance().broadcast();
+      Server::getInstance().broadcast_triggers();
    }
    mg_mgr_free(&Server::getInstance().mgr);
 }
@@ -70,7 +71,10 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
       case MG_EV_WEBSOCKET_HANDSHAKE_DONE: {
          // new websocket connection
          Server::getInstance().mutex.lock();
+         // heatmap ws
          Server::getInstance().up_to_date.emplace(nc, false);
+         // topk ws
+         Server::getInstance().triggers.emplace(nc, std::vector<GeoRunner::grid_coord>());
          Server::getInstance().mutex.unlock();
          break;
       }
@@ -89,7 +93,10 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
          // disconnect
          if (is_websocket(nc)) {
             Server::getInstance().mutex.lock();
+            // heatmap ws
             Server::getInstance().up_to_date.erase(nc);
+            // topk ws
+            Server::getInstance().triggers.erase(nc);
             Server::getInstance().mutex.unlock();
          }
          break;
@@ -107,7 +114,7 @@ void Server::renew_data() {
    mutex.unlock();
 }
 
-void Server::push_trigger(uint32_t index) {
+void Server::push_trigger(GeoRunner::grid_coord index) {
    if (!running) return;
 
    mutex.lock();
@@ -152,11 +159,11 @@ void Server::broadcast_triggers() {
          writer.StartArray();
 
          for (auto& el: pair.second) {
-            auto coord = GeoRunner::getInstance().convert_grid_index(el);
-
             writer.StartArray();
-            writer.Double(coord.first);
-            writer.Double(coord.second);
+            writer.Double(el.lat0);
+            writer.Double(el.lon0);
+            writer.Double(el.lat1);
+            writer.Double(el.lon1);
             writer.EndArray();
          }
 

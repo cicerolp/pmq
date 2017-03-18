@@ -13,6 +13,17 @@ public:
       bool hint_server{true};
    };
 
+   struct grid_coord {
+      float lat0, lon0, lat1, lon1;
+
+      bool operator==(const grid_coord& other) const {
+         return lat0 == other.lat0 &&
+            lat1 == other.lat1 &&
+            lon0 == other.lon0 &&
+            lon1 == other.lon1;
+      }
+   };
+
    void set(std::shared_ptr<GeoCtnIntf> container);
 
    void run();
@@ -23,7 +34,7 @@ public:
 
    inline uint32_t input_size() const;
 
-   inline std::pair<float, float> convert_grid_index(uint32_t index) const;
+   inline grid_coord grid_coord_to_index(float lat, float lon) const;
 
 private:
    GeoRunner(int argc, char* argv[]);
@@ -50,8 +61,8 @@ private:
 
    std::shared_ptr<GeoCtnIntf> _container;
 
-   uint32_t _trigger_alert, _trigger_n_batch;
-   uint32_t _x_grid, _y_grid, _n_grid{1};
+   uint32_t _trigger_alert;
+   uint32_t _x_grid, _y_grid;
    std::vector<uint32_t> _grid;
 
    std::mutex _grid_mutex;
@@ -61,6 +72,24 @@ private:
    std::queue<std::vector<elttype>> _grid_buffer;
 };
 
+namespace std {
+   template <>
+   struct hash<GeoRunner::grid_coord> {
+      typedef GeoRunner::grid_coord argument_type;
+      typedef std::size_t result_type;
+
+      std::size_t operator()(argument_type const& obj) const {
+         result_type const h1(std::hash<float>{}(obj.lat0));
+         result_type const h2(std::hash<float>{}(obj.lat1));
+         result_type const h3(std::hash<float>{}(obj.lon0));
+         result_type const h4(std::hash<float>{}(obj.lon1));
+
+         return ((h1 ^ (h2 << 1)) ^ (h3 << 2)) ^ (h4 << 3);
+      }
+   };
+
+}
+
 void GeoRunner::stop() {
    _running = false;
 }
@@ -69,9 +98,14 @@ uint32_t GeoRunner::input_size() const {
    return (uint32_t)_input.size();
 };
 
-std::pair<float, float> GeoRunner::convert_grid_index(uint32_t index) const {
-   float x = (float)std::floor(index / _y_grid);
-   float y = (float)(index - (x * _y_grid));
+GeoRunner::grid_coord GeoRunner::grid_coord_to_index(float lat, float lon) const {
+   grid_coord index;
 
-   return {x - 180, y - 90};
+   index.lat0 = std::floor(lat);
+   index.lon0 = std::floor(lon);
+
+   index.lat1 = std::ceil(lat);
+   index.lon1 = std::ceil(lon);
+
+   return index;
 }

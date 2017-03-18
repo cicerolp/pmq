@@ -8,8 +8,7 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
    _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
    _trigger_alert = std::max(cimg_option("-alert", 20, "program arg: trigger alert"), 0);
-   _trigger_n_batch = std::max(cimg_option("-alert_batch", 1, "program arg: _trigger_n_batch"), 0);
-   
+
    _input = input::load(input_file, 25);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
@@ -217,32 +216,18 @@ void GeoRunner::grid_runner() {
 
       lock.unlock();
 
-      _n_grid++;
-
-      std::unordered_map<uint32_t, uint32_t> grid_map;
+      std::unordered_map<grid_coord, uint32_t> grid_map;
 
       for (auto& el : item) {
-         uint32_t x = uint32_t(el.value.longitude + 180.0);
-         uint32_t y = uint32_t(el.value.latitude + 90.0);
-
-         grid_map[y * _x_grid + x]++;
+         grid_coord index = grid_coord_to_index(el.value.latitude, el.value.longitude);
+         grid_map[index]++;
       }
 
       for (auto& el : grid_map) {
-         //auto total = el.second + _grid[el.first];
-
-         _grid[el.first] = _grid[el.first] + el.second;
-
-         if (_grid[el.first] / _n_grid > _trigger_alert) {
-            int32_t x = (int32_t)std::floor(el.first / _y_grid);
-            int32_t y = el.first - (x * _y_grid);
-
-            std::cout << "alert!: [" << el.first << "]" << _grid[el.first] << std::endl;            
+         if (el.second > _trigger_alert) {
+            
+            Server::getInstance().push_trigger(el.first);
          }
-      }
-
-      if (_n_grid >= _trigger_n_batch) {
-         _n_grid = 1;
       }
    }
 }

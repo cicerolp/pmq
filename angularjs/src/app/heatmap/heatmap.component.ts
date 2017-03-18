@@ -13,6 +13,7 @@ import { DataService } from './../data.service';
   styleUrls: ['./heatmap.component.css']
 })
 export class HeatmapComponent implements OnInit {
+  triggers = false;
   data: Observable<any>;
   private queries = new Subject<any>();
 
