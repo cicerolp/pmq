@@ -5,7 +5,7 @@
 
 class Query {
 public:
-   enum query_type { INVALID, TILE, REGION, DATA, TOPK };
+   enum query_type { INVALID, TILE, REGION, DATA, TOPK, TRIGGER };
 
    Query(const std::string& url);
 
@@ -14,6 +14,8 @@ public:
    uint32_t resolution{0};
    region_t region;
    topk_t topk_info;
+   triggers_t triggers_info;
+
 
    query_type type{INVALID};
 };

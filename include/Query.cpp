@@ -48,7 +48,7 @@ Query::Query(const std::vector<std::string>& tokens) {
          type = TOPK;
 
          auto z = std::stoi(string_util::next_token(it));
-         
+
          auto lat = std::stof(string_util::next_token(it));
          auto lon = std::stof(string_util::next_token(it));
 
@@ -59,6 +59,11 @@ Query::Query(const std::vector<std::string>& tokens) {
          topk_info.time = std::stoull(string_util::next_token(it));
 
          region = region_t(lat, lon, topk_info.radius, z);
+
+      } else if ((*it) == "triggers") {
+         type = TRIGGER;
+
+         triggers_info.frequency = std::stof(string_util::next_token(it));         
       }
    }
 }

@@ -19,6 +19,9 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
   private k = 100;
   private now = 1000;
   private time = 1000;
+  private trigger_frquency = 20;
+  private trigger_timeout = 3000;
+  private max_triggers = 20;
   private currLatlng: any = null;
 
   @ViewChild(TableComponent)
@@ -48,7 +51,9 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
 
     const subscription = this.data.subscribe(
       response => {
-        this.tableComponent.setData(response.data);
+        if (response.data !== undefined) {
+          this.tableComponent.setData(response.data);
+        }
       },
       error => console.log('error: ' + error),
       () => console.log('()')
@@ -124,10 +129,14 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
     }
 
     for (const coord of evt.triggers) {
+      if (this.triggers.length >= this.max_triggers) {
+        this.triggers[0].remove();
+      }
+
       const trigger: Marker = new Marker(this.mapService, false);
       trigger.marker_opt.color = '#3399ff';
       trigger.register(this.topk_cb);
-      trigger.insert({ lat: coord[0], lon: coord[1] }, { lat: coord[2], lon: coord[3] }, 3000);
+      trigger.insert({ lat: coord[0], lon: coord[1] }, { lat: coord[2], lon: coord[3] }, this.trigger_timeout);
       this.triggers.push(trigger);
     }
   }
@@ -136,6 +145,13 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
     this.triggers = this.triggers.filter((el) => {
       return el !== marker;
     });
+  }
+
+  private onTriggerFrquencyChange(ev: any) {
+    const action = 'triggers/'
+      + '/' + this.trigger_frquency;
+
+    this.queries.next(action);
   }
 }
 

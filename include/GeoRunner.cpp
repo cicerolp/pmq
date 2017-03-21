@@ -12,7 +12,7 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
 
-   _input = input::load(input_file, 25, _opts.batch);
+   _input = input::load_dmp_text(input_file, 25);
 
    _grid.resize(_x_grid * _y_grid, 0);
 
@@ -197,6 +197,25 @@ std::string GeoRunner::query(const Query& query) {
       }
          break;
 
+      case Query::TRIGGER: {
+         _mutex.lock();
+
+         _trigger_alert = query.triggers_info.frequency;
+
+         _mutex.unlock();
+
+         writer.StartObject();
+
+         writer.String("trigger");
+
+         writer.StartArray();
+         writer.String("ok");
+         writer.EndArray();
+
+         writer.EndObject();
+      }
+         break;
+
       default: {
          return ("[]");
       }
@@ -228,7 +247,6 @@ void GeoRunner::grid_runner() {
 
       for (auto& el : grid_map) {
          if (el.second > _trigger_alert) {
-            
             Server::getInstance().push_trigger(el.first);
          }
       }
@@ -244,12 +262,7 @@ void GeoRunner::write_data(json_writer& writer, uint32_t& accum, const valuetype
 
    if (accum >= max) return;
 
-   writer.StartArray();
-   writer.Uint((unsigned int)el.time);
-   writer.Uint(el.language);
-   writer.Uint(el.device);
-   writer.Uint(el.app);
-   writer.EndArray();
+   tweet_t::write(el, writer);
 
    accum += 1;
 }

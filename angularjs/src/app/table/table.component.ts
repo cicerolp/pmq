@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
 
 declare var $: any;
+declare var d3: any;
 declare var window: any;
 
 @Component({
@@ -37,7 +38,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   setData(data: any[]): void {
     this.data = data;
 
-    let datatable = $('#async_table').dataTable().api();
+    const datatable = $('#async_table').dataTable().api();
 
     datatable.clear();
     datatable.rows.add(this.data);
@@ -45,10 +46,12 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   public redraw = (): void => {
-  console.log();
+    console.log();
     const topk_h = Math.max($('#topk').height() || 0, 0);
 
-    const height = Math.max($(this.ref.nativeElement).parent().height() - topk_h - 65, 50);
+    const height = Math.max($(this.ref.nativeElement).parent().height() - topk_h - 114, 50);
+
+    // const widht = Math.max($(this.ref.nativeElement).parent().width(), 50);
 
     if (this.height === height) {
       return;
@@ -70,11 +73,22 @@ export class TableComponent implements OnInit, AfterViewInit {
       columnDefs: [
         {
           'render': function (data, type, row) {
-            // return format(new Date(data * 1000));
-            return data;
+            let format = d3.timeFormat('%Y/%m/%d %H:%m');
+            return format(new Date(data * 1000));
+            // return data;
           },
           'targets': 0
         }, {
+          'render': function (data, type, row) {
+            const str = String(data);
+
+            const cellHtml = '<textarea wrap="hard" rows="4" cols="40" readonly>' + str + '</textarea>';
+            return cellHtml;
+          },
+          'targets': 1
+        }
+
+        /*{
           'render': function (data, type, row) {
             let str = String(data);
 
@@ -153,7 +167,7 @@ export class TableComponent implements OnInit, AfterViewInit {
             return cellHtml;
           },
           'targets': 3
-        }
+        }*/
       ],
       dom: '<"top">rt<"bottom"><"clear">'
     });

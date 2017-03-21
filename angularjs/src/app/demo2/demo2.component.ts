@@ -17,6 +17,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
   private k = 100;
   private now = 1000;
   private time = 1000;
+  private trigger_frquency = 20;
   private currLatlng: any = null;
 
   @ViewChild(TableComponent)
@@ -43,7 +44,9 @@ export class Demo2Component implements OnInit, AfterViewInit {
 
     const subscription = this.data.subscribe(
       response => {
-        this.tableComponent.setData(response.data);
+        if (response.data !== undefined) {
+          this.tableComponent.setData(response.data);
+        }
       },
       error => console.log('error: ' + error),
       () => console.log('()')
@@ -102,5 +105,12 @@ export class Demo2Component implements OnInit, AfterViewInit {
     if (this.currLatlng !== null) {
       this.request();
     }
+  }
+
+  private onTriggerFrquencyChange(ev: any) {
+    const action = 'triggers/'
+      + '/' + this.trigger_frquency;
+
+    this.queries.next(action);
   }
 }

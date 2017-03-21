@@ -4,6 +4,7 @@
 #include "mercator_util.h"
 
 extern uint32_t g_Quadtree_Depth;
+using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
 
 struct spatial_t {
    spatial_t(uint64_t _code, uint8_t _z) : code(_code), z(_z), leaf(1) {
@@ -303,7 +304,7 @@ public:
    uint32_t x0, y0, x1, y1, z;
 };
 
-struct tweet_t {
+struct tweet_all_t {
    float latitude;
    float longitude;
 
@@ -312,9 +313,37 @@ struct tweet_t {
    uint8_t language;
    uint8_t device;
    uint8_t app;
+
+   static void write(const tweet_all_t& el, json_writer& writer) {
+      writer.StartArray();
+      writer.Uint((unsigned int)el.time);
+      writer.Uint(el.language);
+      writer.Uint(el.device);
+      writer.Uint(el.app);
+      writer.EndArray();
+   }
 };
 
+struct tweet_text_t {
+   float latitude;
+   float longitude;
+   uint64_t time;
+   char text[140];
+
+   static void write(const tweet_text_t& el, json_writer& writer) {
+      writer.StartArray();
+      writer.Uint((unsigned int)el.time);
+      writer.String(el.text);
+      writer.EndArray();
+   }
+};
+
+using tweet_t = tweet_text_t;
 using valuetype = tweet_t;
+
+struct triggers_t {
+   float frequency;
+};
 
 struct topk_t {
    float alpha;
@@ -476,4 +505,3 @@ struct duration_info {
 };
 
 using duration_t = std::vector<duration_info>;
-using json_writer = rapidjson::Writer<rapidjson::StringBuffer>;
