@@ -19,7 +19,7 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
   private k = 100;
   private now = 1000;
   private time = 1000;
-  private trigger_frquency = 20;
+  private trigger_frquency = 5;
   private trigger_timeout = 3000;
   private max_triggers = 20;
   private currLatlng: any = null;

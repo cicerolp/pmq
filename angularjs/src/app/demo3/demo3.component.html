@@ -21,7 +21,7 @@
     <md-tab label="triggers">
       <br>
       <label>frequency (%)</label>
-      <md-slider (change)="onTriggerFrquencyChange($event);" [(ngModel)]="trigger_frquency" tickInterval="1" min="1" max="100" step="1" thumbLabel="true"></md-slider>
+      <md-slider (change)="onTriggerFrquencyChange($event);" [(ngModel)]="trigger_frquency" tickInterval="1" min="1" max="25" step="1" thumbLabel="true"></md-slider>
       <label>timeout (ms)</label>
       <md-slider [(ngModel)]="trigger_timeout" tickInterval="1" min="1" max="10000" step="1" thumbLabel="true"></md-slider>
       <label>max rendered triggers</label>

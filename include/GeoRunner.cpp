@@ -7,7 +7,7 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
    _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
    _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
-   _trigger_alert = std::max(cimg_option("-alert", 20, "program arg: trigger alert"), 0);
+   _trigger_alert = std::max(cimg_option("-alert", 5, "program arg: trigger alert"), 0);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
@@ -246,7 +246,7 @@ void GeoRunner::grid_runner() {
       }
 
       for (auto& el : grid_map) {
-         if (el.second > _trigger_alert) {
+         if (el.second > (_opts.batch * (_trigger_alert / 100.f))) {
             Server::getInstance().push_trigger(el.first);
          }
       }
