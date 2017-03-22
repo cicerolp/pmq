@@ -5,13 +5,15 @@
 
 GeoRunner::GeoRunner(int argc, char* argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
+   _opts.n_elts = cimg_option("-n", 1000000, "program arg: number of elements to insert");
+
+ //  _input = input::loadn(input_file, 25, _opts.n_elts);
    _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
    _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
    _trigger_alert = std::max(cimg_option("-alert", 2, "program arg: trigger alert"), 0);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
-
    _input = input::load_dmp_text(input_file, 25);
 
    _grid.resize(_x_grid * _y_grid, 0);
@@ -30,14 +32,12 @@ void GeoRunner::run() {
 
    std::vector<elttype>::iterator it_begin = _input.begin();
    std::vector<elttype>::iterator it_curr = _input.begin();
-
    uint64_t oldest_time = 0;
 
    while (it_begin != _input.end() && _running) {
       it_curr = std::min(it_begin + _opts.batch, _input.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
-
       _opts.now = batch.back().value.time;
 
 
@@ -52,7 +52,6 @@ void GeoRunner::run() {
 
       // insert batch
       _container->insert(batch);
-      
       /*_container->insert_rm(batch, [ oldest_time ]( const void* el) {
             return ((elttype*)el)->value.time < oldest_time;
       });*/
@@ -69,7 +68,6 @@ void GeoRunner::run() {
 
       std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
    }
-
    _running = false;
    _grid_condition.notify_all();
 
@@ -224,7 +222,6 @@ std::string GeoRunner::query(const Query& query) {
          writer.EndObject();
       }
          break;
-
       default: {
          return ("[]");
       }

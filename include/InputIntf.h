@@ -7,10 +7,14 @@
 #include "date_util.h"
 
 namespace input {
-   inline std::vector<elttype> load(const std::string& fname, int mCodeSize) {
+   inline std::vector<elttype> loadn(const std::string& fname, int mCodeSize, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
+      if (! infile.is_open() ){
+         PRINTOUT("ERROR OPENING FILE\n");
+         return tweets;
+      }
       infile.unsetf(std::ios_base::skipws);
 
       // skip file header
@@ -21,7 +25,7 @@ namespace input {
       tweet_t record;
       size_t record_size = 19; //file record size
 
-      while (true) {
+      while (n_elts--) {
          try {
 
             infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
@@ -37,7 +41,11 @@ namespace input {
       return tweets;
    }
 
-   inline std::vector<elttype> load_dmp_text(const std::string& fname, int mCodeSize,
+   inline std::vector<elttype> load(const std::string& fname, int mCodeSize){
+       return loadn(fname,mCodeSize);
+   }
+
+inline std::vector<elttype> load_dmp_text(const std::string& fname, int mCodeSize,
                                              /*uint64_t time_res,*/ uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
       std::vector<elttype> tweets;
 
@@ -75,16 +83,18 @@ namespace input {
       return tweets;
    }
 
-   inline std::vector<elttype> load(const std::string& fname, int mCodeSize,
-                                    uint64_t time_res, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
+
+   inline std::vector<elttype> load(const std::string& fname, int mCodeSize, 
+				     uint64_t time_res, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
       std::vector<elttype> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
 
-      if (! infile.is_open()) {
+      if (! infile.is_open() ){
          PRINTOUT("ERROR OPENING FILE\n");
          return tweets;
       }
+
 
       infile.unsetf(std::ios_base::skipws);
 
