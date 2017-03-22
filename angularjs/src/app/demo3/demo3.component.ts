@@ -134,7 +134,7 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const trigger: Marker = new Marker(this.mapService, false);
-      trigger.marker_opt.color = '#3399ff';
+      trigger.marker_opt.color = '#f4f142';
       trigger.register(this.topk_cb);
       trigger.insert({ lat: coord[0], lon: coord[1] }, { lat: coord[2], lon: coord[3] }, this.trigger_timeout);
       this.triggers.push(trigger);

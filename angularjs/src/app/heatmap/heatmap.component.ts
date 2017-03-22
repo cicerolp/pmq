@@ -61,7 +61,7 @@ export class HeatmapComponent implements OnInit {
   }
 
   private onViewReset(): void {
-    this.addNextSubject('{"renew", true}');
+    this.addNextSubject({'renew': true});
   }
 
   private onMouseDown(ev: any): void {

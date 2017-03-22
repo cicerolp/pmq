@@ -73,7 +73,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       columnDefs: [
         {
           'render': function (data, type, row) {
-            let format = d3.timeFormat('%Y/%m/%d %H:%m');
+            let format = d3.timeFormat('%Y-%m-%dT%H:%M:%S');
             return format(new Date(data * 1000));
             // return data;
           },

@@ -62,7 +62,7 @@ namespace input {
             infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
             if (infile.eof()) break;
 
-            //if (time_res) record.time = i / time_res;
+            record.time+= 7200;
 
             tweets.emplace_back(record, mCodeSize);
          } catch (...) {

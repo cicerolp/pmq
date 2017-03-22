@@ -15,7 +15,7 @@
         <label>k</label>
         <md-slider (change)="onKChange($event);" [(ngModel)]="k" tickInterval="1" min="10" max="100" step="10" thumbLabel="true"></md-slider><br>
         <label>time</label>
-        <md-slider (change)="onTimeChange($event);" [(ngModel)]="time" tickInterval="1" min="0" max="1000" step="1" thumbLabel="true"></md-slider>
+        <md-slider (change)="onTimeChange($event);" [(ngModel)]="time" tickInterval="1" min="0" max="86400" step="1" thumbLabel="true"></md-slider>
       </div>
     </md-tab>
   </md-tab-group>
