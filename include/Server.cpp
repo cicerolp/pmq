@@ -4,6 +4,9 @@
 #include "Runner.h"
 #include "GeoRunner.h"
 
+// Xlib macro conflict
+#undef Bool
+
 Server::Server(server_opts opts) : nds_opts(opts) {
    std::cout << "Server Options:" << std::endl;
    std::cout << "\t" << opts << std::endl;

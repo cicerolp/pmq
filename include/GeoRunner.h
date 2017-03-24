@@ -3,6 +3,7 @@
 #include "Query.h"
 #include "Singleton.h"
 #include "GeoCtnIntf.h"
+#include <condition_variable>
 
 class GeoRunner : public Singleton<GeoRunner> {
    friend class Singleton<GeoRunner>;
