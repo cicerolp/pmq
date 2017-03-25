@@ -20,7 +20,9 @@ public:
    // update container
    virtual duration_t insert(std::vector<elttype> batch) = 0;
    // Only for GeoHash
-   //virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed );
+   virtual duration_t insert_rm(std::vector<elttype> batch, std::function< int (const void*) > is_removed ) {
+      return duration_t();
+   }
 
    /** @brief Applies a scantype_function on the elements contained on a selection region .
     *

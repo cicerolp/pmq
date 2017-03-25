@@ -7,7 +7,7 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
    _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
    _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
-   _trigger_alert = std::max(cimg_option("-alert", 5, "program arg: trigger alert"), 0);
+   _trigger_alert = std::max(cimg_option("-alert", 2, "program arg: trigger alert"), 0);
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
@@ -31,12 +31,16 @@ void GeoRunner::run() {
    std::vector<elttype>::iterator it_begin = _input.begin();
    std::vector<elttype>::iterator it_curr = _input.begin();
 
+   uint64_t oldest_time = 0;
+
    while (it_begin != _input.end() && _running) {
       it_curr = std::min(it_begin + _opts.batch, _input.end());
 
       std::vector<elttype> batch(it_begin, it_curr);
 
       _opts.now = batch.back().value.time;
+
+      std::cout << "[" <<_opts.now << "]" << std::endl;
 
       std::unique_lock<std::mutex> lock(_grid_mutex);
       // add tweets to grid buffer
@@ -48,7 +52,13 @@ void GeoRunner::run() {
       _mutex.lock();
 
       // insert batch
-      _container->insert(batch);
+      //_container->insert(batch);
+      
+      _container->insert_rm(batch, [ oldest_time ]( const void* el) {
+            return ((elttype*)el)->value.time < oldest_time;
+      });
+
+      oldest_time = _opts.now;
 
       // unlock container
       _mutex.unlock();

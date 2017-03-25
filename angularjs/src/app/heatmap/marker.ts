@@ -10,8 +10,7 @@ export class Marker {
 
   public marker_opt = {
     color: '#ffffff',
-    weight: 1,
-    interactive: false
+    weight: 2,
   };
 
   constructor(

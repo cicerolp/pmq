@@ -1,5 +1,19 @@
 'use strict';
 
+function convertToRange(value, srcRange, dstRange) {
+  // value is outside source range return
+  if (value < srcRange[0] || value > srcRange[1]) {
+    return NaN;
+  }
+
+  var srcMax = srcRange[1] - srcRange[0],
+    dstMax = dstRange[1] - dstRange[0],
+    adjValue = value - srcRange[0];
+
+  return (adjValue * dstMax / srcMax) + dstRange[0];
+
+}
+
 L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
   initialize: function (confg) {
@@ -29,9 +43,9 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
   },
 
   setData: function (data) {
-    if (this._data
-      && this._data.length === data.data.length
-      && this._max === data.max && this._min === data.min) {
+    if (this._data &&
+      this._data.length === data.data.length &&
+      this._max === data.max && this._min === data.min) {
       return;
     }
 
@@ -44,7 +58,7 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
   redraw: function () {
     if (!this._frame) {
-      //this._frame = L.Util.requestAnimFrame(this._redraw, this);
+      this._frame = L.Util.requestAnimFrame(this._redraw, this);
     }
     this._reset();
     return this;
@@ -87,8 +101,8 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
   },
 
   _ryw: function (count) {
-    var max = this._max;
-    var min = this._min;
+    //var max = this._max;
+    //var min = this._min;
 
     var lc = Math.log(count + 1) / Math.log(10);
 
@@ -108,7 +122,7 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
     var canvas = this._canvas;
     var ctx = this._ctx;
 
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalCompositeOperation = 'screen';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     var len = data.length;
@@ -124,11 +138,19 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       var point = this._map.latLngToContainerPoint(latlng);
 
-      const size_px = 2.5;
+      const size_px = 2.5 * convertToRange(entry[2], [this._min, this._max], [1.0, 3.0]);
       const offset = size_px / 2;
 
       ctx.fillStyle = this._ryw(entry[2]);
-      ctx.fillRect(Math.round(point.x) - offset, Math.round(point.y) - offset, size_px, size_px);
+
+      //draw a circle
+      ctx.beginPath();
+      ctx.arc(Math.round(point.x) - offset, Math.round(point.y) - offset, size_px, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+
+      // draw a rectangle
+      //ctx.fillRect(Math.round(point.x) - offset, Math.round(point.y) - offset, size_px, size_px);
     }
 
     this._frame = null;
