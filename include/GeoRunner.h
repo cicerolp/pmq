@@ -38,6 +38,8 @@ public:
 
    inline grid_coord grid_coord_to_index(float lat, float lon) const;
 
+   inline std::string get_info() const;
+
 private:
    GeoRunner(int argc, char* argv[]);
 
@@ -110,4 +112,24 @@ GeoRunner::grid_coord GeoRunner::grid_coord_to_index(float lat, float lon) const
    index.lon1 = std::ceil(lon);
 
    return index;
+}
+
+inline std::string GeoRunner::get_info() const {
+   rapidjson::StringBuffer buffer;
+   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+   writer.StartObject();
+   writer.Key("renew");
+   writer.Bool(false);
+
+   writer.Key("info");
+
+   writer.StartArray();
+
+   writer.Int(_opts.now);
+
+   writer.EndArray();
+   writer.EndObject();
+
+   return buffer.GetString();
 }

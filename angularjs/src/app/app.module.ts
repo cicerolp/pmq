@@ -19,6 +19,7 @@ import { Demo2Component } from './demo2/demo2.component';
 import { Demo3Component } from './demo3/demo3.component';
 import { Demo4Component } from './demo4/demo4.component';
 import { TableComponent } from './table/table.component';
+import { InfoComponent } from './heatmap/info/info.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { TableComponent } from './table/table.component';
     Demo3Component,
     Demo4Component,
     TableComponent,
+    InfoComponent,
   ],
   imports: [
     BrowserModule,

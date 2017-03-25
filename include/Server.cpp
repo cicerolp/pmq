@@ -137,6 +137,10 @@ void Server::broadcast() {
 
       if (pair.second == false) {
          mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, renew_json.c_str(), renew_json.size());
+
+         auto info_json = GeoRunner::getInstance().get_info();
+
+         mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, info_json.c_str(), info_json.size());
          pair.second = true;
       }
    }

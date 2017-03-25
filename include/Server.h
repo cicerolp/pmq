@@ -19,6 +19,7 @@ public:
       }
    };
 
+   
    static void run();
 
    static void handler(struct mg_connection* nc, int ev, void* ev_data);
@@ -39,10 +40,10 @@ public:
 
 private:
    std::string renew_json;
-   void broadcast();
-
+   
+   void broadcast();   
    void broadcast_triggers();
-
+   
    bool running{true};
 
    struct mg_serve_http_opts http_server_opts;
