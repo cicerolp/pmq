@@ -13,6 +13,7 @@ import { DataService } from './../data.service';
   styleUrls: ['./heatmap.component.css']
 })
 export class HeatmapComponent implements OnInit {
+  dragging = false;
   triggers = false;
   data: Observable<any>;
   private queries = new Subject<any>();
@@ -66,17 +67,19 @@ export class HeatmapComponent implements OnInit {
 
   private onMouseDown(ev: any): void {
     if (ev.originalEvent.button !== 2) {
+      this.dragging = true;
       return;
     }
     this.mapService.map.dragging.disable();
   }
 
   private onMouseUp(ev: any): void {
+    this.dragging = false;
     this.mapService.map.dragging.enable();
   }
 
   public addNextSubject = (evt: any) => {
-    if (evt.renew !== true) {
+    if (evt.renew !== true || this.dragging === true) {
       return;
     }
 

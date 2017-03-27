@@ -40,7 +40,6 @@ void GeoRunner::run() {
 
       _opts.now = batch.back().value.time;
 
-      std::cout << "[" <<_opts.now << "]" << std::endl;
 
       std::unique_lock<std::mutex> lock(_grid_mutex);
       // add tweets to grid buffer

@@ -97,7 +97,7 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
     this._canvas.width = size.x;
     this._canvas.height = size.y;
 
-    this._redraw();
+    //this._redraw();
   },
 
   _ryw: function (count) {
@@ -138,19 +138,14 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       var point = this._map.latLngToContainerPoint(latlng);
 
-      const size_px = 2.5 * convertToRange(entry[2], [this._min, this._max], [1.0, 3.0]);
-      const offset = size_px / 2;
+      //const size_px = 1.1;
+      const size_px = convertToRange(entry[2], [this._min, this._max], [1.2, 4.0]);
+      const offset = size_px / 2.0;
 
       ctx.fillStyle = this._ryw(entry[2]);
 
-      //draw a circle
-      ctx.beginPath();
-      ctx.arc(Math.round(point.x) - offset, Math.round(point.y) - offset, size_px, 0, Math.PI * 2, true);
-      ctx.closePath();
-      ctx.fill();
-
       // draw a rectangle
-      //ctx.fillRect(Math.round(point.x) - offset, Math.round(point.y) - offset, size_px, size_px);
+      ctx.fillRect(point.x - offset, point.y - offset, size_px + offset, size_px + offset);
     }
 
     this._frame = null;
