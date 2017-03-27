@@ -44,6 +44,7 @@ private:
    std::string renew_json;
    
    void broadcast();   
+   void broadcast_info(mg_connection* conn) const;
    void broadcast_triggers();
    
    bool running{true};

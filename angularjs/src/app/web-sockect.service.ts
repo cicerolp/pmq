@@ -30,7 +30,9 @@ export class WebSockectService {
   }
 
   private onError() {
+    this.ws = null;
     this.ws = new $WebSocket('ws://localhost:7000');
+    //this.ws.reconnect();
     this.resetConn();
   }
 

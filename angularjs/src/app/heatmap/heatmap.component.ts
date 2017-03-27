@@ -1,5 +1,5 @@
 import { WebSockectService } from './../web-sockect.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 
 import { Observable } from 'rxjs/Rx';
 import { Subject } from 'rxjs/Subject';
@@ -12,7 +12,7 @@ import { DataService } from './../data.service';
   templateUrl: './heatmap.component.html',
   styleUrls: ['./heatmap.component.css']
 })
-export class HeatmapComponent implements OnInit {
+export class HeatmapComponent implements OnInit, AfterViewInit {
   dragging = false;
   triggers = false;
   data: Observable<any>;
@@ -59,6 +59,10 @@ export class HeatmapComponent implements OnInit {
     );
 
     this.socketService.register(this.addNextSubject);
+  }
+
+  ngAfterViewInit() {
+    this.addNextSubject({'renew': true});
   }
 
   private onViewReset(): void {

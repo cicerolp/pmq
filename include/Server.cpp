@@ -89,6 +89,7 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
          // new websocket connection
          Server::getInstance().mutex.lock();
          // heatmap ws
+         Server::getInstance().broadcast_info(nc);
          Server::getInstance().up_to_date.emplace(nc, false);
          // topk ws
          Server::getInstance().triggers.emplace(nc, std::vector<GeoRunner::grid_coord>());
@@ -151,13 +152,19 @@ void Server::broadcast() {
       if (pair.second == false) {
          mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, renew_json.c_str(), renew_json.size());
 
-         auto info_json = GeoRunner::getInstance().get_info();
-
-         mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, info_json.c_str(), info_json.size());
+         broadcast_info(conn);
          pair.second = true;
+         
       }
    }
    mutex.unlock();
+}
+
+void Server::broadcast_info(mg_connection* conn) const {
+   if (!running) return;
+
+   auto info_json = GeoRunner::getInstance().get_info();
+   mg_send_websocket_frame(conn, WEBSOCKET_OP_TEXT, info_json.c_str(), info_json.size());
 }
 
 void Server::broadcast_triggers() {

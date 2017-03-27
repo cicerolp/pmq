@@ -138,7 +138,6 @@ L.CustomLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       var point = this._map.latLngToContainerPoint(latlng);
 
-      //const size_px = 1.1;
       const size_px = convertToRange(entry[2], [this._min, this._max], [1.2, 4.0]);
       const offset = size_px / 2.0;
 

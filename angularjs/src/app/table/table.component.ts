@@ -82,7 +82,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           'render': function (data, type, row) {
             const str = String(data);
 
-            const cellHtml = '<textarea wrap="hard" rows="4" cols="40" readonly>' + str + '</textarea>';
+            const cellHtml = '<textarea wrap="soft" rows="5" cols="30" readonly>' + str + '</textarea>';
             return cellHtml;
           },
           'targets': 1
