@@ -4,6 +4,7 @@
 #include "Singleton.h"
 #include "GeoCtnIntf.h"
 #include <condition_variable>
+#undef Bool
 
 class GeoRunner : public Singleton<GeoRunner> {
    friend class Singleton<GeoRunner>;
