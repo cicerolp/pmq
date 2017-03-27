@@ -35,24 +35,12 @@ void Server::run() {
       mg_enable_multithreading(Server::getInstance().nc);
    }
 
-   std::unique_ptr<std::thread> broadcast_ptr;
-   broadcast_ptr = std::make_unique<std::thread>(Server::run);
-
    while (Server::getInstance().running) {
       mg_mgr_poll(&Server::getInstance().mgr, 1);
-   }
-
-   broadcast_ptr->join();
-
-   mg_mgr_free(&Server::getInstance().mgr);
-}
-
-void Server::run_broadcast() {
-   while (Server::getInstance().running) {      
       Server::getInstance().broadcast();
       Server::getInstance().broadcast_triggers();
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
    }
+   mg_mgr_free(&Server::getInstance().mgr);
 }
 
 void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {

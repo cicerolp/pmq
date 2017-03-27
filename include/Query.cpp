@@ -63,7 +63,7 @@ Query::Query(const std::vector<std::string>& tokens) {
       } else if ((*it) == "triggers") {
          type = TRIGGER;
 
-         triggers_info.frequency = std::stoi(string_util::next_token(it));         
+         triggers_info.frequency = std::stof(string_util::next_token(it));         
       }
    }
 }
