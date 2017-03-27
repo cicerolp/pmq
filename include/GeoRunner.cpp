@@ -52,11 +52,11 @@ void GeoRunner::run() {
       _mutex.lock();
 
       // insert batch
-      //_container->insert(batch);
+      _container->insert(batch);
       
-      _container->insert_rm(batch, [ oldest_time ]( const void* el) {
+      /*_container->insert_rm(batch, [ oldest_time ]( const void* el) {
             return ((elttype*)el)->value.time < oldest_time;
-      });
+      });*/
 
       oldest_time = _opts.now;
 

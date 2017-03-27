@@ -124,7 +124,7 @@ export class Demo3Component implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public topk_ws = (evt: any) => {
-    if (evt.renew !== false) {
+    if (typeof evt.triggers === 'undefined') {
       return;
     }
 
