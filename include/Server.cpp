@@ -8,6 +8,7 @@
 #undef Bool
 
 Server::Server(server_opts opts) : nds_opts(opts) {
+   std::cout << "Server::Server(server_opts opts)" << std::endl;
    std::cout << "Server Options:" << std::endl;
    std::cout << "\t" << opts << std::endl;
 
@@ -19,36 +20,36 @@ Server::Server(server_opts opts) : nds_opts(opts) {
    writer.Bool(true);
    writer.EndObject();
 
-   renew_json = std::string(buffer.GetString());   
+   renew_json = std::string(buffer.GetString());
 }
 
 void Server::run() {
-   mg_mgr_init(&Server::getInstance().mgr, nullptr);
-   Server::getInstance().nc =
-      mg_bind(&Server::getInstance().mgr, std::to_string(Server::getInstance().nds_opts.port).c_str(), handler);
+   struct mg_mgr mgr;
+   mg_mgr_init(&mgr, NULL);
 
-   mg_set_protocol_http_websocket(Server::getInstance().nc);
+   struct mg_connection *c = mg_bind(&mgr, std::to_string(Server::getInstance().nds_opts.port).c_str(), handler);
+   mg_set_protocol_http_websocket(c);
 
    Server::getInstance().http_server_opts.document_root = "../WebContent";
 
    if (Server::getInstance().nds_opts.multithreading) {
-      mg_enable_multithreading(Server::getInstance().nc);
+      mg_enable_multithreading(c);
    }
 
    std::unique_ptr<std::thread> broadcast_ptr;
    broadcast_ptr = std::make_unique<std::thread>(Server::run);
 
    while (Server::getInstance().running) {
-      mg_mgr_poll(&Server::getInstance().mgr, 1);
+      mg_mgr_poll(&mgr, 1);
    }
 
    broadcast_ptr->join();
 
-   mg_mgr_free(&Server::getInstance().mgr);
+   mg_mgr_free(&mgr);
 }
 
 void Server::run_broadcast() {
-   while (Server::getInstance().running) {      
+   while (Server::getInstance().running) {
       Server::getInstance().broadcast();
       Server::getInstance().broadcast_triggers();
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -56,7 +57,7 @@ void Server::run_broadcast() {
 }
 
 void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
-   if (!Server::getInstance().running) return;
+   if (!Server::getInstance().running || nc == nullptr) return;
 
    switch (ev) {
       case MG_EV_HTTP_REQUEST: {
@@ -70,7 +71,7 @@ void Server::handler(struct mg_connection* nc, int ev, void* ev_data) {
                mg_serve_http(nc, hm, Server::getInstance().http_server_opts);
             } else if (tokens[1] == "rest" && tokens.size() >= 3) {
                if (tokens.size() >= 5 && tokens[2] == "query") {
-                  std::cout <<"[uri]: " << uri << std::endl;
+                  std::cout << "[uri]: " << uri << std::endl;
                   printJson(nc, GeoRunner::getInstance().query(Query(tokens)));
                } else {
                   printJson(nc, "[]");
