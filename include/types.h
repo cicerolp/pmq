@@ -342,7 +342,7 @@ using tweet_t = tweet_text_t;
 using valuetype = tweet_t;
 
 struct triggers_t {
-   float frequency;
+   uint32_t frequency;
 };
 
 struct topk_t {

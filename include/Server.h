@@ -22,6 +22,8 @@ public:
    
    static void run();
 
+   static void run_broadcast();
+
    static void handler(struct mg_connection* nc, int ev, void* ev_data);
 
    static void printText(struct mg_connection* conn, const std::string& content);

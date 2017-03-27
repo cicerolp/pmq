@@ -127,7 +127,7 @@ inline std::string GeoRunner::get_info() const {
 
    writer.StartArray();
 
-   writer.Int(_opts.now);
+   writer.Int64(_opts.now);
 
    writer.EndArray();
    writer.EndObject();
