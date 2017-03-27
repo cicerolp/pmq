@@ -19,6 +19,7 @@ public:
       }
    };
 
+   
    static void run();
 
    static void run_broadcast();
@@ -41,24 +42,21 @@ public:
 
 private:
    std::string renew_json;
-
-   void broadcast();
-
+   
+   void broadcast();   
    void broadcast_triggers();
-
+   
    bool running{true};
 
    struct mg_serve_http_opts http_server_opts;
-   //struct mg_connection* nc{nullptr};
-   //struct mg_mgr mgr;
+   struct mg_connection* nc;
+   struct mg_mgr mgr;
 
    server_opts nds_opts;
 
    Server(server_opts opts);
 
-   Server() {
-      std::cout << "Server::Server()" << std::endl;
-   };
+   Server() = default;
 
    virtual ~Server() = default;
 
