@@ -5,7 +5,7 @@
 
 GeoRunner::GeoRunner(int argc, char* argv[]) {
    std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
-   _opts.n_elts = cimg_option("-n", 1000000, "program arg: number of elements to insert");
+   _opts.n_elts = cimg_option("-n", 0, "program arg: number of elements to insert");
 
  //  _input = input::loadn(input_file, 25, _opts.n_elts);
    _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
@@ -14,7 +14,13 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
 
    _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
-   _input = input::load_dmp_text(input_file, 25);
+
+   if (_opts.n_elts > 0){
+       _input = input::load_dmp_text(input_file, 25, _opts.n_elts);
+   }
+   else{
+       _input = input::load_dmp_text(input_file, 25);
+   }
 
    _grid.resize(_x_grid * _y_grid, 0);
 
