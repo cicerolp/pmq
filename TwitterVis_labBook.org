@@ -1,0 +1,882 @@
+# -*- org-export-babel-evaluate: nil; -*-
+#+TITLE: Lab book TwitterVis project
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+CATEGORY: TwitterVis
+#+OPTIONS: ^:{} H:3
+#+PROPERTY: header-args :cache no :eval no-export
+
+
+
+* TO-DO List [1/5]
+    
+** TODO Related Work - State Of the Art
+*** TODO find other data structure for geospatial data
+  - find a reference work to which we could compare 
+
+*** DONE What is a meaningfull size of batch for real applications ?
+We should look at the real rate of insertions Tweets / s
+
+Statistics about amount of tweets:
+http://www.internetlivestats.com/twitter-statistics/
+"Every second, on average, around 6000 tweets are tweeted"
+
+**** Free streaming API of twitter
+
+Number of tweets  got by hour and a subset of them containing
+=Eleições= srtings:
+
+With the free stream we got a peak of 92662/3600 = =25.739= tweets per
+second. A batch of this size / frequency is very small for our usage. 
+
+
+#+RESULTS:
+| File                                       | grepEleicoes | TweetsBrasil |
+| tweets_brazil/Brazil_2016-09-30_22h40.json |           37 |        67749 |
+| tweets_brazil/Brazil_2016-09-30_23h40.json |           42 |        65459 |
+| tweets_brazil/Brazil_2016-10-01_00h40.json |           14 |        50362 |
+| tweets_brazil/Brazil_2016-10-01_01h40.json |           16 |        31550 |
+| tweets_brazil/Brazil_2016-10-01_02h40.json |            6 |        18409 |
+| tweets_brazil/Brazil_2016-10-01_03h40.json |            4 |        10733 |
+| tweets_brazil/Brazil_2016-10-01_04h40.json |            1 |         6906 |
+| tweets_brazil/Brazil_2016-10-01_05h40.json |            5 |         7701 |
+| tweets_brazil/Brazil_2016-10-01_06h40.json |           16 |        10340 |
+| tweets_brazil/Brazil_2016-10-01_07h40.json |           43 |        18054 |
+| tweets_brazil/Brazil_2016-10-01_08h40.json |           73 |        27852 |
+| tweets_brazil/Brazil_2016-10-01_09h40.json |           86 |        38362 |
+| tweets_brazil/Brazil_2016-10-01_10h40.json |          108 |        48539 |
+| tweets_brazil/Brazil_2016-10-01_11h40.json |           95 |        55161 |
+| tweets_brazil/Brazil_2016-10-01_12h40.json |          102 |        56694 |
+| tweets_brazil/Brazil_2016-10-01_13h40.json |           64 |        52458 |
+| tweets_brazil/Brazil_2016-10-01_14h40.json |           55 |        50057 |
+| tweets_brazil/Brazil_2016-10-01_15h40.json |           52 |        49124 |
+| tweets_brazil/Brazil_2016-10-01_16h40.json |           74 |        53309 |
+| tweets_brazil/Brazil_2016-10-01_17h40.json |           92 |        58381 |
+| tweets_brazil/Brazil_2016-10-01_18h40.json |          143 |        54721 |
+| tweets_brazil/Brazil_2016-10-01_19h40.json |          112 |        58223 |
+| tweets_brazil/Brazil_2016-10-01_20h40.json |          133 |        60461 |
+| tweets_brazil/Brazil_2016-10-01_21h40.json |           99 |        63076 |
+| tweets_brazil/Brazil_2016-10-01_22h40.json |           83 |        68843 |
+| tweets_brazil/Brazil_2016-10-01_23h40.json |           99 |        67649 |
+| tweets_brazil/Brazil_2016-10-02_00h40.json |           68 |        51288 |
+| tweets_brazil/Brazil_2016-10-02_01h40.json |           60 |        35174 |
+| tweets_brazil/Brazil_2016-10-02_02h40.json |           28 |        22198 |
+| tweets_brazil/Brazil_2016-10-02_03h40.json |           12 |        13838 |
+| tweets_brazil/Brazil_2016-10-02_04h40.json |           12 |         9486 |
+| tweets_brazil/Brazil_2016-10-02_05h40.json |           63 |         8193 |
+| tweets_brazil/Brazil_2016-10-02_06h40.json |          141 |         9444 |
+| tweets_brazil/Brazil_2016-10-02_07h40.json |          288 |        14171 |
+| tweets_brazil/Brazil_2016-10-02_08h40.json |          316 |        19048 |
+| tweets_brazil/Brazil_2016-10-02_09h31.json |          447 |        34354 |
+| tweets_brazil/Brazil_2016-10-02_10h31.json |          536 |        46623 |
+| tweets_brazil/Brazil_2016-10-02_11h31.json |          515 |        57136 |
+| tweets_brazil/Brazil_2016-10-02_12h31.json |          462 |        60700 |
+| tweets_brazil/Brazil_2016-10-02_13h31.json |          549 |        58340 |
+| tweets_brazil/Brazil_2016-10-02_14h31.json |          445 |        52912 |
+| tweets_brazil/Brazil_2016-10-02_15h31.json |          494 |        51304 |
+| tweets_brazil/Brazil_2016-10-02_16h31.json |          846 |        53476 |
+| tweets_brazil/Brazil_2016-10-02_17h31.json |         1388 |        60381 |
+| tweets_brazil/Brazil_2016-10-02_18h31.json |         1591 |        70227 |
+| tweets_brazil/Brazil_2016-10-02_19h31.json |         1350 |        74208 |
+| tweets_brazil/Brazil_2016-10-02_20h31.json |          962 |        81676 |
+| tweets_brazil/Brazil_2016-10-02_21h31.json |          585 |        90016 |
+| tweets_brazil/Brazil_2016-10-02_22h31.json |          481 |        92662 |
+| tweets_brazil/Brazil_2016-10-02_23h31.json |          255 |        81330 |
+| tweets_brazil/Brazil_2016-10-03_00h31.json |          156 |        55236 |
+| tweets_brazil/Brazil_2016-10-03_01h31.json |           65 |        30545 |
+| tweets_brazil/Brazil_2016-10-03_02h31.json |           27 |        14260 |
+| tweets_brazil/Brazil_2016-10-03_03h31.json |            8 |         6830 |
+| tweets_brazil/Brazil_2016-10-03_04h31.json |            9 |         2379 |
+| tweets_brazil/Brazil_2016-10-03_05h06.json |           23 |         5442 |
+| tweets_brazil/Brazil_2016-10-03_06h06.json |           67 |        15467 |
+| tweets_brazil/Brazil_2016-10-03_07h06.json |          149 |        21384 |
+| tweets_brazil/Brazil_2016-10-03_08h06.json |          157 |        25035 |
+| tweets_brazil/Brazil_2016-10-03_09h06.json |           32 |         7402 |
+|                                            |              |      2482338 |
+
+*** TODO Spatial DB GIS                                             :@CICERO:
+Install one of the saptial databases to see if we can use it as
+a reference to compare. 
+http://postgis.net/
+
+** DONE Look at the Twitter API for streaming
+Documentation about Twitter api : 
+    https://dev.twitter.com/overview/documentation
+Python library to use the Twitte api: 
+    https://github.com/geduldig/TwitterAPI
+    
+Limits https://dev.twitter.com/streaming/overview/messages-types#limit_notices
+** TODO Profiling the TwitterVis Project
+  - Identify and compare costs:
+    - PMA Instertion
+    - PMA modified key scan ( PMA_diff )
+    - Quadtree update 
+      
+*** TODO Why does the Quadtree update takes more time than a batch insertion ? 
+
+** TODO Benchmarks
+*** DONE TwitterVis comparison:
+- compare UPD and QUERY performance of different implementations
+  
+*** DONE PMA Micro-benchmarks:                                     :@JULIO:
+- compare time spent on INS, DIFF, UPD. 
+ 
+*** TODO Run the benchmarks on experiment machines                 :@JULIO:
+- For the momment we already have the PMA and dense vector
+  implementation. 
+  
+*** TODO Set correct initialization parameters for the PMA         :@JULIO:
+For the Querry benchmarks the pma is takling more than the double of
+the size needed to store elements.
+
+Set an option that alows us choose the ratio of occupation of the pma
+at the initialization;
+ 
+** TODO Developpment:
+*** DONE Interfaces for using a general storage container with the quadtree: :@CICERO:
+
+*** INPROGRESS Generate files with the queries to apply on the benchmark. :@CICERO:
+
+*** DONE Add TIMSORT to the sorting algorithms on the benchmarks.
+    
+*** TODO Handle deletion of Tweets                                 :@JULIO:
+
+
+* Source Code
+** Dependencies
+
+Dependencies added for the bechmarks with databases
+#+begin_src sh :results output :exports both
+sudo apt-get install postgis libpq-dev libspatialite-dev libsqlite3-dev libgeos-dev
+#+end_src
+
+** Configuring Postgres
+Start psql console
+#+begin_src sh :results output :exports both
+sudo -u postgres psql postgres
+#+end_src
+
+Configure database in psql console
+#+BEGIN_EXAMPLE
+postgres=# \password postgres
+postgres=# CREATE DATABASE twittervis;
+postgres=# \c twittervis
+postgres=# CREATE EXTENSION postgis;
+#+END_EXAMPLE
+
+To start/stop/restart the Server
+http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
+#+begin_src sh :results output :exports both
+systemctl restart postgresql.service
+#+end_src
+
+* Scripts
+** g5k_get_info.sh
+Script to get info in experiments on grid5000
+
+#+begin_src sh :results output :exports both :tangle ./scripts/g5k_get_info.sh :shebang #!/bin/bash
+# Script for to get machine information before doing the experiment
+
+set +e # Don't fail fast since some information is maybe not available
+
+title="Experiment results"
+starpu_build=""
+inputfile=""
+host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
+help_script()
+{
+cat << EOF
+Usage: $0 [options] outputfile.org
+
+Script for to get machine information before doing the experiment
+
+OPTIONS:
+-h      Show this message
+-t      Title of the output file
+-s      Path to the StarPU installation
+-i      Input file name if doing SimGrid simulation based on input
+EOF
+}
+# Parsing options
+while getopts "t:s:i:h" opt; do
+case $opt in
+    t)
+        title="$OPTARG"
+        ;;
+    s)
+        starpu_build="$OPTARG"
+        ;;
+    i)
+        inputfile="$OPTARG"
+        ;;
+    h)
+        help_script
+        exit 4
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG"
+        help_script
+        exit 3
+        ;;
+esac
+done
+
+shift $((OPTIND - 1))
+filedat=$1
+if [[ $# != 1 ]]; then
+echo 'ERROR!'
+help_script
+exit 2
+fi
+
+##################################################
+# Preambule of the output file
+echo "#+TITLE: $title" >> $filedat
+echo "#+DATE: $(eval date)" >> $filedat
+echo "#+AUTHOR: $(eval whoami)" >> $filedat
+echo "#+MACHINE: $(eval hostname)" >> $filedat
+echo "#+FILE: $(eval basename $filedat)" >> $filedat
+if [[ -n "$inputfile" ]]; 
+then
+echo "#+INPUTFILE: $inputfile" >> $filedat
+fi
+echo " " >> $filedat 
+
+##################################################
+# Collecting metadata
+echo "* MACHINE INFO:" >> $filedat
+
+echo "** PEOPLE LOGGED WHEN EXPERIMENT STARTED:" >> $filedat
+who >> $filedat
+echo "############################################" >> $filedat
+
+echo "** ENVIRONMENT VARIABLES:" >> $filedat
+env >> $filedat
+echo "############################################" >> $filedat
+
+echo "** HOSTNAME:" >> $filedat
+hostname >> $filedat
+echo "############################################" >> $filedat
+
+if [[ -n $(command -v lstopo) ]];
+then
+echo "** MEMORY HIERARCHY:" >> $filedat
+lstopo --of console >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/cpuinfo ];
+then
+echo "** CPU INFO:" >> $filedat
+cat /proc/cpuinfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
+then
+echo "** CPU GOVERNOR:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
+then
+echo "** CPU FREQUENCY:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/meminfo ];
+then
+echo "** MEM INFO:" >> $filedat
+cat /proc/meminfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v nvidia-smi) ]];
+then
+echo "** GPU INFO FROM NVIDIA-SMI:" >> $filedat
+nvidia-smi -q >> $filedat
+echo "############################################" >> $filedat
+fi 
+
+if [ -f /proc/version ];
+then
+echo "** LINUX AND GCC VERSIONS:" >> $filedat
+cat /proc/version >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v module) ]];
+then
+echo "** MODULES:" >> $filedat
+module list 2>> $filedat
+echo "############################################" >> $filedat
+fi
+
+##################################################
+# Collecting revisions info 
+echo "* CODE REVISIONS:" >> $filedat
+
+git_exists=`git rev-parse --is-inside-work-tree`
+if [ "${git_exists}" ]
+then
+echo "** GIT REVISION OF TWITTERVIS:" >> $filedat
+git log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/twitterVis/build-release >> $filedat
+
+echo "** GIT REVISION OF PMA :" >> $filedat
+git -C ~/Projects/hppsimulations/ log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/hppsimulations/build-release >> $filedat
+
+echo "############################################" >> $filedat
+fi
+
+#+end_src
+
+* Data
+:PROPERTIES:
+:EXPORT_OPTIONS: H:2
+:END:
+Note: Only DATA branch contains entries here; 
+
+Reference about each experiment campaing. Usefull for comparing
+results of different experiments. 
+
+** Sample machine
+*** TODO Template Experiment
+
+- [ ] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+#expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+[[file:data/template_exp.org]]
+
+
+** idphix
+
+*** DONE exp1476715297
+  
+[[file:data/idphix/exp1476715297/exp.org]]
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git merge exp1476715297
+#+end_src
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git checkout DATA
+git branch -d exp1476715297
+git tag exp1476715297
+#+end_src
+
+*** DONE exp1476822779                                :exp1476822779:
+[[file:data/idphix/exp1476822779/exp.org]]
+
+COMMENTS: 
+- In this experiment the uniform distribution was not correctly
+  computed for the database versions.
+  
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v
+#+end_src
+
+#+RESULTS:
+#+begin_example
+DATA              d16ac93 [ahead 13] Merge branch 'exp1476715297' into DATA
+  containers_branch f5312fc *up and running*
+  count_bug         b0881c9 BUGFIX: spatial element update
+  debug_cicero      20cf087 BUG: Counts on the pma are not correct
+  diff_bug          15d3f43 Add comments
+> exp1476822779     83b332e WIP: analyzing results ...
+  exp1476879656     763870f ADD: detailed plots on analysis
+  exp1476897663     3b3745e WIP: running experiment on idphix
+  exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+  master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+#+end_example
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476822779
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 13 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476822779
+git tag exp1476822779
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476822779 (was 83b332e).
+
+*** DONE exp1476879656                                               :pres:
+:COMMENTS: 
+This branch was the first correct overview with the database
+benchmarks.
+This results were presented on the group meeting [2016-10-20 Qui]
+:END:
+
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476879656
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476879656'
+
+[[file:data/idphix/exp1476879656/exp.org]]
+
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v
+#+end_src
+
+#+RESULTS:
+: DATA              1281670 [ahead 21] Merge branch 'exp1476822779' into DATA
+:   containers_branch f5312fc *up and running*
+:   count_bug         b0881c9 BUGFIX: spatial element update
+:   debug_cicero      20cf087 BUG: Counts on the pma are not correct
+:   diff_bug          15d3f43 Add comments
+: * exp1476879656     b48b74a UPD: plots for twitter dataset
+:   exp1476897663     3b3745e WIP: running experiment on idphix
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476879656
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 21 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476879656
+git tag exp1476879656
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476879656 (was b48b74a).
+
+*** DONE exp1476897663
+
+:COMMENTS: 
+This is an unfinished experiment, aborted because sqltie benchmark was
+taking too much time.
+
+But I still have complete results for the bench_insert_and_scan
+benchmark for PMABatch, StdDense and TimDense. Partial results for sqlite. 
+:END:
+
+[[file:data/idphix/exp1476897663/exp.org]]
+
+**** Merging
+#+begin_src sh :session g5k :results output :exports both 
+ssh -A digitalis.grenoble.g5k
+#+end_src
+
+#+begin_src sh :session g5k :results output :exports both 
+cd ./Projects/twitterVis/
+git status -uno
+git commit -m "Exp: partial results, experiment canceled"
+#+end_src
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476897663
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476897663'
+
+
+#+begin_src sh :session exp :results output :exports both 
+git branch -v | grep "DATA\|master\|exp*"
+#+end_src
+
+#+RESULTS:
+: DATA              38317be [ahead 32] Merge branch 'exp1476879656' into DATA
+: * exp1476897663     58adc33 Exp: partial results, experiment canceled
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+Merge and resolve conflict
+#+begin_src sh :session exp :results output :exports both 
+git checkout DATA
+git merge exp1476897663
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'DATA'
+: Your branch is ahead of 'origin/DATA' by 32 commits.
+:   (use "git push" to publish your local commits)
+: error: Terminal is dumb, but EDITOR unset
+: Not committing merge; use 'git commit' to complete the merge.
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476897663
+git tag exp1476897663
+#+end_src
+
+#+RESULTS:
+: Deleted branch exp1476897663 (was 546e8fd).
+
+*** DONE exp1476928803                                               :pres:
+
+:COMMENTS: 
+- use Bench_micro_pmq to evaluate the updates without doing
+  queries.
+- Removed the slow postgreSQL form the comparison
+- These results were presented on [2016-10-20 Qui]
+  [[file:data/presentations/twitterVis-perf.pdf]] 
+- Added amortized insertion time analysis 
+:END:
+
+[[file:data/idphix/exp1476928803/exp.org]]
+
+**** Merging
+#+begin_src sh :session exp :results output :exports both 
+git branch -v | grep "DATA\|master\|exp*"
+#+end_src
+
+#+RESULTS:
+: * DATA              66cd5c1 [ahead 39] Merge branch 'exp1476897663' into DATA
+:   exp1476928803     f1d4777 [ahead 4] LBK: exp labbook update
+:   master            7fea5cd Merge remote-tracking branch 'bitbucket/master'
+
+#+begin_src sh :session exp :results output :exports both 
+git checkout exp1476928803
+#+end_src
+
+#+RESULTS:
+: Switched to branch 'exp1476928803'
+: Your branch is ahead of 'origin/exp1476928803' by 4 commits.
+:   (use "git push" to publish your local commits)
+
+
+
+
+note: finish commit "by hand" after the merge
+#+begin_src sh :session exp :resu lts output :exports both 
+git checkout DATA
+git merge exp1476928803
+#+end_src
+
+#+RESULTS:
+
+Delete the finished experiment and creates a tab
+#+begin_src sh :session exp :results output :exports both
+git branch -d exp1476928803
+git tag exp1476928803
+#+end_src
+
+#+RESULTS:
+: warning: not deleting branch 'exp1476928803' that is not yet merged to
+:          'refs/remotes/origin/exp1476928803', even though it is merged to HEAD.
+: error: The branch 'exp1476928803' is not fully merged.
+: If you are sure you want to delete it, run 'git branch -D exp1476928803'.
+
+*** CANCELED Experiments for the TwitterVis paper       :exp20170126011645:
+[2017-01-26 Qui]
+
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc="idphix"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/idphix/exp20170126011645/exp.org]]
+
+
+**** TODO Machine comparison                          
+
+The perfomance of our application varies a lot depeneding on the
+machine.
+We discovered that on idphix, the times were much larger, probably due
+to slower processor. 
+
+
+#+begin_src sh :results output raw :exports both
+expFolder=./data/exp$(date +%Y%m%d%H%M%S)
+mkdir -p $expFolder 
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/exp20170127140737/exp.org]]
+
+
+** inf-desktop
+
+*** [2017-01-03 Ter] exp1483478591
+  
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%s)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp1483478591/exp.org]]
+
+*** [2017-01-07 Sáb] Bench queries on regions
+
+Test several "real world queries" from log.csv
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%s)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp1483835412/exp.org]]
+
+*** [2017-01-23 Seg] Bencmarks with removal of elements 
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170123134710/exp.org]]
+
+*** DONE TOPK - benchmarks
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170123215338/exp.org]]
+
+  
+** cicero
+
+*** TwitterVis Experiement - bench_query_regions
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170128002234/exp.org]]
+
+*** DONE Bench Insert and remove :                      :exp20170128175749:
+Inserts elements until filling the buffer. 
+Buffer size is $Time Window X Rate$ 
+
+[[./data/cicero/exp20170128175749/exp.org]]
+
+*** TODO Topk benchmark                                 :exp20170130113312: 
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+ [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+cp ./data/template_exp.org $expFolder/exp.org
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170130113312/exp.org]]
+
+*** DONE Bench Insert and remove - V2 (corrected benchmarks) :exp20170201161635:
+
+[[./data/cicero/exp20170201161635/exp.org]]
+
+*** DONE PMA parameters tunning for Insertion Window    :exp20170207004746:
+
+[[file:data/cicero/exp20170207004746/exp.org]]
+
+*** DONE PMA with Rho_h insertions                      :exp20170208204511:
+Change the initialization of the PMA based on \rho_{h} in stead of \tau_{h}
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports none :session template
+set -e
+expId=exp20170208204511
+machineDesc=cicero
+expFolder=./data/$machineDesc/$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output :exports both :session template
+  git checkout DATA ./data/cicero/exp20170207004746/exp.org
+  mv ./data/cicero/exp20170207004746/exp.org $expFolder  
+  #+end_src
+
+
+#+begin_src sh :session template :results output raw :exports result 
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170208204511/exp.org]]
+*** DONE Bench Insert and remove (fixed pma bug)        :exp20170210223303:
+**** Setup                                                      :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports none :session template
+set -e
+expId=exp20170210223303
+machineDesc=cicero
+expFolder=./data/$machineDesc/$expId
+mkdir -p $expFolder
+set +e
+#+end_src
+
+  #+RESULTS:
+
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output :exports both :session template
+  git checkout exp20170208204511 ./data/cicero/exp20170208204511/exp.org
+  mv ./data/cicero/exp20170208204511/exp.org $expFolder  
+# git show exp20170208204511:data/cicero/exp20170208204511/exp.org > $expFolder/exp.org
+  #+end_src
+
+  #+RESULTS:
+  
+**** Description 
+
+Re-run experiments [[*Bench Insert and remove - V2 (corrected benchmarks)][Bench Insert and remove - V2 (corrected benchmarks)]]
+with corrected PMA removal algorithm. 
+
+#+begin_src sh :session template :results output raw :exports result 
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170210223303/exp.org]]
+
