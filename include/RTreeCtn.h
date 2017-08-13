@@ -72,10 +72,6 @@ class RTreeCtn : public GeoCtnIntf {
     std::vector<value> result_s;
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result_s));
 
-    // display results
-    std::cout << "spatial query box:" << std::endl;
-    std::cout << bg::wkt<box>(query_box) << std::endl;
-
     for (const auto &elt : result_s) {
       __apply(_container[elt].value);
     }
@@ -107,10 +103,6 @@ class RTreeCtn : public GeoCtnIntf {
     // temporary result
     std::vector<value> result_s;
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result_s));
-
-    // display results
-    std::cout << "spatial query box:" << std::endl;
-    std::cout << bg::wkt<box>(query_box) << std::endl;
 
     for (const auto &elt : result_s) {
       __apply(spatial_t(region.x0 + (uint32_t) ((region.x1 - region.x0) / 2),

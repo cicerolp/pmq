@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
   GeoRunner &runner = GeoRunner::getInstance(argc, argv);
 
-  typedef bgi::rstar<16, 4> balacing_algorithm;
+  typedef bgi::rstar<16> balacing_algorithm;
   // Rtree
   std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
 
