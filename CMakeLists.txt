@@ -18,6 +18,9 @@ endif ()
 
 aux_source_directory(. SRC_LIST)
 
+file(GLOB HEADERS "include/*.h")
+source_group("Header Files" FILES ${HEADERS})
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 include(cotire)
@@ -27,7 +30,7 @@ include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
-add_executable(${PROJECT_NAME} ${SRC_LIST}
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
         include/GeoRunner.cpp
         include/QuadtreeIntf.cpp
 
@@ -44,7 +47,7 @@ add_executable(${PROJECT_NAME} ${SRC_LIST}
         include/Server.cpp
 
         include/mongoose/mongoose.c
-        )
+        include/RTreeCtn.cpp include/RTreeCtn.h)
 
 include_directories(
         "${PROJECT_SOURCE_DIR}"
@@ -53,8 +56,16 @@ include_directories(
 
 FIND_PACKAGE(Threads REQUIRED)
 
+set(Boost_USE_STATIC_LIBS ON) # only find static libs
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+find_package(Boost 1.64.0 REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 elseif (UNIX)
 
@@ -63,7 +74,7 @@ elseif (UNIX)
     FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
     FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
 
-    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY} ${Boost_LIBRARIES})
 
     ######## PMQ Tests
     enable_testing()
