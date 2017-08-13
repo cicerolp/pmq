@@ -73,5 +73,5 @@
    #include <spatialite/gaiageo.h>
 
 // postgis
-   #include <postgresql/libpq-fe.h>
+   #include <libpq-fe.h>
 #endif
