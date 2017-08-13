@@ -11,6 +11,7 @@
 #include "GeoRunner.h"
 #include "GeoCtnIntf.h"
 
+#include "RTreeCtn.h"
 #include "GeoHash.h"
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
@@ -19,63 +20,64 @@
 
 uint32_t g_Quadtree_Depth = 25;
 
-int main(int argc, char* argv[]) {
-   //freopen("out.txt", "w", stdout);
+int main(int argc, char *argv[]) {
+  cimg_usage("command line arguments");
 
-   cimg_usage("command line arguments");
+  bool server(cimg_option("-server", false, "program arg: enable server"));
 
-   bool server(cimg_option("-server", true, "program arg: enable server"));
+  GeoRunner &runner = GeoRunner::getInstance(argc, argv);
 
-   GeoRunner& runner = GeoRunner::getInstance(argc, argv);
+  // Rtree
+  std::shared_ptr<RTreeCtn> container = std::make_shared<RTreeCtn>(argc, argv);
 
-   // implicit quadtree
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
-   std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashBinary>(argc, argv);
+  // implicit quadtree
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashBinary>(argc, argv);
 
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
 
-   // SQL
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
-   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PostGisCtn>();   
+  // SQL
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
+  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PostGisCtn>();
 
-   const char* is_help = cimg_option("-h", (char*)0, 0);
-   if (is_help) return 0;
+  const char *is_help = cimg_option("-h", (char *) 0, 0);
+  if (is_help) return 0;
 
-   container->create(runner.input_size());
+  container->create(runner.input_size());
 
-   runner.set(container);
+  runner.set(container);
 
-   std::thread run_thread(&GeoRunner::run, &runner);
+  std::thread run_thread(&GeoRunner::run, &runner);
 
-   Server::server_opts nds_opts;
-   nds_opts.port = 7000;
-   nds_opts.cache = false;
-   nds_opts.multithreading = true;
+  Server::server_opts nds_opts;
+  nds_opts.port = 7000;
+  nds_opts.cache = false;
+  nds_opts.multithreading = true;
 
-   // http server
-   std::unique_ptr<std::thread> server_ptr;
-   if (server) {
-      Server::getInstance(nds_opts);
-      server_ptr = std::make_unique<std::thread>(Server::run);
-   }
+  // http server
+  std::unique_ptr<std::thread> server_ptr;
+  if (server) {
+    Server::getInstance(nds_opts);
+    server_ptr = std::make_unique<std::thread>(Server::run);
+  }
 
-   std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-   if (server_ptr) {
-      std::cout << "*Server* Running... press any key to terminate." << std::endl;
-      getchar();
+  if (server_ptr) {
+    std::cout << "*Server* Running... press any key to terminate." << std::endl;
+    getchar();
 
-      Server::getInstance().stop();
-      server_ptr->join();
-   } else {
-      std::cout << "*Runner* Executing... press any key to terminate." << std::endl;
-      getchar();
-   }
+    Server::getInstance().stop();
+    server_ptr->join();
+  } else {
+    std::cout << "*Runner* Executing... press any key to terminate." << std::endl;
+    getchar();
+  }
 
-   runner.stop();
-   run_thread.join();
+  runner.stop();
+  run_thread.join();
 
-   return 0;
+  return 0;
 }
