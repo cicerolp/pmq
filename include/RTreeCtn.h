@@ -6,6 +6,13 @@
 
 #include "GeoCtnIntf.h"
 
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+
+typedef bg::model::point<float, 2, bg::cs::cartesian> point;
+typedef bg::model::box<point> box;
+typedef std::pair<box, unsigned> value;
+
 class RTreeCtn : public GeoCtnIntf {
  public:
   RTreeCtn(int argc, char *argv[]);
@@ -31,4 +38,7 @@ class RTreeCtn : public GeoCtnIntf {
     return name_str;
   }
 
+ protected:
+  // create the rtree using default constructor
+  bgi::rtree<value, bgi::quadratic<16>> _rtree;
 };

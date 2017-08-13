@@ -1,8 +1,8 @@
 #pragma once
 
 #ifdef __GNUC__
-   #pragma GCC system_header
-   #pragma system_header
+#pragma GCC system_header
+#pragma system_header
 #elif _MSC_VER
 #define NOMINMAX
 #define _USE_MATH_DEFINES
@@ -65,13 +65,19 @@
 
 #ifdef __GNUC__
 // geos lib
-   #include <geos_c.h>
+#include <geos_c.h>
 
 // spatialite
-   #include <sqlite3.h>
-   #include <spatialite.h>
-   #include <spatialite/gaiageo.h>
+#include <sqlite3.h>
+#include <spatialite.h>
+#include <spatialite/gaiageo.h>
 
 // postgis
-   #include <libpq-fe.h>
+#include <libpq-fe.h>
 #endif
+
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+
+#include <boost/geometry/index/rtree.hpp>
