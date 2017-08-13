@@ -47,7 +47,7 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
         include/Server.cpp
 
         include/mongoose/mongoose.c
-        include/RTreeCtn.cpp include/RTreeCtn.h)
+        )
 
 include_directories(
         "${PROJECT_SOURCE_DIR}"

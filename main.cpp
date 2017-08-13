@@ -20,6 +20,9 @@
 
 uint32_t g_Quadtree_Depth = 25;
 
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+
 int main(int argc, char *argv[]) {
   cimg_usage("command line arguments");
 
@@ -27,8 +30,9 @@ int main(int argc, char *argv[]) {
 
   GeoRunner &runner = GeoRunner::getInstance(argc, argv);
 
+  typedef bgi::rstar<16, 4> balacing_algorithm;
   // Rtree
-  std::shared_ptr<RTreeCtn> container = std::make_shared<RTreeCtn>(argc, argv);
+  std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
 
   // implicit quadtree
   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
