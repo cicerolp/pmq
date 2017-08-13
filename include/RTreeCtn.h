@@ -9,10 +9,6 @@
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 
-typedef bg::model::point<float, 2, bg::cs::cartesian> point;
-typedef bg::model::box<point> box;
-typedef std::pair<box, unsigned> value;
-
 class RTreeCtn : public GeoCtnIntf {
  public:
   RTreeCtn(int argc, char *argv[]);
@@ -39,6 +35,26 @@ class RTreeCtn : public GeoCtnIntf {
   }
 
  protected:
-  // create the rtree using default constructor
-  bgi::rtree<value, bgi::quadratic<16>> _rtree;
+
+  template<typename Container>
+  class indexable_t {
+    typedef typename Container::size_type size_t;
+    typedef typename Container::const_reference cref;
+    Container const &container;
+
+   public:
+    typedef cref result_type;
+    explicit indexable_t(Container const &c) : container(c) {}
+    result_type operator()(size_t i) const { return container[i]; }
+  };
+
+  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  typedef bg::model::box<point> box;
+  typedef point value;
+  typedef indexable_t<std::vector<point>> indexable_getter;
+  //typedef bgi::rtree<value, bgi::dynamic_linear, indexable_getter> rtree_t;
+  typedef bgi::rtree<value, bgi::dynamic_linear> rtree_t;
+
+  std::unique_ptr<rtree_t> _rtree;
+  std::unique_ptr<indexable_getter> _ind;
 };
