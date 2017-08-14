@@ -30,11 +30,9 @@ class RTreeCtn : public GeoCtnIntf {
     _container.reserve(size);
 
     // rtree
-    _ind = std::make_unique<indexable_t>(_container);
+    _rtree = std::make_unique<rtree_t>(Balancing());
 
-    _rtree = std::make_unique<rtree_t>(Balancing(), *_ind);
     timer.stop();
-
     return {duration_info("create", timer)};
   }
 
@@ -43,12 +41,12 @@ class RTreeCtn : public GeoCtnIntf {
     Timer timer;
     timer.start();
 
-    auto it = _container.size();
-    _container.insert(_container.end(), batch.begin(), batch.end());
+    for (const auto &elt: batch) {
+      _container.emplace_back(elt.value);
+      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), _container.size() - 1));
+    }
 
-    for (size_t i = it; i < _container.size(); ++i)
-      _rtree->insert(i);
-
+    timer.stop();
     return {duration_info("insert", timer)};
   }
 
@@ -73,7 +71,7 @@ class RTreeCtn : public GeoCtnIntf {
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result_s));
 
     for (const auto &elt : result_s) {
-      __apply(_container[elt].value);
+      __apply(_container[elt.second]);
     }
 
     return {duration_info("scan_at_region", timer)};
@@ -83,6 +81,8 @@ class RTreeCtn : public GeoCtnIntf {
   duration_t apply_at_tile(const region_t &region, applytype_function __apply) override {
     Timer timer;
     timer.start();
+
+    timer.stop();
     return {duration_info("nullptr", timer)};
   }
   duration_t apply_at_region(const region_t &region, applytype_function __apply) override {
@@ -104,12 +104,11 @@ class RTreeCtn : public GeoCtnIntf {
     std::vector<value> result_s;
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result_s));
 
-    for (const auto &elt : result_s) {
-      __apply(spatial_t(region.x0 + (uint32_t) ((region.x1 - region.x0) / 2),
-                        region.y0 + (uint32_t) ((region.y1 - region.y0) / 2),
-                        0), result_s.size());
-    }
+    __apply(spatial_t(region.x0 + (uint32_t) ((region.x1 - region.x0) / 2),
+                      region.y0 + (uint32_t) ((region.y1 - region.y0) / 2),
+                      0), result_s.size());
 
+    timer.stop();
     return {duration_info("scan_at_region", timer)};
   }
 
@@ -126,13 +125,16 @@ class RTreeCtn : public GeoCtnIntf {
 
  protected:
 
-  typedef std::vector<elttype> container_t;
-  typedef container_t::size_type value;
+  typedef std::vector<valuetype> container_t;
 
   typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
   typedef bg::model::box<point> box;
 
-  class indexable_t {
+  typedef std::pair<point, unsigned> value;
+
+  typedef bgi::rtree<value, Balancing> rtree_t;
+
+  /*class indexable_t {
     typedef typename container_t::size_type size_t;
     typedef typename container_t::const_reference cref;
     container_t const &container;
@@ -144,11 +146,9 @@ class RTreeCtn : public GeoCtnIntf {
       // conversion from twittervis to boost:geographic
       return point(container[i].value.latitude, container[i].value.longitude);
     }
-  };
+  };*/
 
-  typedef bgi::rtree<value, Balancing, indexable_t> rtree_t;
 
   container_t _container;
   std::unique_ptr<rtree_t> _rtree;
-  std::unique_ptr<indexable_t> _ind;
 };
