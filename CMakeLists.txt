@@ -1,20 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(twitterVis)
 
-if (WIN32)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-    set(PMA_BUILD_DIR "../pma/build-vs" CACHE PATH "Location of the PMA build tree")
-
-    set(BOOST_LIBRARYDIR "C:/Boost/lib/")
-    set(BOOST_INCLUDEDIR "C:/Boost/include/boost-1_62/")
-
-elseif (UNIX)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
-    set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
-
-endif ()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
 
 aux_source_directory(. SRC_LIST)
 
@@ -64,26 +52,28 @@ find_package(Boost 1.64.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
+#FIND_PACKAGE(PostgreSQL REQUIRED)
+FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
+FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
+FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
 
-elseif (UNIX)
+include_directories(${PostgreSQL_INCLUDE_DIRS})
 
-#    FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
-    FIND_PACKAGE(PostgreSQL REQUIRED)
-    FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
-    FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
-    FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
+target_link_libraries(${PROJECT_NAME}
+        pma
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${SPATIALITE_LIBRARY}
+        ${SQLITE_LIBRARY}
+        ${GEOS_C_LIBRARY}
+        #${PostgreSQL_LIBRARIES}
+        ${PQ_C_LIBRARY}
+        ${Boost_LIBRARIES}
+        )
 
-    include_directories(${PostgreSQL_INCLUDE_DIRS})
-
-    target_link_libraries(${PROJECT_NAME} pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PostgreSQL_LIBRARIES} ${Boost_LIBRARIES})
-
-    ######## PMQ Tests
-    enable_testing()
-    add_subdirectory(tests)
-
-endif ()
+######## PMQ Tests
+enable_testing()
+add_subdirectory(tests)
 
 ######## Benchmarks
 add_subdirectory(benchmarks)

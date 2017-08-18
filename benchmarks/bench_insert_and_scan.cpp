@@ -46,8 +46,16 @@ void inline read_element(const valuetype &el) {
   valuetype volatile elemt = *(valuetype *) &el;
 }
 
+void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
+  accum += count;
+}
+
 template<typename T>
 void inline run_queries(T &container, const region_t &region, uint32_t id, const bench_t &parameters) {
+
+  uint32_t count = 0;
+  applytype_function _apply = std::bind(count_element, std::ref(count),
+                                        std::placeholders::_1, std::placeholders::_2);
 
   Timer timer;
 
@@ -66,6 +74,9 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
 
     PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
   }
+
+  container.apply_at_region(region, _apply);
+  PRINTBENCH("apply_at_region", id, timer.milliseconds(), "ms", count);
 }
 
 template<typename T>

@@ -16,7 +16,7 @@ Old labbook from the twitterVis project was moved to [[file:TwitterVis_labBook.o
 
 * [2017-06-25 Dom] Notes sent by Bruno                               :@BRUNO:
 
-Following one reviewercomment, I agree that we need to compare performance at the same level so
+Following one reviewer comment, I agree that we need to compare performance at the same level so
 not our PMA implementation against a full blown database, but take instead  classical DB data structures. I identified two:
  -  R-tree for georeference data: One implementation avaiable in boost: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
 - B-tree that we couple with a Z-ccurve for indexing. I did not look at available implementation but very likely many available.
@@ -27,6 +27,13 @@ is to find parallel R-tree or B-tree this is not that common. I have to investig
 
 ** R-tree:
 *** Sequential: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
+The performance of the R-tree depends on balancing algorithm, parameters and data inserted into the container.
+* Linear algorithm
+* Quadratic algorithm
+* R*-tree
+* Packing algorithm
+
+
 **** Slide presenting ideas for preloading a R-tree in parallel and with less overlap (use a space filling curve): http://www.mathematik.uni-marburg.de/~achakeye/publications/big_spatial_2012.pdf
 
 ** B-tree:
