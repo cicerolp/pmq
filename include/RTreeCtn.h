@@ -79,8 +79,8 @@ class RTreeCtn : public GeoCtnIntf {
     Timer timer;
     timer.start();
 
-    uint32_t curr_z = std::min((uint32_t)8, 25 - region.z);
-    uint32_t n = (uint64_t)1 << curr_z;
+    uint32_t curr_z = std::min((uint32_t) 8, 25 - region.z);
+    uint32_t n = (uint64_t) 1 << curr_z;
 
     uint32_t x_min = region.x0 * n;
     uint32_t x_max = (region.x1 + 1) * n;
@@ -90,9 +90,11 @@ class RTreeCtn : public GeoCtnIntf {
 
     curr_z += region.z;
 
+    // temporary result
+    std::vector<value> result;
+
     for (uint32_t x = x_min; x < x_max; ++x) {
       for (uint32_t y = y_min; y < y_max; ++y) {
-
 
         // longitude
         float xmin = mercator_util::tilex2lon(x, curr_z);
@@ -105,42 +107,12 @@ class RTreeCtn : public GeoCtnIntf {
         // convert from region_t to boost:box
         box query_box(point(ymin, xmin), point(ymax, xmax));
 
-        std::stringstream stream;
+        result.clear();
+        _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
 
-        std::string xmin = std::to_string(mercator_util::tilex2lon(x, curr_z));
-        std::string xmax = std::to_string(mercator_util::tilex2lon(x + 1, curr_z));
-
-        std::string ymin = std::to_string(mercator_util::tiley2lat(y + 1, curr_z));
-        std::string ymax = std::to_string(mercator_util::tiley2lat(y, curr_z));
-
-        stream << "SELECT count(*) FROM db ";
-        stream << "WHERE ST_WITHIN(key, BuildMbr(";
-        stream << xmin << "," << ymin << ",";
-        stream << xmax << "," << ymax << ")) AND ROWID IN (";
-        stream << "SELECT pkid FROM idx_db_key WHERE ";
-        stream << "xmin >= " << xmin << " AND ";
-        stream << "xmax <= " << xmax << " AND ";
-        stream << "ymin >= " << ymin << " AND ";
-        stream << "ymax <= " << ymax << ")";
-
-        sqlite3_stmt* stmt;
-
-        // preparing to populate the table
-        ret = sqlite3_prepare_v2(_handle, stream.str().c_str(), stream.str().size(), &stmt, NULL);
-        if (ret != SQLITE_OK) {
-          // an error occurred
-          printf("INSERT SQL error: %s\n", sqlite3_errmsg(_handle));
-
-          timer.stop();
-          return {duration_info("total", timer)};
+        if (result.size() != 0) {
+          __apply(spatial_t(x, y, curr_z), result.size());
         }
-
-        if (sqlite3_step(stmt) == SQLITE_ROW) {
-          int count = sqlite3_column_int(stmt, 0);
-          if (count > 0) __apply(spatial_t(x, y, curr_z), count);
-        }
-
-        sqlite3_finalize(stmt);
       }
     }
 
