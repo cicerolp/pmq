@@ -21,6 +21,12 @@ not our PMA implementation against a full blown database, but take instead  clas
  -  R-tree for georeference data: One implementation avaiable in boost: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
 - B-tree that we couple with a Z-ccurve for indexing. I did not look at available implementation but very likely many available.
 
+https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time.html
+
+https://code.google.com/archive/p/cpp-btree/
+
+https://github.com/algorithm-ninja/cpp-btree
+
 A pending question is if parallelism would be a significant add. I still balieve so, but we may be short on time. The other consern
 is to find parallel R-tree or B-tree this is not that common. I have to investigate a little more.
 
