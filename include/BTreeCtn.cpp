@@ -51,7 +51,7 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
       auto it_rm = it;
       // increment to the next iterator
       ++it;
-      
+
       if (is_removed(&(*it_rm).second)) {
         _btree->erase(it_rm);
       }
