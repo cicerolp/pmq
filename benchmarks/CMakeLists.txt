@@ -13,6 +13,9 @@ add_executable(bench_insert_remove_scan
 
         ../include/QuadtreeIntf.cpp
         ../include/GeoHash.cpp
+
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
         )
 
 target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
@@ -22,74 +25,50 @@ add_executable(bench_insert_remove_count
 
         ../include/QuadtreeIntf.cpp
         ../include/GeoHash.cpp
+
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
         )
 
 target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 
-if (WIN32)
-    add_executable(bench_queries_region
-            bench_queries_region.cpp
+FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
+FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
+FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
+FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
 
-            ../include/string_util.cpp
+add_executable(bench_queries_region
+        bench_queries_region.cpp
 
-            ../include/QuadtreeIntf.cpp
+        ../include/string_util.cpp
 
-            ../include/GeoHash.cpp
-            ../include/PostGisCtn.cpp
-            ../include/PMABatchCtn.cpp
-            ../include/SpatiaLiteCtn.cpp
-            ../include/DenseVectorCtn.cpp
-            )
+        ../include/QuadtreeIntf.cpp
 
-    target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT})
+        ../include/GeoHash.cpp
+        ../include/PostGisCtn.cpp
+        ../include/PMABatchCtn.cpp
+        ../include/SpatiaLiteCtn.cpp
+        ../include/DenseVectorCtn.cpp
 
-    add_executable(bench_insert_and_scan
-            bench_insert_and_scan.cpp
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
+        )
 
-            ../include/QuadtreeIntf.cpp
+target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
 
-            ../include/GeoHash.cpp
-            ../include/PostGisCtn.cpp
-            ../include/PMABatchCtn.cpp
-            ../include/SpatiaLiteCtn.cpp
-            ../include/DenseVectorCtn.cpp
-            )
+add_executable(bench_insert_and_scan
+        bench_insert_and_scan.cpp
 
-    target_link_libraries(bench_insert_and_scan pma ${CMAKE_THREAD_LIBS_INIT})
+        ../include/QuadtreeIntf.cpp
 
-elseif (UNIX)
-    FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
-    FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
-    FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
-    FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
+        ../include/GeoHash.cpp
+        ../include/PostGisCtn.cpp
+        ../include/PMABatchCtn.cpp
+        ../include/SpatiaLiteCtn.cpp
+        ../include/DenseVectorCtn.cpp
 
-    add_executable(bench_queries_region
-            bench_queries_region.cpp
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
+        )
 
-            ../include/string_util.cpp
-
-            ../include/QuadtreeIntf.cpp
-
-            ../include/GeoHash.cpp
-            ../include/PostGisCtn.cpp
-            ../include/PMABatchCtn.cpp
-            ../include/SpatiaLiteCtn.cpp
-            ../include/DenseVectorCtn.cpp
-            )
-
-    target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
-
-    add_executable(bench_insert_and_scan
-            bench_insert_and_scan.cpp
-
-            ../include/QuadtreeIntf.cpp
-
-            ../include/GeoHash.cpp
-            ../include/PostGisCtn.cpp
-            ../include/PMABatchCtn.cpp
-            ../include/SpatiaLiteCtn.cpp
-            ../include/DenseVectorCtn.cpp
-            )
-
-    target_link_libraries(bench_insert_and_scan pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
-endif ()
+target_link_libraries(bench_insert_and_scan pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})

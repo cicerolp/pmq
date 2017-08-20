@@ -10,6 +10,9 @@
 #include "InputIntf.h"
 #include "string_util.h"
 
+#include "RTreeCtn.h"
+#include "BTreeCtn.h"
+
 #include "GeoHash.h"
 #include "RTreeCtn.h"
 #include "PMABatchCtn.h"
@@ -209,19 +212,12 @@ int main(int argc, char *argv[]) {
   std::vector<center_t> queries;
   load_bench_file(bench_file, queries, n_queries);
 
-  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-
-  // Rtree
-  typedef bgi::rstar<16> balacing_algorithm;
-  run_bench<RTreeCtn<balacing_algorithm>>(argc, argv, input, queries, parameters);
-
-  /*run_bench<PMABatchCtn>(argc, argv, input, queries, parameters);
   run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);*/
-  //run_bench<DenseCtnStdSort>(argc, argv, input, queries, parameters);
-  //run_bench<DenseCtnTimSort>(argc, argv, input, queries, parameters);
-  //run_bench<SpatiaLiteCtn>(argc, argv, input, queries, parameters);
-  //run_bench<PostGisCtn>(argc, argv, input, queries, parameters);
+  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+
+  run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
+
+  run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, queries, parameters);
 
   return EXIT_SUCCESS;
 }

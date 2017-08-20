@@ -11,8 +11,10 @@
 #include "InputIntf.h"
 #include "string_util.h"
 
-#include "GeoHash.h"
 #include "RTreeCtn.h"
+#include "BTreeCtn.h"
+
+#include "GeoHash.h"
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
@@ -156,17 +158,12 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  /*run_bench<PMABatchCtn>(argc, argv, input, parameters);
   run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters);
-  run_bench<DenseCtnStdSort>(argc, argv, input, parameters);
-  run_bench<DenseCtnTimSort>(argc, argv, input, parameters);
-  run_bench<SpatiaLiteCtn>(argc, argv, input, parameters);
-  run_bench<PostGisCtn>(argc, argv, input, parameters);*/
 
-  // Rtree
-  typedef bgi::rstar<16> balacing_algorithm;
-  run_bench<RTreeCtn<balacing_algorithm>>(argc, argv, input, parameters);
+  run_bench<BTreeCtn>(argc, argv, input, parameters);
+
+  run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }
