@@ -67,7 +67,9 @@ class RTreeCtn : public GeoCtnIntf {
 
       // temporary result
       std::vector<value> result;
-      _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
+      _rtree->query(bgi::intersects(query_box)
+                        && bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
+                    std::back_inserter(result));
 
       for (const auto &elt : result) {
         _rtree->remove(elt);
@@ -86,17 +88,6 @@ class RTreeCtn : public GeoCtnIntf {
     timer.start();
 
     // longitude
-    float xmin = mercator_util::tilex2lon(0, 0);
-    float xmax = mercator_util::tilex2lon(1, 0);
-
-    // latitude
-    float ymin = mercator_util::tiley2lat(1, 0);
-    float ymax = mercator_util::tiley2lat(0, 0);
-
-    // convert from region_t to boost:box
-    box query_box(point(ymin, xmin), point(ymax, xmax));
-
-    /*// longitude
     float xmin = mercator_util::tilex2lon(region.x0, region.z);
     float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);
 
@@ -105,7 +96,7 @@ class RTreeCtn : public GeoCtnIntf {
     float ymax = mercator_util::tiley2lat(region.y0, region.z);
 
     // convert from region_t to boost:box
-    box query_box(point(ymin, xmin), point(ymax, xmax));*/
+    box query_box(point(ymin, xmin), point(ymax, xmax));
 
     // temporary result
     std::vector<value> result;
