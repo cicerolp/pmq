@@ -81,3 +81,4 @@
 
 // stx btree
 #include <stx/btree.h>
+#include <stx/btree_multimap.h>

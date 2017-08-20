@@ -10,7 +10,7 @@ duration_t BTreeCtn::create(uint32_t size) {
 
   _size = size;
 
-  _btree = std::make_unique<stx::btree<key, data>>();
+  _btree = std::make_unique<stx::btree_multimap<key, data>>();
 
   timer.stop();
   return {duration_info("create", timer)};

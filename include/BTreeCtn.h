@@ -66,5 +66,5 @@ class BTreeCtn : public GeoCtnIntf {
   typedef valuetype data;
 
   uint32_t _size;
-  std::unique_ptr<stx::btree<key, data>> _btree;
+  std::unique_ptr<stx::btree_multimap<key, data>> _btree;
 };
