@@ -6,10 +6,6 @@
 
 #include "GeoCtnIntf.h"
 
-// just for output
-#include <iostream>
-#include <boost/foreach.hpp>
-
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 
@@ -25,6 +21,8 @@ class RTreeCtn : public GeoCtnIntf {
   duration_t create(uint32_t size) override {
     Timer timer;
     timer.start();
+
+    _size = size;
 
     // rtree
     _rtree = std::make_unique<rtree_t>(Balancing());
@@ -46,12 +44,59 @@ class RTreeCtn : public GeoCtnIntf {
     return {duration_info("insert", timer)};
   }
 
+  duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override {
+    duration_t duration;
+
+    Timer timer;
+    timer.start();
+
+    // insertion
+    for (const auto &elt: batch) {
+      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+    }
+
+    // insert end
+    timer.stop();
+    duration.emplace_back("insert", timer);
+
+    // remove start
+    timer.start();
+    if (_rtree->size() >= _size) {
+      // convert from region_t to boost:box
+      box query_box(point(-85.0511322, -180), point(85.0511322, 180));
+
+      // temporary result
+      std::vector<value> result;
+      _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
+
+      for (const auto &elt : result) {
+        _rtree->remove(elt);
+      }
+    }
+    // remove end
+    timer.stop();
+    duration.emplace_back("remove", timer);
+
+    return duration;
+  }
+
   // apply function for every el<valuetype>
   duration_t scan_at_region(const region_t &region, scantype_function __apply) override {
     Timer timer;
     timer.start();
 
     // longitude
+    float xmin = mercator_util::tilex2lon(0, 0);
+    float xmax = mercator_util::tilex2lon(1, 0);
+
+    // latitude
+    float ymin = mercator_util::tiley2lat(1, 0);
+    float ymax = mercator_util::tiley2lat(0, 0);
+
+    // convert from region_t to boost:box
+    box query_box(point(ymin, xmin), point(ymax, xmax));
+
+    /*// longitude
     float xmin = mercator_util::tilex2lon(region.x0, region.z);
     float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);
 
@@ -60,7 +105,7 @@ class RTreeCtn : public GeoCtnIntf {
     float ymax = mercator_util::tiley2lat(region.y0, region.z);
 
     // convert from region_t to boost:box
-    box query_box(point(ymin, xmin), point(ymax, xmax));
+    box query_box(point(ymin, xmin), point(ymax, xmax));*/
 
     // temporary result
     std::vector<value> result;
@@ -165,4 +210,5 @@ class RTreeCtn : public GeoCtnIntf {
   typedef bgi::rtree<value, Balancing> rtree_t;
 
   std::unique_ptr<rtree_t> _rtree;
+  uint32_t _size;
 };

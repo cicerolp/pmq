@@ -18,7 +18,7 @@ duration_t GeoHash::create(uint32_t size) {
   _pma = (struct pma_struct *) pma::build_pma(size, sizeof(valuetype), tau_0, tau_h, rho_0, rho_h, seg_size);
   timer.stop();
 
-  return {duration_info("Create", timer)};
+  return {duration_info("create", timer)};
 }
 
 duration_t GeoHash::insert(std::vector<elttype> batch) {
@@ -40,7 +40,7 @@ duration_t GeoHash::insert(std::vector<elttype> batch) {
   // insert end
   timer.stop();
 
-  return {duration_info("Insert", timer)};
+  return {duration_info("insert", timer)};
 }
 
 duration_t GeoHash::insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) {
@@ -61,7 +61,7 @@ duration_t GeoHash::insert_rm(std::vector<elttype> batch, std::function<int(cons
   // insert end
   timer.stop();
 
-  return {duration_info("Insert RM", timer)};
+  return {duration_info("insert_rm", timer)};
 }
 
 /**

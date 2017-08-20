@@ -76,4 +76,8 @@
 #include <libpq-fe.h>
 #endif
 
+// boost rtree
 #include <boost/geometry.hpp>
+
+// stx btree
+#include <stx/btree.h>
