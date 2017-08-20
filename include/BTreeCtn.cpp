@@ -27,6 +27,43 @@ duration_t BTreeCtn::insert(std::vector<elttype> batch) {
   timer.stop();
   return {duration_info("insert", timer)};
 }
+
+duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) {
+  duration_t duration;
+
+  Timer timer;
+  timer.start();
+
+  for (const auto &elt: batch) {
+    _btree->insert(elt.key, elt.value);
+  }
+
+  // insert end
+  timer.stop();
+  duration.emplace_back("insert", timer);
+
+  // remove start
+  timer.start();
+  if (_btree->size() >= _size) {
+    auto it = _btree->begin();
+    while (it != _btree->end()) {
+      // keep valid iterator
+      auto it_rm = it;
+      // increment to the next iterator
+      ++it;
+      
+      if (is_removed(&(*it_rm).second)) {
+        _btree->erase(it_rm);
+      }
+    }
+  }
+  // remove end
+  timer.stop();
+  duration.emplace_back("remove", timer);
+
+  return duration;
+}
+
 duration_t BTreeCtn::scan_at_region(const region_t &region, scantype_function __apply) {
   Timer timer;
   timer.start();
@@ -138,3 +175,4 @@ void BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &region, a
     apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
   }
 }
+

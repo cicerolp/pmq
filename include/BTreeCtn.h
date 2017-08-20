@@ -17,9 +17,7 @@ class BTreeCtn : public GeoCtnIntf {
 
   duration_t insert(std::vector<elttype> batch) override;
 
-  duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override {
-    return GeoCtnIntf::insert_rm(batch, is_removed);
-  }
+  duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override;
 
   duration_t scan_at_region(const region_t &region, scantype_function __apply) override;
   void scan_btree_at_region(const code_t &el, const region_t &region, scantype_function __apply);
