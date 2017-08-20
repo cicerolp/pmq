@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
         include/GeoRunner.cpp
         include/QuadtreeIntf.cpp
 
+        include/BTreeCtn.cpp
         include/GeoHash.cpp
         include/PostGisCtn.cpp
         include/PMABatchCtn.cpp

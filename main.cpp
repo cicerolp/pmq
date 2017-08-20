@@ -11,6 +11,7 @@
 #include "GeoRunner.h"
 #include "GeoCtnIntf.h"
 
+#include "BTreeCtn.h"
 #include "RTreeCtn.h"
 #include "GeoHash.h"
 #include "PMABatchCtn.h"
@@ -30,9 +31,12 @@ int main(int argc, char *argv[]) {
 
   GeoRunner &runner = GeoRunner::getInstance(argc, argv);
 
-  typedef bgi::rstar<16> balacing_algorithm;
-  // Rtree
-  std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
+  // btree
+  std::shared_ptr<BTreeCtn> container = std::make_shared<BTreeCtn>(argc, argv);
+
+  // rtree
+  //typedef bgi::rstar<16> balacing_algorithm;
+  //std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
 
   // implicit quadtree
   //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
