@@ -189,6 +189,10 @@ class RTreeCtn : public GeoCtnIntf {
     return {duration_info("nullptr", timer)};
   }
 
+  size_t size() const override {
+    return _rtree->size();
+  }
+
   inline std::string name() const override {
     static auto name_str = "RTree";
     return name_str;

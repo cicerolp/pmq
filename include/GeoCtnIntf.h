@@ -46,6 +46,8 @@ class GeoCtnIntf {
     return duration_t();
   };
 
+  inline virtual size_t size() const { return 0; }
+
   inline virtual std::string name() const;
 };
 

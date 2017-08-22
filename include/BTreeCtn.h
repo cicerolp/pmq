@@ -31,6 +31,11 @@ class BTreeCtn : public GeoCtnIntf {
   duration_t topk_search(const region_t &region, topk_t &topk, scantype_function __apply) override {
     return GeoCtnIntf::topk_search(region, topk, __apply);
   }
+
+  size_t size() const override {
+    return _btree->size();
+  }
+
   std::string name() const override {
     static auto name_str = "BTree";
     return name_str;
