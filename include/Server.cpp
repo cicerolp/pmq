@@ -1,7 +1,6 @@
 #include "Server.h"
 
 #include "Query.h"
-#include "Runner.h"
 #include "GeoRunner.h"
 
 // Xlib macro conflict
