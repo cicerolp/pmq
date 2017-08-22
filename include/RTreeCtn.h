@@ -180,7 +180,7 @@ class RTreeCtn : public GeoCtnIntf {
                       0), result.size());
 
     timer.stop();
-    return {duration_info("scan_at_region", timer)};
+    return {duration_info("apply_at_region", timer)};
   }
 
   duration_t topk_search(const region_t &region, topk_t &topk, scantype_function __apply) override {
