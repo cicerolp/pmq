@@ -38,12 +38,12 @@ class GeoHash : public GeoCtnIntf {
   virtual pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const = 0;
 
   // apply function for every el<valuetype>
-  void scan_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region, scantype_function __apply);
+  uint32_t scan_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region, scantype_function __apply);
 
   // apply function for every spatial area/region
-  void apply_pma_at_tile(const code_t &el, pma_seg_it &seg, const region_t &region, applytype_function __apply);
+  uint32_t apply_pma_at_tile(const code_t &el, pma_seg_it &seg, const region_t &region, applytype_function __apply);
 
-  void apply_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region, applytype_function __apply);
+  uint32_t apply_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region, applytype_function __apply);
 
   //void topk_pma_search()
 

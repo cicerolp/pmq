@@ -65,17 +65,23 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
 }
 
 duration_t BTreeCtn::scan_at_region(const region_t &region, scantype_function __apply) {
+  duration_t duration;
   Timer timer;
+
   timer.start();
 
-  scan_btree_at_region(get_parent_quadrant(region), region, __apply);
+  uint32_t refinements = scan_btree_at_region(get_parent_quadrant(region), region, __apply);
 
   timer.stop();
-  return {duration_info("scan_at_region", timer)};
+  duration.emplace_back("scan_at_region", timer);
+
+  duration.emplace_back("scan_at_region_refinements", refinements);
+
+  return duration;
 }
 
-void BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region, scantype_function __apply) {
-  if (el.z > region.z) return;
+uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region, scantype_function __apply) {
+  if (el.z > region.z) return 0;
 
   region_t::overlap overlap = region.test(el);
 
@@ -87,41 +93,63 @@ void BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region, sc
       __apply((*it).second);
     }
 
+    if (lower_it != upper_it) {
+      return 1;
+    } else {
+      return 0;
+    }
   } else if (overlap != region_t::none) {
+    uint32_t refinements = 0;
+
     // break code into four
     uint64_t code = el.code << 2;
 
-    scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-    scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-    scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-    scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+
+    return refinements;
+  } else {
+    return 0;
   }
 }
 duration_t BTreeCtn::apply_at_tile(const region_t &region, applytype_function __apply) {
+  duration_t duration;
   Timer timer;
+
   timer.start();
 
-  apply_btree_at_tile(get_parent_quadrant(region), region, __apply);
+  uint32_t refinements = apply_btree_at_tile(get_parent_quadrant(region), region, __apply);
 
   timer.stop();
-  return {duration_info("apply_at_tile", timer)};
+  duration.emplace_back("apply_at_tile", timer);
+
+  duration.emplace_back("apply_at_tile_refinements", refinements);
+
+  return duration;
 }
 
-void BTreeCtn::apply_btree_at_tile(const code_t &el, const region_t &region, applytype_function __apply) {
-  if (el.z >= 25 || (int) el.z - (int) region.z > 8) return;
+uint32_t BTreeCtn::apply_btree_at_tile(const code_t &el, const region_t &region, applytype_function __apply) {
+  if (el.z >= 25 || (int) el.z - (int) region.z > 8) return 0;
 
   region_t::overlap overlap = region.test(el);
 
   if ((int) el.z - (int) region.z < 8) {
     if (overlap != region_t::none) {
+      uint32_t refinements = 0;
+
       // break morton code into four
       uint64_t code = el.code << 2;
 
-      apply_btree_at_tile(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-      apply_btree_at_tile(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-      apply_btree_at_tile(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-      apply_btree_at_tile(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_tile(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_tile(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_tile(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_tile(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+
+      return refinements;
     }
+    return 0;
   } else if (overlap == region_t::full) {
     uint32_t count = 0;
 
@@ -134,21 +162,32 @@ void BTreeCtn::apply_btree_at_tile(const code_t &el, const region_t &region, app
 
     if (count) {
       __apply(el, count);
+      return 1;
+    } else {
+      return 0;
     }
+  } else {
+    return 0;
   }
 }
 duration_t BTreeCtn::apply_at_region(const region_t &region, applytype_function __apply) {
+  duration_t duration;
   Timer timer;
+
   timer.start();
 
-  apply_btree_at_region(get_parent_quadrant(region), region, __apply);
+  uint32_t refinements = apply_btree_at_region(get_parent_quadrant(region), region, __apply);
 
   timer.stop();
-  return {duration_info("apply_at_region", timer)};
+  duration.emplace_back("apply_at_region", timer);
+
+  duration.emplace_back("apply_at_region_refinements", refinements);
+
+  return duration;
 }
 
-void BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &region, applytype_function __apply) {
-  if (el.z > region.z) return;
+uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &region, applytype_function __apply) {
+  if (el.z > region.z) return 0;
 
   region_t::overlap overlap = region.test(el);
 
@@ -164,15 +203,24 @@ void BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &region, a
 
     if (count) {
       __apply(el, count);
+      return 1;
+    } else {
+      return 0;
     }
   } else if (overlap != region_t::none) {
+    uint32_t refinements = 0;
+
     // break morton code into four
     uint64_t code = el.code << 2;
 
-    apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-    apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-    apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-    apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+    refinements += apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+
+    return refinements;
+  } else {
+    return 0;
   }
 }
 

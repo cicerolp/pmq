@@ -59,7 +59,7 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   applytype_function _apply = std::bind(count_element, std::ref(count),
                                         std::placeholders::_1, std::placeholders::_2);
 
-  Timer timer;
+  duration_t timer;
 
   // 1 - gets the minimum set of nodes that are inside the queried region
   // QueryRegion will traverse the tree and return the intervals to query;
@@ -70,15 +70,17 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
 
   // access the container to count the number of elements inside the region
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer.start();
-    container.scan_at_region(region, read_element);
-    timer.stop();
+    timer = container.scan_at_region(region, read_element);
 
-    PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
+    for (auto &info : timer) {
+      PRINTBENCH(info.name, id, info.duration, "ms");
+    }
   }
 
-  container.apply_at_region(region, _apply);
-  PRINTBENCH("apply_at_region", id, timer.milliseconds(), "ms", count);
+  timer = container.apply_at_region(region, _apply);
+  for (auto &info : timer) {
+    PRINTBENCH(info.name, id, info.duration, "ms", count);
+  }
 }
 
 template<typename T>
