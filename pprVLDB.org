@@ -69,19 +69,30 @@ Geohash converts it to "tile" coordinates of fixed resolution.
 
 note: Avoind checking the (lat,lon) of each element in the refined quadrant.
 
-** Comparisons with state of the art ( Fractal Tree ? ) 
+** Comparisons with state of the art ( *Fractal Tree* ? ) 
 
 - Fractal Tree :: Based on BIB:bender2007a (cache-oblivious streaming B-trees)
                   
   - implemented in Tokutek Db / Precona
   - BTree + PMA ? 
   - Made for disk access. 
-  
-*** TODO Check if this assumptions
+    
+
+Streamin B-trees =  "A dictionary with efficient Insertion and Range queries. "
+
+*** What is the difference with PMQ ?
+
+What is difference between this Fractal Tress with a PMA + Z-curve?
+
+- We have a batch insertion PMA.
+
+*** TODO Check this assumptions
 - Pointer and explicit tree management might be an overhead. 
 - Doest it realy has a pointer-base tree , or is it linearized ? 
 
 *** TODO Can we run their benchmarks for comparison
+https://github.com/Tokutek/ft-index
+
 
 ** How to do the refinement of the "quadtree" using geohash only
 NOSQL, <key,value> databases like redis support geohash operations.
@@ -98,35 +109,59 @@ Example: Redis
 - B-tree needs to linearize the index first. 
 
 * Task List
-** TODO Implementation R-tree
-** TODO Implementation B-tree
-https://github.com/runshenzhu/palmtree
+** INPROGRESS Implementation R-tree                                :@CICERO:
+- Using boost R-tree
+- Several optimization parameters
 
-stx:btree 
+*** DONE Insertion and deletions
 
-** TODO Check code from Fractal-Tree
+*** TODO Temporal Deletes                                         
+- Do a query 
+- Delete all the deletions
+
+** TODO Implementation B-tree                                      :@CICERO:
+
+Use implementaion of =stx:Btree=
+https://panthema.net/2007/stx-btree/
+https://github.com/bingmann/stx-btree
+
+Used in the benchmark comparison of BIB:Sewall2011
+
+** TODO Check code from Fractal-Tree                                :@JULIO:
+
+*** TODO Test the performance of the Streaming Btree from BIB:Bender2007a
 ** TODO Read detail of BIB:Bender2007a
 ** TODO Review how to compute GEOHASH eficiently from Lat / Lon.
 https://en.wikipedia.org/wiki/Geohash
+
+What is a good geohashing query algorithm
+- Redis ( Check if I can get their implementation) 
+- look at open source implementations of geohashes
+
 ** TODO See how are the geohash implementations in Key-value store DB
 Geohash implementation on Redis no-sql
 https://redis.io/commands/geohash
 
+https://karussell.wordpress.com/2012/05/23/spatial-keys-memory-efficient-geohashes/
+
 - Elastic Search:
   
-  Standar GEoHash ? 
+  Standard GEoHash ? 
   https://www.elastic.co/guide/en/elasticsearch/guide/current/geohashes.html
   
   Quatrees ? 
   https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html#prefix-trees
 
-  
 
 ** TODO Check algorithm to convert 2D -> 1D index
 
-Eu acho que os DB baseados em B-tree escaneiam todos os ids entre os Ids da bounding box
+Eu cho que os DB baseados em B-tree escaneiam todos os ids entre os Ids da bounding box
 
 (não fazem o refinamento de quadtree)
 
-
 Idéa: algoritmo hibrido entre refinamento de quadtree e scan linear de geohash.
+
+** TODO Any Example of Streaming application using Geohash ? 
+
+** TODO Definition of a Key-value store
+We are dealing with data stored as <key,value>
