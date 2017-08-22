@@ -21,7 +21,7 @@ memory only.
 - Read Elements is a little slower, because if has to search on the
   array directly withou any auxiliary index.
  
-
+  
 * Experiment Script
 ** Initial Setup 
 
@@ -32,7 +32,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp1483478591
+: exp20170822165129
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -40,9 +40,8 @@ git checkout master
 #+end_src
 
 #+RESULTS:
-: M	include/GeoHash.cpp
-: Your branch is ahead of 'bitbucket/master' by 1 commit.
-:   (use "git push" to publish your local commits)
+: M	benchmarks/bench_insert_and_scan.cpp
+: M	include/stde.h
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -50,7 +49,8 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
-: M	include/GeoHash.cpp
+: M	benchmarks/bench_insert_and_scan.cpp
+: M	include/stde.h
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -61,7 +61,7 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp1483478591
+On branch exp20170822165129
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
@@ -69,9 +69,9 @@ Untracked files:
 	exp.org
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp1483478591 b910e53] Initial commit for exp1483478591
- 1 file changed, 303 insertions(+)
- create mode 100644 data/inf-desktop/exp1483478591/exp.org
+[exp20170822165129 1e990e9] Initial commit for exp20170822165129
+ 1 file changed, 333 insertions(+)
+ create mode 100644 data/inf-desktop/exp20170822165129/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -79,9 +79,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * b910e53 (HEAD -> exp1483478591) Initial commit for exp1483478591
-: * af7ff8d (master) ADD: template experiment labbook
-: | * 611a39b (exp1483472768) save labbook
+: * 1e990e9 (HEAD -> exp20170822165129) Initial commit for exp20170822165129
+: * 7b23257 (origin/master, master) fix bench_topk_search target
+: * d225b64 fix btree::size and rtree::size
 
 ** Export run script 
 
@@ -94,7 +94,100 @@ echo $(hostname)
 ##########################################################
 ### SETUP THIS VARIABLES
 
-BUILDIR=~/Projects/twitterVis/build-release
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+
+.stdbuf -oL /benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/bench_insert_and_scan_$
+
+# Variate Time Window: 
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 11745000 -rate 1000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_1000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 23489000 -rate 1000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_1000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46977000 -rate 1000 -min_t 32400 -max_t 32400 &> $TMPDIR/bench_ins_rm_32400_1000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46977000 -rate 1000 -min_t 43200 -max_t 43200 &> $TMPDIR/bench_ins_rm_43200_1000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 93954000 -rate 6000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_6000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 187908000 -rate 6000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_6000_$EXECID.log
+
+# Not enought tweets on the dataset
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375810000 -rate 6000 -min_t 32400 -max_t 32400 &> $TMPDIR/bench_ins_rm_32400_6000_$EXECID.log
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375810000 -rate 6000 -min_t 43200 -max_t 43200 &> $TMPDIR/bench_ins_rm_43200_6000_$EXECID.log
+
+# Variate Insertion Rate: 
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 5872250 -rate 250 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_250_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 11744500 -rate 500 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_500_$EXECID.log
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 23489000 -rate 1000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_1000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46978000 -rate 2000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_2000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 93956000 -rate 4000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_4000_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 187912000 -rate 8000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_8000_$EXECID.log
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375824000 -rate 16000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_16000_$EXECID.log
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 751648000 -rate 32000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_32000_$EXECID.log
+#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 1503296000 -rate 64000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_64000_$EXECID.log
+
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
 PMABUILD_DIR=~/Projects/hppsimulations/build-release
 DATADIR=$(pwd)
 TMPDIR=/tmp/$expId
