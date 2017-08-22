@@ -73,7 +73,7 @@
 #include <spatialite/gaiageo.h>
 
 // postgis
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
 #endif
 
 // boost rtree
