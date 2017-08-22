@@ -1,6 +1,8 @@
 add_executable(bench_topk_search
         bench_topk_search.cpp
 
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
         ../include/GeoHash.cpp
         ../include/string_util.cpp
         ../include/QuadtreeIntf.cpp
