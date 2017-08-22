@@ -1,0 +1,333 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Experiment Diary
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4
+#+PROPERTY: header-args :cache no :eval no-export 
+
+
+* Description 
+First benchmark to check the performance of having an inplicit
+quadtree.
+
+An inplicit quadtree (geohash) doesn't have any tree structure in
+memory only.
+- Insertion is much faster.
+- Read Elements is a little slower, because if has to search on the
+  array directly withou any auxiliary index.
+ 
+
+* Experiment Script
+** Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp1483478591
+
+Set up git branch
+#+begin_src sh :results output :exports both
+git checkout master
+#+end_src
+
+#+RESULTS:
+: M	include/GeoHash.cpp
+: Your branch is ahead of 'bitbucket/master' by 1 commit.
+:   (use "git push" to publish your local commits)
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+: M	include/GeoHash.cpp
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp1483478591
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp1483478591 b910e53] Initial commit for exp1483478591
+ 1 file changed, 303 insertions(+)
+ create mode 100644 data/inf-desktop/exp1483478591/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * b910e53 (HEAD -> exp1483478591) Initial commit for exp1483478591
+: * af7ff8d (master) ADD: template experiment labbook
+: | * 611a39b (exp1483472768) save labbook
+
+** Export run script 
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/twitterVis/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+TMPDIR=/tmp/$expId
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# generate output name
+OUT=exec_$(date +%s).log
+
+cd $BUILDIR 
+
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+# EXECUTE BENCHMARK
+./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT
+
+cd $DATADIR
+
+cp $TMPDIR/$OUT .
+
+git checkout $expId
+
+#get machine configuration
+echo "" > info.org
+~/Projects/twitterVis/scripts/g5k_get_info.sh info.org 
+
+git add info.org $OUT 
+git commit -m "Finish execution of $OUT"
+#git push origin $expId
+#+end_src 
+
+
+** Execute on local Machine
+
+#+begin_src sh :results output :exports both 
+tmux new -d -s benchmarks './run.sh &> run_$(date +%s)'
+tmux ls
+#+end_src
+
+#+RESULTS:
+: benchmarks: 1 windows (created Tue Jan  3 20:05:39 2017) [80x23]
+
+
+* Analisys
+** Generate csv files
+List logFiles
+#+begin_src sh :results table :exports both
+ls *log
+#+end_src
+
+#+NAME: logFile
+#+RESULTS:
+| exec_1483481139.log |
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#echo $logFile
+echo $(basename -s .log $logFile ).csv
+grep "PMABatch\|GeoHashSequential\|GeoHashBinary ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: exec_1483481139.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R*
+:END:      
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile
+library(plyr)
+df = read.csv(f,header=FALSE,strip.white=TRUE,sep=";")
+names(df) = c("algo","bench","k","time")
+head(df)
+#+end_src
+
+#+RESULTS:
+:       algo          bench k     time NA NA
+: 1 PMABatch         Insert 0 0.017418 ms NA
+: 2 PMABatch   ModifiedKeys 0 0.002814 ms NA
+: 3 PMABatch QuadtreeUpdate 0 0.116400 ms NA
+: 4 PMABatch       ReadElts 0 0.000728 ms NA
+: 5 PMABatch       ReadElts 0 0.000530 ms NA
+: 6 PMABatch       ReadElts 0 0.000560 ms NA
+
+Summary of the data frame
+#+begin_src R :results output :session :exports both
+summary(df[df$algo=="GeoHashBinary",])
+summary(df[df$algo=="GeoHashSequential",])
+summary(df[df$algo=="PMABatch",])
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                algo                  bench             k       
+ GeoHashBinary    :40000   Insert        :10000   Min.   :   0  
+ GeoHashSequential:    0   ModifiedKeys  :    0   1st Qu.:2500  
+ PMABatch         :    0   QuadtreeUpdate:    0   Median :5000  
+                           ReadElts      :30000   Mean   :5000  
+                                                  3rd Qu.:7499  
+                                                  Max.   :9999  
+      time           NA           NA         
+ Min.   : 0.00048   ms:40000   Mode:logical  
+ 1st Qu.: 0.10201              NA's:40000    
+ Median : 1.37595                            
+ Mean   : 1.97568                            
+ 3rd Qu.: 2.81835                            
+ Max.   :15.16400
+                algo                  bench             k       
+ GeoHashBinary    :    0   Insert        :10000   Min.   :   0  
+ GeoHashSequential:40000   ModifiedKeys  :    0   1st Qu.:2500  
+ PMABatch         :    0   QuadtreeUpdate:    0   Median :5000  
+                           ReadElts      :30000   Mean   :5000  
+                                                  3rd Qu.:7499  
+                                                  Max.   :9999  
+      time           NA           NA         
+ Min.   : 0.00052   ms:40000   Mode:logical  
+ 1st Qu.: 0.10334              NA's:40000    
+ Median : 1.36851                            
+ Mean   : 1.94976                            
+ 3rd Qu.: 2.78850                            
+ Max.   :15.04550
+                algo                  bench             k       
+ GeoHashBinary    :    0   Insert        :10000   Min.   :   0  
+ GeoHashSequential:    0   ModifiedKeys  :10000   1st Qu.:2500  
+ PMABatch         :60000   QuadtreeUpdate:10000   Median :5000  
+                           ReadElts      :30000   Mean   :5000  
+                                                  3rd Qu.:7499  
+                                                  Max.   :9999  
+      time           NA           NA         
+ Min.   :  0.0005   ms:60000   Mode:logical  
+ 1st Qu.:  0.0883              NA's:60000    
+ Median :  0.5861                            
+ Mean   :  1.4780                            
+ 3rd Qu.:  2.8223                            
+ Max.   :483.2680
+#+end_example
+
+*** Overview of results                                                :plot:
+
+Plot an overview of every benchmark , doing average of times. 
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
+library(ggplot2)
+summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
+facet_wrap(~bench, scales="free",labeller=label_both)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** Insertion performance
+
+Composition of time per benchmarks
+
+For PMABatch :
+- time = Insert + ModifiedKeys + QuadtreeUpdate 
+For Geohash :
+- timee = Insert
+#+begin_src R :results output :exports both
+insTime = ddply( subset(summary_avg , bench!="ReadElts") , c("algo","k"),summarise,"time"=sum(time) ) 
+#+end_src
+
+#+RESULTS:
+
+**** Overall                                                        :plot:
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() +
+facet_wrap(~algo)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+Total insertion time:
+#+begin_src R :results output :session :exports both
+ddply(insTime,c("algo"),summarize, Total=sum(time))
+#+end_src
+
+#+RESULTS:
+:                algo     Total
+: 1     GeoHashBinary  843.8639
+: 2 GeoHashSequential  848.5558
+: 3          PMABatch 7714.5152
+
+**** Amortized time
+
+We compute tree time:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both
+avgTime = cbind(insTime, 
+                sumTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)), recursive=T),
+                avgTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)/(x$k+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+
+***** Melting the data (time / avgTime)
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :session :exports both
+library(reshape2)
+melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","sumTime","avgTime"))
+#+end_src
+
+#+RESULTS:
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+ggplot(melted_times, aes(x=k,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
