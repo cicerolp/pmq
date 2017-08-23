@@ -31,6 +31,16 @@ sudo ./b2 -j8 install
 *** stx:Brtree
 https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
 
+#+begin_src sh :session  :results output :exports both 
+wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz
+tar -xvzf stx-btree-0.9.tar.gz
+cd stx-btree-stx-btree-0.9
+
+./configure
+make -j8
+sudo make install
+#+end_src
+
 *** Databases
 Dependencies added for the bechmarks with databases
 #+begin_src sh :results output :exports both
@@ -56,7 +66,6 @@ http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
 #+begin_src sh :results output :exports both
 systemctl restart postgresql.service
 #+end_src
-
 
 * Scripts
 ** g5k_get_info.sh
