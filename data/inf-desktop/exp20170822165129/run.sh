@@ -65,4 +65,4 @@ git checkout $expId
 git add info.org log_$EXECID.tgz run.sh 
 git add -u
 git commit -m "Finish execution $EXECID"
-git push origin $expId
+# git push origin $expId
