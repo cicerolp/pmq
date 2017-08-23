@@ -1,0 +1,42 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+[ 26%] Built target twitterVis
+[ 35%] Built target test_insert_remove_scan
+[ 41%] Built target test_pma_diff
+[ 47%] Built target test_geohash
+[ 55%] Built target bench_insert_remove_count
+[ 64%] Built target bench_topk_search
+[ 79%] Built target bench_queries_region
+[ 86%] Built target bench_insert_remove_scan
+[100%] Built target bench_insert_and_scan
+bench_insert_and_scan_1503497835.log
+Already on 'exp20170822165129'
+Your branch is up-to-date with 'inf-desktop/exp20170822165129'.
+[exp20170822165129 bc97826] Finish execution 1503497835
+ 2 files changed, 688 insertions(+)
+ create mode 100644 data/inf-desktop/exp20170822165129/info.org
+ create mode 100644 data/inf-desktop/exp20170822165129/log_1503497835.tgz
