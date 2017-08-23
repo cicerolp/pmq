@@ -1,214 +1,284 @@
 # -*- org-export-babel-evaluate: nil; -*-
-#+TITLE: Lab book for PMQ project
+#+TITLE: Lab Book for PMQ Experiments 
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
-#+TAGS: @JULIO(J) @CICERO(C) @BRUNO(B)
+#+TAGS: @JULIO(J) @CICERO(C)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+CATEGORY: TwitterVis
 #+OPTIONS: ^:{} H:3
 #+PROPERTY: header-args :cache no :eval no-export
 
-* README
-This file contains the research notes about the PMQ project targeting a submission to PVLDB journal
+Labbook about implementation of the PMQ
 
-Old labbook from the twitterVis project was moved to [[file:TwitterVis_labBook.org]]
+* Research Notes
+Extra research notes in [[file:ResearchNotes.org]]
 
-* [2017-06-25 Dom] Notes sent by Bruno                               :@BRUNO:
+* Source Code
+** Dependencies
 
-Following one reviewer comment, I agree that we need to compare performance at the same level so
-not our PMA implementation against a full blown database, but take instead  classical DB data structures. I identified two:
- -  R-tree for georeference data: One implementation avaiable in boost: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
-- B-tree that we couple with a Z-ccurve for indexing. I did not look at available implementation but very likely many available.
+*** Boost library  V 1.64
+Version 1.64 
 
-https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time.html
+#+begin_src sh :session  :results output :exports both 
+wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 
 
-https://code.google.com/archive/p/cpp-btree/
+./bootstrap.sh --prefix=/usr/
+sudo ./b2 -j8 install
+#+end_src
 
-https://github.com/algorithm-ninja/cpp-btree
+*** stx:Brtree
+https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
 
-A pending question is if parallelism would be a significant add. I still balieve so, but we may be short on time. The other consern
-is to find parallel R-tree or B-tree this is not that common. I have to investigate a little more.
+*** Databases
+Dependencies added for the bechmarks with databases
+#+begin_src sh :results output :exports both
+sudo apt-get install postgis libpq-dev libspatialite-dev libsqlite3-dev libgeos-dev
+#+end_src
 
+**** Configuring Postgres
+Start psql console
+#+begin_src sh :results output :exports both
+sudo -u postgres psql postgres
+#+end_src
 
-** R-tree:
-*** Sequential: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
-The performance of the R-tree depends on balancing algorithm, parameters and data inserted into the container.
-* Linear algorithm
-* Quadratic algorithm
-* R*-tree
-* Packing algorithm
+Configure database in psql console
+#+BEGIN_EXAMPLE
+postgres=# \password postgres
+postgres=# CREATE DATABASE twittervis;
+postgres=# \c twittervis
+postgres=# CREATE EXTENSION postgis;
+#+END_EXAMPLE
 
-
-**** Slide presenting ideas for preloading a R-tree in parallel and with less overlap (use a space filling curve): http://www.mathematik.uni-marburg.de/~achakeye/publications/big_spatial_2012.pdf
-
-** B-tree:
-*** A B+-tree parallel implementing various optimizations.  https://github.com/runshenzhu/palmtree
-*** Based on a VLDB 2011 paper:
- J. Sewall, J. Chhugani, C. Kim, N. Satish, and P. Dubey. PALM: Parallel architecture-friendly latch-free modifications to B+ trees on many-core processors. Proc. VLDB Endowment, 4(11):795--806, August 2011.
-*** Several interesting aspects:
-**** Optimization of mem allocator
-**** Work by batches
-**** Tried  SIMD optimization
-**** Del a given key.
-
-* [2017-07-07 Sex] PMA vs Btrees ?                                   :@JULIO:
-
-** Parallel implementation of B+ trees
-
-Related to sugestions that Bruno had.
-
-BIB:Sewall2011
-https://github.com/runshenzhu/palmtree
-
-The problem of PMA :
-- Querying is not very efficient. Binnay search with no index didn't show up very good perf.
-
-- What are the benchmarks that this guys used. 
-
-- Is there any work about querying on streaming workloads ? 
-
-- What is a streaming benchmark ?
-
-* [2017-08-18 Sex] Research notes                                    :@JULIO:
-** R-Tees
-
-*** Boost R-tree
-http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes/introduction.html#ftn.geometry.spatial_indexes.introduction.f2
+To start/stop/restart the Server
+http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
+#+begin_src sh :results output :exports both
+systemctl restart postgresql.service
+#+end_src
 
 
-**** Several algorithms to build to R-tree
-trade InsertionTime vs QueryTime
+* Scripts
+** g5k_get_info.sh
+Script to get info in experiments on grid5000
 
-Insertion:
-- linear
-- *quadratic* : the middle term between instertion and query
-- R* : reduce the number of overlaps. 
+#+begin_src sh :results output :exports both :tangle ./scripts/g5k_get_info.sh :shebang #!/bin/bash
+# Script for to get machine information before doing the experiment
 
-overlaps on r-tree: fast on writes, but slow on reads because of ineficient indexing
-https://developer.ibm.com/dwblog/2014/geospatial-indexing/
+set +e # Don't fail fast since some information is maybe not available
 
-**** Spatial Query
-- Intersects (Box) : return points in a selected box.
+title="Experiment results"
+starpu_build=""
+inputfile=""
+host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
+help_script()
+{
+cat << EOF
+Usage: $0 [options] outputfile.org
 
-**** Nearest Neighbour Queries (Knn)
+Script for to get machine information before doing the experiment
 
-http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes/queries.html
+OPTIONS:
+-h      Show this message
+-t      Title of the output file
+-s      Path to the StarPU installation
+-i      Input file name if doing SimGrid simulation based on input
+EOF
+}
+# Parsing options
+while getopts "t:s:i:h" opt; do
+case $opt in
+    t)
+        title="$OPTARG"
+        ;;
+    s)
+        starpu_build="$OPTARG"
+        ;;
+    i)
+        inputfile="$OPTARG"
+        ;;
+    h)
+        help_script
+        exit 4
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG"
+        help_script
+        exit 3
+        ;;
+esac
+done
 
-- Allows for a custom *nearest predicate*, this is similar to our ToK algorithm from VIS paper.
+shift $((OPTIND - 1))
+filedat=$1
+if [[ $# != 1 ]]; then
+echo 'ERROR!'
+help_script
+exit 2
+fi
+
+##################################################
+# Preambule of the output file
+echo "#+TITLE: $title" >> $filedat
+echo "#+DATE: $(eval date)" >> $filedat
+echo "#+AUTHOR: $(eval whoami)" >> $filedat
+echo "#+MACHINE: $(eval hostname)" >> $filedat
+echo "#+FILE: $(eval basename $filedat)" >> $filedat
+if [[ -n "$inputfile" ]]; 
+then
+echo "#+INPUTFILE: $inputfile" >> $filedat
+fi
+echo " " >> $filedat 
+
+##################################################
+# Collecting metadata
+echo "* MACHINE INFO:" >> $filedat
+
+echo "** PEOPLE LOGGED WHEN EXPERIMENT STARTED:" >> $filedat
+who >> $filedat
+echo "############################################" >> $filedat
+
+echo "** ENVIRONMENT VARIABLES:" >> $filedat
+env >> $filedat
+echo "############################################" >> $filedat
+
+echo "** HOSTNAME:" >> $filedat
+hostname >> $filedat
+echo "############################################" >> $filedat
+
+if [[ -n $(command -v lstopo) ]];
+then
+echo "** MEMORY HIERARCHY:" >> $filedat
+lstopo --of console >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/cpuinfo ];
+then
+echo "** CPU INFO:" >> $filedat
+cat /proc/cpuinfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
+then
+echo "** CPU GOVERNOR:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
+then
+echo "** CPU FREQUENCY:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/meminfo ];
+then
+echo "** MEM INFO:" >> $filedat
+cat /proc/meminfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v nvidia-smi) ]];
+then
+echo "** GPU INFO FROM NVIDIA-SMI:" >> $filedat
+nvidia-smi -q >> $filedat
+echo "############################################" >> $filedat
+fi 
+
+if [ -f /proc/version ];
+then
+echo "** LINUX AND GCC VERSIONS:" >> $filedat
+cat /proc/version >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v module) ]];
+then
+echo "** MODULES:" >> $filedat
+module list 2>> $filedat
+echo "############################################" >> $filedat
+fi
+
+##################################################
+# Collecting revisions info 
+echo "* CODE REVISIONS:" >> $filedat
+
+git_exists=`git rev-parse --is-inside-work-tree`
+if [ "${git_exists}" ]
+then
+echo "** GIT REVISION OF TWITTERVIS:" >> $filedat
+git log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/twitterVis/build-release >> $filedat
+
+echo "** GIT REVISION OF PMA :" >> $filedat
+git -C ~/Projects/hppsimulations/ log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/hppsimulations/build-release >> $filedat
+
+echo "############################################" >> $filedat
+fi
+
+#+end_src
 
 
-**** Temporal Deletion? 
-- R-tree deletes an element by its value.
+* Data
+:PROPERTIES:
+:EXPORT_OPTIONS: H:2
+:END:
+Note: Only DATA branch contains entries here; 
 
-- We would have to query elements < T and delete them. 
+Reference about each experiment campaing. Usefull for comparing
+results of different experiments. 
 
-- R-tree allows interative queries:
-  : std::for_each(bgi::qbegin(tree, bgi::nearest(pt, 3)), bgi::qend(tree), do_something()); 
+** Sample machine                                                 :template:
+*** TODO Template Experiment
 
-  but dosomething() cannot modify the tree, otherwise it invalidade the iterator. 
+- [ ] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+  set -e
+  #expId=$(date +%Y%m%d%H%M%S)
+  machineDesc=$(hostname)
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
 
+  #+RESULTS:
 
-- The R-tree doesn't seems to have any batch operation for deleting severl elements. 
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  cp ./data/template_exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
 
+  #+RESULTS:
+
+[[file:data/template_exp.org]]
+
+** inf-desktop 
+*** INPROGRESS [2017-08-22 Ter] Experiment =bench_insert_and_scan=
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
   
-*** Other implementations - libspatialindex
-http://libspatialindex.github.io/
-https://github.com/libspatialindex/libspatialindex
+- [ ] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
 
-*** In MongoDb 
+  #+RESULTS:
 
-https://www.slideshare.net/nknize/rtree-spatial-indexing-with-mongodb-mongodc
-
-Geohash implemenations: 
-https://github.com/mongodb/mongo/blob/6471618952c8727bc5b06039ed2cf861e1a36436/src/mongo/db/geo/hash.cpp
-
-https://github.com/mongodb
-
-** B-trees
-
-*** Cache-oblivious B-tree implementation ? 
-
-This is actually a Cache-oblivious Binary-tree. 
-https://www.reddit.com/r/cpp/comments/2bvefq/does_anyone_know_of_a_cache_oblivious_b_tree_c/
-
-http://supertech.csail.mit.edu/cacheObliviousBTree.html
-"We used a binary tree with a "van Emde Boas" layout whose leaves point to intervals in a "packed memory structure". The search tree supports efficient lookup, as well as efficient amortized insertion and deletion."
-
-
-**** Thesis describing implemetation:
-BIB:Kasheff2004
-
-http://people.csail.mit.edu/bradley/papers/Kasheff04.pdf
-
-See figures: they show the same performance pattern that I identified in my experiements with the PMA.
-
-http://groups.csail.mit.edu/sct/wiki/index.php?title=Main_Page
-
-
-**** Tokutek
-https://github.com/Tokutek/ft-index
-
-https://www.youtube.com/watch?v=AVNjqgf7zNw
-Presentation: 
-https://www.percona.com/blog/wp-content/uploads/2011/03/Tokutek_Understanding_Indexes.pdf
-
-Fractal Tree ? 
-
-Tokutek was acquired by Percona in 2015
-
-***** Super linead indexes
-Co-founder of tokutek with Bender
-
-http://www.superlinearindexes.org/home
-
-https://www.yumpu.com/en/document/view/32640574/multidimensional-amp-string-indexes-for-streaming-data
-
-*TokuDB* storage engine fot *MySQL*, 
-Uses the cache-oblivious Streaming B-trees.
-
-**** Cache-obliviou Streaming B-trees BIB:Bender2007a
-
-Comparison where made with the B-tree implemented in BIB:Bender2006b
-
-**** Cache-oblivious String B-trees BIB:Bender2006b
-
-"B-trees ages very fast" -> performance gets poorer.
-
-Static CO-BTREES
-Dynamic CO-BTREES
-
-*** Google B-tree
-https://code.google.com/archive/p/cpp-btree/
-
-https://isocpp.org/blog/2013/02/b-tree-containers-from-google
-
-https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time.html
-
-
-https://github.com/diegocaro/cpp-btree
-
-*** Fractal Tree
-- Implemented in Tokutek Database
-- Originated from BIB:Bender2007a
-
-Sources:
-https://en.wikipedia.org/wiki/Fractal_tree_index
-
-Github:
-https://github.com/Tokutek/ft-index
-
-
-https://github.com/Percona/tokudb-engine
-
-
-Fractal Trees for Mongo-DB? 
-https://www.percona.com/services/support/mongodb-support
-
-*** Palm-Tree
-A Parallel implementation of B-trees: 
-https://github.com/runshenzhu/palmtree
-
-Sequential comparison witgh stx:Btree
-https://panthema.net/2007/stx-btree/
-https://github.com/bingmann/stx-btree
+  [[./data/inf-desktop/exp20170822165129/exp.org]]
