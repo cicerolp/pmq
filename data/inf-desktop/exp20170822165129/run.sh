@@ -48,9 +48,9 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-$n=$((10**6))
-$b=100
-.stdbuf -oL /benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
+n=$((10**6))
+b=100
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
 
 set -e
 
