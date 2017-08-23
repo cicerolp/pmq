@@ -244,6 +244,8 @@ Reference about each experiment campaing. Usefull for comparing
 results of different experiments. 
 
 ** Sample machine                                                 :template:
+Copy the subtree bellow to start a new experiment 
+
 *** TODO Template Experiment
 
 - [ ] Create a direcorty for this experiment 
@@ -268,7 +270,7 @@ results of different experiments.
 [[file:data/template_exp.org]]
 
 ** inf-desktop 
-*** INPROGRESS [2017-08-22 Ter] Experiment =bench_insert_and_scan=
+*** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
 
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
