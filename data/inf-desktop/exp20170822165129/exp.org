@@ -16,7 +16,14 @@ First benchmark to check the performance of
 - PMQ / GEOHASH
 - BTREE 
 - RTREE
+
+** Standalone script 
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
   
+
 * Experiment Script
 ** Initial Setup 
 
@@ -230,6 +237,10 @@ git pull origin $expId
 
 * Analisys
 ** Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
 List logFiles
 #+begin_src sh :results table :exports both
 ls -htl *tgz
@@ -258,7 +269,7 @@ grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(b
 : bench_insert_and_scan_1503497835.csv
 
 Create an director for images
-#+begin_src sh :results output :exports both
+#+begin_src sh :results output :exports both :tangle no
 mkdir img
 #+end_src
 
@@ -266,7 +277,7 @@ mkdir img
 
 ** Results
 :PROPERTIES: 
-:HEADER-ARGS:R: :session *R*
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
 
 Load the CSV into R
