@@ -247,7 +247,7 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 861K Ago 23 12:42 log_1503497835.tgz |
+| -rw-rw-r-- 1 julio julio 861K Ago 23 14:41 log_1503497835.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both 
@@ -396,14 +396,14 @@ facet_wrap(~algo, scales="free", ncol=1)
 
 Total insertion time:
 #+begin_src R :results output :session :exports both
-ddply(insTime,c("algo"),summarize, Total=sum(time))
+ddply(insTime,c("algo"),summarize, Average=mean(time), Total=sum(time))
 #+end_src
 
 #+RESULTS:
-:            algo      Total
-: 1         BTree   515.0084
-: 2 GeoHashBinary  1088.5076
-: 3         RTree 12482.9441
+:            algo    Average      Total
+: 1         BTree 0.05150084   515.0084
+: 2 GeoHashBinary 0.10885076  1088.5076
+: 3         RTree 1.24829441 12482.9441
 
 **** Amortized time
 
@@ -441,3 +441,14 @@ facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
 
 #+RESULTS:
 [[file:./img/grid_times.png]]
+
+**** Zoom View 
+
+#+begin_src R :results output graphics :file "./img/Zoom_0.2.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() + ylim(0,0.2) 
+#+end_src
+
+#+RESULTS:
+[[file:./img/Zoom_0.2.png]]
+

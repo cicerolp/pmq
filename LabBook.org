@@ -272,6 +272,7 @@ Copy the subtree bellow to start a new experiment
 ** inf-desktop 
 *** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
 
+**** Setup
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
@@ -283,7 +284,7 @@ mkdir -p $expFolder
 
   #+RESULTS:
   
-- [ ] Use the template to run your experiment
+- [X] Use the template to run your experiment
   
   #+begin_src sh :results output raw :exports both :session template
   cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
@@ -293,3 +294,7 @@ mkdir -p $expFolder
   #+RESULTS:
 
   [[./data/inf-desktop/exp20170822165129/exp.org]]
+  
+**** Results
+
+[[file:data/inf-desktop/exp20170822165129/exp.html]]
