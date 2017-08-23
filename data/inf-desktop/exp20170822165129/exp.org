@@ -12,15 +12,10 @@
 
 
 * Description 
-First benchmark to check the performance of having an inplicit
-quadtree.
-
-An inplicit quadtree (geohash) doesn't have any tree structure in
-memory only.
-- Insertion is much faster.
-- Read Elements is a little slower, because if has to search on the
-  array directly withou any auxiliary index.
- 
+First benchmark to check the performance of 
+- PMQ / GEOHASH
+- BTREE 
+- RTREE
   
 * Experiment Script
 ** Initial Setup 
@@ -135,32 +130,9 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-
-.stdbuf -oL /benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/bench_insert_and_scan_$
-
-# Variate Time Window: 
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 11745000 -rate 1000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_1000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 23489000 -rate 1000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_1000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46977000 -rate 1000 -min_t 32400 -max_t 32400 &> $TMPDIR/bench_ins_rm_32400_1000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46977000 -rate 1000 -min_t 43200 -max_t 43200 &> $TMPDIR/bench_ins_rm_43200_1000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 93954000 -rate 6000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_6000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 187908000 -rate 6000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_6000_$EXECID.log
-
-# Not enought tweets on the dataset
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375810000 -rate 6000 -min_t 32400 -max_t 32400 &> $TMPDIR/bench_ins_rm_32400_6000_$EXECID.log
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375810000 -rate 6000 -min_t 43200 -max_t 43200 &> $TMPDIR/bench_ins_rm_43200_6000_$EXECID.log
-
-# Variate Insertion Rate: 
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 5872250 -rate 250 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_250_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 11744500 -rate 500 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_500_$EXECID.log
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 23489000 -rate 1000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_1000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 46978000 -rate 2000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_2000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 93956000 -rate 4000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_4000_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 187912000 -rate 8000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_8000_$EXECID.log
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 375824000 -rate 16000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_16000_$EXECID.log
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 751648000 -rate 32000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_32000_$EXECID.log
-#stdbuf -oL ./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 1503296000 -rate 64000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_64000_$EXECID.log
-
+$n=$((10**6))
+$b=100
+.stdbuf -oL /benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
 
 set -e
 
@@ -176,51 +148,6 @@ git add info.org log_$EXECID.tgz run.sh
 git add -u
 git commit -m "Finish execution $EXECID"
 git push origin $expId
-#+end_src 
-
-
-#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
-set -e
-# Any subsequent(*) commands which fail will cause the shell script to exit immediately
-echo $(hostname) 
-
-##########################################################
-### SETUP THIS VARIABLES
-
-BUILDIR=~/Projects/pmq/build-release
-PMABUILD_DIR=~/Projects/hppsimulations/build-release
-DATADIR=$(pwd)
-TMPDIR=/tmp/$expId
-
-#########################################################
-
-mkdir -p $TMPDIR
-#mkdir -p $DATADIR
-
-# generate output name
-OUT=exec_$(date +%s).log
-
-cd $BUILDIR 
-
-cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
-make
-
-# EXECUTE BENCHMARK
-./benchmarks/bench_insert_and_scan -n $((10**6)) -r 123 -x 3 -b 100 > $TMPDIR/$OUT
-
-cd $DATADIR
-
-cp $TMPDIR/$OUT .
-
-git checkout $expId
-
-#get machine configuration
-echo "" > info.org
-~/Projects/twitterVis/scripts/g5k_get_info.sh info.org 
-
-git add info.org $OUT 
-git commit -m "Finish execution of $OUT"
-#git push origin $expId
 #+end_src 
 
 
