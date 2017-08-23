@@ -151,7 +151,7 @@ git commit -m "Finish execution $EXECID"
 #+end_src 
 
 
-** INPROGRESS Local Execution                                        :local:
+** DONE Local Execution                                              :local:
 
 #+begin_src sh :results output :exports both :session local :var expId=expId
 cd ~/Projects/pmq/data/$(hostname)/$expId
@@ -232,23 +232,30 @@ git pull origin $expId
 ** Generate csv files
 List logFiles
 #+begin_src sh :results table :exports both
-ls *log
+ls -htl *tgz
 #+end_src
 
-#+NAME: logFile
 #+RESULTS:
-| exec_1483481139.log |
+| -rw-rw-r-- 1 julio julio 861K Ago 23 12:42 log_1503497835.tgz |
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both 
+tar xvzf log_1503497835.tgz
+#+end_src
+
+#+RESULTS: logFile
+: bench_insert_and_scan_1503497835.log
 
 Create CSV using logFile 
 #+begin_src sh :results output :exports both :var logFile=logFile[0]
 #echo $logFile
 echo $(basename -s .log $logFile ).csv
-grep "PMABatch\|GeoHashSequential\|GeoHashBinary ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
 #+end_src
 
 #+NAME: csvFile
 #+RESULTS:
-: exec_1483481139.csv
+: bench_insert_and_scan_1503497835.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both
@@ -266,81 +273,92 @@ Load the CSV into R
 #+begin_src R :results output :exports both :var f=csvFile
 library(plyr)
 df = read.csv(f,header=FALSE,strip.white=TRUE,sep=";")
-names(df) = c("algo","bench","k","time")
+df[7] <- NULL
+df[5] <- NULL
+names(df) = c("algo","bench","k","time","count")
 head(df)
+
 #+end_src
 
 #+RESULTS:
-:       algo          bench k     time NA NA
-: 1 PMABatch         Insert 0 0.017418 ms NA
-: 2 PMABatch   ModifiedKeys 0 0.002814 ms NA
-: 3 PMABatch QuadtreeUpdate 0 0.116400 ms NA
-: 4 PMABatch       ReadElts 0 0.000728 ms NA
-: 5 PMABatch       ReadElts 0 0.000530 ms NA
-: 6 PMABatch       ReadElts 0 0.000560 ms NA
+:            algo           bench k     time count
+: 1 GeoHashBinary          insert 0 0.029754    NA
+: 2 GeoHashBinary        ReadElts 0 0.001554    NA
+: 3 GeoHashBinary        ReadElts 0 0.001440    NA
+: 4 GeoHashBinary        ReadElts 0 0.001389    NA
+: 5 GeoHashBinary apply_at_region 0 0.001389   100
+: 6 GeoHashBinary          insert 1 0.022867    NA
 
 Summary of the data frame
 #+begin_src R :results output :session :exports both
 summary(df[df$algo=="GeoHashBinary",])
-summary(df[df$algo=="GeoHashSequential",])
-summary(df[df$algo=="PMABatch",])
+summary(df[df$algo=="BTree",])
+summary(df[df$algo=="RTree",])
 #+end_src
 
 #+RESULTS:
 #+begin_example
-                algo                  bench             k       
- GeoHashBinary    :40000   Insert        :10000   Min.   :   0  
- GeoHashSequential:    0   ModifiedKeys  :    0   1st Qu.:2500  
- PMABatch         :    0   QuadtreeUpdate:    0   Median :5000  
-                           ReadElts      :30000   Mean   :5000  
-                                                  3rd Qu.:7499  
-                                                  Max.   :9999  
-      time           NA           NA         
- Min.   : 0.00048   ms:40000   Mode:logical  
- 1st Qu.: 0.10201              NA's:40000    
- Median : 1.37595                            
- Mean   : 1.97568                            
- 3rd Qu.: 2.81835                            
- Max.   :15.16400
-                algo                  bench             k       
- GeoHashBinary    :    0   Insert        :10000   Min.   :   0  
- GeoHashSequential:40000   ModifiedKeys  :    0   1st Qu.:2500  
- PMABatch         :    0   QuadtreeUpdate:    0   Median :5000  
-                           ReadElts      :30000   Mean   :5000  
-                                                  3rd Qu.:7499  
-                                                  Max.   :9999  
-      time           NA           NA         
- Min.   : 0.00052   ms:40000   Mode:logical  
- 1st Qu.: 0.10334              NA's:40000    
- Median : 1.36851                            
- Mean   : 1.94976                            
- 3rd Qu.: 2.78850                            
- Max.   :15.04550
-                algo                  bench             k       
- GeoHashBinary    :    0   Insert        :10000   Min.   :   0  
- GeoHashSequential:    0   ModifiedKeys  :10000   1st Qu.:2500  
- PMABatch         :60000   QuadtreeUpdate:10000   Median :5000  
-                           ReadElts      :30000   Mean   :5000  
-                                                  3rd Qu.:7499  
-                                                  Max.   :9999  
-      time           NA           NA         
- Min.   :  0.0005   ms:60000   Mode:logical  
- 1st Qu.:  0.0883              NA's:60000    
- Median :  0.5861                            
- Mean   :  1.4780                            
- 3rd Qu.:  2.8223                            
- Max.   :483.2680
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:50000   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00139   Min.   :    100  
+ 1st Qu.: 1.34083   1st Qu.: 250075  
+ Median : 9.44647   Median : 500050  
+ Mean   : 9.02828   Mean   : 500050  
+ 3rd Qu.:12.87295   3rd Qu.: 750025  
+ Max.   :32.73830   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :50000   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00422   Min.   :    100  
+ 1st Qu.: 3.59117   1st Qu.: 250075  
+ Median :28.44325   Median : 500050  
+ Mean   :28.26849   Mean   : 500050  
+ 3rd Qu.:47.47653   3rd Qu.: 750025  
+ Max.   :71.60770   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :50000   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00464   Min.   :    100  
+ 1st Qu.: 3.73900   1st Qu.: 250075  
+ Median :32.37425   Median : 500050  
+ Mean   :32.92621   Mean   : 500050  
+ 3rd Qu.:57.50140   3rd Qu.: 750025  
+ Max.   :72.46010   Max.   :1000000  
+                    NA's   :40000
 #+end_example
 
 *** Overview of results                                                :plot:
 
 Plot an overview of every benchmark , doing average of times. 
+#+begin_src R :results output :exports both
+summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+#+end_src
 
 #+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
 library(ggplot2)
-summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
 ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
-facet_wrap(~bench, scales="free",labeller=label_both)
+facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
 #+end_src
 
 #+RESULTS:
@@ -348,14 +366,9 @@ facet_wrap(~bench, scales="free",labeller=label_both)
 
 *** Insertion performance
 
-Composition of time per benchmarks
 
-For PMABatch :
-- time = Insert + ModifiedKeys + QuadtreeUpdate 
-For Geohash :
-- timee = Insert
 #+begin_src R :results output :exports both
-insTime = ddply( subset(summary_avg , bench!="ReadElts") , c("algo","k"),summarise,"time"=sum(time) ) 
+insTime  = subset(summary_avg, bench=="insert")
 #+end_src
 
 #+RESULTS:
@@ -364,7 +377,7 @@ insTime = ddply( subset(summary_avg , bench!="ReadElts") , c("algo","k"),summari
 #+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
 ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
 geom_line() +
-facet_wrap(~algo)
+facet_wrap(~algo, scales="free", ncol=1)
 #+end_src
 
 #+RESULTS:
@@ -376,10 +389,10 @@ ddply(insTime,c("algo"),summarize, Total=sum(time))
 #+end_src
 
 #+RESULTS:
-:                algo     Total
-: 1     GeoHashBinary  843.8639
-: 2 GeoHashSequential  848.5558
-: 3          PMABatch 7714.5152
+:            algo      Total
+: 1         BTree   515.0084
+: 2 GeoHashBinary  1088.5076
+: 3         RTree 12482.9441
 
 **** Amortized time
 
