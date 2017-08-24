@@ -322,6 +322,10 @@ struct tweet_all_t {
     writer.Uint(el.app);
     writer.EndArray();
   }
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << e.language << "; " << e.device << "; " << e.app ;
+  }
 };
 
 struct tweet_text_t {
@@ -341,6 +345,11 @@ struct tweet_text_t {
     // simplified comparison
     return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
   };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_text_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.text;
+  }
+
 };
 
 using tweet_t = tweet_text_t;
