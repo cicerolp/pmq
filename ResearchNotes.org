@@ -12,8 +12,6 @@
 * README
 This file contains the research notes about the PMQ project targeting a submission to PVLDB journal
 
-Old labbook from the twitterVis project was moved to [[file:TwitterVis_labBook.org]]
-
 * [2017-06-25 Dom] Notes sent by Bruno                               :@BRUNO:
 
 Following one reviewer comment, I agree that we need to compare performance at the same level so

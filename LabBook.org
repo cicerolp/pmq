@@ -269,7 +269,7 @@ Copy the subtree bellow to start a new experiment
 
 [[file:data/template_exp.org]]
 
-** inf-desktop 
+** Cicero 
 *** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
 
 - [X] Create a direcorty for this experiment 
