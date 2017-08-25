@@ -45,9 +45,9 @@ namespace input {
        return loadn(fname,mCodeSize);
    }
 
-inline std::vector<elttype> load_dmp_text(const std::string& fname, int mCodeSize,
+inline std::vector<elttype_pmq<tweet_text_t>> load_dmp_text(const std::string& fname, int mCodeSize,
                                              /*uint64_t time_res,*/ uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
-      std::vector<elttype> tweets;
+      std::vector<elttype_pmq<tweet_text_t>> tweets;
 
       std::ifstream infile(fname, std::ios::binary);
 
@@ -58,8 +58,8 @@ inline std::vector<elttype> load_dmp_text(const std::string& fname, int mCodeSiz
 
       infile.unsetf(std::ios_base::skipws);
 
-      tweet_t record;
-      size_t record_size = sizeof(tweet_t::latitude) + sizeof(tweet_t::longitude) + sizeof(tweet_t::time) + sizeof(tweet_t::text);
+      tweet_text_t record;
+      size_t record_size = sizeof(tweet_text_t::latitude) + sizeof(tweet_text_t::longitude) + sizeof(tweet_text_t::time) + sizeof(tweet_text_t::text);
       PRINTOUT("Record size %llu \n", record_size);
 
       unsigned int i = 0; //time counter;
