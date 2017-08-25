@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  run_bench<GeoHashSequential>(argc, argv, input, parameters);
+ // run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters);
 
   run_bench<BTreeCtn>(argc, argv, input, parameters);

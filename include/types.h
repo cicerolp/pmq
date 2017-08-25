@@ -323,8 +323,13 @@ struct tweet_all_t {
     writer.EndArray();
   }
 
+  bool operator==(const tweet_all_t &rhs) const {
+    // simplified comparison
+    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
+  };
+
   friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
-    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << e.language << "; " << e.device << "; " << e.app ;
+    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; " << (int) e.device << "; " << (int) e.app ;
   }
 };
 
