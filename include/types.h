@@ -534,6 +534,19 @@ struct duration_info {
 
   duration_info(const std::string &_name, double _duration) : name(_name), duration(_duration) {
   };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const duration_info &e) {
+    return out << e.name << " ; " << e.duration ;
+  }
+
 };
 
 using duration_t = std::vector<duration_info>;
+inline std::ostream &operator<<(std::ostream &out, const duration_t &vec) {
+    auto it = vec.begin();
+    out << *it++ ;
+    for ( ; it < vec.end() ; it++){
+       out << " ; " << *it ;
+    }
+    return out;
+}
