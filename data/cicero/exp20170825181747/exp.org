@@ -35,7 +35,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170822165129
+: exp20170825181747
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -43,8 +43,7 @@ git checkout master
 #+end_src
 
 #+RESULTS:
-: M	benchmarks/bench_insert_and_scan.cpp
-: M	include/stde.h
+: M	LabBook.org
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -52,8 +51,7 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
-: M	benchmarks/bench_insert_and_scan.cpp
-: M	include/stde.h
+: M	LabBook.org
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -64,7 +62,7 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170822165129
+On branch exp20170825181747
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
@@ -72,9 +70,9 @@ Untracked files:
 	exp.org
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170822165129 1e990e9] Initial commit for exp20170822165129
- 1 file changed, 333 insertions(+)
- create mode 100644 data/inf-desktop/exp20170822165129/exp.org
+[exp20170825181747 1a028ca] Initial commit for exp20170825181747
+ 1 file changed, 456 insertions(+)
+ create mode 100644 data/cicero/exp20170825181747/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -82,9 +80,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1e990e9 (HEAD -> exp20170822165129) Initial commit for exp20170822165129
-: * 7b23257 (origin/master, master) fix bench_topk_search target
-: * d225b64 fix btree::size and rtree::size
+: * 1a028ca (HEAD -> exp20170825181747) Initial commit for exp20170825181747
+: * 663faed (master) upd benchmark
+: * dd91a7d (origin/master) comment output
 
 ** Export run script 
 
@@ -156,7 +154,7 @@ git checkout $expId
 git add info.org log_$EXECID.tgz run.sh 
 git add -u
 git commit -m "Finish execution $EXECID"
-# git push origin $expId
+git push origin $expId
 #+end_src 
 
 
