@@ -235,10 +235,13 @@ int main(int argc, char *argv[]) {
   std::vector<center_t> queries;
   load_bench_file(bench_file, queries, n_queries);
 
+#if 0
+  // DEBUG
   std::cout << "Input File" << std::endl;
   for (auto &elt : input ){
       std::cout << "[" << elt.key << "] " << elt.value << std::endl;
   }
+#endif
 
   // run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
