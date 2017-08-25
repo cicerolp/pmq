@@ -322,6 +322,15 @@ struct tweet_all_t {
     writer.Uint(el.app);
     writer.EndArray();
   }
+
+  bool operator==(const tweet_all_t &rhs) const {
+    // simplified comparison
+    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
+  };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; " << (int) e.device << "; " << (int) e.app ;
+  }
 };
 
 struct tweet_text_t {
@@ -341,10 +350,46 @@ struct tweet_text_t {
     // simplified comparison
     return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
   };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_text_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.text;
+  }
+
 };
 
-using tweet_t = tweet_text_t;
+//using tweet_t = tweet_text_t;
+using tweet_t = tweet_all_t;
 using valuetype = tweet_t;
+
+// JULIO : elttype conflict with definition on pma / test_utils.h
+// Check how to fix this later
+
+template<typename valuetype_ >
+struct elttype_pmq {
+  uint64_t key;
+  valuetype_ value;
+
+  elttype_pmq() {
+  };
+
+  elttype_pmq(const valuetype_ &el, uint32_t depth) : value(el) {
+    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
+    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
+    key = mortonEncode_RAM(x, y);
+  }
+
+  friend inline bool operator<(const elttype_pmq &lhs, const elttype_pmq &rhs) {
+    return (lhs.key < rhs.key);
+  }
+
+  friend inline std::ostream &operator<<(std::ostream &out, const elttype_pmq &e) {
+    return out << e.key;
+  }
+};
+
+using elttype = elttype_pmq<tweet_t>;
+
+
 
 struct triggers_t {
   float frequency;
@@ -440,27 +485,9 @@ struct topk_cnt {
   }
 };
 
-struct elttype {
-  uint64_t key;
-  valuetype value;
 
-  elttype() {
-  };
 
-  elttype(const tweet_t &el, uint32_t depth) : value(el) {
-    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
-    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-    key = mortonEncode_RAM(x, y);
-  }
 
-  friend inline bool operator<(const elttype &lhs, const elttype &rhs) {
-    return (lhs.key < rhs.key);
-  }
-
-  friend inline std::ostream &operator<<(std::ostream &out, const elttype &e) {
-    return out << e.key;
-  }
-};
 
 struct elinfo_t {
   elinfo_t() = default;

@@ -81,6 +81,7 @@ void inline run_queries(T &container, const center_t &center, uint32_t id, uint6
     }
   }
 
+#if 0
   for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
     region_t region(center.lat, center.lon, r);
 
@@ -95,6 +96,7 @@ void inline run_queries(T &container, const center_t &center, uint32_t id, uint6
       PRINTBENCH("apply_at_tile", id, t, r, timer.milliseconds(), "ms");
     }
   }
+#endif
 
   for (float r = parameters.min_r; r <= parameters.max_r; r += parameters.inc_r) {
     region_t region(center.lat, center.lon, r);
@@ -118,6 +120,13 @@ void run_bench(int argc,
                const std::vector<elttype> &input,
                const std::vector<center_t> &queries,
                const bench_t &parameters) {
+
+  Timer timer;
+
+  uint32_t count = 0;
+  applytype_function _apply = std::bind(count_element, std::ref(count),
+                                        std::placeholders::_1, std::placeholders::_2);
+
   for (uint64_t t = parameters.min_t; t <= parameters.max_t; t += parameters.inc_t) {
 
     // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
@@ -129,9 +138,23 @@ void run_bench(int argc,
 
     std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
-    // insert batch
+    // insert all elements as a single batch
+    timer.start();
     if (!parameters.dryrun) container->insert(batch);
+    timer.stop();
+    std::cout << "QueryBench " << container->name() << " ; ";
+    printcsv("insert", timer.milliseconds(), "ms");
+    std::cout << std::endl;
 
+    //Run a scan on the whole array
+    timer.start();
+    container->apply_at_region(region_t(0,0,0,0,0), _apply);
+    timer.stop();
+    std::cout << "QueryBench " << container->name() << " ; ";
+    printcsv("Global Apply", timer.milliseconds(), "ms", count);
+    std::cout << std::endl;
+
+    // Perform custom queries
     for (uint32_t id = 0; id < queries.size(); id++) {
       run_queries((*container.get()), queries[id], id, t, parameters);
     }
@@ -212,12 +235,16 @@ int main(int argc, char *argv[]) {
   std::vector<center_t> queries;
   load_bench_file(bench_file, queries, n_queries);
 
-  run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
+  std::cout << "Input File" << std::endl;
+  for (auto &elt : input ){
+      std::cout << "[" << elt.key << "] " << elt.value << std::endl;
+  }
+
+  // run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-
   run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
-
   run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, queries, parameters);
+  //run_bench<RTreeCtn<bgi::quadratic<16>>>(argc, argv, input, queries, parameters);
 
   return EXIT_SUCCESS;
 }
