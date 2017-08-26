@@ -127,7 +127,7 @@ class RTreeCtn : public GeoCtnIntf {
     curr_z += region.z;
 
     // temporary result
-    std::vector<value> result;
+    RTreeCtnCounter<value> result;
 
     for (uint32_t x = x_min; x < x_max; ++x) {
       for (uint32_t y = y_min; y < y_max; ++y) {
@@ -172,7 +172,7 @@ class RTreeCtn : public GeoCtnIntf {
     box query_box(point(ymin, xmin), point(ymax, xmax));
 
     // temporary result
-    std::vector<value> result;
+    RTreeCtnCounter<value> result;
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
 
     __apply(spatial_t(region.x0 + (uint32_t) ((region.x1 - region.x0) / 2),
@@ -199,6 +199,32 @@ class RTreeCtn : public GeoCtnIntf {
   }
 
  protected:
+  template<typename _Tp>
+  class RTreeCtnCounter {
+   public:
+    typedef _Tp value_type;
+
+    uint32_t
+    size() const _GLIBCXX_NOEXCEPT {
+      return _count;
+    }
+
+    void
+    clear() _GLIBCXX_NOEXCEPT {
+      _count = 0;
+      return;
+    }
+
+    void
+    push_back(const value_type &__x) {
+      ++_count;
+      return;
+    }
+
+   private:
+    uint32_t _count = 0;
+  };
+
   typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
   typedef bg::model::box<point> box;
   typedef std::pair<point, valuetype> value;
