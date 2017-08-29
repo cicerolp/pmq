@@ -158,6 +158,48 @@ git push origin $expId
 #+end_src 
 
 
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170825181747
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	run.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170825181747 6d2a497] UPD: run.sh script
+:  2 files changed, 80 insertions(+), 13 deletions(-)
+:  create mode 100755 data/cicero/exp20170825181747/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
 ** DONE Local Execution                                              :local:
 
 #+begin_src sh :results output :exports both :session local :var expId=expId
@@ -174,12 +216,27 @@ tmux ls
 ps ux
 #+end_src
 
-** Remote Execution                                                 :remote:
+** INPROGRESS Remote Execution                                      :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
 ssh -A cicero
 #+end_src
+
+#+RESULTS:
+#+begin_example
+
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+0 packages can be updated.
+0 updates are security updates.
+
+Last login: Fri Aug 25 18:36:25 2017 from 143.54.13.218
+#+end_example
 
 Get the last script on the remote machine (require entering a password
 for bitbucket)
@@ -191,6 +248,27 @@ git checkout $expId
 git pull origin $expId
 git log -1 | cat 
 #+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 52, done.
+(1/39)           remote: Compressing objects:   5% (2/39)           remote: Compressing objects:   7% (3/39)           remote: Compressing objects:  10% (4/39)           remote: Compressing objects:  12% (5/39)           remote: Compressing objects:  15% (6/39)           remote: Compressing objects:  17% (7/39)           remote: Compressing objects:  20% (8/39)           remote: Compressing objects:  23% (9/39)           remote: Compressing objects:  25% (10/39)           remote: Compressing objects:  28% (11/39)           remote: Compressing objects:  30% (12/39)           remote: Compressing objects:  33% (13/39)           remote: Compressing objects:  35% (14/39)           remote: Compressing objects:  38% (15/39)           remote: Compressing objects:  41% (16/39)           remote: Compressing objects:  43% (17/39)           remote: Compressing objects:  46% (18/39)           remote: Compressing objects:  48% (19/39)           remote: Compressing objects:  51% (20/39)           remote: Compressing objects:  53% (21/39)           remote: Compressing objects:  56% (22/39)           remote: Compressing objects:  58% (23/39)           remote: Compressing objects:  61% (24/39)           remote: Compressing objects:  64% (25/39)           remote: Compressing objects:  66% (26/39)           remote: Compressing objects:  69% (27/39)           remote: Compressing objects:  71% (28/39)           remote: Compressing objects:  74% (29/39)           remote: Compressing objects:  76% (30/39)           remote: Compressing objects:  79% (31/39)           remote: Compressing objects:  82% (32/39)           remote: Compressing objects:  84% (33/39)           remote: Compressing objects:  87% (34/39)           remote: Compressing objects:  89% (35/39)           remote: Compressing objects:  92% (36/39)           remote: Compressing objects:  94% (37/39)           remote: Compressing objects:  97% (38/39)           remote: Compressing objects: 100% (39/39)           remote: Compressing objects: 100% (39/39), done.        
+remote: Total 52 (delta 34), reused 17 (delta 10)
+(1/52)   Unpacking objects:   3% (2/52)   Unpacking objects:   5% (3/52)   Unpacking objects:   7% (4/52)   Unpacking objects:   9% (5/52)   Unpacking objects:  11% (6/52)   Unpacking objects:  13% (7/52)   Unpacking objects:  15% (8/52)   Unpacking objects:  17% (9/52)   Unpacking objects:  19% (10/52)   Unpacking objects:  21% (11/52)   Unpacking objects:  23% (12/52)   Unpacking objects:  25% (13/52)   Unpacking objects:  26% (14/52)   Unpacking objects:  28% (15/52)   Unpacking objects:  30% (16/52)   Unpacking objects:  32% (17/52)   Unpacking objects:  34% (18/52)   Unpacking objects:  36% (19/52)   Unpacking objects:  38% (20/52)   Unpacking objects:  40% (21/52)   Unpacking objects:  42% (22/52)   Unpacking objects:  44% (23/52)   Unpacking objects:  46% (24/52)   Unpacking objects:  48% (25/52)   Unpacking objects:  50% (26/52)   Unpacking objects:  51% (27/52)   Unpacking objects:  53% (28/52)   Unpacking objects:  55% (29/52)   Unpacking objects:  57% (30/52)   Unpacking objects:  59% (31/52)   Unpacking objects:  61% (32/52)   Unpacking objects:  63% (33/52)   Unpacking objects:  65% (34/52)   Unpacking objects:  67% (35/52)   Unpacking objects:  69% (36/52)   Unpacking objects:  71% (37/52)   Unpacking objects:  73% (38/52)   Unpacking objects:  75% (39/52)   Unpacking objects:  76% (40/52)   Unpacking objects:  78% (41/52)   Unpacking objects:  80% (42/52)   Unpacking objects:  82% (43/52)   Unpacking objects:  84% (44/52)   Unpacking objects:  86% (45/52)   Unpacking objects:  88% (46/52)   Unpacking objects:  90% (47/52)   Unpacking objects:  92% (48/52)   Unpacking objects:  94% (49/52)   Unpacking objects:  96% (50/52)   Unpacking objects:  98% (51/52)   Unpacking objects: 100% (52/52)   Unpacking objects: 100% (52/52), done.
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+origin/exp20170825181747
+Branch exp20170825181747 set up to track remote branch exp20170825181747 from origin.
+Switched to a new branch 'exp20170825181747'
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Already up-to-date.
+commit 6d2a497e2e423bf7b026a53f38f4812915d2c096
+Date:   Fri Aug 25 20:01:03 2017 -0300
+
+    UPD: run.sh script
+#+end_example
 
 Update PMA repository on exp machine
 #+begin_src sh :session remote :results output :exports both :var expId=expId
@@ -221,13 +299,40 @@ git add run_$runid
 echo $runid
 #+end_src
 
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ 1503702288
+
 Check process running
 #+begin_src sh :results output :exports both :session remote
 tmux ls
 ps ux
 #+end_src
 
-**** DONE Pull local 
+#+RESULTS:
+#+begin_example
+runExp: 1 windows (created Fri Aug 25 20:04:48 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio     6075  0.0  0.0  45248  4572 ?        Ss   18:36   0:00 /lib/systemd/sy
+julio     6077  0.0  0.0 145408  2156 ?        S    18:36   0:00 (sd-pam)
+julio     6165  0.0  0.0  97464  3192 ?        S    18:36   0:00 sshd: julio@pts
+julio     6166  0.0  0.0  23716  6376 pts/18   Ss   18:36   0:00 -bash
+julio     6689  0.0  0.0  97464  3376 ?        S    20:02   0:00 sshd: julio@pts
+julio     6690  0.0  0.0  22684  5160 pts/19   Ss   20:02   0:00 -bash
+julio     6767  0.0  0.0  29420  2900 ?        Ss   20:04   0:00 tmux new -d -s 
+julio     6768  0.0  0.0  12532  3092 pts/20   Ss+  20:04   0:00 bash -c cd ~/Pr
+julio     6770  0.0  0.0  12536  3004 pts/20   S+   20:04   0:00 /bin/bash ./run
+julio     6890  0.0  0.0   9676  2448 pts/20   S+   20:04   0:00 make
+julio     6893  0.0  0.0   9676  2384 pts/20   S+   20:04   0:00 make -f CMakeFi
+julio     7007  0.3  0.0  26572  4468 pts/18   S+   20:05   0:00 htop
+julio     7097  0.2  0.0  12980  5556 pts/20   S+   20:06   0:00 make -f benchma
+julio     7119  0.0  0.0   4508   848 pts/20   S+   20:06   0:00 /bin/sh -c cd /
+julio     7120  0.0  0.0   8352   720 pts/20   S+   20:06   0:00 /usr/bin/c++ -I
+julio     7121  103  1.7 673400 571216 pts/20  R+   20:06   0:04 /usr/lib/gcc/x8
+julio     7123  0.0  0.0  37368  3328 pts/19   R+   20:06   0:00 ps ux
+#+end_example
+
+**** TODO Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
 #git commit -a -m "wip"
 git status
