@@ -11,7 +11,7 @@ class BTreeCtn : public GeoCtnIntf {
   BTreeCtn(int argc, char *argv[]) : GeoCtnIntf() {
 
   }
-  virtual ~BTreeCtn() = default;
+  virtual ~BTreeCtn();
 
   duration_t create(uint32_t size) override;
 

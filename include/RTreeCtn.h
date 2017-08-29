@@ -15,7 +15,9 @@ class RTreeCtn : public GeoCtnIntf {
   RTreeCtn(int argc, char *argv[]) : GeoCtnIntf() {
 
   }
-  virtual ~RTreeCtn() = default;
+  virtual ~RTreeCtn() {
+    _rtree->clear();
+  };
 
   // build container
   duration_t create(uint32_t size) override {

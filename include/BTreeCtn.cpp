@@ -4,6 +4,10 @@
 
 #include "BTreeCtn.h"
 
+BTreeCtn::~BTreeCtn() {
+  _btree->clear();
+}
+
 duration_t BTreeCtn::create(uint32_t size) {
   Timer timer;
   timer.start();
