@@ -126,7 +126,7 @@ struct region_t {
     if (lon1 < -180.f) lon1 = -180.f;
     else if (lon1 > 180.f) lon1 = 180.f;
 
-    z = 8;
+    z = 25;
 
     x0 = mercator_util::lon2tilex(lon0, z);
     y0 = mercator_util::lat2tiley(lat0, z);
