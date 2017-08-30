@@ -69,9 +69,10 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer = container.scan_at_region(region, read_element);
-      for (auto &info : timer) {
-        PRINTBENCH("scan_at_region", id, t, info.duration, "ms");
-      }
+//      for (auto &info : timer) {
+//        PRINTBENCH("scan_at_region", id, t, info.duration, "ms");
+//      }
+        PRINTBENCH("query",id,"T",t,timer);
     }
 
     // apply_at_tile
@@ -82,9 +83,11 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       count = 0;
       timer = container.apply_at_region(region, _apply);
-      for (auto &info : timer) {
-        PRINTBENCH("apply_at_region", id, t, info.duration, "ms", count);
-      }
+//      for (auto &info : timer) {
+//        PRINTBENCH("apply_at_region", id, t, info.duration, "ms", count);
+//      }
+
+        PRINTBENCH("query", id, "T", t, timer, "count", count);
     }
   }
 }
@@ -111,24 +114,28 @@ void run_bench(int argc,
     std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
     timer = container->create((uint32_t) ctn_size);
 
-    for (auto &info : timer) {
-      PRINTBENCH_PTR("create", info.name, info.duration, "ms");
-    }
+//    for (auto &info : timer) {
+//      PRINTBENCH_PTR("create", info.name, info.duration, "ms");
+//    }
+    PRINTBENCH_PTR("init",timer);
 
     std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
     // insert all elements as a single batch
     if (!parameters.dryrun) {
       timer = container->insert(batch);
-      for (auto &info : timer) {
-        PRINTBENCH_PTR("insert", info.duration, "ms");
-      }
+//      for (auto &info : timer) {
+//        PRINTBENCH_PTR("insert", info.duration, "ms");
+//      }
+      PRINTBENCH_PTR("init",timer);
 
       // run a count on the whole array
       timer = container->apply_at_region(region_t(0, 0, 0, 0, 0), _apply);
-      for (auto &info : timer) {
-        PRINTBENCH_PTR("global_apply", info.name, info.duration, "count", count);
-      }
+//      for (auto &info : timer) {
+//        PRINTBENCH_PTR("global_apply", info.name, info.duration, "count", count);
+//      }
+      PRINTBENCH_PTR("init",timer,"cout",count);
+//      std::cout << timer ;
     }
 
     // perform custom queries
@@ -170,7 +177,9 @@ void load_bench_file(const std::string &file,
     float lon0 = std::stof(*(it++));
     float lat1 = std::stof(*(it++));
     float lon1 = std::stof(*(it++));
-    
+
+    std::cout << lat0 << " " << lon0 << " " << lat1 << " " << lon1 << std::endl;
+
     queries.emplace_back(lat0, lon0, lat1, lon1);
   }
 
