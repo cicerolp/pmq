@@ -112,7 +112,7 @@ void run_bench(int argc,
     timer = container->create((uint32_t) ctn_size);
 
     for (auto &info : timer) {
-      PRINTBENCH_PTR("create", info.duration, "ms");
+      PRINTBENCH_PTR("create", info.name, info.duration, "ms");
     }
 
     std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
@@ -127,7 +127,7 @@ void run_bench(int argc,
       // run a count on the whole array
       timer = container->apply_at_region(region_t(0, 0, 0, 0, 0), _apply);
       for (auto &info : timer) {
-        PRINTBENCH_PTR("global_apply", info.duration, "ms", count);
+        PRINTBENCH_PTR("global_apply", info.name, info.duration, "count", count);
       }
     }
 
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
 
   cimg_usage("bench_queries_region");
 
-  std::string fname(cimg_option("-f", "", "File with tweets"));
+  std::string fname(cimg_option("-f", "", "File with tweets (if NULL, generates Rate X T elemets "));
   const long seed(cimg_option("-seed", 123, "Random seed to generate elements"));
 
   int32_t n_queries(cimg_option("-n_queries", -1, "Number of queries"));
