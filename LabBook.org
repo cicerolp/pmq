@@ -234,6 +234,10 @@ fi
 #+end_src
 
 
+* Datasets 
+** Datastet of queries generate with R
+[[file:data/queriesLHS.org]]
+
 * Data
 :PROPERTIES:
 :EXPORT_OPTIONS: H:2

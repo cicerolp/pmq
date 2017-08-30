@@ -58,7 +58,7 @@ Query::Query(const std::vector<std::string>& tokens) {
          topk_info.now = std::stoull(string_util::next_token(it));
          topk_info.time = std::stoull(string_util::next_token(it));
 
-         region = region_t(lat, lon, topk_info.radius, z);
+         region = region_t(lat, lon, topk_info.radius, (uint32_t) z);
 
       } else if ((*it) == "triggers") {
          type = TRIGGER;

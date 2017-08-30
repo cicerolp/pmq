@@ -110,6 +110,33 @@ struct region_t {
     code1 = mortonEncode_RAM(x1, y1);
   }
 
+  /* Make a region given uper-left ( _lat0,_lon0) and bottom-right (_lat1,_lon1) corners */
+  region_t(float lat0, float lon0, float lat1, float lon1 ) {
+
+
+    if (lat0 < -85.051132f) lat0 = -85.051132f;
+    else if (lat0 > 85.051132f) lat0 = 85.051132f;
+
+    if (lon0 < -180.f) lon0 = -180.f;
+    else if (lon0 > 180.f) lon0 = 180.f;
+
+    if (lat1 < -85.051132f) lat1 = -85.051132f;
+    else if (lat1 > 85.051132f) lat1 = 85.051132f;
+
+    if (lon1 < -180.f) lon1 = -180.f;
+    else if (lon1 > 180.f) lon1 = 180.f;
+
+    z = 8;
+
+    x0 = mercator_util::lon2tilex(lon0, z);
+    y0 = mercator_util::lat2tiley(lat0, z);
+    x1 = mercator_util::lon2tilex(lon1, z);
+    y1 = mercator_util::lat2tiley(lat1, z);
+
+    code0 = mortonEncode_RAM(x0, y0);
+    code1 = mortonEncode_RAM(x1, y1);
+  }
+
   region_t(float _lat, float _lon, float radius) {
     static const float PI_180_INV = 180.f / (float) M_PI;
     static const float PI_180 = (float) M_PI / 180.f;

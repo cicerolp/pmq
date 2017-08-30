@@ -141,6 +141,9 @@ void run_bench(int argc,
   }
 }
 
+/***
+ * Reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
+***/
 void load_bench_file(const std::string &file, std::vector<region_t> &queries, int32_t n_queries) {
   PRINTOUT("Loading log file: %s \n", file.c_str());
 
@@ -156,7 +159,8 @@ void load_bench_file(const std::string &file, std::vector<region_t> &queries, in
   while (std::getline(in, line)) {
     Tokenizer tok(line);
     auto it = tok.begin();
-    queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)));
+    //queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)));
+    queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)), std::stof(*(++it)));
   }
 
   in.close();
