@@ -144,7 +144,7 @@ void run_bench(int argc,
 /***
  * Reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
 ***/
-void load_bench_file(const std::string &file, std::vector<region_t> &queries, int32_t n_queries) {
+void load_bench_file(const std::string &file, std::vector<region_t> &queries, int32_t n_queries=std::numeric_limits<uint32_t>::max() ) {
   PRINTOUT("Loading log file: %s \n", file.c_str());
 
   std::ifstream in(file.c_str());
@@ -156,11 +156,15 @@ void load_bench_file(const std::string &file, std::vector<region_t> &queries, in
 
   std::string line;
 
-  while (std::getline(in, line)) {
-    Tokenizer tok(line);
-    auto it = tok.begin();
-    //queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)));
-    queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)), std::stof(*(++it)));
+  while (n_queries--){
+     std::getline(in, line);
+
+     if (in.eof()) break;
+
+     Tokenizer tok(line);
+     auto it = tok.begin();
+     //queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)));
+     queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)), std::stof(*(++it)));
   }
 
   in.close();
@@ -211,6 +215,8 @@ int main(int argc, char *argv[]) {
 
   std::vector<region_t> queries;
   load_bench_file(bench_file, queries, n_queries);
+
+  PRINTOUT(" %d queries loaded \n", queries.size());
 
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
