@@ -135,6 +135,10 @@ struct region_t {
 
     code0 = mortonEncode_RAM(x0, y0);
     code1 = mortonEncode_RAM(x1, y1);
+
+    // final bb center
+    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
+    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
   }
 
   region_t(float _lat, float _lon, float radius) {

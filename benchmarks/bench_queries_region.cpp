@@ -144,7 +144,9 @@ void run_bench(int argc,
 /***
  * Reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
 ***/
-void load_bench_file(const std::string &file, std::vector<region_t> &queries, int32_t n_queries=std::numeric_limits<uint32_t>::max() ) {
+void load_bench_file(const std::string &file,
+                     std::vector<region_t> &queries,
+                     int32_t n_queries = std::numeric_limits<uint32_t>::max()) {
   PRINTOUT("Loading log file: %s \n", file.c_str());
 
   std::ifstream in(file.c_str());
@@ -156,15 +158,20 @@ void load_bench_file(const std::string &file, std::vector<region_t> &queries, in
 
   std::string line;
 
-  while (n_queries--){
-     std::getline(in, line);
+  while (n_queries--) {
+    std::getline(in, line);
 
-     if (in.eof()) break;
+    if (in.eof()) break;
 
-     Tokenizer tok(line);
-     auto it = tok.begin();
-     //queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)));
-     queries.emplace_back(std::stof(*it), std::stof(*(++it)), std::stof(*(++it)), std::stof(*(++it)));
+    Tokenizer tok(line);
+    auto it = tok.begin();
+
+    float lat0 = std::stof(*(it++));
+    float lon0 = std::stof(*(it++));
+    float lat1 = std::stof(*(it++));
+    float lon1 = std::stof(*(it++));
+    
+    queries.emplace_back(lat0, lon0, lat1, lon1);
   }
 
   in.close();
