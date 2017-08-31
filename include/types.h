@@ -126,7 +126,8 @@ struct region_t {
     if (lon1 < -180.f) lon1 = -180.f;
     else if (lon1 > 180.f) lon1 = 180.f;
 
-    z = 25;
+    // Computes the corners of the bounding box aligned to the morton codes of a quadtree at level Z
+    z = 25; // ????
 
     x0 = mercator_util::lon2tilex(lon0, z);
     y0 = mercator_util::lat2tiley(lat0, z);
@@ -139,6 +140,8 @@ struct region_t {
     // final bb center
     lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
     lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
+
+
   }
 
   region_t(float _lat, float _lon, float radius) {

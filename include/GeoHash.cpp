@@ -83,7 +83,10 @@ duration_t GeoHash::scan_at_region(const region_t &region, scantype_function __a
   timer.start();
 
   auto curr_seg = pma_seg_it::begin(_pma);
-  uint32_t refinements = scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
+  code_t boundingQuadrant =  get_parent_quadrant(region);
+  PRINTOUT("Bounding Quadrant: %llu  %d \n",boundingQuadrant.code,boundingQuadrant.z);
+  // Recursive search on the pma
+  uint32_t refinements = scan_pma_at_region(boundingQuadrant, curr_seg, region, __apply);
 
   timer.stop();
   duration.emplace_back("scan_at_region", timer);
@@ -231,15 +234,18 @@ uint32_t GeoHash::scan_pma_at_region(const code_t &el,
                                      scantype_function __apply) {
   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0;
 
+  /// region.z is allways our max quadree resolution and el.z is depths of the bounding quadrant.
   if (el.z > region.z) return 0;
 
   region_t::overlap overlap = region.test(el);
 
   if (overlap == region_t::full) {
     if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
+      // this sub-region has no elements in the pma.
       return 0;
     }
 
+    //scans a contiguous region of the PMA
     scan_pma(el, seg, __apply);
     return 1;
 
@@ -249,12 +255,19 @@ uint32_t GeoHash::scan_pma_at_region(const code_t &el,
     // break code into four
     uint64_t code = el.code << 2;
 
+#ifndef STATS_REFINE
     refinements += scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
     refinements += scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
     refinements += scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
     refinements += scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
-
     return refinements;
+#else
+    scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+    scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+    scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+    scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+    return 0;
+#endif
   } else {
     return 0;
   }
