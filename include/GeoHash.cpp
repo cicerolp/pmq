@@ -328,18 +328,30 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
       __apply(el, count_pma(el, seg));
       return 1;
     }
-  } else if (overlap != region_t::none) {
-    uint32_t refinements = 0;
+  } else if (overlap == region_t::partial) {
 
-    // break morton code into four
-    uint64_t code = el.code << 2;
+    if (el.z < 8) {
+      uint32_t refinements = 0;
 
-    refinements += apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += apply_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+      // break morton code into four
+      uint64_t code = el.code << 2;
 
-    return refinements;
+      refinements += apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += apply_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+
+      return refinements;
+
+    } else {
+      // scan_at_region
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
+        return 0;
+      } else {
+        __apply(el, count_pma(el, seg));
+        return 1;
+      }
+    }
   } else {
     return 0;
   }
