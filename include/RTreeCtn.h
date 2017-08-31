@@ -164,7 +164,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     // longitude
     float xmin = mercator_util::tilex2lon(region.x0, region.z);
-    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);
+    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);  // JULIO : why + 1 ??
 
     // latitude
     float ymin = mercator_util::tiley2lat(region.y1 + 1, region.z);

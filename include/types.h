@@ -128,6 +128,7 @@ struct region_t {
 
     // Computes the corners of the bounding box aligned to the morton codes of a quadtree at level Z
     z = 25; // ????
+    PRINTOUT("Using z = %d\n",z);
 
     x0 = mercator_util::lon2tilex(lon0, z);
     y0 = mercator_util::lat2tiley(lat0, z);

@@ -66,7 +66,7 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 #if 1
     // warm up
     container.scan_at_region(region, read_element);
-#endif
+
 
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer = container.scan_at_region(region, read_element);
@@ -75,10 +75,11 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 //      }
         PRINTBENCH("query",id,"T",t,timer);
     }
+#endif
 
-    // apply_at_tile
+    // apply_at_region
 
-#if 0
+#if 1
     // warm up
     container.apply_at_region(region, _apply);
 
@@ -243,7 +244,7 @@ int main(int argc, char *argv[]) {
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
   //run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   //run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, queries, parameters);
-//  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
+  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
 
   return EXIT_SUCCESS;
 }
