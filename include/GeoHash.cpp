@@ -330,39 +330,82 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
     }
   } else if (overlap == region_t::partial) {
 
-    if (el.z < 8) {
-      uint32_t refinements = 0;
 
-      // break morton code into four
-      uint64_t code = el.code << 2;
+     if (el.z < 8) {
+     //Keep doing recursive refinements
+        uint32_t refinements = 0;
 
-      refinements += apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
-      refinements += apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
-      refinements += apply_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
-      refinements += apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+        // break morton code into four
+        uint64_t code = el.code << 2;
 
-      return refinements;
+        refinements += apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+        refinements += apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+        refinements += apply_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+        refinements += apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
 
-    } else {
-      // scan_at_region
-      if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
-        return 0;
-      } else {
-        __apply(el, count_pma(el, seg));
-        return 1;
-      }
-    }
+        return refinements;
+
+     } else {
+        if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
+           return 0;
+        } else {
+           // scans a tile checking longitude an latitude.
+
+           uint32_t elts = count_if_pma(el,seg,region);
+           __apply(el, elts);
+
+           return 1;
+        }
+     }
   } else {
     return 0;
   }
 }
+/*** Counts elements in region
+JULIO : INPROGRESS
+- Check if the pma_offset_it are beeing used correctly.
+*/
+uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region ) const {
 
+  assert(region.z == 25);
+
+  pma_offset_it off_begin, off_end;
+
+  //get the first element (upper-left corner) in the tile
+  off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), el.min_code,
+                                 [](void *elt, uint64_t value) { return PMA_ELT(elt) < value; });
+
+  //get the last element (botoom-right corner) in the tile
+  //Julio : why the upper_bound Doesn't work ??
+
+  //off_end = std::upper_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), el.max_code ,
+  off_end = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), el.max_code ,
+                                 [](void *elt, uint64_t value) { return PMA_ELT(elt) < value; });
+
+  //Count how many elements in this tile are inside the region
+  uint32_t elts = std::count_if(pma_offset_it::begin(_pma, seg),
+                                pma_offset_it::end(_pma, seg),
+                                [ &region ](void *elt){
+      uint32_t x, y;
+      mortonDecode_RAM(PMA_ELT(elt),x,y);
+
+      return ( x <= region.x1 && x >= region.x0 && y <= region.y0 && y >= region.y1 );
+      }
+  );
+
+}
+
+/***
+ * Counts the number of elements in the PMA between el.min_code and el.max_code , start search at segment seg
+ *
+ */
 uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
   size_t count = 0;
   auto prev_seg = seg;
 
   count += seg.size();
 
+  //count full segments
   while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code) {
     count += seg.size();
   }
