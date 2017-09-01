@@ -132,6 +132,8 @@ class GeoHashSequential : public GeoHash {
 
  protected:
   pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const override final;
+
+  friend class TEST_GeoHashSequential; //gives access to private and protected method for testing purposes
 };
 
 class GeoHashBinary : public GeoHash {
@@ -148,4 +150,6 @@ class GeoHashBinary : public GeoHash {
 
  protected:
   pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const override final;
+
+  friend class TEST_GeoHashBinary; //gives access to private and protected method for testing purposes
 };
