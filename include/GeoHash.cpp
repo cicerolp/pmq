@@ -349,7 +349,6 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
         return 0;
       } else {
         // scans a tile checking longitude an latitude.
-
         uint32_t elts = count_if_pma(el, seg, region);
         __apply(el, elts);
 
@@ -360,32 +359,36 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
     return 0;
   }
 }
-/*** Counts elements in region
-JULIO : INPROGRESS
-- Check if the pma_offset_it are beeing used correctly.
-*/
+
 uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region) const {
 
+  uint32_t count = 0;
 
   // lower_bound
   auto prev_seg = seg;
 
   // upper bound
-  do {
-    ++seg;
-  } while (seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code);
+  seg = std::lower_bound(prev_seg, pma_seg_it::end(_pma), el.max_code + 1,
+                         [](void *elt, uint64_t value) {
+                           return PMA_ELT(elt) < value;
+                         });
 
-  size_t count = 0;
   while (prev_seg != seg) {
-    // iterate over segments offsets
+    // iterate over offsets
     count += std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
-                           [&region](void *elt) {
+                           [&region, &el](void *elt) {
 
-                             // count how many elements in this tile are inside the region
-                             uint32_t x, y;
-                             mortonDecode_RAM(PMA_ELT(elt), x, y);
+                             uint64_t code = PMA_ELT(elt);
 
-                             return (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y);
+                             if (code >= el.min_code && code <= el.max_code) {
+                               // count how many elements in this tile are inside the region
+                               uint32_t x, y;
+                               mortonDecode_RAM(code, x, y);
+
+                               return (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y);
+                             } else {
+                               return false;
+                             }
                            }
     );
     // iterate over segments
