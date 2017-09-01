@@ -90,8 +90,10 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
   region_t::overlap overlap = region.test(el);
 
   if (overlap == region_t::full) {
+    uint32_t count = 0;
+
     auto lower_it = _btree->lower_bound(el.min_code);
-    auto upper_it = _btree->lower_bound(el.max_code);
+    auto upper_it = _btree->lower_bound(el.max_code + 1);
 
     for (auto it = lower_it; it != upper_it; ++it) {
       __apply((*it).second);
@@ -102,78 +104,55 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
     } else {
       return 0;
     }
-  } else if (overlap != region_t::none) {
-    uint32_t refinements = 0;
+  } else if (overlap == region_t::partial) {
+    if (el.z < 8) {
+      uint32_t refinements = 0;
 
-    // break code into four
-    uint64_t code = el.code << 2;
+      // break morton code into four
+      uint64_t code = el.code << 2;
 
-    refinements += scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
 
-    return refinements;
+      return refinements;
+
+    } else {
+      auto lower_it = _btree->lower_bound(el.min_code);
+      auto upper_it = _btree->lower_bound(el.max_code + 1);
+
+      for (auto it = lower_it; it != upper_it; ++it) {
+        uint64_t code = (*it).first;
+
+        uint32_t x, y;
+        mortonDecode_RAM(code, x, y);
+
+        if (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y) {
+          __apply((*it).second);
+        }
+      }
+
+      if (lower_it != upper_it) {
+        return 1;
+      } else {
+        return 0;
+      }
+    }
+
   } else {
     return 0;
   }
 }
 duration_t BTreeCtn::apply_at_tile(const region_t &region, applytype_function __apply) {
   duration_t duration;
-  Timer timer;
 
-  timer.start();
-
-  uint32_t refinements = apply_btree_at_tile(get_parent_quadrant(region), region, __apply);
-
-  timer.stop();
-  duration.emplace_back("apply_at_tile", timer);
-
-  duration.emplace_back("apply_at_tile_refinements", refinements);
+  duration.emplace_back("apply_at_tile", 0);
+  duration.emplace_back("apply_at_tile_refinements", 0);
 
   return duration;
 }
 
-uint32_t BTreeCtn::apply_btree_at_tile(const code_t &el, const region_t &region, applytype_function __apply) {
-  if (el.z >= 25 || (int) el.z - (int) region.z > 8) return 0;
-
-  region_t::overlap overlap = region.test(el);
-
-  if ((int) el.z - (int) region.z < 8) {
-    if (overlap != region_t::none) {
-      uint32_t refinements = 0;
-
-      // break morton code into four
-      uint64_t code = el.code << 2;
-
-      refinements += apply_btree_at_tile(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-      refinements += apply_btree_at_tile(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-      refinements += apply_btree_at_tile(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-      refinements += apply_btree_at_tile(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
-
-      return refinements;
-    }
-    return 0;
-  } else if (overlap == region_t::full) {
-    uint32_t count = 0;
-
-    auto lower_it = _btree->lower_bound(el.min_code);
-    auto upper_it = _btree->lower_bound(el.max_code);
-
-    while (lower_it++ != upper_it) {
-      ++count;
-    }
-
-    if (count) {
-      __apply(el, count);
-      return 1;
-    } else {
-      return 0;
-    }
-  } else {
-    return 0;
-  }
-}
 duration_t BTreeCtn::apply_at_region(const region_t &region, applytype_function __apply) {
   duration_t duration;
   Timer timer;
@@ -199,7 +178,7 @@ uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &regio
     uint32_t count = 0;
 
     auto lower_it = _btree->lower_bound(el.min_code);
-    auto upper_it = _btree->lower_bound(el.max_code);
+    auto upper_it = _btree->lower_bound(el.max_code + 1);
 
     while (lower_it++ != upper_it) {
       ++count;
@@ -211,18 +190,46 @@ uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &regio
     } else {
       return 0;
     }
-  } else if (overlap != region_t::none) {
-    uint32_t refinements = 0;
+  } else if (overlap == region_t::partial) {
+    if (el.z < 8) {
+      uint32_t refinements = 0;
 
-    // break morton code into four
-    uint64_t code = el.code << 2;
+      // break morton code into four
+      uint64_t code = el.code << 2;
 
-    refinements += apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
-    refinements += apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+      refinements += apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
 
-    return refinements;
+      return refinements;
+
+    } else {
+      auto lower_it = _btree->lower_bound(el.min_code);
+      auto upper_it = _btree->lower_bound(el.max_code + 1);
+
+      uint32_t count = 0;
+
+      while (lower_it != upper_it) {
+        uint64_t code = (*lower_it).first;
+
+        uint32_t x, y;
+        mortonDecode_RAM(code, x, y);
+
+        if (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y) {
+          ++count;
+        }
+        ++lower_it;
+      }
+
+      if (count) {
+        __apply(el, count);
+        return 1;
+      } else {
+        return 0;
+      }
+    }
+
   } else {
     return 0;
   }

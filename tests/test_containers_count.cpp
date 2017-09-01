@@ -216,7 +216,9 @@ int main(int argc, char *argv[]) {
   // add containers to test
   containers.emplace_back(std::make_unique<GeoHashBinary>(argc, argv));
 
-  containers.emplace_back(std::make_unique<RTreeCtn<bgi::quadratic < 16>> > (argc, argv));
+  containers.emplace_back(std::make_unique<BTreeCtn>(argc, argv));
+
+  //containers.emplace_back(std::make_unique<RTreeCtn<bgi::quadratic < 16>> > (argc, argv));
 
   run_bench(argc, argv, containers, input, queries, parameters);
 
