@@ -19,7 +19,7 @@ class TEST_GeoHashBinary : public GeoHashBinary {
  public:
   TEST_GeoHashBinary(int argc, char **argv) : GeoHashBinary(argc, argv) {}
 
-  uint32_t test_apply_at_region(const region_t &region) {
+  uint32_t test_count(const region_t &region) {
     if (_pma == nullptr) return 0;
 
     uint32_t count = 0;
@@ -61,8 +61,8 @@ void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
 }
 
 // reads the full element
-void inline read_element(const valuetype &el) {
-  valuetype volatile elemt = *(valuetype *) &el;
+void inline read_element(uint32_t &accum, const valuetype &el) {
+  ++accum;
 }
 
 template<typename T>
@@ -70,18 +70,28 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
   duration_t timer;
 
-  uint32_t count_geohash = 0;
-  applytype_function _apply = std::bind(count_element, std::ref(count_geohash),
-                                        std::placeholders::_1, std::placeholders::_2);
+  uint32_t count_apply_at_region = 0;
+  applytype_function _apply_at_region = std::bind(count_element, std::ref(count_apply_at_region),
+                                                  std::placeholders::_1, std::placeholders::_2);
 
-  count_geohash = 0;
-  container.apply_at_region(region, _apply);
+  container.apply_at_region(region, _apply_at_region);
 
-  uint32_t count_test = container.test_apply_at_region(region);
+  uint32_t count_scan_at_region = 0;
+  scantype_function _scan_at_region = std::bind(read_element, std::ref(count_scan_at_region),
+                                                std::placeholders::_1);
 
-  PRINT_TEST(id, "GeoHash", count_geohash, "TEST_GeoHash", count_test);
+  container.scan_at_region(region, _scan_at_region);
 
-  if (count_geohash != count_test) {
+  uint32_t count_test = container.test_count(region);
+
+  if (count_apply_at_region != count_test || count_scan_at_region != count_test) {
+    PRINT_TEST(id,
+               "count",
+               count_test,
+               "apply_at_region",
+               count_apply_at_region,
+               "scan_at_region",
+               count_scan_at_region);
     exit(EXIT_FAILURE);
   }
 }
