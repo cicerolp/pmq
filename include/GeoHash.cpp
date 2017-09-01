@@ -373,7 +373,7 @@ uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t
                            return PMA_ELT(elt) < value;
                          });
 
-  while (prev_seg != seg) {
+  while (prev_seg <= seg) {
     // iterate over offsets
     count += std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
                            [&region, &el](void *elt) {
@@ -403,7 +403,44 @@ uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t
  *
  */
 uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
-  size_t count = 0;
+
+  int32_t count = 0;
+
+  // lower_bound
+  auto prev_seg = seg;
+
+  // subtract extra elements for first segment
+  count -= std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
+                         [&el](void *elt) {
+                           uint64_t code = PMA_ELT(elt);
+                           return (code < el.min_code);
+                         }
+  );
+
+  // upper bound
+  seg = std::lower_bound(prev_seg, pma_seg_it::end(_pma), el.max_code + 1,
+                         [](void *elt, uint64_t value) {
+                           return PMA_ELT(elt) < value;
+                         });
+
+  while (prev_seg <= seg) {
+    count += prev_seg.size();
+
+    // iterate over segments
+    ++prev_seg;
+  }
+
+  // subtract extra elements for last segment
+  count -= std::count_if(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg),
+                         [&el](void *elt) {
+                           uint64_t code = PMA_ELT(elt);
+                           return (code > el.max_code);
+                         }
+  );
+
+  return count;
+
+  /*size_t count = 0;
   auto prev_seg = seg;
 
   count += seg.size();
@@ -441,7 +478,7 @@ uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
 
   assert(count != 0);
 
-  return (uint32_t) count;
+  return (uint32_t) count;*/
 }
 
 void GeoHash::scan_pma(const code_t &el, pma_seg_it &seg, scantype_function _apply) const {
