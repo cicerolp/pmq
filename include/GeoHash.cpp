@@ -373,7 +373,7 @@ uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t
                            return PMA_ELT(elt) < value;
                          });
 
-  while (prev_seg <= seg) {
+  while (prev_seg !=  pma_seg_it::end(_pma) && prev_seg <= seg) {
     // iterate over offsets
     count += std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
                            [&region, &el](void *elt) {
@@ -423,7 +423,7 @@ uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
                            return PMA_ELT(elt) < value;
                          });
 
-  while (prev_seg <= seg) {
+  while (prev_seg !=  pma_seg_it::end(_pma) && prev_seg <= seg) {
     count += prev_seg.size();
 
     // iterate over segments
