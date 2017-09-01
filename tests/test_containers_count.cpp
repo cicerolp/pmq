@@ -6,9 +6,14 @@
 #include "types.h"
 
 #include "GeoHash.h"
+#include "RTreeCtn.h"
+#include "BTreeCtn.h"
+
 #include "InputIntf.h"
 
 uint32_t g_Quadtree_Depth = 25;
+
+typedef std::vector<std::unique_ptr<GeoCtnIntf>> ctn_t;
 
 #define PRINT_TEST(...) do { \
    printcsv( __VA_ARGS__ ) ; \
@@ -52,7 +57,7 @@ class TEST_GeoHashBinary : public GeoHashBinary {
 };
 
 struct bench_t {
-  uint64_t min_t, max_t, inc_t;
+  uint64_t t;
   uint64_t rate;
 };
 
@@ -65,11 +70,7 @@ void inline read_element(uint32_t &accum, const valuetype &el) {
   ++accum;
 }
 
-template<typename T>
-void inline run_queries(T &container, const region_t &region, uint32_t id, uint64_t t, const bench_t &parameters) {
-
-  duration_t timer;
-
+void inline run_queries(GeoCtnIntf &container, const region_t &region, uint32_t id, uint32_t count_test) {
   uint32_t count_apply_at_region = 0;
   applytype_function _apply_at_region = std::bind(count_element, std::ref(count_apply_at_region),
                                                   std::placeholders::_1, std::placeholders::_2);
@@ -82,9 +83,9 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
   container.scan_at_region(region, _scan_at_region);
 
-  uint32_t count_test = container.test_count(region);
-
   PRINT_TEST(id,
+             "name",
+             container.name(),
              "count",
              count_test,
              "apply_at_region",
@@ -97,31 +98,42 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
   }
 }
 
-template<typename T>
-void run_bench(int argc, char *argv[], const std::vector<elttype> &input,
+void run_bench(int argc, char *argv[], ctn_t &containers, const std::vector<elttype> &input,
                const std::vector<region_t> &queries, const bench_t &parameters) {
 
-  for (uint64_t t = parameters.min_t; t <= parameters.max_t; t += parameters.inc_t) {
 
-    // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
-    uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * t);
+  // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
+  uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * parameters.t);
+  std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
-    //create container
-    std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-    container->create((uint32_t) ctn_size);
+  // initialize test_container
+  std::unique_ptr < TEST_GeoHashBinary > test_ctn = std::make_unique<TEST_GeoHashBinary>(argc, argv);
+  test_ctn->create((uint32_t) ctn_size);
+  test_ctn->insert(batch);
 
-    std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
+  // initialize containers
+  for (auto &c : containers) {
+    c->create((uint32_t) ctn_size);
 
     // insert all elements as a single batch
-    container->insert(batch);
+    c->insert(batch);
+  }
 
-    // perform custom queries
-    for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries((*container.get()), queries[id], id, t, parameters);
+  // perform custom queries
+  for (uint32_t id = 0; id < queries.size(); id++) {
+
+    uint32_t count_test = test_ctn->test_count(queries[id]);
+
+    for (auto &c : containers) {
+      run_queries((*c.get()), queries[id], id, count_test);
     }
+  }
 
-    // delete container
-    container.reset();
+  test_ctn.reset();
+
+  // delete containers
+  for (auto &c : containers) {
+    c.reset();
   }
 }
 
@@ -175,11 +187,9 @@ int main(int argc, char *argv[]) {
 
   parameters.rate = (cimg_option("-rate", 1000, "Insertion rate"));
 
-  parameters.min_t = (cimg_option("-min_t", 10800, "T: Min"));
-  parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
-  parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
+  parameters.t = (cimg_option("-t", 10800, "T"));
 
-  uint64_t n_elts = parameters.rate * parameters.max_t;
+  uint64_t n_elts = parameters.rate * parameters.t;
 
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
@@ -201,8 +211,14 @@ int main(int argc, char *argv[]) {
 
   PRINTOUT(" %d queries loaded \n", queries.size());
 
-  run_bench<TEST_GeoHashBinary>(argc, argv, input, queries, parameters);
-  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  ctn_t containers;
+
+  // add containers to test
+  containers.emplace_back(std::make_unique<GeoHashBinary>(argc, argv));
+
+  containers.emplace_back(std::make_unique<RTreeCtn<bgi::quadratic < 16>> > (argc, argv));
+
+  run_bench(argc, argv, containers, input, queries, parameters);
 
   return EXIT_SUCCESS;
 }

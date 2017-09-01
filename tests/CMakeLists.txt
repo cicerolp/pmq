@@ -54,3 +54,15 @@ add_executable(test_geohash_count
         )
 
 target_link_libraries(test_geohash_count pma ${CMAKE_THREAD_LIBS_INIT})
+
+#######################################################
+
+add_executable(test_containers_count
+        test_containers_count.cpp
+
+        ../include/QuadtreeIntf.cpp
+        ../include/GeoHash.cpp
+        ../include/BTreeCtn.cpp
+        )
+
+target_link_libraries(test_containers_count pma ${CMAKE_THREAD_LIBS_INIT})
