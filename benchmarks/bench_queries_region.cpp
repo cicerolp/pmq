@@ -63,38 +63,25 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
   if (!parameters.dryrun) {
     // scan_at_region
-#if 1
+
     // warm up
     container.scan_at_region(region, read_element);
 
-
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer = container.scan_at_region(region, read_element);
-//      for (auto &info : timer) {
-//        PRINTBENCH("scan_at_region", id, t, info.duration, "ms");
-//      }
-        PRINTBENCH("query",id,"T",t,timer);
+      PRINTBENCH("query", id, "T", t, timer);
     }
-#endif
 
     // apply_at_region
 
-#if 1
     // warm up
     container.apply_at_region(region, _apply);
 
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       count = 0;
       timer = container.apply_at_region(region, _apply);
-//      for (auto &info : timer) {
-//        PRINTBENCH("apply_at_region", id, t, info.duration, "ms", count);
-//      }
-
-        PRINTBENCH("query", id, "T", t, timer, "count", count);
-
+      PRINTBENCH("query", id, "T", t, timer, "count", count);
     }
-
-#endif
   }
 }
 
@@ -120,28 +107,18 @@ void run_bench(int argc,
     std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
     timer = container->create((uint32_t) ctn_size);
 
-//    for (auto &info : timer) {
-//      PRINTBENCH_PTR("create", info.name, info.duration, "ms");
-//    }
-    PRINTBENCH_PTR("init",timer);
+    PRINTBENCH_PTR("init", timer);
 
     std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
     // insert all elements as a single batch
     if (!parameters.dryrun) {
       timer = container->insert(batch);
-//      for (auto &info : timer) {
-//        PRINTBENCH_PTR("insert", info.duration, "ms");
-//      }
-      PRINTBENCH_PTR("init",timer);
+      PRINTBENCH_PTR("init", timer);
 
       // run a count on the whole array
       timer = container->apply_at_region(region_t(0, 0, 0, 0, 0), _apply);
-//      for (auto &info : timer) {
-//        PRINTBENCH_PTR("global_apply", info.name, info.duration, "count", count);
-//      }
-      PRINTBENCH_PTR("init",timer,"count",count);
-//      std::cout << timer ;
+      PRINTBENCH_PTR("init", timer, "count", count);
     }
 
     // perform custom queries
@@ -154,11 +131,8 @@ void run_bench(int argc,
   }
 }
 
-/***
- * Reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
-***/
-void load_bench_file(const std::string &file,
-                     std::vector<region_t> &queries,
+// reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
+void load_bench_file(const std::string &file, std::vector<region_t> &queries,
                      int32_t n_queries = std::numeric_limits<uint32_t>::max()) {
   PRINTOUT("Loading log file: %s \n", file.c_str());
 
@@ -183,8 +157,6 @@ void load_bench_file(const std::string &file,
     float lon0 = std::stof(*(it++));
     float lat1 = std::stof(*(it++));
     float lon1 = std::stof(*(it++));
-
-    std::cout << lat0 << " " << lon0 << " " << lat1 << " " << lon1 << std::endl;
 
     queries.emplace_back(lat0, lon0, lat1, lon1);
   }
@@ -242,7 +214,7 @@ int main(int argc, char *argv[]) {
 
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-  //run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
+  run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   //run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, queries, parameters);
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
 
