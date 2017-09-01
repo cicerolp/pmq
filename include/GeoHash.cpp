@@ -82,11 +82,9 @@ duration_t GeoHash::scan_at_region(const region_t &region, scantype_function __a
 
   timer.start();
 
+  // recursive search on the pma
   auto curr_seg = pma_seg_it::begin(_pma);
-  code_t boundingQuadrant = get_parent_quadrant(region);
-  PRINTOUT("Bounding Quadrant: %llu  %d \n", boundingQuadrant.code, boundingQuadrant.z);
-  // Recursive search on the pma
-  uint32_t refinements = scan_pma_at_region(boundingQuadrant, curr_seg, region, __apply);
+  uint32_t refinements = scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
 
   timer.stop();
   duration.emplace_back("scan_at_region", timer);
@@ -131,6 +129,7 @@ duration_t GeoHash::apply_at_region(const region_t &region, applytype_function _
 
   timer.start();
 
+  // recursive search on the pma
   auto curr_seg = pma_seg_it::begin(_pma);
   uint32_t refinements = apply_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply);
 
@@ -228,55 +227,54 @@ duration_t GeoHash::topk_search(const region_t &region, topk_t &topk, scantype_f
  *
  */
 
-uint32_t GeoHash::scan_pma_at_region(const code_t &el,
-                                     pma_seg_it &seg,
-                                     const region_t &region,
-                                     scantype_function __apply) {
+uint32_t GeoHash::scan_pma_at_region(const code_t &el, pma_seg_it &seg,
+                                     const region_t &region, scantype_function __apply) {
   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0;
 
-  /// region.z is allways our max quadree resolution and el.z is depths of the bounding quadrant.
   if (el.z > region.z) return 0;
 
   region_t::overlap overlap = region.test(el);
 
   if (overlap == region_t::full) {
     if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
-      // this sub-region has no elements in the pma.
       return 0;
+    } else {
+      //scans a contiguous region of the PMA
+      scan_pma(el, seg, __apply);
+      return 1;
     }
+  } else if (overlap == region_t::partial) {
 
-    //scans a contiguous region of the PMA
-    scan_pma(el, seg, __apply);
-    return 1;
+    if (el.z < 8) {
+      //Keep doing recursive refinements
+      uint32_t refinements = 0;
 
-  } else if (overlap != region_t::none) {
-    uint32_t refinements = 0;
+      // break morton code into four
+      uint64_t code = el.code << 2;
 
-    // break code into four
-    uint64_t code = el.code << 2;
+      refinements += scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+      refinements += scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
 
-#ifndef STATS_REFINE
-    refinements += scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
-    refinements += scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
-    return refinements;
-#else
-    scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
-    scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
-    scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
-    scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
-    return 0;
-#endif
+      return refinements;
+
+    } else {
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
+        return 0;
+      } else {
+        // scans a tile checking longitude an latitude.
+        scan_if_pma(el, seg, region, __apply);
+        return 1;
+      }
+    }
   } else {
     return 0;
   }
 }
 
-uint32_t GeoHash::apply_pma_at_tile(const code_t &el,
-                                    pma_seg_it &seg,
-                                    const region_t &region,
-                                    applytype_function __apply) {
+uint32_t GeoHash::apply_pma_at_tile(const code_t &el, pma_seg_it &seg,
+                                    const region_t &region, applytype_function __apply) {
   if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0;
 
   if (el.z >= 25 || (int) el.z - (int) region.z > 8) return 0;
@@ -360,44 +358,6 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
   }
 }
 
-uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region) const {
-
-  uint32_t count = 0;
-
-  // lower_bound
-  auto prev_seg = seg;
-
-  // upper bound
-  seg = std::lower_bound(prev_seg, pma_seg_it::end(_pma), el.max_code + 1,
-                         [](void *elt, uint64_t value) {
-                           return PMA_ELT(elt) < value;
-                         });
-
-  while (prev_seg !=  pma_seg_it::end(_pma) && prev_seg <= seg) {
-    // iterate over offsets
-    count += std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
-                           [&region, &el](void *elt) {
-
-                             uint64_t code = PMA_ELT(elt);
-
-                             if (code >= el.min_code && code <= el.max_code) {
-                               // count how many elements in this tile are inside the region
-                               uint32_t x, y;
-                               mortonDecode_RAM(code, x, y);
-
-                               return (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y);
-                             } else {
-                               return false;
-                             }
-                           }
-    );
-    // iterate over segments
-    ++prev_seg;
-  }
-
-  return count;
-}
-
 /***
  * Counts the number of elements in the PMA between el.min_code and el.max_code , start search at segment seg
  *
@@ -423,7 +383,7 @@ uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
                            return PMA_ELT(elt) < value;
                          });
 
-  while (prev_seg !=  pma_seg_it::end(_pma) && prev_seg <= seg) {
+  while (prev_seg != pma_seg_it::end(_pma) && prev_seg <= seg) {
     count += prev_seg.size();
 
     // iterate over segments
@@ -439,58 +399,82 @@ uint32_t GeoHash::count_pma(const code_t &el, pma_seg_it &seg) const {
   );
 
   return count;
+}
 
-  /*size_t count = 0;
+uint32_t GeoHash::count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region) const {
+
+  uint32_t count = 0;
+
+  // lower_bound
   auto prev_seg = seg;
 
-  count += seg.size();
+  // upper bound
+  seg = std::lower_bound(prev_seg, pma_seg_it::end(_pma), el.max_code + 1,
+                         [](void *elt, uint64_t value) {
+                           return PMA_ELT(elt) < value;
+                         });
 
-  //count full segments
-  while (++seg != pma_seg_it::end(_pma) && PMA_ELT(*seg) <= el.max_code) {
-    count += seg.size();
+  while (prev_seg != pma_seg_it::end(_pma) && prev_seg <= seg) {
+    // iterate over offsets
+    count += std::count_if(pma_offset_it::begin(_pma, prev_seg), pma_offset_it::end(_pma, prev_seg),
+                           [&region, &el](void *elt) {
+
+                             uint64_t code = PMA_ELT(elt);
+
+                             if (code >= el.min_code && code <= el.max_code) {
+                               // count how many elements in this tile are inside the region
+                               uint32_t x, y;
+                               mortonDecode_RAM(code, x, y);
+
+                               return (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y);
+                             } else {
+                               return false;
+                             }
+                           }
+    );
+    // iterate over segments
+    ++prev_seg;
   }
 
-  assert(count != 0);
-
-  pma_offset_it off_begin, off_end;
-
-  if (seg != pma_seg_it::end(_pma) && PMA_ELT(*pma_offset_it::begin(_pma, seg)) >= el.min_code) {
-    count += seg.size();
-
-    //subtract extra elements for last segment
-    off_end = pma_offset_it::end(_pma, seg);
-    off_begin = std::lower_bound(pma_offset_it::begin(_pma, seg), pma_offset_it::end(_pma, seg), el.max_code + 1,
-                                 [](void *elt, uint64_t value) {
-                                   return PMA_ELT(elt) < value;
-                                 });
-    count -= (off_end - off_begin);
-
-    assert(count != 0);
-  }
-
-  //subtract extra elements for first segment
-  off_begin = pma_offset_it::begin(_pma, prev_seg);
-  off_end = std::lower_bound(off_begin, pma_offset_it::end(_pma, prev_seg), el.min_code,
-                             [](void *elt, uint64_t value) {
-                               return PMA_ELT(elt) < value;
-                             });
-  count -= (off_end - off_begin);
-
-  assert(count != 0);
-
-  return (uint32_t) count;*/
+  return count;
 }
 
 void GeoHash::scan_pma(const code_t &el, pma_seg_it &seg, scantype_function _apply) const {
   while (seg < pma_seg_it::end(_pma)) {
-
     auto it = pma_offset_it::begin(_pma, seg);
 
     while (it < pma_offset_it::end(_pma, seg)) {
-      if (PMA_ELT(*it) > el.max_code) {
+      uint64_t code = PMA_ELT(*it);
+
+      if (code > el.max_code) {
         return;
-      } else if (PMA_ELT(*it) >= el.min_code) {
+
+      } else if (code >= el.min_code) {
         _apply(*(valuetype *) ELT_TO_CONTENT(*it));
+      }
+      ++it;
+    }
+    ++seg;
+  }
+}
+
+void GeoHash::scan_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region, scantype_function _apply) const {
+  while (seg < pma_seg_it::end(_pma)) {
+    auto it = pma_offset_it::begin(_pma, seg);
+
+    while (it < pma_offset_it::end(_pma, seg)) {
+      uint64_t code = PMA_ELT(*it);
+
+      if (code > el.max_code) {
+        return;
+
+      } else if (code >= el.min_code) {
+        uint32_t x, y;
+        mortonDecode_RAM(code, x, y);
+
+        if (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y) {
+          _apply(*(valuetype *) ELT_TO_CONTENT(*it));
+        }
       }
       ++it;
     }

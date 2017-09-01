@@ -49,9 +49,11 @@ class GeoHash : public GeoCtnIntf {
 
   uint32_t count_pma(const code_t &el, pma_seg_it &seg) const;
 
-  uint32_t count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region ) const;
+  uint32_t count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region) const;
 
   void scan_pma(const code_t &el, pma_seg_it &seg, scantype_function _apply) const;
+
+  void scan_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region, scantype_function _apply) const;
 
   inline code_t get_parent_quadrant(const region_t &region) const;
 
