@@ -1,7 +1,7 @@
 #include "stde.h"
 #include "GeoHash.h"
 
-GeoHash::GeoHash(int argc, char *argv[]) {
+GeoHash::GeoHash(int argc, char *argv[], int _refLevel ):GeoCtnIntf(_refLevel) {
   seg_size = cimg_option("-s", 8, "GeoHash arg: segment size");
   tau_0 = cimg_option("-t0", 0.92f, "GeoHash arg: tau_0");
   tau_h = cimg_option("-th", 0.7f, "GeoHash arg: tau_h");
@@ -245,7 +245,7 @@ uint32_t GeoHash::scan_pma_at_region(const code_t &el, pma_seg_it &seg,
     }
   } else if (overlap == region_t::partial) {
 
-    if (el.z < 8) {
+    if (el.z < refLevel) {
       //Keep doing recursive refinements
       uint32_t refinements = 0;
 
@@ -328,7 +328,7 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
     }
   } else if (overlap == region_t::partial) {
 
-    if (el.z < 8) {
+    if (el.z < refLevel) {
       //Keep doing recursive refinements
       uint32_t refinements = 0;
 

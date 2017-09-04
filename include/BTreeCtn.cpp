@@ -105,7 +105,7 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
       return 0;
     }
   } else if (overlap == region_t::partial) {
-    if (el.z < 8) {
+    if (el.z < refLevel) {
       uint32_t refinements = 0;
 
       // break morton code into four
@@ -191,7 +191,7 @@ uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &regio
       return 0;
     }
   } else if (overlap == region_t::partial) {
-    if (el.z < 8) {
+    if (el.z < refLevel) {
       uint32_t refinements = 0;
 
       // break morton code into four

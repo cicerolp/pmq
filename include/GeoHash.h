@@ -5,7 +5,7 @@
 
 class GeoHash : public GeoCtnIntf {
  public:
-  GeoHash(int argc, char *argv[]);
+  GeoHash(int argc, char *argv[], int _refLevel = 8);
 
   virtual ~GeoHash();
 
@@ -140,7 +140,7 @@ class GeoHashSequential : public GeoHash {
 
 class GeoHashBinary : public GeoHash {
  public:
-  GeoHashBinary(int argc, char *argv[]) : GeoHash(argc, argv) {
+  GeoHashBinary(int argc, char *argv[], int refLevel) : GeoHash(argc, argv, refLevel) {
   };
 
   virtual ~GeoHashBinary() = default;

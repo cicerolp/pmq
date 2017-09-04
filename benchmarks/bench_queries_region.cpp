@@ -39,6 +39,9 @@ struct bench_t {
   uint32_t n_exp;
   uint64_t rate;
   bool dryrun;
+
+  int refLevel;
+
 };
 
 uint32_t g_Quadtree_Depth = 25;
@@ -104,7 +107,7 @@ void run_bench(int argc,
     uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * t);
 
     //create container
-    std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
+    std::unique_ptr < T > container = std::make_unique<T>(argc, argv,parameters.refLevel);
     timer = container->create((uint32_t) ctn_size);
 
     PRINTBENCH_PTR("init", timer);
@@ -184,6 +187,7 @@ int main(int argc, char *argv[]) {
   parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
   parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
+  parameters.refLevel = (cimg_option("-ref", 8, "Number of quadtree refinements used in the queries"));
   parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
 
   uint64_t n_elts = parameters.rate * parameters.max_t;
