@@ -214,8 +214,9 @@ int main(int argc, char *argv[]) {
   std::vector<region_t> queries;
   load_bench_file(bench_file, queries, n_queries);
 
-  PRINTOUT(" %d queries loaded \n", queries.size());
+  PRINTOUT("%d queries loaded \n", queries.size());
 
+  PRINTOUT("Refinement level = %d\n", parameters.refLevel);
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
   run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
