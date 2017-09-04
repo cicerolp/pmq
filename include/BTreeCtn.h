@@ -8,7 +8,7 @@
 
 class BTreeCtn : public GeoCtnIntf {
  public:
-  BTreeCtn(int argc, char *argv[], int _refLevel) : GeoCtnIntf(_refLevel) { }
+  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) { }
   virtual ~BTreeCtn();
 
   duration_t create(uint32_t size) override;
