@@ -1,0 +1,558 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Experiment Diary
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4
+#+PROPERTY: header-args :cache no :eval no-export 
+
+
+* Description 
+Test to check better refinemnet levels. 
+
+- PMQ / GEOHASH
+- BTREE 
+
+** TODO Standalone script 
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* Experiment Script
+** Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20170825181747
+
+Set up git branch
+#+begin_src sh :results output :exports both
+git checkout master
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170825181747
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170825181747 1a028ca] Initial commit for exp20170825181747
+ 1 file changed, 456 insertions(+)
+ create mode 100644 data/cicero/exp20170825181747/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 1a028ca (HEAD -> exp20170825181747) Initial commit for exp20170825181747
+: * 663faed (master) upd benchmark
+: * dd91a7d (origin/master) comment output
+
+** Export run script 
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+n=$((10**6))
+b=100
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -f ../data/geo-tweets.dmp -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Twitter_$n_$b_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Random_$n_$b_$EXECID.log
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170825181747
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	run.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170825181747 6d2a497] UPD: run.sh script
+:  2 files changed, 80 insertions(+), 13 deletions(-)
+:  create mode 100755 data/cicero/exp20170825181747/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** DONE Local Execution                                              :local:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** INPROGRESS Remote Execution                                      :remote:
+
+*** Get new changes on remote                                      :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+0 packages can be updated.
+0 updates are security updates.
+
+Last login: Fri Aug 25 18:36:25 2017 from 143.54.13.218
+#+end_example
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 52, done.
+(1/39)           remote: Compressing objects:   5% (2/39)           remote: Compressing objects:   7% (3/39)           remote: Compressing objects:  10% (4/39)           remote: Compressing objects:  12% (5/39)           remote: Compressing objects:  15% (6/39)           remote: Compressing objects:  17% (7/39)           remote: Compressing objects:  20% (8/39)           remote: Compressing objects:  23% (9/39)           remote: Compressing objects:  25% (10/39)           remote: Compressing objects:  28% (11/39)           remote: Compressing objects:  30% (12/39)           remote: Compressing objects:  33% (13/39)           remote: Compressing objects:  35% (14/39)           remote: Compressing objects:  38% (15/39)           remote: Compressing objects:  41% (16/39)           remote: Compressing objects:  43% (17/39)           remote: Compressing objects:  46% (18/39)           remote: Compressing objects:  48% (19/39)           remote: Compressing objects:  51% (20/39)           remote: Compressing objects:  53% (21/39)           remote: Compressing objects:  56% (22/39)           remote: Compressing objects:  58% (23/39)           remote: Compressing objects:  61% (24/39)           remote: Compressing objects:  64% (25/39)           remote: Compressing objects:  66% (26/39)           remote: Compressing objects:  69% (27/39)           remote: Compressing objects:  71% (28/39)           remote: Compressing objects:  74% (29/39)           remote: Compressing objects:  76% (30/39)           remote: Compressing objects:  79% (31/39)           remote: Compressing objects:  82% (32/39)           remote: Compressing objects:  84% (33/39)           remote: Compressing objects:  87% (34/39)           remote: Compressing objects:  89% (35/39)           remote: Compressing objects:  92% (36/39)           remote: Compressing objects:  94% (37/39)           remote: Compressing objects:  97% (38/39)           remote: Compressing objects: 100% (39/39)           remote: Compressing objects: 100% (39/39), done.        
+remote: Total 52 (delta 34), reused 17 (delta 10)
+(1/52)   Unpacking objects:   3% (2/52)   Unpacking objects:   5% (3/52)   Unpacking objects:   7% (4/52)   Unpacking objects:   9% (5/52)   Unpacking objects:  11% (6/52)   Unpacking objects:  13% (7/52)   Unpacking objects:  15% (8/52)   Unpacking objects:  17% (9/52)   Unpacking objects:  19% (10/52)   Unpacking objects:  21% (11/52)   Unpacking objects:  23% (12/52)   Unpacking objects:  25% (13/52)   Unpacking objects:  26% (14/52)   Unpacking objects:  28% (15/52)   Unpacking objects:  30% (16/52)   Unpacking objects:  32% (17/52)   Unpacking objects:  34% (18/52)   Unpacking objects:  36% (19/52)   Unpacking objects:  38% (20/52)   Unpacking objects:  40% (21/52)   Unpacking objects:  42% (22/52)   Unpacking objects:  44% (23/52)   Unpacking objects:  46% (24/52)   Unpacking objects:  48% (25/52)   Unpacking objects:  50% (26/52)   Unpacking objects:  51% (27/52)   Unpacking objects:  53% (28/52)   Unpacking objects:  55% (29/52)   Unpacking objects:  57% (30/52)   Unpacking objects:  59% (31/52)   Unpacking objects:  61% (32/52)   Unpacking objects:  63% (33/52)   Unpacking objects:  65% (34/52)   Unpacking objects:  67% (35/52)   Unpacking objects:  69% (36/52)   Unpacking objects:  71% (37/52)   Unpacking objects:  73% (38/52)   Unpacking objects:  75% (39/52)   Unpacking objects:  76% (40/52)   Unpacking objects:  78% (41/52)   Unpacking objects:  80% (42/52)   Unpacking objects:  82% (43/52)   Unpacking objects:  84% (44/52)   Unpacking objects:  86% (45/52)   Unpacking objects:  88% (46/52)   Unpacking objects:  90% (47/52)   Unpacking objects:  92% (48/52)   Unpacking objects:  94% (49/52)   Unpacking objects:  96% (50/52)   Unpacking objects:  98% (51/52)   Unpacking objects: 100% (52/52)   Unpacking objects: 100% (52/52), done.
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+origin/exp20170825181747
+Branch exp20170825181747 set up to track remote branch exp20170825181747 from origin.
+Switched to a new branch 'exp20170825181747'
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Already up-to-date.
+commit 6d2a497e2e423bf7b026a53f38f4812915d2c096
+Date:   Fri Aug 25 20:01:03 2017 -0300
+
+    UPD: run.sh script
+#+end_example
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
+: FETCH_HEAD
+: Already up-to-date.
+: commit 011775f5fdeaeeff330da7df39751d9c5323b570
+: Date:   Mon Feb 13 12:20:46 2017 -0200
+: 
+:     Bugfix: corrected pointer casts
+
+*** Execute Remotely                                               :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ julio@cicero:~/Projects/pmq/data/cicero/exp20170825181747$ 1503702288
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+#+RESULTS:
+#+begin_example
+runExp: 1 windows (created Fri Aug 25 20:04:48 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio     6075  0.0  0.0  45248  4572 ?        Ss   18:36   0:00 /lib/systemd/sy
+julio     6077  0.0  0.0 145408  2156 ?        S    18:36   0:00 (sd-pam)
+julio     6165  0.0  0.0  97464  3192 ?        S    18:36   0:00 sshd: julio@pts
+julio     6166  0.0  0.0  23716  6376 pts/18   Ss   18:36   0:00 -bash
+julio     6689  0.0  0.0  97464  3376 ?        S    20:02   0:00 sshd: julio@pts
+julio     6690  0.0  0.0  22684  5160 pts/19   Ss   20:02   0:00 -bash
+julio     6767  0.0  0.0  29420  2900 ?        Ss   20:04   0:00 tmux new -d -s 
+julio     6768  0.0  0.0  12532  3092 pts/20   Ss+  20:04   0:00 bash -c cd ~/Pr
+julio     6770  0.0  0.0  12536  3004 pts/20   S+   20:04   0:00 /bin/bash ./run
+julio     6890  0.0  0.0   9676  2448 pts/20   S+   20:04   0:00 make
+julio     6893  0.0  0.0   9676  2384 pts/20   S+   20:04   0:00 make -f CMakeFi
+julio     7007  0.3  0.0  26572  4468 pts/18   S+   20:05   0:00 htop
+julio     7097  0.2  0.0  12980  5556 pts/20   S+   20:06   0:00 make -f benchma
+julio     7119  0.0  0.0   4508   848 pts/20   S+   20:06   0:00 /bin/sh -c cd /
+julio     7120  0.0  0.0   8352   720 pts/20   S+   20:06   0:00 /usr/bin/c++ -I
+julio     7121  103  1.7 673400 571216 pts/20  R+   20:06   0:04 /usr/lib/gcc/x8
+julio     7123  0.0  0.0  37368  3328 pts/19   R+   20:06   0:00 ps ux
+#+end_example
+
+**** TODO Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+#git commit -a -m "wip"
+git status
+git pull origin $expId
+#+end_src
+
+
+* Analisys
+** Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+begin_src sh :results table :exports both
+ls -htl *tgz
+#+end_src
+
+#+RESULTS:
+| -rw-rw-r-- 1 julio julio 861K Ago 23 14:41 log_1503497835.tgz |
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both 
+tar xvzf log_1503497835.tgz
+#+end_src
+
+#+RESULTS: logFile
+: bench_insert_and_scan_1503497835.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#echo $logFile
+echo $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_insert_and_scan_1503497835.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile
+library(plyr)
+df = read.csv(f,header=FALSE,strip.white=TRUE,sep=";")
+df[7] <- NULL
+df[5] <- NULL
+names(df) = c("algo","bench","k","time","count")
+head(df)
+
+#+end_src
+
+#+RESULTS:
+:            algo           bench k     time count
+: 1 GeoHashBinary          insert 0 0.029754    NA
+: 2 GeoHashBinary        ReadElts 0 0.001554    NA
+: 3 GeoHashBinary        ReadElts 0 0.001440    NA
+: 4 GeoHashBinary        ReadElts 0 0.001389    NA
+: 5 GeoHashBinary apply_at_region 0 0.001389   100
+: 6 GeoHashBinary          insert 1 0.022867    NA
+
+Summary of the data frame
+#+begin_src R :results output :session :exports both
+summary(df[df$algo=="GeoHashBinary",])
+summary(df[df$algo=="BTree",])
+summary(df[df$algo=="RTree",])
+#+end_src
+
+#+RESULTS:
+#+begin_example
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:50000   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00139   Min.   :    100  
+ 1st Qu.: 1.34083   1st Qu.: 250075  
+ Median : 9.44647   Median : 500050  
+ Mean   : 9.02828   Mean   : 500050  
+ 3rd Qu.:12.87295   3rd Qu.: 750025  
+ Max.   :32.73830   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :50000   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00422   Min.   :    100  
+ 1st Qu.: 3.59117   1st Qu.: 250075  
+ Median :28.44325   Median : 500050  
+ Mean   :28.26849   Mean   : 500050  
+ 3rd Qu.:47.47653   3rd Qu.: 750025  
+ Max.   :71.60770   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :50000   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00464   Min.   :    100  
+ 1st Qu.: 3.73900   1st Qu.: 250075  
+ Median :32.37425   Median : 500050  
+ Mean   :32.92621   Mean   : 500050  
+ 3rd Qu.:57.50140   3rd Qu.: 750025  
+ Max.   :72.46010   Max.   :1000000  
+                    NA's   :40000
+#+end_example
+
+*** Overview of results                                                :plot:
+
+Plot an overview of every benchmark , doing average of times. 
+#+begin_src R :results output :exports both
+summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+#+end_src
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
+library(ggplot2)
+ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
+facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** Insertion performance
+
+
+#+begin_src R :results output :exports both
+insTime  = subset(summary_avg, bench=="insert")
+#+end_src
+
+#+RESULTS:
+
+**** Overall                                                        :plot:
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() +
+facet_wrap(~algo, scales="free", ncol=1)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+Total insertion time:
+#+begin_src R :results output :session :exports both
+ddply(insTime,c("algo"),summarize, Average=mean(time), Total=sum(time))
+#+end_src
+
+#+RESULTS:
+:            algo    Average      Total
+: 1         BTree 0.05150084   515.0084
+: 2 GeoHashBinary 0.10885076  1088.5076
+: 3         RTree 1.24829441 12482.9441
+
+**** Amortized time
+
+We compute tree time:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both
+avgTime = cbind(insTime, 
+                sumTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)), recursive=T),
+                avgTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)/(x$k+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+
+***** Melting the data (time / avgTime)
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :session :exports both
+library(reshape2)
+melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","sumTime","avgTime"))
+#+end_src
+
+#+RESULTS:
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+ggplot(melted_times, aes(x=k,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+
+**** Zoom View 
+
+#+begin_src R :results output graphics :file "./img/Zoom_0.2.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() + ylim(0,0.2) 
+#+end_src
+
+#+RESULTS:
+[[file:./img/Zoom_0.2.png]]
+
