@@ -16,6 +16,8 @@ Test to check better refinemnet levels.
 
 - PMQ / GEOHASH
 - BTREE 
+  
+- test with both datasets
 
 ** TODO Standalone script 
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
@@ -25,7 +27,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * Experiment Script
-** Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -34,7 +36,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170825181747
+: exp20170904153555
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -61,7 +63,7 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170825181747
+On branch exp20170904153555
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
@@ -69,9 +71,9 @@ Untracked files:
 	exp.org
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170825181747 1a028ca] Initial commit for exp20170825181747
- 1 file changed, 456 insertions(+)
- create mode 100644 data/cicero/exp20170825181747/exp.org
+[exp20170904153555 3b07765] Initial commit for exp20170904153555
+ 1 file changed, 558 insertions(+)
+ create mode 100644 data/cicero/exp20170904153555/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -79,9 +81,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1a028ca (HEAD -> exp20170825181747) Initial commit for exp20170825181747
-: * 663faed (master) upd benchmark
-: * dd91a7d (origin/master) comment output
+: * 3b07765 (HEAD -> exp20170904153555) Initial commit for exp20170904153555
+: * 5409ff9 (origin/master, master) minor fix
+: * d574560 fix main
 
 ** Export run script 
 
@@ -135,10 +137,17 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-n=$((10**6))
+t=10000
 b=100
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -f ../data/geo-tweets.dmp -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Twitter_$n_$b_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Random_$n_$b_$EXECID.log
+#n=$(($t*$b))
+#ref=8
+listRef=$(seq 1 14)
+for ref in $listRef
+do
+stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -rate 100 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
+done 
+
+# stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dmp  -rate 100 -x 10 -rate $b -min_t $t -max_t $t -ref $ref -bf ../data/queriesLHS.csv >  $TMPDIR/bench_queries_region_twitter_$t_$b_$EXECID.log
 
 set -e
 
