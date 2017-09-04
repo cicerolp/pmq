@@ -12,7 +12,7 @@ namespace bgi = boost::geometry::index;
 template<typename Balancing>
 class RTreeCtn : public GeoCtnIntf {
  public:
-  RTreeCtn(int argc, char *argv[], int _refLevel) : GeoCtnIntf(_refLevel) {
+  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) {
 
   }
   virtual ~RTreeCtn() {
