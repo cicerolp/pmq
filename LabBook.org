@@ -327,7 +327,7 @@ mkdir -p $expFolder
   $ [[./data/cicero/exp20170830124159/exp.org]]
 
   
-*** INPROGRESS [2017-09-04 Seg] Test the refinments levels :exp20170904153555:
+*** DONE [2017-09-04 Seg] Test the refinments levels    :exp20170904153555:
 
 Test the best refinement level to use in Geohash programs. 
 
