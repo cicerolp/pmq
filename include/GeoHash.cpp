@@ -89,8 +89,9 @@ duration_t GeoHash::scan_at_region(const region_t &region, scantype_function __a
   timer.stop();
   duration.emplace_back("scan_at_region", timer);
 
+#ifdef REFINEMENTS
   duration.emplace_back("scan_at_region_refinements", refinements);
-
+#endif
   return duration;
 }
 
@@ -112,8 +113,9 @@ duration_t GeoHash::apply_at_tile(const region_t &region, applytype_function __a
   timer.stop();
   duration.emplace_back("apply_at_tile", timer);
 
+#ifdef REFINEMENTS
   duration.emplace_back("apply_at_tile_refinements", refinements);
-
+#endif
   return duration;
 }
 
@@ -136,8 +138,9 @@ duration_t GeoHash::apply_at_region(const region_t &region, applytype_function _
   timer.stop();
   duration.emplace_back("apply_at_region", timer);
 
+#ifdef REFINEMENTS
   duration.emplace_back("apply_at_region_refinements", refinements);
-
+#endif
   return duration;
 }
 
@@ -246,18 +249,24 @@ uint32_t GeoHash::scan_pma_at_region(const code_t &el, pma_seg_it &seg,
   } else if (overlap == region_t::partial) {
 
     if (el.z < refLevel) {
-      //Keep doing recursive refinements
-      uint32_t refinements = 0;
-
       // break morton code into four
       uint64_t code = el.code << 2;
 
+#ifdef REFINEMENTS
+      //Keep doing recursive refinements
+      uint32_t refinements = 0;
       refinements += scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
-
       return refinements;
+#else
+      scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+      scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+      return 0;
+#endif
 
     } else {
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
@@ -283,17 +292,23 @@ uint32_t GeoHash::apply_pma_at_tile(const code_t &el, pma_seg_it &seg,
 
   if ((int) el.z - (int) region.z < 8) {
     if (overlap != region_t::none) {
-      uint32_t refinements = 0;
-
       // break morton code into four
       uint64_t code = el.code << 2;
 
+#ifdef REFINEMENTS
+      uint32_t refinements = 0;
       refinements += apply_pma_at_tile(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += apply_pma_at_tile(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += apply_pma_at_tile(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += apply_pma_at_tile(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
-
       return refinements;
+#else
+      apply_pma_at_tile(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_tile(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_tile(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_tile(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+      return 0;
+#endif
     } else {
       return 0;
     }
@@ -329,11 +344,12 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
   } else if (overlap == region_t::partial) {
 
     if (el.z < refLevel) {
-      //Keep doing recursive refinements
-      uint32_t refinements = 0;
-
       // break morton code into four
       uint64_t code = el.code << 2;
+
+#ifdef REFINEMENTS
+      //Keep doing recursive refinements
+      uint32_t refinements = 0;
 
       refinements += apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
       refinements += apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
@@ -341,6 +357,13 @@ uint32_t GeoHash::apply_pma_at_region(const code_t &el,
       refinements += apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
 
       return refinements;
+#else
+      apply_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply);
+      apply_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply);
+      return 0;
+#endif
 
     } else {
       if (search_pma(el, seg) == pma_seg_it::end(_pma)) {

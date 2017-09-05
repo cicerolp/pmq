@@ -79,8 +79,9 @@ duration_t BTreeCtn::scan_at_region(const region_t &region, scantype_function __
   timer.stop();
   duration.emplace_back("scan_at_region", timer);
 
+#ifdef REFINEMENTS
   duration.emplace_back("scan_at_region_refinements", refinements);
-
+#endif
   return duration;
 }
 
@@ -106,17 +107,24 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
     }
   } else if (overlap == region_t::partial) {
     if (el.z < refLevel) {
-      uint32_t refinements = 0;
 
       // break morton code into four
       uint64_t code = el.code << 2;
 
+#ifdef REFINEMENTS
+      uint32_t refinements = 0;
       refinements += scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
       refinements += scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
       refinements += scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
       refinements += scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
-
       return refinements;
+#else
+      scan_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+      scan_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+      scan_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+      scan_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+      return 0;
+#endif
 
     } else {
       auto lower_it = _btree->lower_bound(el.min_code);
@@ -164,7 +172,9 @@ duration_t BTreeCtn::apply_at_region(const region_t &region, applytype_function 
   timer.stop();
   duration.emplace_back("apply_at_region", timer);
 
+#ifdef REFINEMENTS
   duration.emplace_back("apply_at_region_refinements", refinements);
+#endif
 
   return duration;
 }
@@ -192,17 +202,24 @@ uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &regio
     }
   } else if (overlap == region_t::partial) {
     if (el.z < refLevel) {
-      uint32_t refinements = 0;
-
       // break morton code into four
       uint64_t code = el.code << 2;
 
+#ifdef REFINEMENTS
+      uint32_t refinements = 0;
       refinements += apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
       refinements += apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
       refinements += apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
       refinements += apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
 
       return refinements;
+#else
+      apply_btree_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), region, __apply);
+      apply_btree_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), region, __apply);
+      apply_btree_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), region, __apply);
+      apply_btree_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), region, __apply);
+      return 0;
+#endif
 
     } else {
       auto lower_it = _btree->lower_bound(el.min_code);
