@@ -448,7 +448,7 @@ Load the CSV into R
 #+begin_src R :results output :exports both :var f=csvFile
 library(tidyverse)
 
-# Reads a csv file and add a column identifying the csv by parsin its name
+                                        # Reads a csv file and add a column identifying the csv by parsin its name
 readAdd <- function(input){
 
 return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") ) %>%
@@ -774,18 +774,18 @@ dfplot
 #+begin_example
 # A tibble: 4,480 x 8
 # Groups:   algo, queryId, T, bench, Count [320]
-     algo queryId     T           bench  Count refLevel    avg_ms       stdv
-   <fctr>   <int> <int>          <fctr>  <int>    <int>     <dbl>      <dbl>
- 1  BTree       0 10000 apply_at_region 132363        1  7.250580 0.05396851
- 2  BTree       0 10000  scan_at_region     NA        1  9.220791 0.07743079
- 3  BTree       1 10000 apply_at_region 132280        1  7.366771 0.10338661
- 4  BTree       1 10000  scan_at_region     NA        1  9.267250 0.09813547
- 5  BTree       2 10000 apply_at_region 132084        1 15.231120 0.08558480
- 6  BTree       2 10000  scan_at_region     NA        1 17.420730 0.01589550
- 7  BTree       3 10000 apply_at_region 132291        1 15.229560 0.07000530
- 8  BTree       3 10000  scan_at_region     NA        1 17.442760 0.06526832
- 9  BTree       4 10000 apply_at_region 132312        1 15.262720 0.12851341
-10  BTree       4 10000  scan_at_region     NA        1 17.415560 0.01674171
+    algo queryId     T           bench  Count refLevel    avg_ms       stdv
+   <chr>   <int> <int>           <chr>  <int>    <int>     <dbl>      <dbl>
+ 1 BTree       0 10000 apply_at_region 132363        1  7.250580 0.05396851
+ 2 BTree       0 10000  scan_at_region     NA        1  9.220791 0.07743079
+ 3 BTree       1 10000 apply_at_region 132280        1  7.366771 0.10338661
+ 4 BTree       1 10000  scan_at_region     NA        1  9.267250 0.09813547
+ 5 BTree       2 10000 apply_at_region 132084        1 15.231120 0.08558480
+ 6 BTree       2 10000  scan_at_region     NA        1 17.420730 0.01589550
+ 7 BTree       3 10000 apply_at_region 132291        1 15.229560 0.07000530
+ 8 BTree       3 10000  scan_at_region     NA        1 17.442760 0.06526832
+ 9 BTree       4 10000 apply_at_region 132312        1 15.262720 0.12851341
+10 BTree       4 10000  scan_at_region     NA        1 17.415560 0.01674171
 # ... with 4,470 more rows
 #+end_example
 
@@ -794,7 +794,10 @@ PLot time Vs RefLevel
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
 dfplot %>% 
+#    mutate(queryW = queryId %/% 10) 
+#    filter(queryId < 10) %>%
     ggplot(aes(x = refLevel,avg_ms,color=as.factor(queryId))) + 
+ #   geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
     geom_line() +
     scale_x_continuous(breaks=seq(0, 14, by=1)) +
     facet_grid(bench~algo) 
@@ -803,131 +806,65 @@ dfplot %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-2890d5U/figure2890iJb.png]]
+[[file:/tmp/babel-3456HFq/figure34568fR.png]]
 
 Note the the smaller queryIDs have a larger area of selection 
 [[file:~/Projects/pmq/data/queriesLHS.org::*Coordinates%20LHS%20To%20avoid%20out-of-bound%20queries%20+%20LAPPLY%20+%20RBIND][Coordinates LHS To avoid out-of-bound queries + LAPPLY + RBIND]]
 
 
-
+Group by query width
 #+begin_src R :results output :exports both :session 
 
-dfplot %>% filter(queryId == 1, bench=="apply_at_region" , algo=="BTree")
+dfplot %>% 
+    mutate(queryW = queryId %/% 10) %>%
+    group_by(algo,queryW,bench,refLevel) %>%
+    summarize(time = mean(avg_ms), sdtdv = sd(avg_ms))
+
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 14 x 8
-# Groups:   algo, queryId, T, bench, Count [1]
-     algo queryId     T           bench  Count refLevel    avg_ms       stdv
-   <fctr>   <int> <int>          <fctr>  <int>    <int>     <dbl>      <dbl>
- 1  BTree       1 10000 apply_at_region 132280        1 7.3667710 0.10338661
- 2  BTree       1 10000 apply_at_region 132280        2 5.5148450 0.05556277
- 3  BTree       1 10000 apply_at_region 132280        3 2.9152020 0.14366245
- 4  BTree       1 10000 apply_at_region 132280        4 2.0223920 0.13417305
- 5  BTree       1 10000 apply_at_region 132280        5 1.1209385 0.12989057
- 6  BTree       1 10000 apply_at_region 132280        6 0.9463718 0.15145208
- 7  BTree       1 10000 apply_at_region 132280        7 0.7516652 0.02291747
- 8  BTree       1 10000 apply_at_region 132280        8 1.1208326 0.09458773
- 9  BTree       1 10000 apply_at_region 132280        9 0.9439537 0.08351332
-10  BTree       1 10000 apply_at_region 132280       10 1.0131810 0.00238032
-11  BTree       1 10000 apply_at_region 132280       11 1.6386580 0.08152912
-12  BTree       1 10000 apply_at_region 132280       12 1.8870490 0.08199938
-13  BTree       1 10000 apply_at_region 132280       13 3.1838710 0.16405390
-14  BTree       1 10000 apply_at_region 132280       14 4.8863720 0.06084673
+# A tibble: 448 x 6
+# Groups:   algo, queryW, bench [?]
+    algo queryW           bench refLevel       time      sdtdv
+   <chr>  <dbl>           <chr>    <int>      <dbl>      <dbl>
+ 1 BTree      0 apply_at_region        1 10.5206426 4.06853961
+ 2 BTree      0 apply_at_region        2  5.8119632 0.52092073
+ 3 BTree      0 apply_at_region        3  3.1141515 0.29458023
+ 4 BTree      0 apply_at_region        4  1.8906055 0.12699758
+ 5 BTree      0 apply_at_region        5  1.2007414 0.09021508
+ 6 BTree      0 apply_at_region        6  0.9936434 0.08033271
+ 7 BTree      0 apply_at_region        7  0.8089490 0.10404456
+ 8 BTree      0 apply_at_region        8  1.0047601 0.08612890
+ 9 BTree      0 apply_at_region        9  1.0476115 0.07974362
+10 BTree      0 apply_at_region       10  1.0911424 0.07507010
+# ... with 438 more rows
 #+end_example
 
 
-*** Overview of results                                         :plot:ARCHIVE:
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
-Plot an overview of every benchmark , doing average of times. 
-#+begin_src R :results output :exports both
-summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
-#+end_src
+dfplot %>% 
+    mutate(queryW = 90 / 2**(queryId %/% 10)) %>%
+    group_by(algo,queryW,bench,refLevel) %>%
+    summarize(time = mean(avg_ms), stdv = sd(avg_ms)) %>%
+    ggplot(aes(x = refLevel,time,color=as.factor(queryW))) + 
+ #   geom_errorbar(aes(ymin = time - stdv, ymax = time + stdv) ) +
+    geom_line() +
+    scale_x_continuous(breaks=seq(0, 14, by=1)) +
+    scale_y_continuous(trans = scales::log2_trans()) +
+    labs(colour="Query Width\n (Degrees)", y = "times ms (log2 scale)") +
+    facet_grid(bench~algo)
+  #  facet_wrap(algo~bench,nrow=2)
 
-#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
-library(ggplot2)
-ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
-facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
-#+end_src
-
-#+RESULTS:
-[[file:./img/overview.png]]
-
-*** Insertion performance :ARCHIVE:
-
-
-#+begin_src R :results output :exports both
-insTime  = subset(summary_avg, bench=="insert")
 #+end_src
 
 #+RESULTS:
+[[file:/tmp/babel-3456HFq/figure3456JqX.png]]
 
-**** Overall                                                        :plot:
-#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
-ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
-geom_line() +
-facet_wrap(~algo, scales="free", ncol=1)
-#+end_src
 
-#+RESULTS:
-[[file:./img/overallInsertion.png]]
+** Conclusions
 
-Total insertion time:
-#+begin_src R :results output :session :exports both
-ddply(insTime,c("algo"),summarize, Average=mean(time), Total=sum(time))
-#+end_src
+We can justify that we verify in our experiments that Z = 8 gives in general the best performance. 
 
-#+RESULTS:
-:            algo    Average      Total
-: 1         BTree 0.05150084   515.0084
-: 2 GeoHashBinary 0.10885076  1088.5076
-: 3         RTree 1.24829441 12482.9441
-
-**** Amortized time
-
-We compute tree time:
-- individual insertion time for each batch
-- accumulated time at batch #k
-- ammortized time : average of the past times at batch #k
-
-#+begin_src R :results output :exports both
-avgTime = cbind(insTime, 
-                sumTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)), recursive=T),
-                avgTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)/(x$k+1)), recursive=T)
-                )
-#+end_src
-
-#+RESULTS:
-
-***** Melting the data (time / avgTime)
-We need to melt the time columns to be able to plot as a grid
-
-#+begin_src R :results output :session :exports both
-library(reshape2)
-melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","sumTime","avgTime"))
-#+end_src
-
-#+RESULTS:
-
-***** Comparison Time X avgTime                                    :plot:
-#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
-ggplot(melted_times, aes(x=k,y=value,color=factor(algo))) +
-geom_line() + 
-facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
-#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
-#+end_src
-
-#+RESULTS:
-[[file:./img/grid_times.png]]
-
-**** Zoom View 
-
-#+begin_src R :results output graphics :file "./img/Zoom_0.2.png" :exports both :width 600 :height 400
-ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
-geom_line() + ylim(0,0.2) 
-#+end_src
-
-#+RESULTS:
-[[file:./img/Zoom_0.2.png]]
-
+Z  = number of quadtree refinements of the query algorithm
