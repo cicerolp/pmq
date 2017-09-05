@@ -20,8 +20,6 @@ And compare the folling performances
 - BTREE 
 - RTREE
 
-
-
 Use the refinement level = 8 
 
 ** Standalone script 
@@ -32,7 +30,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * TODO Experiment Script
-** Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -41,7 +39,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170825181747
+: exp20170830124159
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -50,6 +48,8 @@ git checkout master
 
 #+RESULTS:
 : M	LabBook.org
+: M	include/BTreeCtn.cpp
+: M	include/GeoHash.cpp
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -58,6 +58,8 @@ git checkout -b $expId
 
 #+RESULTS:
 : M	LabBook.org
+: M	include/BTreeCtn.cpp
+: M	include/GeoHash.cpp
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -68,17 +70,19 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170825181747
+On branch exp20170830124159
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
 	exp.org
+	output.csv
+	output.log
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170825181747 1a028ca] Initial commit for exp20170825181747
- 1 file changed, 456 insertions(+)
- create mode 100644 data/cicero/exp20170825181747/exp.org
+[exp20170830124159 3d30984] Initial commit for exp20170830124159
+ 1 file changed, 588 insertions(+)
+ create mode 100644 data/cicero/exp20170830124159/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -86,9 +90,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1a028ca (HEAD -> exp20170825181747) Initial commit for exp20170825181747
-: * 663faed (master) upd benchmark
-: * dd91a7d (origin/master) comment output
+: * 94ef664 (HEAD -> exp20170830124159) upd: disable refinements log
+: * 3d30984 Initial commit for exp20170830124159
+: * 381743e (master) print parameter
 
 ** Export run script 
 
@@ -141,11 +145,13 @@ echo "" > $DATADIR/info.org
 
 #Continue execution even if one these fails
 set +e 
-# Queries insert remove count
-n=$((10**6))
+
+#Run queris
+t=10000
 b=100
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -f ../data/geo-tweets.dmp -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Twitter_$n_$b_$EXECID.log
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_Random_$n_$b_$EXECID.log
+#n=$(($t*$b))
+ref=8
+stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -rate 100 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
 
 set -e
 
