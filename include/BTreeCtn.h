@@ -8,10 +8,8 @@
 
 class BTreeCtn : public GeoCtnIntf {
  public:
-  BTreeCtn(int argc, char *argv[]) : GeoCtnIntf() {
-
-  }
-  virtual ~BTreeCtn() = default;
+  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) { }
+  virtual ~BTreeCtn();
 
   duration_t create(uint32_t size) override;
 
@@ -23,7 +21,6 @@ class BTreeCtn : public GeoCtnIntf {
   uint32_t scan_btree_at_region(const code_t &el, const region_t &region, scantype_function __apply);
 
   duration_t apply_at_tile(const region_t &region, applytype_function __apply) override;
-  uint32_t apply_btree_at_tile(const code_t &el, const region_t &region, applytype_function __apply);
 
   duration_t apply_at_region(const region_t &region, applytype_function __apply) override;
   uint32_t apply_btree_at_region(const code_t &el, const region_t &region, applytype_function __apply);

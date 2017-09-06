@@ -1,0 +1,292 @@
+# -*- org-export-babel-evaluate: nil; -*-
+#+TITLE: Lab Book for PMQ Experiments 
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+CATEGORY: TwitterVis
+#+OPTIONS: ^:{} H:3
+#+PROPERTY: header-args :cache no :eval no-export
+
+* Random Data
+
+** Varying Radius only up to 400 km
+
+#+begin_src R :results output :exports both :session 
+n = 10**4
+x <- runif(n,min=-179,max=179)
+y <- runif(n,min=-89,max=89)
+
+rand_pts <- data.frame(lon = x, lat = y)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d5_HD, aes(x=lon, y=lat, width=R/( 111.31 * cos(lat/57.3)),height=R/111.31) ,color="black", fill="red") +
+geom_point(alpha=0.1)  
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753BYT.png]]
+
+
+Make width of queries relative to the lat x lon in degrees instead of KM
+#+begin_src R :results output :exports both :session 
+w <- runif(25,min=1,max=360)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+library(DoE.wrapper)
+set.seed(42);
+d6_llw = lhs.design( type= "maximin" , nruns= 10 ,nfactors= 3 ,seed= 42 , 
+                   factor.names=list( lat=c(-89,+89),lon=c(-179,179),width=c(0.1,180) ) )
+
+                                        #Response5 = 10 + 2*as.numeric(d5_HD$A) + 3*as.numeric(d5_HD$B)*as.numeric(d5_HD$C) +
+#rnorm(nrow(d5_HD),sd=1)
+#d5_HD <- add.response(d5_HD, Response5, replace=TRUE)
+plot(d6_llw ,main="LHS design")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure277532Bz.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d6_llw, aes(x=lon, y=lat, width=width,height=width/2) ,color="black", fill="blue", alpha=0.1) +
+geom_point(alpha=0.1)  
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753ctm.png]]
+
+** No variability in Width
+
+#+begin_src R :results output :exports both :session 
+w = 360/(2**c(1:10))
+#w
+
+#probability
+p = (w*(w/2)) / (360 * 180)
+fp = sprintf("%0.6f",p*100)
+#probable number of elements in a dataset of 10**6 elements
+fn = sprintf("%0.2f",10**6 * p)
+
+dfwuni = data.frame(width=w,percent=fp,expElt=fn)
+dfwuni
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    width   percent    expElt
+1  180.00 25.000000 250000.00
+2   90.00  6.250000  62500.00
+3   45.00  1.562500  15625.00
+4   22.50  0.390625   3906.25
+5   11.25  0.097656    976.56
+6    5.62  0.024414    244.14
+7    2.81  0.006104     61.04
+8    1.41  0.001526     15.26
+9    0.70  0.000381      3.81
+10   0.35  0.000095      0.95
+#+end_example
+
+** Using LHS variabilty in Width 
+
+#+begin_src R :results output :exports both :session 
+w = 360/(2**c(1:10))
+w_lhs = lhs.design( type= "maximin" , nruns= 10 ,nfactors=1 , seed=42 ,
+           factor.names=list( width=c(w[length(w)],180) ) )
+
+dfwlhs = data.frame(width=w_lhs$width,"percent "= (w_lhs$width*(w_lhs$width/2)) / (360 * 180) * 100)
+
+format(dfwlhs[order(dfwlhs$width,decreasing=TRUE),],scientific=FALSE, digits=3)
+# print(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    width  percent.
+10 175.49 23.762202
+2  155.57 18.674061
+3  143.55 15.900255
+6  114.37 10.093503
+4  101.30  7.917472
+8   86.31  5.748302
+5   60.24  2.800201
+7   43.45  1.456473
+1   34.27  0.906284
+9    1.06  0.000866
+#+end_example
+** Coordinates LHS To avoid out-of-bound queries
+
+#+begin_src R :results output :exports both :session 
+
+set.seed(42);
+
+wq = dfwuni$width[1] / 2
+hq = wq/2
+
+wq
+hq
+
+d7_llw = lhs.design( type= "maximin" , nruns= 10 ,nfactors=2 ,seed= 42 , 
+                   factor.names=list( 
+                       lat=c(-90+hq/2,+90-hq/2),
+                       lon=c(-180+wq/2,180-wq/2) ) )
+
+#d7_llw$width = runif(10,min=0.1,max=180)
+d7_llw$width = wq
+d7_llw$height = hq
+d7_llw
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] 90
+[1] 45
+     lat  lon width height
+1  -24.2  106    90     45
+2   26.0  -88    90     45
+3  -63.0  -13    90     45
+4   -3.5   17    90     45
+5   35.5   33    90     45
+6    2.9  -43    90     45
+7   53.2  -55    90     45
+8  -30.5   74    90     45
+9  -46.8 -135    90     45
+10  62.2  131    90     45
+class=design, type= lhs
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d7_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
+geom_point(alpha=0.1)  
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753PxI.png]]
+
+
+
+** DONE Coordinates LHS To avoid out-of-bound queries + LAPPLY + RBIND
+
+
+#+begin_src R :results output :exports both :session 
+set.seed(42);
+
+dfwuni = data.frame( width = 360/(2**c(1:8)))
+dfwuni$height = dfwuni$width
+dfwuni$percent = ( dfwuni$width *  dfwuni$height) / (360*180)
+dfwuni$expElts = ( dfwuni$percent * 10**6)
+dfwuni
+
+latr = c(-85.051132,+85.051132)
+
+flhs = function(w){
+    wq = w / 2
+    hq = wq # square queries
+#    print(hq)
+#    print(latr)
+
+    d = lhs.design( type= "maximin" , nruns= 10 ,nfactors=2 , 
+                   factor.names=list( 
+                       lat=c(latr[1]+hq/2 , latr[2]-hq/2),
+                       lon=c(-180+wq/2,180-wq/2)) 
+                   )
+
+    d$width = wq
+    d$height = hq
+    d
+}
+
+# dflist = mapply(flhs,dfwuni$width,dfwuni$height) 
+dflist = lapply(dfwuni$width,flhs) 
+
+#print(dflist)
+d8_llw = do.call(rbind,dflist)
+head(d8_llw)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+      width    height       percent      expElts
+1 180.00000 180.00000 0.50000000000 500000.00000
+2  90.00000  90.00000 0.12500000000 125000.00000
+3  45.00000  45.00000 0.03125000000  31250.00000
+4  22.50000  22.50000 0.00781250000   7812.50000
+5  11.25000  11.25000 0.00195312500   1953.12500
+6   5.62500   5.62500 0.00048828125    488.28125
+7   2.81250   2.81250 0.00012207031    122.07031
+8   1.40625   1.40625 0.00003051758     30.51758
+         lat       lon width height
+1 -14.349355 106.19192    90     90
+2  15.424414 -88.17945    90     90
+3 -37.382093 -13.09329    90     90
+4  -2.050763  16.71730    90     90
+5  21.036225  32.86326    90     90
+6   1.734704 -43.49848    90     90
+#+end_example
+
+Expected query result for 10**6 elements
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
+geom_point(alpha=0.1)  
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure277533Ju.png]]
+
+
+
+Note: we ar limiter between -85.051132f à +85.051132f
+
+** DONE OUTPUT CSV
+
+#+begin_src R :results output :exports both :session 
+d = d8_llw
+bbox = data.frame(lat0 = d$lat + d$width/2 ,
+                  lon0 = d$lon - d$height/2 ,
+                  lat1 = d$lat - d$width/2 ,
+                  lon1 = d$lon + d$height/2)
+
+tail(d)
+tail(bbox)
+#write.csv(bbox,"queries.csv",row.names=FALSE)
+
+write.table(bbox,"~/Projects/pmq/data/queriesLHS.csv",row.names=FALSE,col.names=FALSE,sep=",")
+#+end_src
+
+#+RESULTS:
+#+begin_example
+          lat         lon    width   height
+57  -18.23512    5.907720 0.703125 0.703125
+67  -64.49255 -176.092675 0.703125 0.703125
+77  -70.65489   -6.973367 0.703125 0.703125
+87  -46.08917  123.889142 0.703125 0.703125
+97   61.42239  157.003497 0.703125 0.703125
+107  23.41648 -110.831847 0.703125 0.703125
+        lat0        lon0      lat1        lon1
+75 -17.88356    5.556157 -18.58669    6.259282
+76 -64.14098 -176.444238 -64.84411 -175.741113
+77 -70.30332   -7.324929 -71.00645   -6.621804
+78 -45.73760  123.537580 -46.44073  124.240705
+79  61.77395  156.651935  61.07082  157.355060
+80  23.76805 -111.183409  23.06492 -110.480284
+#+end_example
+
+
+** CANCELED Convert the width in degrees to KM
+
+input benchmark receives lat lon and Radius ( Width in KM / 2 ) 
+
+Canceled: we will query degrees directly 

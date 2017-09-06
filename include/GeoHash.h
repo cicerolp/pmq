@@ -5,7 +5,7 @@
 
 class GeoHash : public GeoCtnIntf {
  public:
-  GeoHash(int argc, char *argv[]);
+  GeoHash(int argc, char *argv[], int _refLevel = 8);
 
   virtual ~GeoHash();
 
@@ -49,7 +49,11 @@ class GeoHash : public GeoCtnIntf {
 
   uint32_t count_pma(const code_t &el, pma_seg_it &seg) const;
 
+  uint32_t count_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region) const;
+
   void scan_pma(const code_t &el, pma_seg_it &seg, scantype_function _apply) const;
+
+  void scan_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region, scantype_function _apply) const;
 
   inline code_t get_parent_quadrant(const region_t &region) const;
 
@@ -130,11 +134,13 @@ class GeoHashSequential : public GeoHash {
 
  protected:
   pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const override final;
+
+  friend class TEST_GeoHashSequential; //gives access to private and protected method for testing purposes
 };
 
 class GeoHashBinary : public GeoHash {
  public:
-  GeoHashBinary(int argc, char *argv[]) : GeoHash(argc, argv) {
+  GeoHashBinary(int argc, char *argv[], int refLevel = 8) : GeoHash(argc, argv, refLevel) {
   };
 
   virtual ~GeoHashBinary() = default;
@@ -146,4 +152,6 @@ class GeoHashBinary : public GeoHash {
 
  protected:
   pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const override final;
+
+  friend class TEST_GeoHashBinary; //gives access to private and protected method for testing purposes
 };

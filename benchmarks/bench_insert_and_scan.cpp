@@ -32,6 +32,12 @@
    std::cout << std::endl ;\
 } while (0)
 
+/*void printStats(duration_t timer){
+  for (auto &info : timer) {
+    std::cout << info ;
+  }
+}*/
+
 /*#define PRINTBENCH( ... ) do { \
 } while (0)*/
 
@@ -129,10 +135,10 @@ int main(int argc, char *argv[]) {
 
   cimg_usage("Queries Benchmark inserts elements in batches.");
 
-  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
+  std::string fname(cimg_option("-f", "", "File with tweets to load"));
 
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -144,9 +150,9 @@ int main(int argc, char *argv[]) {
 
   std::vector<elttype> input;
 
-  if (nb_elements == 0) {
+  if (!fname.empty()) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-    input = input::load(fname, quadtree_depth);
+    input = input::loadn(fname, quadtree_depth,nb_elements);
     PRINTOUT("%d teewts loaded \n", (uint32_t) input.size());
   } else {
     PRINTOUT("Generate random keys...\n");
@@ -160,7 +166,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
- //run_bench<GeoHashSequential>(argc, argv, input, parameters);
+ // run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters);
 
   run_bench<BTreeCtn>(argc, argv, input, parameters);
