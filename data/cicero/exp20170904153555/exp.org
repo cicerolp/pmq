@@ -376,7 +376,7 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 270K Set  4 16:43 log_1504554073.tgz |
+| -rw-rw-r-- 1 julio julio 270K Set  6 19:32 log_1504554073.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results table :exports both 
@@ -468,6 +468,15 @@ df <- files %>%
 
 #+RESULTS:
 #+begin_example
+Loading tidyverse: ggplot2
+Loading tidyverse: tibble
+Loading tidyverse: tidyr
+Loading tidyverse: readr
+Loading tidyverse: purrr
+Loading tidyverse: dplyr
+Conflicts with tidy packages ---------------------------------------------------
+filter(): dplyr, stats
+lag():    dplyr, stats
 Parsed with column specification:
 cols(
   V1 = col_character(),
@@ -806,7 +815,7 @@ dfplot %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3456HFq/figure34568fR.png]]
+[[file:/tmp/babel-40865RF/figure40861pU.png]]
 
 Note the the smaller queryIDs have a larger area of selection 
 [[file:~/Projects/pmq/data/queriesLHS.org::*Coordinates%20LHS%20To%20avoid%20out-of-bound%20queries%20+%20LAPPLY%20+%20RBIND][Coordinates LHS To avoid out-of-bound queries + LAPPLY + RBIND]]
@@ -842,7 +851,7 @@ dfplot %>%
 #+end_example
 
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+#+begin_src R :results output graphics :file "./img/Reflevel.png" :exports both :width 600 :height 400 :session 
 
 dfplot %>% 
     mutate(queryW = 90 / 2**(queryId %/% 10)) %>%
@@ -860,7 +869,7 @@ dfplot %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3456HFq/figure3456JqX.png]]
+[[file:./img/Reflevel.png]]
 
 
 ** Conclusions
