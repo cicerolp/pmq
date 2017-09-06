@@ -21,8 +21,15 @@ Extra research notes in [[file:ResearchNotes.org]]
 *** Boost library  V 1.64
 Version 1.64 
 
-#+begin_src sh :session  :results output :exports both 
+#+begin_src sh :session boost :results output :exports both 
+cd ~/Downloads
 wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 
+#+end_src
+
+#+begin_src sh :session boost :results output :exports both 
+tar -xvjf boost_1_64_0.tar.bz2
+
+cd ./boost_1_64_0
 
 ./bootstrap.sh --prefix=/usr/
 sudo ./b2 -j8 install
@@ -32,13 +39,14 @@ sudo ./b2 -j8 install
 https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
 
 #+begin_src sh :session  :results output :exports both 
-wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz
-tar -xvzf stx-btree-0.9.tar.gz
-cd stx-btree-stx-btree-0.9
+wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz ; \
+tar -xvzf stx-btree-0.9.tar.gz ; \
+cd stx-btree-stx-btree-0.9 ;
 
 ./configure
 make -j8
 sudo make install
+
 #+end_src
 
 *** Databases
@@ -233,11 +241,13 @@ fi
 
 #+end_src
 
-
 * Datasets 
 ** Datastet of queries generate with R
 [[file:data/queriesLHS.org]]
 
+
+* Task list [0/1]
+** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
 * Data
 :PROPERTIES:
 :EXPORT_OPTIONS: H:2
@@ -289,7 +299,6 @@ mkdir -p $expFolder
   #+RESULTS:
   
 - [ ] Use the template to run your experiment
-  
   #+begin_src sh :results output raw :exports both :session template
   cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
   echo "[[$expFolder/exp.org]]"
@@ -299,7 +308,6 @@ mkdir -p $expFolder
 
   [[./data/inf-desktop/exp20170822165129/exp.org]]
   
-
 *** TODO [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
 
 Testing with twitter distribution of data
@@ -328,9 +336,9 @@ mkdir -p $expFolder
 
   [[./data/cicero/exp20170825181747/exp.org]]
 
-*** INPROGRESS [2017-08-30 Qua] =bench_queries_region=    :exp20170830124159:
-
-  
+*** DONE [2017-08-30 Qua] =bench_queries_region=          :exp20170830124159:
+ 
+**** Setup
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
@@ -355,7 +363,9 @@ mkdir -p $expFolder
 
   $ [[./data/cicero/exp20170830124159/exp.org]]
 
-  
+**** Final notes
+- PMQ best on queries with large amount of elements
+
 *** DONE [2017-09-04 Seg] Test the refinments levels    :exp20170904153555:
 
 Test the best refinement level to use in Geohash programs. 
