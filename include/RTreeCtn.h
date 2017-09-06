@@ -20,7 +20,7 @@ class RTreeCtn : public GeoCtnIntf {
   };
 
   // build container
-  duration_t create(uint32_t size) override {
+  virtual duration_t create(uint32_t size) override {
     Timer timer;
     timer.start();
 
@@ -34,7 +34,7 @@ class RTreeCtn : public GeoCtnIntf {
   }
 
   // update container
-  duration_t insert(std::vector<elttype> batch) override {
+  virtual duration_t insert(std::vector<elttype> batch) override {
     Timer timer;
     timer.start();
 
@@ -195,7 +195,7 @@ class RTreeCtn : public GeoCtnIntf {
     return _rtree->size();
   }
 
-  inline std::string name() const override {
+  virtual inline std::string name() const override {
     static auto name_str = "RTree";
     return name_str;
   }
@@ -232,6 +232,63 @@ class RTreeCtn : public GeoCtnIntf {
   typedef std::pair<point, valuetype> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
 
-  std::unique_ptr<rtree_t> _rtree;
+  std::unique_ptr<rtree_t> _rtree{nullptr};
   uint32_t _size;
+};
+
+template<typename Balancing>
+class RTreeBulkCtn : public RTreeCtn<Balancing> {
+ public:
+  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<Balancing>(argc, argv, _refLevel) {}
+  virtual ~RTreeBulkCtn() = default;
+
+  // build container
+  duration_t create(uint32_t size) override {
+    Timer timer;
+    timer.start();
+
+    this->_size = size;
+
+    timer.stop();
+    return {duration_info("create", timer)};
+  }
+
+  // update container
+  duration_t insert(std::vector<elttype> batch) override {
+    Timer timer;
+    timer.start();
+
+    if (this->_rtree == nullptr) {
+      // bulk loading
+      std::vector<value> data;
+
+      std::transform(
+          batch.begin(), batch.end(), std::back_inserter(data),
+          [&](const auto &elt) {
+            return std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value);
+          }
+      );
+
+      this->_rtree = std::make_unique<rtree_t>(data);
+
+    } else {
+      for (const auto &elt: batch) {
+        this->_rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      }
+    }
+
+    timer.stop();
+    return {duration_info("insert", timer)};
+  }
+
+  inline std::string name() const override {
+    static auto name_str = "RTreeBulk";
+    return name_str;
+  }
+
+ protected:
+  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  typedef bg::model::box<point> box;
+  typedef std::pair<point, valuetype> value;
+  typedef bgi::rtree<value, Balancing> rtree_t;
 };
