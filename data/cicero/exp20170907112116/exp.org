@@ -28,7 +28,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * TODO Experiment Script
-** Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -37,7 +37,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170822165129
+: exp20170907112116
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -45,8 +45,8 @@ git checkout master
 #+end_src
 
 #+RESULTS:
-: M	benchmarks/bench_insert_and_scan.cpp
-: M	include/stde.h
+: Your branch is ahead of 'origin/master' by 2 commits.
+:   (use "git push" to publish your local commits)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -54,8 +54,6 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
-: M	benchmarks/bench_insert_and_scan.cpp
-: M	include/stde.h
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -66,17 +64,18 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170822165129
+On branch exp20170907112116
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
 	exp.org
+	run.sh
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170822165129 1e990e9] Initial commit for exp20170822165129
- 1 file changed, 333 insertions(+)
- create mode 100644 data/inf-desktop/exp20170822165129/exp.org
+[exp20170907112116 b2bf67c] Initial commit for exp20170907112116
+ 1 file changed, 457 insertions(+)
+ create mode 100644 data/cicero/exp20170907112116/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -84,11 +83,11 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1e990e9 (HEAD -> exp20170822165129) Initial commit for exp20170822165129
-: * 7b23257 (origin/master, master) fix bench_topk_search target
-: * d225b64 fix btree::size and rtree::size
+: * b2bf67c (HEAD -> exp20170907112116) Initial commit for exp20170907112116
+: * 0440ec8 (master) upd: bench insert and scan
+: * 7af0672 wip labbook
 
-** Export run script 
+** DONE Export run script 
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -161,7 +160,48 @@ git commit -m "Finish execution $EXECID"
 #+end_src 
 
 
-** DONE Local Execution                                              :local:
+** TODO Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170907112116
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	run.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170904153555 fffe070] UPD: run.sh script
+:  1 file changed, 4 insertions(+), 5 deletions(-)
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** Local Execution                                                   :local:ARCHIVE:
 
 #+begin_src sh :results output :exports both :session local :var expId=expId
 cd ~/Projects/pmq/data/$(hostname)/$expId
