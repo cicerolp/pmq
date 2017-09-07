@@ -32,7 +32,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * TODO Experiment Script
-** TODO Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -41,7 +41,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170830124159
+: exp20170907145711
 
 Set up git branch
 #+begin_src sh :results output :exports both
@@ -50,8 +50,8 @@ git checkout master
 
 #+RESULTS:
 : M	LabBook.org
-: M	include/BTreeCtn.cpp
-: M	include/GeoHash.cpp
+: M	benchmarks/bench_queries_region.cpp
+: Your branch is up-to-date with 'origin/master'.
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -60,8 +60,7 @@ git checkout -b $expId
 
 #+RESULTS:
 : M	LabBook.org
-: M	include/BTreeCtn.cpp
-: M	include/GeoHash.cpp
+: M	benchmarks/bench_queries_region.cpp
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -72,19 +71,17 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170830124159
+On branch exp20170907145711
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
 	exp.org
-	output.csv
-	output.log
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170830124159 3d30984] Initial commit for exp20170830124159
- 1 file changed, 588 insertions(+)
- create mode 100644 data/cicero/exp20170830124159/exp.org
+[exp20170907145711 9670698] Initial commit for exp20170907145711
+ 1 file changed, 761 insertions(+)
+ create mode 100644 data/cicero/exp20170907145711/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -92,9 +89,10 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 94ef664 (HEAD -> exp20170830124159) upd: disable refinements log
-: * 3d30984 Initial commit for exp20170830124159
-: * 381743e (master) print parameter
+: * 9670698 (HEAD -> exp20170907145711) Initial commit for exp20170907145711
+: | *   5e6d9f6 (DATA) Merge branch 'exp20170907112116' into DATA
+: | |\  
+: | | * 14da770 (exp20170907112116) image labels
 
 ** TODO Export run script 
 
@@ -149,7 +147,7 @@ echo "" > $DATADIR/info.org
 set +e 
 
 #Run queris
-t=1000000
+t=$((10**6))
 b=100
 #n=$(($t*$b))
 ref=8
