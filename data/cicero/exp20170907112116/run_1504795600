@@ -43,3 +43,8 @@ bench_insert_and_scan_1504795600.log
 Already on 'exp20170907112116'
 A	data/cicero/exp20170907112116/run_1504795600
 Your branch is up-to-date with 'origin/exp20170907112116'.
+[exp20170907112116 d716068] Finish execution 1504795600
+ 3 files changed, 736 insertions(+)
+ create mode 100644 data/cicero/exp20170907112116/info.org
+ create mode 100644 data/cicero/exp20170907112116/log_1504795600.tgz
+ create mode 100644 data/cicero/exp20170907112116/run_1504795600
