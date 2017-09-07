@@ -78,15 +78,17 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
     timer = container.scan_at_region(region, read_element);
 
-    for (auto &info : timer) {
-      PRINTBENCH(info.name, id, info.duration, "ms");
-    }
+    PRINTBENCH(id, timer);
+//    for (auto &info : timer) {
+//      PRINTBENCH(info.name, id, info.duration, "ms");
+//    }
   }
 
   timer = container.apply_at_region(region, _apply);
-  for (auto &info : timer) {
-    PRINTBENCH(info.name, id, info.duration, "ms", count);
-  }
+  PRINTBENCH(id, timer, "count", count);
+  //for (auto &info : timer) {
+  //  PRINTBENCH(info.name, id, info.duration, "ms", count);
+ // }
 }
 
 template<typename T>
@@ -109,9 +111,7 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const 
     // insert batch
     timer = container->insert(batch);
 
-    for (auto &info : timer) {
-      PRINTBENCH_PTR(info.name, id, info.duration, "ms");
-    }
+    PRINTBENCH_PTR(id, timer);
 
     // update iterator
     it_begin = it_curr;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
 
   run_bench<BTreeCtn>(argc, argv, input, parameters);
 
-  run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, parameters);
+  run_bench<RTreeCtn<bgi::quadratic<16>>>(argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }

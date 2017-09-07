@@ -1,0 +1,50 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+[ 23%] Built target twitterVis
+[ 28%] Built target test_geohash
+[ 34%] Built target test_pma_diff
+[ 39%] Built target test_geohash_count
+[ 47%] Built target test_insert_remove_scan
+[ 53%] Built target test_containers_count
+[ 60%] Built target bench_insert_remove_count
+[ 68%] Built target bench_topk_search
+[ 81%] Built target bench_queries_region
+[ 88%] Built target bench_insert_remove_scan
+Scanning dependencies of target bench_insert_and_scan
+[ 89%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/bench_insert_and_scan.cpp.o
+[ 90%] Linking CXX executable bench_insert_and_scan
+[100%] Built target bench_insert_and_scan
+bench_insert_and_scan_1504795600.log
+Already on 'exp20170907112116'
+A	data/cicero/exp20170907112116/run_1504795600
+Your branch is up-to-date with 'origin/exp20170907112116'.
+[exp20170907112116 d716068] Finish execution 1504795600
+ 3 files changed, 736 insertions(+)
+ create mode 100644 data/cicero/exp20170907112116/info.org
+ create mode 100644 data/cicero/exp20170907112116/log_1504795600.tgz
+ create mode 100644 data/cicero/exp20170907112116/run_1504795600

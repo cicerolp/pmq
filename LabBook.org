@@ -21,8 +21,15 @@ Extra research notes in [[file:ResearchNotes.org]]
 *** Boost library  V 1.64
 Version 1.64 
 
-#+begin_src sh :session  :results output :exports both 
+#+begin_src sh :session boost :results output :exports both 
+cd ~/Downloads
 wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 
+#+end_src
+
+#+begin_src sh :session boost :results output :exports both 
+tar -xvjf boost_1_64_0.tar.bz2
+
+cd ./boost_1_64_0
 
 ./bootstrap.sh --prefix=/usr/
 sudo ./b2 -j8 install
@@ -32,13 +39,14 @@ sudo ./b2 -j8 install
 https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
 
 #+begin_src sh :session  :results output :exports both 
-wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz
-tar -xvzf stx-btree-0.9.tar.gz
-cd stx-btree-stx-btree-0.9
+wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz ; \
+tar -xvzf stx-btree-0.9.tar.gz ; \
+cd stx-btree-stx-btree-0.9 ;
 
 ./configure
 make -j8
 sudo make install
+
 #+end_src
 
 *** Databases
@@ -233,11 +241,13 @@ fi
 
 #+end_src
 
-
 * Datasets 
 ** Datastet of queries generate with R
 [[file:data/queriesLHS.org]]
 
+
+* Task list [0/1]
+** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
 * Data
 :PROPERTIES:
 :EXPORT_OPTIONS: H:2
@@ -276,6 +286,9 @@ Copy the subtree bellow to start a new experiment
 
 ** Cicero 
 *** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
+:PROPERTIES:
+:CUSTOM_ID: exp20170822165129
+:END:
 
 **** Setup
 - [X] Create a direcorty for this experiment 
@@ -303,6 +316,64 @@ mkdir -p $expFolder
 **** Results
 
 [[file:data/cicero/exp20170822165129/exp.html]]
+
+*** TODO [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
+
+Testing with twitter distribution of data
+  
+**** Setup 
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  #cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  git show DATA:./data/inf-desktop/exp20170822165129/exp.org > ${expFolder}/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170825181747/exp.org]]
+
+*** DONE [2017-08-30 Qua] =bench_queries_region=          :exp20170830124159:
+
+**** Setup
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  git show cadbec3c345a183f96a0b2822f4f96a17de8c20b:./data/cicero/exp20170825181747/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+  $ [[./data/cicero/exp20170830124159/exp.org]]
+
+**** Final notes
+- PMQ best on queries with large amount of elements
 
 *** DONE [2017-08-30 Qua] =bench_queries_region=
 
@@ -365,4 +436,36 @@ echo $expFolder
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
 
+  
 
+*** TODO [2017-08-22 Ter] =bench_insert_and_scan= V.2     :exp20170907112116:
+
+- Old exeperiment used Rtree* algorithm, use the quadratic one now.
+- Count was not correct in the plots
+[[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
+
+**** Setup
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170822165129/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  0b5f0d6 UPD: fixed paths
+  $ $ [[./data/cicero/exp20170907112116/exp.org]]
+  

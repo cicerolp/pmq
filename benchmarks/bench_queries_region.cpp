@@ -72,7 +72,7 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       timer = container.scan_at_region(region, read_element);
-      PRINTBENCH("query", id, timer);
+      PRINTBENCH("query", id, "T", t, timer);
     }
 
     // apply_at_region
@@ -83,7 +83,7 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
     for (uint32_t i = 0; i < parameters.n_exp; i++) {
       count = 0;
       timer = container.apply_at_region(region, _apply);
-      PRINTBENCH("query", id, timer, "count", count);
+      PRINTBENCH("query", id, "T", t, timer, "count", count);
     }
   }
 }
@@ -218,10 +218,11 @@ int main(int argc, char *argv[]) {
 
   PRINTOUT("Refinement level = %d\n", parameters.refLevel);
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-  run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
+  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  //run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   //run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, queries, parameters);
-  //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
+  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
+  run_bench<RTreeBulkCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
 
   return EXIT_SUCCESS;
 }
