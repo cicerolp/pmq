@@ -27,7 +27,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - plotResults.R : generate the plots 
   
 
-* TODO Experiment Script
+* DONE Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -160,7 +160,7 @@ git push origin $expId
 #+end_src 
 
 
-** TODO Commit local changes
+** DONE Commit local changes
 #+begin_src sh :results output :exports both
 git status .
 #+end_src
@@ -590,8 +590,8 @@ dfplot %>%
  #   mutate(bench = revalue( bench, c("apply_at_region" = "count"))) %>% 
 ggplot(aes(x=id,y=ms, color=factor(algo))) + 
     geom_line() +
-    geom_errorbar(aes(ymin = ms - stdv, ymax = ms + stdv), width = 0.3 ) +
-    facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
+    #geom_errorbar(aes(ymin = ms - stdv, ymax = ms + stdv), width = 0.3 ) +
+    facet_wrap(~bench, scales="free",ncol=1,labeller=labeller(bench=c(apply_at_region="Global Count", insert="Insertion", scan_at_region="Golbal scan")))
 #+end_src
 
 #+RESULTS:
@@ -633,6 +633,9 @@ dfinsert %>%
 | BTree         |   0.03546119 |   354.6119 |
 | GeoHashBinary | 0.0793330121 | 793.330121 |
 | RTree         |  0.586476944 | 5864.76944 |
+| BTree         |   0.03546119 |   354.6119 |
+| GeoHashBinary | 0.0793330121 | 793.330121 |
+| RTree         |  0.586476944 | 5864.76944 |
 
 **** Amortized time
 
@@ -649,6 +652,12 @@ avgTime = cbind(dfinsert,
 #+end_src
 
 #+RESULTS:
+: # A tibble: 3 x 3
+:            algo    Avergae     Total
+:           <chr>      <dbl>     <dbl>
+: 1         BTree 0.03546119  354.6119
+: 2 GeoHashBinary 0.07933301  793.3301
+: 3         RTree 0.58647694 5864.7694
 
 ***** Melting the data (time / avgTime)
 We need to melt the time columns to be able to plot as a grid
