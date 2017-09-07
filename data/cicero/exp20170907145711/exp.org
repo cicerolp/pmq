@@ -94,7 +94,7 @@ git la -3
 : | |\  
 : | | * 14da770 (exp20170907112116) image labels
 
-** TODO Export run script 
+** DONE Export run script 
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -176,24 +176,13 @@ git status .
 #+end_src
 
 #+RESULTS:
-#+begin_example
-On branch exp20170830124159
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	modified:   exp.org
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	.#exp.org
-	output.csv
-	output.log
-	run.sh
-
-no changes added to commit (use "git add" and/or "git commit -a")
-#+end_example
+: On branch exp20170907145711
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 
+: 	.#exp.org
+: 
+: nothing added to commit but untracked files present (use "git add" to track)
 
 #+begin_src sh :results output :exports both
 git add run.sh exp.org
@@ -202,9 +191,9 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20170830124159 8f2bf8f] UPD: run.sh script
-:  2 files changed, 92 insertions(+), 15 deletions(-)
-:  create mode 100755 data/cicero/exp20170830124159/run.sh
+: [exp20170907145711 b02a7c4] UPD: run.sh script
+:  2 files changed, 85 insertions(+), 16 deletions(-)
+:  create mode 100755 data/cicero/exp20170907145711/run.sh
 
 Push to remote
 #+begin_src sh :results output :exports both :var expId=expId
@@ -249,11 +238,11 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
  ,* Management:     https://landscape.canonical.com
  ,* Support:        https://ubuntu.com/advantage
 
-27 packages can be updated.
+34 packages can be updated.
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Mon Sep  4 19:50:32 2017 from 143.54.13.218
+Last login: Thu Sep  7 15:06:36 2017 from 143.54.11.6
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -270,15 +259,20 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ From bitbucket.org:jtoss/pmq
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 18, done.
+(1/15)           remote: Compressing objects:  13% (2/15)           remote: Compressing objects:  20% (3/15)           remote: Compressing objects:  26% (4/15)           remote: Compressing objects:  33% (5/15)           remote: Compressing objects:  40% (6/15)           remote: Compressing objects:  46% (7/15)           remote: Compressing objects:  53% (8/15)           remote: Compressing objects:  60% (9/15)           remote: Compressing objects:  66% (10/15)           remote: Compressing objects:  73% (11/15)           remote: Compressing objects:  80% (12/15)           remote: Compressing objects:  86% (13/15)           remote: Compressing objects:  93% (14/15)           remote: Compressing objects: 100% (15/15)           remote: Compressing objects: 100% (15/15), done.
+(1/18)   Unpacking objects:  11% (2/18)   Unpacking objects:  16% (3/18)   Unpacking objects:  22% (4/18)   Unpacking objects:  27% (5/18)   Unpacking objects:  33% (6/18)   Unpacking objects:  38% (7/18)   Unpacking objects:  44% (8/18)   Unpacking objects:  50% (9/18)   Unpacking objects:  55% (10/18)   remote: Total 18 (delta 9), reused 0 (delta 0)
+(11/18)   Unpacking objects:  66% (12/18)   Unpacking objects:  72% (13/18)   Unpacking objects:  77% (14/18)   Unpacking objects:  83% (15/18)   Unpacking objects:  88% (16/18)   Unpacking objects:  94% (17/18)   Unpacking objects: 100% (18/18)   Unpacking objects: 100% (18/18), done.
+From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-Already on 'exp20170830124159'
-Your branch is up-to-date with 'origin/exp20170830124159'.
+origin/exp20170907145711
+Branch exp20170907145711 set up to track remote branch exp20170907145711 from origin.
+Switched to a new branch 'exp20170907145711'
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 Already up-to-date.
-commit 8f2bf8f9949702720b2f3ba24d60ed6e4d3968a9
-Date:   Tue Sep 5 18:59:16 2017 -0300
+commit b02a7c45018c0698a48021288f89e1fff87597a1
+Date:   Thu Sep 7 16:00:38 2017 -0300
 
     UPD: run.sh script
 #+end_example
@@ -300,7 +294,7 @@ git log -1 | cat
 : 
 :     Bugfix: corrected pointer casts
 
-*** DONE Execute Remotely                                          :remote:
+*** INPROGRESS Execute Remotely                                    :remote:
 
 Opens ssh connection and a tmux session
 
@@ -314,7 +308,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170830124159$ julio@cicero:~/Projects/pmq/data/cicero/exp20170830124159$ julio@cicero:~/Projects/pmq/data/cicero/exp20170830124159$ julio@cicero:~/Projects/pmq/data/cicero/exp20170830124159$ 1504649431
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ 1504810921
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -323,13 +317,24 @@ ps ux
 #+end_src
 
 #+RESULTS:
-: no server running on /tmp/tmux-1001/default
-: USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-: julio    20570  0.0  0.0  45248  4692 ?        Ss   18:59   0:00 /lib/systemd/sy
-: julio    20571  0.0  0.0 145408  2160 ?        S    18:59   0:00 (sd-pam)
-: julio    20662  0.0  0.0  97464  3408 ?        S    18:59   0:00 sshd: julio@pts
-: julio    20665  0.0  0.0  22684  5224 pts/18   Ss   18:59   0:00 -bash
-: julio    21836  0.0  0.0  37368  3276 pts/18   R+   19:12   0:00 ps ux
+#+begin_example
+runExp: 1 windows (created Thu Sep  7 16:02:01 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio      511  0.0  0.0  45248  4592 ?        Ss   14:59   0:00 /lib/systemd/sy
+julio      513  0.0  0.0 145408  2156 ?        S    14:59   0:00 (sd-pam)
+julio     1364  0.0  0.0  97464  3388 ?        S    16:00   0:00 sshd: julio@pts
+julio     1365  0.0  0.0  22684  5236 pts/10   Ss   16:00   0:00 -bash
+julio     1415  0.0  0.0  29420  2888 ?        Ss   16:02   0:00 tmux new -d -s 
+julio     1416  0.0  0.0  12532  3028 pts/8    Ss+  16:02   0:00 bash -c cd ~/Pr
+julio     1418  0.0  0.0  12536  3088 pts/8    S+   16:02   0:00 /bin/bash ./run
+julio     1544  0.0  0.0   9676  2264 pts/8    S+   16:02   0:00 make
+julio     1547  0.0  0.0   9676  2400 pts/8    S+   16:02   0:00 make -f CMakeFi
+julio     1630  4.0  0.0  12488  5024 pts/8    S+   16:02   0:00 make -f benchma
+julio     1633  0.0  0.0   4508   852 pts/8    S+   16:02   0:00 /bin/sh -c cd /
+julio     1634  0.0  0.0   8352   856 pts/8    S+   16:02   0:00 /usr/bin/c++ -I
+julio     1635  120  1.3 552444 448236 pts/8   R+   16:02   0:02 /usr/lib/gcc/x8
+julio     1637  0.0  0.0  37368  3332 pts/10   R+   16:02   0:00 ps ux
+#+end_example
 
 **** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
