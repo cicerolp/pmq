@@ -402,9 +402,7 @@ echo $expFolder
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
 
-  
-
-*** TODO [2017-08-22 Ter] =bench_insert_and_scan= V.2
+*** DONE [2017-09-07 Qui] =bench_insert_and_scan= V.2     :exp20170907112116:
 
 - Old exeperiment used Rtree* algorithm, use the quadratic one now.
 - Count was not correct in the plots
@@ -435,3 +433,33 @@ mkdir -p $expFolder
   0b5f0d6 UPD: fixed paths
   $ $ [[./data/cicero/exp20170907112116/exp.org]]
   
+
+*** INPROGRESS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170830124159:
+
+Test with a larger ammount of data -> 10*8
+
+**** Setup
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+git show DATA:./data/cicero/exp20170830124159/exp.org > ${expFolder}/exp.org
+echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+  [[./data/cicero/exp20170907145711/exp.org]]
+
+

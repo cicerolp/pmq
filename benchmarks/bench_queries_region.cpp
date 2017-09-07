@@ -218,8 +218,8 @@ int main(int argc, char *argv[]) {
 
   PRINTOUT("Refinement level = %d\n", parameters.refLevel);
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
-  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-  //run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
+  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   //run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, queries, parameters);
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
   run_bench<RTreeBulkCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
