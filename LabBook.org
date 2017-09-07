@@ -298,11 +298,11 @@ mkdir -p $expFolder
 
   #+RESULTS:
 
-  [[./data/inf-desktop/exp20170822165129/exp.org]]
+  [[./data/cicero/exp20170822165129/exp.org]]
   
 **** Results
 
-[[file:data/inf-desktop/exp20170822165129/exp.html]]
+[[file:data/cicero/exp20170822165129/exp.html]]
 
 *** DONE [2017-08-30 Qua] =bench_queries_region=
 
