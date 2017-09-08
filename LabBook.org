@@ -7,7 +7,7 @@
 #+TAGS: @JULIO(J) @CICERO(C)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
 #+CATEGORY: TwitterVis
-#+OPTIONS: ^:{} H:3
+#+OPTIONS: ^:{} H:3 toc:nil
 #+PROPERTY: header-args :cache no :eval no-export
 
 Labbook about implementation of the PMQ
@@ -250,14 +250,14 @@ fi
 ** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
 * Data
 :PROPERTIES:
-:EXPORT_OPTIONS: H:2
+:EXPORT_OPTIONS: H:2 toc:nil
 :END:
 Note: Only DATA branch contains entries here; 
 
 Reference about each experiment campaing. Usefull for comparing
 results of different experiments. 
 
-** Sample machine                                                 :template:
+** Sample machine                                        :noexport:template:
 Copy the subtree bellow to start a new experiment 
 
 *** TODO Template Experiment
