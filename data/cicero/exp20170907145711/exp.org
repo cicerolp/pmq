@@ -7,7 +7,7 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4
+#+OPTIONS: ^:{} todo:nil H:4 toc:nil tags:nil
 #+PROPERTY: header-args :cache no :eval no-export 
 
 

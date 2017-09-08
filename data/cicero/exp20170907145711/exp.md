@@ -1,15 +1,4 @@
-- [Description](#org744e54d)
-- [Analisys](#orgb39c225)
-  - [Results](#org20df408)
-    - [Plot overview](#orge2eb56e)
-    - [Conclusions](#orgd4bcbf4)
-  - [What is the actual count of elements per query ?:](#org5e2a13e)
-    - [Table](#org1bd5fb4)
-
-
-<a id="org744e54d"></a>
-
-# Description     :export:
+# Description
 
 Test the queries on uniform data. And compare the folling performances.
 
@@ -23,40 +12,28 @@ Use 10\*\*8 elements.
 Use the refinement level = 8
 
 
-<a id="orgb39c225"></a>
-
 # Analisys
 
-
-<a id="org20df408"></a>
 
 ## Results
 
 
-<a id="orge2eb56e"></a>
-
-### Plot overview     :export:
+### Plot overview
 
 ![img](./img/overview_query_region.png)
 
 
-<a id="orgd4bcbf4"></a>
-
-### Conclusions     :export:
+### Conclusions
 
 -   PMQ shows its best benefits on large range queries
 -   for very small queries we are similar to othe Btree an Rtree
 -   Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
 
-<a id="org5e2a13e"></a>
-
 ## What is the actual count of elements per query ?:
 
 
-<a id="org1bd5fb4"></a>
-
-### Table     :export:
+### Table
 
 There are some queries where the count differs for Rtree by a small amout of elements Counts have some differences : Cases where the Count doesn't match exactly.
 
