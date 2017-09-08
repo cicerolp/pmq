@@ -107,7 +107,7 @@ void run_bench(int argc,
     uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * t);
 
     //create container
-    std::unique_ptr < T > container = std::make_unique<T>(argc, argv,parameters.refLevel);
+    std::unique_ptr < T > container = std::make_unique<T>(argc, argv, parameters.refLevel);
     timer = container->create((uint32_t) ctn_size);
 
     PRINTBENCH_PTR("init", timer);

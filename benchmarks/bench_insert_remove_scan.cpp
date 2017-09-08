@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 
   run_bench<BTreeCtn>(argc, argv, input, parameters);
 
-  run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, parameters);
+  run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }

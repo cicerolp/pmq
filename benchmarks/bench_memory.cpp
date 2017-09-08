@@ -1,15 +1,9 @@
-/** @file
- * Benchmark for the query time
- *
- * - Measures the time for inserting each batch
- * - After each batch insertion measures the time to scan the whole array
- *
- */
-
 #include "stde.h"
 #include "types.h"
 #include "InputIntf.h"
 #include "string_util.h"
+
+#include "memory_util.h"
 
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
@@ -21,25 +15,16 @@
 #include "DenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
-   std::cout << "InsertionBench " << container.name() << " ; ";\
+   std::cout << "MemoryBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
 
 #define PRINTBENCH_PTR(...) do { \
-   std::cout << "InsertionBench " << container->name() << " ; ";\
+   std::cout << "MemoryBench " << container->name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
-
-/*void printStats(duration_t timer){
-  for (auto &info : timer) {
-    std::cout << info ;
-  }
-}*/
-
-/*#define PRINTBENCH( ... ) do { \
-} while (0)*/
 
 struct bench_t {
   // benchmark parameters
@@ -54,39 +39,11 @@ void inline read_element(const valuetype &el) {
   valuetype volatile elemt = *(valuetype *) &el;
 }
 
-void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
-  accum += count;
-}
-
-template<typename T>
-void inline run_queries(T &container, const region_t &region, uint32_t id, const bench_t &parameters) {
-
-  uint32_t count = 0;
-  applytype_function _apply = std::bind(count_element, std::ref(count),
-                                        std::placeholders::_1, std::placeholders::_2);
-
-  duration_t timer;
-
-  // 1 - gets the minimum set of nodes that are inside the queried region
-  // QueryRegion will traverse the tree and return the intervals to query;
-  // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
-
-  // warm up
-  container.scan_at_region(region, read_element);
-
-  // access the container to count the number of elements inside the region
-  for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer = container.scan_at_region(region, read_element);
-
-    PRINTBENCH(id, timer);
-  }
-
-  timer = container.apply_at_region(region, _apply);
-  PRINTBENCH(id, timer, "count", count);
-}
-
 template<typename T>
 void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const bench_t &parameters) {
+  // store temporary memory
+  size_t resident = getCurrentRSS();
+
   //create container
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
   container->create((uint32_t) input.size());
@@ -105,20 +62,17 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const 
     // insert batch
     timer = container->insert(batch);
 
-    PRINTBENCH_PTR(id, timer);
-
     // update iterator
     it_begin = it_curr;
 
-    // ========================================
-    // Performs global scan
-    // ========================================
-
-    //Run a scan on the whole array
-    run_queries((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
+    PRINTBENCH_PTR("id", id, (getCurrentRSS() - resident) / (1024), "KB");
 
     ++id;
   }
+
+  PRINTBENCH_PTR("total", (getCurrentRSS() - resident) / (1024), "KB");
+
+  container.reset();
 }
 
 namespace bg = boost::geometry;
@@ -127,15 +81,14 @@ namespace bgi = boost::geometry::index;
 int main(int argc, char *argv[]) {
   bench_t parameters;
 
-  cimg_usage("Queries Benchmark inserts elements in batches.");
-
   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
   std::string fname(cimg_option("-f", "", "File with tweets to load"));
 
+  std::string container(cimg_option("-c", "ghb", "Container Acronym"));
+
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
-  parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
@@ -154,18 +107,19 @@ int main(int argc, char *argv[]) {
     input = input::dist_random(nb_elements, seed, parameters.batch_size);
     PRINTOUT("%d teewts generated \n", (uint32_t) input.size());
   }
-#ifndef NDEBUG
-  for (elttype &e : input) {
-    std::cout << "[" << e.key << "," << e.value.time << "] \n";
+
+  if (container == "ghb") {
+    run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  } else if (container == "ghs") {
+    run_bench<GeoHashSequential>(argc, argv, input, parameters);
+  } else if (container == "bt") {
+    run_bench<BTreeCtn>(argc, argv, input, parameters);
+  } else if (container == "rt") {
+    run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
+  } else {
+    return EXIT_FAILURE;
   }
-#endif
-
-  // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
-
-  run_bench<BTreeCtn>(argc, argv, input, parameters);
-
-  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }
+

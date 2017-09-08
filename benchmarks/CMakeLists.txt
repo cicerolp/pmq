@@ -98,3 +98,28 @@ target_link_libraries(bench_insert_and_scan
         ${PQ_C_LIBRARY}
         ${Boost_LIBRARIES}
         )
+
+add_executable(bench_memory
+        bench_memory.cpp
+
+        ../include/QuadtreeIntf.cpp
+
+        ../include/GeoHash.cpp
+        ../include/PostGisCtn.cpp
+        ../include/PMABatchCtn.cpp
+        ../include/SpatiaLiteCtn.cpp
+        ../include/DenseVectorCtn.cpp
+
+        ../include/BTreeCtn.cpp
+        #../include/RTreeCtn.h
+        )
+
+target_link_libraries(bench_memory
+        pma
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${SPATIALITE_LIBRARY}
+        ${SQLITE_LIBRARY}
+        ${GEOS_C_LIBRARY}
+        ${PQ_C_LIBRARY}
+        ${Boost_LIBRARIES}
+        )
