@@ -1,29 +1,46 @@
+- [Description](#org744e54d)
+- [Analisys](#orgb39c225)
+  - [Results](#org20df408)
+    - [Plot overview](#orge2eb56e)
+    - [Conclusions](#orgd4bcbf4)
+  - [What is the actual count of elements per query ?:](#org5e2a13e)
+    - [Table](#org1bd5fb4)
+
+
+<a id="org744e54d"></a>
 
 # Description     :export:
 
-Test the queries on uniform data. 
-And compare the folling performances.
+Test the queries on uniform data. And compare the folling performances.
 
-Use 10\*\*8 elements. 
+Use 10\*\*8 elements.
 
 -   PMQ / GEOHASH
 -   BTREE
 -   RTREE - quadratic algorithm
 -   RTREE - quadratic algorithm with bulk loading
 
-Use the refinement level = 8 
+Use the refinement level = 8
 
+
+<a id="orgb39c225"></a>
 
 # Analisys
 
 
+<a id="org20df408"></a>
+
 ## Results
 
+
+<a id="orge2eb56e"></a>
 
 ### Plot overview     :export:
 
 ![img](./img/overview_query_region.png)
 
+
+<a id="orgd4bcbf4"></a>
 
 ### Conclusions     :export:
 
@@ -32,241 +49,36 @@ Use the refinement level = 8
 -   Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
 
+<a id="org5e2a13e"></a>
+
 ## What is the actual count of elements per query ?:
 
 
+<a id="org1bd5fb4"></a>
+
 ### Table     :export:
 
-There are some queries where the count differs for Rtree by a small amout of elements
-Counts have some differences :
-Cases where the Count doesn't match exactly. 
+There are some queries where the count differs for Rtree by a small amout of elements Counts have some differences : Cases where the Count doesn't match exactly.
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-right" />
-
-<col  class="org-right" />
-
-<col  class="org-right" />
-
-<col  class="org-right" />
-
-<col  class="org-right" />
-
-<col  class="org-right" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-right">queryId</th>
-<th scope="col" class="org-right">BTree\_Count</th>
-<th scope="col" class="org-right">GeoHashBinary\_Count</th>
-<th scope="col" class="org-right">RTreeBulk\_Count</th>
-<th scope="col" class="org-right">RTree\_Count</th>
-<th scope="col" class="org-right">Var</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="org-right">1</td>
-<td class="org-right">13238671</td>
-<td class="org-right">13238671</td>
-<td class="org-right">13238674</td>
-<td class="org-right">13238672</td>
-<td class="org-right">2</td>
-</tr>
-
-
-<tr>
-<td class="org-right">2</td>
-<td class="org-right">13232631</td>
-<td class="org-right">13232631</td>
-<td class="org-right">13232632</td>
-<td class="org-right">13232632</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">3</td>
-<td class="org-right">13236197</td>
-<td class="org-right">13236197</td>
-<td class="org-right">13236199</td>
-<td class="org-right">13236199</td>
-<td class="org-right">1.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">5</td>
-<td class="org-right">13234142</td>
-<td class="org-right">13234142</td>
-<td class="org-right">13234143</td>
-<td class="org-right">13234143</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">6</td>
-<td class="org-right">13236459</td>
-<td class="org-right">13236459</td>
-<td class="org-right">13236459</td>
-<td class="org-right">13236456</td>
-<td class="org-right">2.25</td>
-</tr>
-
-
-<tr>
-<td class="org-right">7</td>
-<td class="org-right">13237088</td>
-<td class="org-right">13237088</td>
-<td class="org-right">13237091</td>
-<td class="org-right">13237091</td>
-<td class="org-right">3</td>
-</tr>
-
-
-<tr>
-<td class="org-right">8</td>
-<td class="org-right">13237620</td>
-<td class="org-right">13237620</td>
-<td class="org-right">13237620</td>
-<td class="org-right">13237617</td>
-<td class="org-right">2.25</td>
-</tr>
-
-
-<tr>
-<td class="org-right">11</td>
-<td class="org-right">3307714</td>
-<td class="org-right">3307714</td>
-<td class="org-right">3307716</td>
-<td class="org-right">3307716</td>
-<td class="org-right">1.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">14</td>
-<td class="org-right">3311510</td>
-<td class="org-right">3311510</td>
-<td class="org-right">3311512</td>
-<td class="org-right">3311512</td>
-<td class="org-right">1.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">15</td>
-<td class="org-right">3307750</td>
-<td class="org-right">3307750</td>
-<td class="org-right">3307751</td>
-<td class="org-right">3307749</td>
-<td class="org-right">0.667</td>
-</tr>
-
-
-<tr>
-<td class="org-right">16</td>
-<td class="org-right">3306478</td>
-<td class="org-right">3306478</td>
-<td class="org-right">3306479</td>
-<td class="org-right">3306480</td>
-<td class="org-right">0.917</td>
-</tr>
-
-
-<tr>
-<td class="org-right">20</td>
-<td class="org-right">827282</td>
-<td class="org-right">827282</td>
-<td class="org-right">827283</td>
-<td class="org-right">827283</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">23</td>
-<td class="org-right">826550</td>
-<td class="org-right">826550</td>
-<td class="org-right">826550</td>
-<td class="org-right">826549</td>
-<td class="org-right">0.25</td>
-</tr>
-
-
-<tr>
-<td class="org-right">26</td>
-<td class="org-right">826961</td>
-<td class="org-right">826961</td>
-<td class="org-right">826961</td>
-<td class="org-right">826960</td>
-<td class="org-right">0.25</td>
-</tr>
-
-
-<tr>
-<td class="org-right">27</td>
-<td class="org-right">826865</td>
-<td class="org-right">826865</td>
-<td class="org-right">826866</td>
-<td class="org-right">826866</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">30</td>
-<td class="org-right">206006</td>
-<td class="org-right">206006</td>
-<td class="org-right">206006</td>
-<td class="org-right">206005</td>
-<td class="org-right">0.25</td>
-</tr>
-
-
-<tr>
-<td class="org-right">33</td>
-<td class="org-right">206557</td>
-<td class="org-right">206557</td>
-<td class="org-right">206558</td>
-<td class="org-right">206558</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">41</td>
-<td class="org-right">51758</td>
-<td class="org-right">51758</td>
-<td class="org-right">51759</td>
-<td class="org-right">51759</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">42</td>
-<td class="org-right">51959</td>
-<td class="org-right">51959</td>
-<td class="org-right">51960</td>
-<td class="org-right">51960</td>
-<td class="org-right">0.333</td>
-</tr>
-
-
-<tr>
-<td class="org-right">56</td>
-<td class="org-right">12961</td>
-<td class="org-right">12961</td>
-<td class="org-right">12962</td>
-<td class="org-right">12962</td>
-<td class="org-right">0.333</td>
-</tr>
-</tbody>
-</table>
-
+| queryId | BTree\_Count | GeoHashBinary\_Count | RTreeBulk\_Count | RTree\_Count | Var   |
+|------- |------------ |-------------------- |---------------- |------------ |----- |
+| 1       | 13238671     | 13238671             | 13238674         | 13238672     | 2     |
+| 2       | 13232631     | 13232631             | 13232632         | 13232632     | 0.333 |
+| 3       | 13236197     | 13236197             | 13236199         | 13236199     | 1.333 |
+| 5       | 13234142     | 13234142             | 13234143         | 13234143     | 0.333 |
+| 6       | 13236459     | 13236459             | 13236459         | 13236456     | 2.25  |
+| 7       | 13237088     | 13237088             | 13237091         | 13237091     | 3     |
+| 8       | 13237620     | 13237620             | 13237620         | 13237617     | 2.25  |
+| 11      | 3307714      | 3307714              | 3307716          | 3307716      | 1.333 |
+| 14      | 3311510      | 3311510              | 3311512          | 3311512      | 1.333 |
+| 15      | 3307750      | 3307750              | 3307751          | 3307749      | 0.667 |
+| 16      | 3306478      | 3306478              | 3306479          | 3306480      | 0.917 |
+| 20      | 827282       | 827282               | 827283           | 827283       | 0.333 |
+| 23      | 826550       | 826550               | 826550           | 826549       | 0.25  |
+| 26      | 826961       | 826961               | 826961           | 826960       | 0.25  |
+| 27      | 826865       | 826865               | 826866           | 826866       | 0.333 |
+| 30      | 206006       | 206006               | 206006           | 206005       | 0.25  |
+| 33      | 206557       | 206557               | 206558           | 206558       | 0.333 |
+| 41      | 51758        | 51758                | 51759            | 51759        | 0.333 |
+| 42      | 51959        | 51959                | 51960            | 51960        | 0.333 |
+| 56      | 12961        | 12961                | 12962            | 12962        | 0.333 |
