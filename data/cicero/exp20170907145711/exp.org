@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Experiment Diary
+#+TITLE: Benchmark Queries 
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -11,27 +11,28 @@
 #+PROPERTY: header-args :cache no :eval no-export 
 
 
-* DONE Description 
+* DONE Description                                                   :export:
 
 Test the queries on uniform data. 
 And compare the folling performances.
 
-Use a 10**9 elements. 
+Use 10**8 elements. 
 
 - PMQ / GEOHASH
 - BTREE 
-- RTREE
+- RTREE - quadratic algorithm 
+- RTREE - quadratic algorithm with bulk loading
 
 Use the refinement level = 8 
 
-** Standalone script 
+** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
 - parse.sh : parse the results to CSV
 - plotResults.R : generate the plots 
   
 
-* TODO Experiment Script
+* DONE Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -222,7 +223,7 @@ tmux ls
 ps ux
 #+end_src
 
-** TODO Remote Execution                                            :remote:
+** DONE Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -294,7 +295,7 @@ git log -1 | cat
 : 
 :     Bugfix: corrected pointer casts
 
-*** INPROGRESS Execute Remotely                                    :remote:
+*** DONE Execute Remotely                                          :remote:
 
 Opens ssh connection and a tmux session
 
@@ -345,32 +346,44 @@ git pull origin $expId
 
 #+RESULTS:
 #+begin_example
-On branch exp20170830124159
+On branch exp20170907145711
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	../../../LabBook.org.bkp
-	../../../build-debug/
-	.#exp.org
-	output.csv
-	output.log
-	../exp20170904152622/
+	../../../.#LabBook.org
+	../../../LabBook.org.orig
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../benchmarks/bench_insert_and_scan.cpp.orig
+	../../../benchmarks/bench_queries_region.cpp.orig
+	../../../build-Release/
 	../exp20170904153555/
-	../../../include/types.h.orig
+	../exp20170907105314/
+	../exp20170907105804/
+	../exp20170907112116/
+	.#exp.org
 
-nothing added to commit but untracked files present (use "git add" to track)
+no changes added to commit (use "git add" and/or "git commit -a")
 Merge made by the 'recursive' strategy.
- data/cicero/exp20170830124159/info.org           | 697 +++++++++++++++++++++++
- data/cicero/exp20170830124159/log_1504649431.tgz | Bin 0 -> 25122 bytes
- data/cicero/exp20170830124159/run_1504649431     |  80 +++
- 3 files changed, 777 insertions(+)
- create mode 100644 data/cicero/exp20170830124159/info.org
- create mode 100644 data/cicero/exp20170830124159/log_1504649431.tgz
- create mode 100644 data/cicero/exp20170830124159/run_1504649431
+ data/cicero/exp20170907145711/info.org           | 691 +++++++++++++++++++++++
+ data/cicero/exp20170907145711/log_1504810921.tgz | Bin 0 -> 39043 bytes
+ data/cicero/exp20170907145711/run_1504810921     |  48 ++
+ 3 files changed, 739 insertions(+)
+ create mode 100644 data/cicero/exp20170907145711/info.org
+ create mode 100644 data/cicero/exp20170907145711/log_1504810921.tgz
+ create mode 100644 data/cicero/exp20170907145711/run_1504810921
 #+end_example
 
 
-* Analisys
+* TODO Analisys
 ** DONE Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -382,7 +395,7 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 25K Set  5 19:14 log_1504649431.tgz |
+| -rw-rw-r-- 1 julio julio 39K Set  8 09:21 log_1504810921.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both 
@@ -390,7 +403,7 @@ tar xvzf log_*.tgz
 #+end_src
 
 #+RESULTS: logFile
-: bench_queries_region_random_10000_100_8_1504649431.log
+: bench_queries_region_random_1000000_100_8_1504810921.log
 
 Create CSV using logFile 
 #+begin_src sh :results output :exports both :var logFile=logFile[0]
@@ -401,7 +414,7 @@ grep "; query ;" $logFile | sed "s/QueryBench//g" >  $(basename -s .log $logFile
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_queries_region_random_10000_100_8_1504649431.csv
+: bench_queries_region_random_1000000_100_8_1504810921.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -414,12 +427,12 @@ mkdir img
 :PROPERTIES: 
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
-
+*** Prepare
 Load the CSV into R
 #+begin_src R :results output :exports both :var f=csvFile
 library(tidyverse)
 
-df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:7),sep="") )
+df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") )
 df
 #+end_src
 
@@ -439,60 +452,64 @@ cols(
   V1 = col_character(),
   V2 = col_character(),
   V3 = col_integer(),
-  V4 = col_character(),
-  V5 = col_double(),
+  V4 = col_logical(),
+  V5 = col_integer(),
   V6 = col_character(),
-  V7 = col_integer()
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
 )
-Warning: 4800 parsing failures.
-row # A tibble: 5 x 5 col     row   col  expected    actual expected   <int> <chr>     <chr>     <chr> actual 1     1  <NA> 7 columns 6 columns file 2     2  <NA> 7 columns 6 columns row 3     3  <NA> 7 columns 6 columns col 4     4  <NA> 7 columns 6 columns expected 5     5  <NA> 7 columns 6 columns actual # ... with 1 more variables: file <chr>
-... ................. ... ................................. ........ ................................. ...... ................................. .... ................................. ... ................................. ... ................................. ........ ................................. ...... .......................................
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual expected   <int> <chr>      <chr>      <chr> actual 1     1  <NA> 11 columns 10 columns file 2     2  <NA> 11 columns 10 columns row 3     3  <NA> 11 columns 10 columns col 4     4  <NA> 11 columns 10 columns expected 5     5  <NA> 11 columns 10 columns actual # ... with 1 more variables: file <chr>
+... ................. ... ................................... ........ ................................... ...... ................................... .... ................................... ... ................................... ... ................................... ........ ................................... ...... .......................................
 See problems(...) for more details.
 
 Warning message:
 In rbind(names(probs), probs_f) :
   number of columns of result is not a multiple of vector length (arg 1)
-# A tibble: 4,800 x 7
-              V1    V2    V3             V4       V5    V6    V7
-           <chr> <chr> <int>          <chr>    <dbl> <chr> <int>
- 1 GeoHashBinary query     0 scan_at_region 0.785148  <NA>    NA
- 2 GeoHashBinary query     0 scan_at_region 0.738641  <NA>    NA
- 3 GeoHashBinary query     0 scan_at_region 0.732765  <NA>    NA
- 4 GeoHashBinary query     0 scan_at_region 0.730181  <NA>    NA
- 5 GeoHashBinary query     0 scan_at_region 0.733566  <NA>    NA
- 6 GeoHashBinary query     0 scan_at_region 0.707500  <NA>    NA
- 7 GeoHashBinary query     0 scan_at_region 0.666402  <NA>    NA
- 8 GeoHashBinary query     0 scan_at_region 0.665990  <NA>    NA
- 9 GeoHashBinary query     0 scan_at_region 0.671458  <NA>    NA
-10 GeoHashBinary query     0 scan_at_region 0.672691  <NA>    NA
-# ... with 4,790 more rows
+# A tibble: 6,400 x 11
+              V1    V2    V3    V4      V5             V6      V7
+           <chr> <chr> <int> <lgl>   <int>          <chr>   <dbl>
+ 1 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4893
+ 2 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4472
+ 3 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4070
+ 4 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4292
+ 5 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4498
+ 6 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.3831
+ 7 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4557
+ 8 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4722
+ 9 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4505
+10 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.6551
+# ... with 6,390 more rows, and 4 more variables: V8 <chr>, V9 <int>,
+#   V10 <chr>, V11 <int>
 #+end_example
 
 Remove useless columns
 #+begin_src R :results output :exports both :session 
+names(df) <- c("algo" , "V2" , "queryId", "V4", "V5", "bench" , "ms" , "V8", "Refine","V10","Count")
 
-names(df) <- c("algo" , "V2" , "queryId", "bench" , "ms" , "V6", "Count")
-
-df <- select(df, -V2, -V6)
+df <- select(df, -V2, -V4, -V5, -V8, -V10)
 df
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 4,800 x 5
-            algo queryId          bench       ms Count
-           <chr>   <int>          <chr>    <dbl> <int>
- 1 GeoHashBinary       0 scan_at_region 0.785148    NA
- 2 GeoHashBinary       0 scan_at_region 0.738641    NA
- 3 GeoHashBinary       0 scan_at_region 0.732765    NA
- 4 GeoHashBinary       0 scan_at_region 0.730181    NA
- 5 GeoHashBinary       0 scan_at_region 0.733566    NA
- 6 GeoHashBinary       0 scan_at_region 0.707500    NA
- 7 GeoHashBinary       0 scan_at_region 0.666402    NA
- 8 GeoHashBinary       0 scan_at_region 0.665990    NA
- 9 GeoHashBinary       0 scan_at_region 0.671458    NA
-10 GeoHashBinary       0 scan_at_region 0.672691    NA
-# ... with 4,790 more rows
+# A tibble: 6,400 x 6
+            algo queryId          bench      ms Refine Count
+           <chr>   <int>          <chr>   <dbl>  <int> <int>
+ 1 GeoHashBinary       0 scan_at_region 71.4893    482    NA
+ 2 GeoHashBinary       0 scan_at_region 71.4472    482    NA
+ 3 GeoHashBinary       0 scan_at_region 71.4070    482    NA
+ 4 GeoHashBinary       0 scan_at_region 71.4292    482    NA
+ 5 GeoHashBinary       0 scan_at_region 71.4498    482    NA
+ 6 GeoHashBinary       0 scan_at_region 71.3831    482    NA
+ 7 GeoHashBinary       0 scan_at_region 71.4557    482    NA
+ 8 GeoHashBinary       0 scan_at_region 71.4722    482    NA
+ 9 GeoHashBinary       0 scan_at_region 71.4505    482    NA
+10 GeoHashBinary       0 scan_at_region 71.6551    482    NA
+# ... with 6,390 more rows
 #+end_example
 
 
@@ -506,83 +523,81 @@ summary(df[df$algo=="RTree",])
 #+RESULTS:
 #+begin_example
      algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   :0.000176  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.:0.002171  
- Mode  :character   Median :39.50   Mode  :character   Median :0.015000  
-                    Mean   :39.50                      Mean   :0.088030  
-                    3rd Qu.:59.25                      3rd Qu.:0.064723  
-                    Max.   :79.00                      Max.   :0.850964  
+ Length:1600        Min.   : 0.00   Length:1600        Min.   : 0.01035  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.: 0.08939  
+ Mode  :character   Median :39.50   Mode  :character   Median : 0.60609  
+                    Mean   :39.50                      Mean   : 7.28542  
+                    3rd Qu.:59.25                      3rd Qu.: 5.00355  
+                    Max.   :79.00                      Max.   :72.42790  
                                                                          
-     Count          
- Min.   :     3.00  
- 1st Qu.:    85.25  
- Median :  1246.00  
- Mean   : 22048.19  
- 3rd Qu.: 14507.75  
- Max.   :132471.00  
- NA's   :800
+     Refine          Count         
+ Min.   :  1.0   Min.   :     762  
+ 1st Qu.:  9.0   1st Qu.:   10335  
+ Median : 51.0   Median :  129030  
+ Mean   :143.4   Mean   : 2205996  
+ 3rd Qu.:189.0   3rd Qu.: 1447410  
+ Max.   :744.0   Max.   :13239675  
+                 NA's   :800
      algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   :0.000177  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.:0.002205  
- Mode  :character   Median :39.50   Mode  :character   Median :0.016176  
-                    Mean   :39.50                      Mean   :0.255601  
-                    3rd Qu.:59.25                      3rd Qu.:0.148925  
-                    Max.   :79.00                      Max.   :2.572940  
+ Length:1600        Min.   : 0.00   Length:1600        Min.   :  0.0096  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.:  0.1720  
+ Mode  :character   Median :39.50   Mode  :character   Median :  2.6652  
+                    Mean   :39.50                      Mean   : 51.8230  
+                    3rd Qu.:59.25                      3rd Qu.: 34.4182  
+                    Max.   :79.00                      Max.   :360.9100  
                                                                          
-     Count          
- Min.   :     3.00  
- 1st Qu.:    85.25  
- Median :  1246.00  
- Mean   : 22048.19  
- 3rd Qu.: 14507.75  
- Max.   :132471.00  
- NA's   :800
+     Refine          Count         
+ Min.   :  1.0   Min.   :     762  
+ 1st Qu.:  9.0   1st Qu.:   10335  
+ Median : 51.0   Median :  129030  
+ Mean   :143.4   Mean   : 2205996  
+ 3rd Qu.:189.0   3rd Qu.: 1447410  
+ Max.   :744.0   Max.   :13239675  
+                 NA's   :800
      algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   :0.000921  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.:0.003528  
- Mode  :character   Median :39.50   Mode  :character   Median :0.015304  
-                    Mean   :39.50                      Mean   :0.461009  
-                    3rd Qu.:59.25                      3rd Qu.:0.186198  
-                    Max.   :79.00                      Max.   :4.561880  
+ Length:1600        Min.   : 0.00   Length:1600        Min.   :  0.0135  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.:  0.1794  
+ Mode  :character   Median :39.50   Mode  :character   Median :  2.9282  
+                    Mean   :39.50                      Mean   : 52.1705  
+                    3rd Qu.:59.25                      3rd Qu.: 37.2051  
+                    Max.   :79.00                      Max.   :386.8580  
                                                                          
-     Count          
- Min.   :     3.00  
- 1st Qu.:    85.25  
- Median :  1246.00  
- Mean   : 22048.20  
- 3rd Qu.: 14507.75  
- Max.   :132471.00  
- NA's   :800
+     Refine             Count     
+ Min.   :     762   Min.   : NA   
+ 1st Qu.:   10335   1st Qu.: NA   
+ Median :  129030   Median : NA   
+ Mean   : 2205996   Mean   :NaN   
+ 3rd Qu.: 1447410   3rd Qu.: NA   
+ Max.   :13239675   Max.   : NA   
+ NA's   :800        NA's   :1600
 #+end_example
-
 
 Summarize the averages
 #+begin_src R :results output :session :exports both
 dfplot <- 
     df %>% 
     group_by_at(vars(-ms)) %>%   #group_by all expect ms
-    summarize(avg_ms = mean(ms), stdv = sd(ms))
+    summarize(avg_ms = mean(ms), stdv = sd(ms)) %>%
+    ungroup %>% 
+    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
+           Refine = ifelse(grepl("RTree",algo), NA, Refine))
 
-dfplot
+dfplot %>% filter(queryId == 20)
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 480 x 6
-# Groups:   algo, queryId, bench [?]
-    algo queryId           bench  Count    avg_ms       stdv
-   <chr>   <int>           <chr>  <int>     <dbl>      <dbl>
- 1 BTree       0 apply_at_region 132363 1.0426081 0.08349100
- 2 BTree       0  scan_at_region     NA 2.4059620 0.08163817
- 3 BTree       1 apply_at_region 132280 0.9101590 0.03525793
- 4 BTree       1  scan_at_region     NA 2.0293820 0.34071380
- 5 BTree       2 apply_at_region 132084 1.1126400 0.07931612
- 6 BTree       2  scan_at_region     NA 2.4221490 0.07268200
- 7 BTree       3 apply_at_region 132291 0.9854236 0.05853645
- 8 BTree       3  scan_at_region     NA 2.2746100 0.07655387
- 9 BTree       4 apply_at_region 132312 0.9500366 0.04914609
-10 BTree       4  scan_at_region     NA 2.1973110 0.09156773
-# ... with 470 more rows
+# A tibble: 8 x 7
+           algo queryId           bench Refine  Count    avg_ms       stdv
+          <chr>   <int>           <chr>  <int>  <int>     <dbl>      <dbl>
+1         BTree      20 apply_at_region    108 827282 16.629540 0.17565999
+2         BTree      20  scan_at_region    108     NA 22.749580 0.18731222
+3 GeoHashBinary      20 apply_at_region    108 827282  2.073683 0.04198312
+4 GeoHashBinary      20  scan_at_region    108     NA  5.553596 0.01273674
+5         RTree      20 apply_at_region     NA 827283 15.927710 0.50594676
+6         RTree      20  scan_at_region     NA     NA 29.117670 0.13794564
+7     RTreeBulk      20 apply_at_region     NA 827283  2.448958 0.01890487
+8     RTreeBulk      20  scan_at_region     NA     NA 14.568580 0.05626716
 #+end_example
 
 #+begin_src R :results output :exports both :session 
@@ -590,22 +605,20 @@ dfplot %>% filter(queryId == 10, bench == "scan_at_region", algo=="BTree")
 #+end_src
 
 #+RESULTS:
-: # A tibble: 1 x 6
-: # Groups:   algo, queryId, bench [1]
-:    algo queryId          bench Count    avg_ms       stdv
-:   <chr>   <int>          <chr> <int>     <dbl>      <dbl>
-: 1 BTree      10 scan_at_region    NA 0.3741499 0.03915504
+: # A tibble: 1 x 7
+:    algo queryId          bench Refine Count   avg_ms      stdv
+:   <chr>   <int>          <chr>  <int> <int>    <dbl>     <dbl>
+: 1 BTree      10 scan_at_region    255    NA 89.45239 0.4070152
 
-Plot overview
-#+begin_src R :results output graphics :file "./img/overview_query_region.png" :exports both :width 800 :height 600 :session 
-
+*** Plot overview                                                  :export:
+#+begin_src R :results output graphics :file "./img/overview_query_region.png" :exports results :width 800 :height 600 :session 
 
 myplot <- function(data) {
     data %>%
     #mutate(queryW = queryId %/% 10) %>%
     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
 #    arrange(desc(queryW)) %>%
-    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) + 
+    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) +  
     geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
     geom_point() +
     #labs(title= data$bench) +     
@@ -624,141 +637,139 @@ dfplot %>%
 #+RESULTS:
 [[file:./img/overview_query_region.png]]
 
-*** Conclusions
+*** Conclusions                                                    :export:
 
 - PMQ shows its best benefits on large range queries
 - for very small queries we are similar to othe Btree an Rtree
+- Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
-** What is the actual counts of elements per query ?: 
+** What is the actual count of elements per query ?: 
 
-There is one query where th count differs for Rtree by on element
-#+begin_src R :results output :exports both :session 
+*** Plot                                                         :noexport:
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+    mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+    ggplot(aes(x = as.factor(queryId), color = algo)) +  
+    geom_point(aes(y = Count)) +
+    facet_wrap(~queryId,scale="free", labeller = "label_both") + 
+    theme(legend.position = "bottom",)
+}
+#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
+#dfplot %>% filter(bench == "apply_at_region") %>% myplot()
+dfplot %>% 
+    myplot() 
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-303604q/figure3036vdb.png]]
+
+
+*** Table                                                          :export:
+There are some queries where the count differs for Rtree by a small amout of elements
+Counts have some differences :
+#+begin_src R :results output :exports none :session 
+options(dplyr.width = Inf)
 dfplot %>% 
     filter( bench== "apply_at_region") %>% 
     #group to see if every algo has same coubts
     group_by(queryId, bench) %>%
-    summarize(c = mean(Count), s = sd(Count)  ) %>% filter ( s > 0)  
+    summarize(c = mean(Count), s = sd(Count)  ) %>% filter ( s > 0)
 
-dfplot %>% filter(queryId == 20)
+dfplot %>% filter( bench=="apply_at_region" ) %>% arrange(queryId)
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 1 x 4
-# Groups:   queryId [1]
-  queryId           bench        c         s
-    <int>           <chr>    <dbl>     <dbl>
-1      20 apply_at_region 8154.333 0.5773503
-# A tibble: 6 x 6
-# Groups:   algo, queryId, bench [6]
-           algo queryId           bench Count    avg_ms         stdv
-          <chr>   <int>           <chr> <int>     <dbl>        <dbl>
-1         BTree      20 apply_at_region  8154 0.0678552 0.0036170891
-2         BTree      20  scan_at_region    NA 0.1007520 0.0056617701
-3 GeoHashBinary      20 apply_at_region  8154 0.0334573 0.0023895598
-4 GeoHashBinary      20  scan_at_region    NA 0.0498771 0.0028642236
-5         RTree      20 apply_at_region  8155 0.0998077 0.0007759466
-6         RTree      20  scan_at_region    NA 0.1499539 0.0053384533
+# A tibble: 20 x 4
+# Groups:   queryId [20]
+   queryId           bench          c         s
+     <int>           <chr>      <dbl>     <dbl>
+ 1       1 apply_at_region 13238672.0 1.4142136
+ 2       2 apply_at_region 13232631.5 0.5773503
+ 3       3 apply_at_region 13236198.0 1.1547005
+ 4       5 apply_at_region 13234142.5 0.5773503
+ 5       6 apply_at_region 13236458.2 1.5000000
+ 6       7 apply_at_region 13237089.5 1.7320508
+ 7       8 apply_at_region 13237619.2 1.5000000
+ 8      11 apply_at_region  3307715.0 1.1547005
+ 9      14 apply_at_region  3311511.0 1.1547005
+10      15 apply_at_region  3307750.0 0.8164966
+11      16 apply_at_region  3306478.8 0.9574271
+12      20 apply_at_region   827282.5 0.5773503
+13      23 apply_at_region   826549.8 0.5000000
+14      26 apply_at_region   826960.8 0.5000000
+15      27 apply_at_region   826865.5 0.5773503
+16      30 apply_at_region   206005.8 0.5000000
+17      33 apply_at_region   206557.5 0.5773503
+18      41 apply_at_region    51758.5 0.5773503
+19      42 apply_at_region    51959.5 0.5773503
+20      56 apply_at_region    12961.5 0.5773503
+# A tibble: 320 x 7
+            algo queryId           bench Refine    Count     avg_ms       stdv
+           <chr>   <int>           <chr>  <int>    <int>      <dbl>      <dbl>
+ 1         BTree       0 apply_at_region    482 13239675 261.008800 1.32437472
+ 2 GeoHashBinary       0 apply_at_region    482 13239675   9.993922 0.02765056
+ 3         RTree       0 apply_at_region     NA 13239675 232.691200 0.15173793
+ 4     RTreeBulk       0 apply_at_region     NA 13239675  37.106310 0.02105287
+ 5         BTree       1 apply_at_region    519 13238671 264.323400 0.47537358
+ 6 GeoHashBinary       1 apply_at_region    519 13238671  10.146100 0.06975201
+ 7         RTree       1 apply_at_region     NA 13238672 230.822700 0.14978581
+ 8     RTreeBulk       1 apply_at_region     NA 13238674  37.150580 0.02902730
+ 9         BTree       2 apply_at_region    708 13232631 262.139700 0.51322619
+10 GeoHashBinary       2 apply_at_region    708 13232631   9.751330 0.01564733
+# ... with 310 more rows
 #+end_example
 
-#+begin_src R :results output :exports both :session 
+Cases where the Count doesn't match exactly. 
+#+begin_src R :results table :exports results :session :colnames yes
+
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    #group to see if every algo has same coubts
+    group_by(queryId) %>%
+    summarize(Var = round(var(Count),3)  ) %>% filter ( Var > 0) -> 
+countVariation
+
 options(dplyr.width = Inf)
 dfplot %>% 
     filter( bench == "apply_at_region") %>%
     ungroup( bench) %>% # must ungroup to drop the column
-    select( -bench, -stdv) %>%
+    select( -bench, -stdv, -Refine) %>%
     gather(measure, value, Count, avg_ms) %>%
     unite(temp, algo, measure) %>%
-    spread( temp, value) %>%
+    spread( temp, value) %>% 
+    #select(queryId,ends_with("Count") , ends_with("ms")) %>%
+    select(queryId,ends_with("Count") ) %>%
+ #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
+    inner_join(countVariation) %>%
     as_tibble() %>%
     print(n = nrow(.))
 #+end_src
 
 #+RESULTS:
-#+begin_example
-# A tibble: 80 x 7
-   queryId BTree_avg_ms BTree_Count GeoHashBinary_avg_ms GeoHashBinary_Count RTree_avg_ms RTree_Count
- ,*   <int>        <dbl>       <dbl>                <dbl>               <dbl>        <dbl>       <dbl>
- 1       0    1.0426081      132363            0.2037840              132363    1.8183480      132363
- 2       1    0.9101590      132280            0.2416327              132280    1.7508900      132280
- 3       2    1.1126400      132084            0.2711833              132084    1.7523560      132084
- 4       3    0.9854236      132291            0.2287143              132291    1.8415490      132291
- 5       4    0.9500366      132312            0.2323745              132312    1.8674060      132312
- 6       5    1.0444628      132471            0.2187206              132471    1.7522920      132471
- 7       6    0.9487325      132330            0.2488682              132330    1.7532490      132330
- 8       7    0.9745518      132095            0.2187616              132095    1.8373120      132095
- 9       8    0.8688792      132232            0.2186041              132232    1.6141160      132232
-10       9    0.9460561      132144            0.2573925              132144    1.6276280      132144
-11      10    0.2292115       33390            0.0783490               33390    0.2962927       33390
-12      11    0.2212553       32941            0.0780191               32941    0.2420338       32941
-13      12    0.2257064       33314            0.0760559               33314    0.2909577       33314
-14      13    0.2557200       33137            0.1019111               33137    0.2692840       33137
-15      14    0.2329901       33256            0.0808004               33256    0.3019309       33256
-16      15    0.2324388       33111            0.0802684               33111    0.2376549       33111
-17      16    0.2390114       33098            0.0838790               33098    0.2662903       33098
-18      17    0.2314932       32822            0.0844051               32822    0.2062952       32822
-19      18    0.2577060       33032            0.1004636               33032    0.2284387       33032
-20      19    0.2310396       33295            0.0797515               33295    0.2665217       33295
-21      20    0.0678552        8154            0.0334573                8154    0.0998077        8155
-22      21    0.0702593        8333            0.0333716                8333    0.0979199        8333
-23      22    0.0710358        8315            0.0347065                8315    0.0642748        8315
-24      23    0.0720809        8311            0.0365934                8311    0.0719840        8311
-25      24    0.0766017        8192            0.0374648                8192    0.0723196        8192
-26      25    0.0736760        8127            0.0359640                8127    0.0863986        8127
-27      26    0.0783671        8218            0.0392759                8218    0.0734920        8218
-28      27    0.0786585        8333            0.0408821                8333    0.0607923        8333
-29      28    0.0836931        8403            0.0440083                8403    0.0952383        8403
-30      29    0.0729165        8183            0.0330339                8183    0.1069130        8183
-31      30    0.0179516        2035            0.0169652                2035    0.0159808        2035
-32      31    0.0301830        2130            0.0243284                2130    0.0175006        2130
-33      32    0.0176269        2058            0.0153354                2058    0.0440493        2058
-34      33    0.0213570        1963            0.0195343                1963    0.0271132        1963
-35      34    0.0179458        2081            0.0149013                2081    0.0180261        2081
-36      35    0.0172176        1975            0.0152589                1975    0.0154373        1975
-37      36    0.0207823        2084            0.0187425                2084    0.0249510        2084
-38      37    0.0185908        2079            0.0160189                2079    0.0154365        2079
-39      38    0.0241236        2055            0.0212734                2055    0.0170222        2055
-40      39    0.0188518        2019            0.0167951                2019    0.0185687        2019
-41      40    0.0067703         509            0.0073513                 509    0.0092524         509
-42      41    0.0089118         527            0.0090019                 527    0.0046692         527
-43      42    0.0076295         519            0.0074422                 519    0.0061703         519
-44      43    0.0084467         498            0.0086150                 498    0.0080847         498
-45      44    0.0077735         521            0.0079684                 521    0.0068752         521
-46      45    0.0175884         464            0.0170815                 464    0.0069983         464
-47      46    0.0074878         523            0.0074183                 523    0.0125088         523
-48      47    0.0191017         512            0.0181477                 512    0.0111560         512
-49      48    0.0079213         513            0.0081270                 513    0.0065637         513
-50      49    0.0069588         529            0.0067401                 529    0.0057790         529
-51      50    0.0023504         126            0.0024698                 126    0.0058357         126
-52      51    0.0038327         139            0.0043222                 139    0.0052998         139
-53      52    0.0035994         136            0.0038301                 136    0.0030397         136
-54      53    0.0021562         100            0.0022245                 100    0.0022661         100
-55      54    0.0038772         135            0.0042329                 135    0.0028373         135
-56      55    0.0064533         122            0.0066319                 122    0.0025843         122
-57      56    0.0023988         152            0.0025701                 152    0.0055721         152
-58      57    0.0055440         124            0.0063626                 124    0.0032938         124
-59      58    0.0029288         137            0.0031200                 137    0.0060331         137
-60      59    0.0039246         114            0.0045158                 114    0.0027009         114
-61      60    0.0013719          30            0.0015612                  30    0.0027169          30
-62      61    0.0012204          30            0.0013269                  30    0.0041714          30
-63      62    0.0013704          21            0.0013727                  21    0.0032260          21
-64      63    0.0024234          33            0.0026635                  33    0.0009686          33
-65      64    0.0012554          41            0.0014584                  41    0.0027085          41
-66      65    0.0021892          39            0.0024029                  39    0.0027298          39
-67      66    0.0010218          30            0.0010391                  30    0.0027699          30
-68      67    0.0013029          32            0.0014487                  32    0.0028457          32
-69      68    0.0018087          36            0.0020268                  36    0.0021834          36
-70      69    0.0017585          39            0.0018600                  39    0.0038034          39
-71      70    0.0006130           6            0.0006230                   6    0.0020448           6
-72      71    0.0011550           3            0.0012974                   3    0.0015886           3
-73      72    0.0001859           7            0.0002210                   7    0.0018024           7
-74      73    0.0013315          16            0.0014640                  16    0.0014068          16
-75      74    0.0015132           8            0.0017134                   8    0.0027369           8
-76      75    0.0014011          14            0.0015692                  14    0.0019752          14
-77      76    0.0014812           6            0.0018275                   6    0.0022774           6
-78      77    0.0017360          10            0.0019115                  10    0.0015728          10
-79      78    0.0013188           4            0.0015203                   4    0.0015357           4
-80      79    0.0007937           4            0.0008228                   4    0.0019735           4
-#+end_example
-
+| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
+|---------+-------------+---------------------+-----------------+-------------+-------|
+|       1 |    13238671 |            13238671 |        13238674 |    13238672 |     2 |
+|       2 |    13232631 |            13232631 |        13232632 |    13232632 | 0.333 |
+|       3 |    13236197 |            13236197 |        13236199 |    13236199 | 1.333 |
+|       5 |    13234142 |            13234142 |        13234143 |    13234143 | 0.333 |
+|       6 |    13236459 |            13236459 |        13236459 |    13236456 |  2.25 |
+|       7 |    13237088 |            13237088 |        13237091 |    13237091 |     3 |
+|       8 |    13237620 |            13237620 |        13237620 |    13237617 |  2.25 |
+|      11 |     3307714 |             3307714 |         3307716 |     3307716 | 1.333 |
+|      14 |     3311510 |             3311510 |         3311512 |     3311512 | 1.333 |
+|      15 |     3307750 |             3307750 |         3307751 |     3307749 | 0.667 |
+|      16 |     3306478 |             3306478 |         3306479 |     3306480 | 0.917 |
+|      20 |      827282 |              827282 |          827283 |      827283 | 0.333 |
+|      23 |      826550 |              826550 |          826550 |      826549 |  0.25 |
+|      26 |      826961 |              826961 |          826961 |      826960 |  0.25 |
+|      27 |      826865 |              826865 |          826866 |      826866 | 0.333 |
+|      30 |      206006 |              206006 |          206006 |      206005 |  0.25 |
+|      33 |      206557 |              206557 |          206558 |      206558 | 0.333 |
+|      41 |       51758 |               51758 |           51759 |       51759 | 0.333 |
+|      42 |       51959 |               51959 |           51960 |       51960 | 0.333 |
+|      56 |       12961 |               12961 |           12962 |       12962 | 0.333 |
+#+TBLFM: $6=$0;%0.3f
 

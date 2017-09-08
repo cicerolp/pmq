@@ -461,5 +461,3 @@ echo "[[$expFolder/exp.org]]"
   #+RESULTS:
 
   [[./data/cicero/exp20170907145711/exp.org]]
-
-
