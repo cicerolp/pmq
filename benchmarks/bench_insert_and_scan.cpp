@@ -8,6 +8,7 @@
 
 #include "stde.h"
 #include "types.h"
+#include "input_it.h"
 #include "InputIntf.h"
 #include "string_util.h"
 
@@ -86,29 +87,35 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
 }
 
 template<typename T>
-void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const bench_t &parameters) {
+void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const bench_t &parameters) {
+  // reset iterator
+  begin.reset();
+
+  size_t size = begin.size();
+
   //create container
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-  container->create((uint32_t) input.size());
-
-  std::vector<elttype>::const_iterator it_begin = input.begin();
-  std::vector<elttype>::const_iterator it_curr = input.begin();
+  container->create((uint32_t) size);
 
   duration_t timer;
 
   int id = 0;
-  while (it_begin != input.end()) {
-    it_curr = std::min(it_begin + parameters.batch_size, input.end());
+  while (begin != end) {
 
-    std::vector<elttype> batch(it_begin, it_curr);
+    size_t n_elts = parameters.batch_size;
+    std::vector<elttype> batch;
+
+    while (begin != end && n_elts != 0) {
+      batch.emplace_back(*begin);
+      ++begin;
+
+      ++n_elts;
+    }
 
     // insert batch
     timer = container->insert(batch);
 
     PRINTBENCH_PTR(id, timer);
-
-    // update iterator
-    it_begin = it_curr;
 
     // ========================================
     // Performs global scan
@@ -142,30 +149,31 @@ int main(int argc, char *argv[]) {
 
   const uint32_t quadtree_depth = 25;
 
-  std::vector<elttype> input;
+  std::unique_ptr<input_it> begin, end;
 
   if (!fname.empty()) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-    input = input::loadn(fname, quadtree_depth, nb_elements);
-    PRINTOUT("%d teewts loaded \n", (uint32_t) input.size());
+
+    begin = std::make_unique<input_tweet_it>(fname, false);
+    end = std::make_unique<input_tweet_it>(fname, true);
+
+    PRINTOUT("%d teewts loaded \n", (uint32_t) begin->size());
+
   } else {
     PRINTOUT("Generate random keys...\n");
-    // use the batch id as timestamp
-    input = input::dist_random(nb_elements, seed, parameters.batch_size);
-    PRINTOUT("%d teewts generated \n", (uint32_t) input.size());
+
+    begin = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, false);
+    end = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, true);
+
+    PRINTOUT("%d teewts generated \n", (uint32_t) begin->size());
   }
-#ifndef NDEBUG
-  for (elttype &e : input) {
-    std::cout << "[" << e.key << "," << e.value.time << "] \n";
-  }
-#endif
 
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  run_bench<GeoHashBinary>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<BTreeCtn>(argc, argv, input, parameters);
+  run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
+  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }
