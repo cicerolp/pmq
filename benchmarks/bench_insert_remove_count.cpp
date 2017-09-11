@@ -45,19 +45,30 @@ struct bench_t {
 
   friend inline std::ostream &operator<<(std::ostream &out, const bench_t &p) {
 
-      out << "Benchmark Parmeters: \n" ;
-      out << " n_exp: " << p.n_exp << "\n";
-      out << " rate: " << p.rate << "\n";
-      out << " t_win: " << p.t_win << "\n";
-      out << " ctn_size: " << p.ctn_size << "\n";
-      out << " max_tree_size: " << p.max_tree_size << "\n";
+    out << "Benchmark Parmeters: \n";
+    out << " n_exp: " << p.n_exp << "\n";
+    out << " rate: " << p.rate << "\n";
+    out << " t_win: " << p.t_win << "\n";
+    out << " ctn_size: " << p.ctn_size << "\n";
+    out << " max_tree_size: " << p.max_tree_size << "\n";
 
-    return out ;
+    return out;
   }
 
 };
 
 uint32_t g_Quadtree_Depth = 25;
+
+using remove_function = std::function<int(const void *, uint64_t)>;
+using remove_apply_function = std::function<int(const void *)>;
+
+int remove_elttype(const void *el, uint64_t oldest_time) {
+  return ((elttype *) el)->value.time < oldest_time;
+}
+
+int remove_valuetype(const void *el, uint64_t oldest_time) {
+  return ((valuetype *) el)->time < oldest_time;
+}
 
 // reads the full element
 void inline read_element(const valuetype &el) {
@@ -70,72 +81,71 @@ void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
 }
 
 template<typename T>
-void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const bench_t &parameters) {
+void run_bench(int argc, char *argv[], const std::vector<elttype> &input,
+               const bench_t &parameters, remove_function is_removed) {
 
- // for (uint64_t temp_window = parameters.min_t; temp_window <= parameters.max_t; temp_window += parameters.inc_t) {
+  // for (uint64_t temp_window = parameters.min_t; temp_window <= parameters.max_t; temp_window += parameters.inc_t) {
 
-    uint64_t temp_window = parameters.t_win;
+  uint64_t temp_window = parameters.t_win;
 
-    // calculates the inital ize based on insertion rate and temporal window (rate * temporal_window)
-    uint64_t init_size =  parameters.rate * parameters.t_win;
+  // calculates the inital ize based on insertion rate and temporal window (rate * temporal_window)
+  uint64_t init_size = parameters.rate * parameters.t_win;
 
-    //create container with the appropriate size
-    std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-    container->create((uint32_t) parameters.ctn_size);
+  //create container with the appropriate size
+  std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
+  container->create((uint32_t) parameters.ctn_size);
 
-    //We insert all the elements of the dataset, the container should delete the oldest to keep place for everything
-    std::vector<elttype>::const_iterator it_begin = input.begin();
-    std::vector<elttype>::const_iterator it_curr = input.begin();
-    std::vector<elttype>::const_iterator it_end = input.end();
+  //We insert all the elements of the dataset, the container should delete the oldest to keep place for everything
+  std::vector<elttype>::const_iterator it_begin = input.begin();
+  std::vector<elttype>::const_iterator it_curr = input.begin();
+  std::vector<elttype>::const_iterator it_end = input.end();
 
-    duration_t timer;
+  duration_t timer;
 
-    uint64_t t_now = temp_window; //current time counter
-    uint64_t oldest_time = 0;
+  uint64_t t_now = temp_window; //current time counter
+  uint64_t oldest_time = 0;
 
-    // INITIALIZE THE CONTAINER TO FILL IT UNTIL THE STEADY STATE
-    // Fills the time window
-    it_curr = std::min(it_begin + init_size, it_end);
-    std::vector<elttype> initBatch(it_begin, it_curr);
-    container->insert_rm(initBatch, [oldest_time](const void *el) {
-      return ((elttype *) el)->value.time < oldest_time;
-    });
+  remove_apply_function _apply = std::bind(is_removed, std::placeholders::_1, std::ref(oldest_time));
 
-    DBG_PRINTOUT("INIT container with %d elements\n", init_size);
+  // INITIALIZE THE CONTAINER TO FILL IT UNTIL THE STEADY STATE
+  // Fills the time window
+  it_curr = std::min(it_begin + init_size, it_end);
+  std::vector<elttype> initBatch(it_begin, it_curr);
+  container->insert_rm(initBatch, _apply);
 
+  DBG_PRINTOUT("INIT container with %d elements\n", init_size);
+
+  it_begin = it_curr;
+
+  // Continues inserting by batches.
+  while (it_begin != it_end) {
+    it_curr = std::min(it_begin + parameters.rate, it_end);
+
+    std::vector<elttype> batch(it_begin, it_curr);
+
+    if (t_now >= temp_window) {
+      oldest_time++;
+    }
+
+    DBG_PRINTOUT("Removing elements with timestamp < %u and insert one batch\n", oldest_time);
+
+    if (!parameters.dryrun) {
+      timer = container->insert_rm(batch, _apply);
+    }
+
+    // ========================================
+    // Count elements on the container
+    if (!parameters.dryrun) {
+      PRINTBENCH_PTR(temp_window, t_now, timer, "count", container->size());
+    } else {
+      PRINTBENCH_PTR("dryrun", temp_window, t_now, 0, "count", container->size());
+    }
+
+    // update iterator
     it_begin = it_curr;
 
-    // Continues inserting by batches.
-    while (it_begin != it_end) {
-      it_curr = std::min(it_begin + parameters.rate, it_end);
-
-      std::vector<elttype> batch(it_begin, it_curr);
-
-      if (t_now >= temp_window) {
-        oldest_time++;
-      }
-
-      DBG_PRINTOUT("Removing elements with timestamp < %u and insert one batch\n", oldest_time);
-
-      if (!parameters.dryrun) {
-        timer = container->insert_rm(batch, [oldest_time](const void *el) {
-          return ((elttype *) el)->value.time < oldest_time;
-        });
-      }
-
-      // ========================================
-      // Count elements on the container
-      if (!parameters.dryrun) {
-          PRINTBENCH_PTR(temp_window, t_now, timer , "count", container->size());
-      } else {
-        PRINTBENCH_PTR("dryrun", temp_window, t_now, 0, "count", container->size());
-      }
-
-      // update iterator
-      it_begin = it_curr;
-
-      t_now++;
-    }
+    t_now++;
+  }
   //}
 }
 
@@ -150,14 +160,14 @@ int main(int argc, char *argv[]) {
   std::string fname(cimg_option("-f", "", "file with tweets to load"));
 
 
-//   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
+  //parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
 
   parameters.rate = (cimg_option("-rate", 1000, "Rate (elements per batch) for insertions"));
   parameters.t_win = (cimg_option("-T", 10800, "Temporal window Size"));
   parameters.max_tree_size = (cimg_option("-tSize", 10800000, "Max size for the Btree and Rtree"));
 
   //parameters.min_t = (cimg_option("-min_t", 10800, "Temporal window: Min"));
- // parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
+  //parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
   //parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
   parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
@@ -169,8 +179,8 @@ int main(int argc, char *argv[]) {
 
   const uint32_t quadtree_depth = 25;
 
-//   uint64_t n_elts = parameters.rate * parameters.max_t;
-// We want to load everything, not just the timewindow.
+  //uint64_t n_elts = parameters.rate * parameters.max_t;
+  // we want to load everything, not just the timewindow.
 
   std::vector<elttype> input;
 
@@ -193,14 +203,13 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
- // run_bench<GeoHashSequential>(argc, argv, input, parameters);
   parameters.ctn_size = parameters.rate * parameters.t_win;
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  //run_bench<GeoHashSequential>(argc, argv, input, parameters);
+  run_bench<GeoHashBinary>(argc, argv, input, parameters, remove_elttype);
 
   parameters.ctn_size = parameters.max_tree_size;
-  run_bench<BTreeCtn>(argc, argv, input, parameters);
-  run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, parameters);
-
+  //run_bench<BTreeCtn>(argc, argv, input, parameters);
+  run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, parameters, remove_valuetype);
 
   return EXIT_SUCCESS;
 }
