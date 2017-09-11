@@ -64,6 +64,8 @@ class RTreeCtn : public GeoCtnIntf {
     // remove start
     timer.start();
     if (_rtree->size() >= _size) {
+
+        DBG_PRINTOUT("RTREE remove %d\n",_rtree->size());
       // convert from region_t to boost:box
       box query_box(point(-85.0511322, -180), point(85.0511322, 180));
 

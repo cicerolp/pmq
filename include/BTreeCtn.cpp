@@ -49,6 +49,7 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
   // remove start
   timer.start();
   if (_btree->size() >= _size) {
+    DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
     auto it = _btree->begin();
     while (it != _btree->end()) {
       // keep valid iterator
