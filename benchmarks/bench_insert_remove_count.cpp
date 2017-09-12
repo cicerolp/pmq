@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
   run_bench<GeoHashBinary>(argc, argv, input, parameters, remove_elttype);
 
   parameters.ctn_size = parameters.max_tree_size;
-  //run_bench<BTreeCtn>(argc, argv, input, parameters);
+  run_bench<BTreeCtn>(argc, argv, input, parameters, remove_valuetype);
   run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, parameters, remove_valuetype);
 
   return EXIT_SUCCESS;

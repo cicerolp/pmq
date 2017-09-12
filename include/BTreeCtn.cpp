@@ -48,19 +48,32 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
 
   // remove start
   timer.start();
-  if (_btree->size() >= _size) {
-    DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
-    auto it = _btree->begin();
-    while (it != _btree->end()) {
-      // keep valid iterator
-      auto it_rm = it;
-      // increment to the next iterator
-      ++it;
+  if (_btree->size() > _size) {
+     DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
 
-      if (is_removed(&(*it_rm).second)) {
-        _btree->erase(it_rm);
-      }
-    }
+     unsigned int key = _btree->begin()->first;
+
+     bool erased = true;
+
+     while( erased ) {
+        // find position of last erased key
+        auto it = _btree->lower_bound(key);
+
+        erased = false;
+        for ( ; it != _btree->end() ; it++ ) {
+           //test remove condition
+           if ( is_removed( &(it->second) ) ){
+              // saves key erased
+              key = it->first;
+              _btree->erase(it);
+              erased = true;
+              // ends the loop because iterartor were invalidated
+              break;
+           }
+        }
+
+     }
+
   }
   // remove end
   timer.stop();

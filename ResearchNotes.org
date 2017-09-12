@@ -206,3 +206,12 @@ https://github.com/runshenzhu/palmtree
 Sequential comparison witgh stx:Btree
 https://panthema.net/2007/stx-btree/
 https://github.com/bingmann/stx-btree
+
+*** Stx-btree 
+Implementation of an efficient Btree available at: 
+https://github.com/bingmann/stx-btree
+
+This is the sequential implementation used for comparison in the Palm-Tree paper. 
+
+Detailed performance tests in: 
+http://panthema.net/2007/stx-btree/speedtest/
