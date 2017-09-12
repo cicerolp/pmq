@@ -65,10 +65,8 @@ class RTreeCtn : public GeoCtnIntf {
     timer.start();
     if (_rtree->size() > _size) {
 
-        DBG_PRINTOUT("RTREE remove %d\n",_rtree->size());
-      // convert from region_t to boost:box
-      box query_box(point(-85.0511322, -180), point(85.0511322, 180));
-
+      DBG_PRINTOUT("RTREE remove %d\n", _rtree->size());
+      
       // temporary result
       std::vector<value> result;
       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
