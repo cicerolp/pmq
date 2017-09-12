@@ -63,7 +63,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     // remove start
     timer.start();
-    if (_rtree->size() >= _size) {
+    if (_rtree->size() > _size) {
 
         DBG_PRINTOUT("RTREE remove %d\n",_rtree->size());
       // convert from region_t to boost:box
