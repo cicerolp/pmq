@@ -71,8 +71,7 @@ class RTreeCtn : public GeoCtnIntf {
 
       // temporary result
       std::vector<value> result;
-      _rtree->query(bgi::intersects(query_box)
-                        && bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
+      _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
                     std::back_inserter(result));
 
       for (const auto &elt : result) {
