@@ -11,7 +11,7 @@
 #include "GeoCtnIntf.h"
 
 #include "GeoHash.h"
-#include "PMABatchCtn.h"
+//#include "PMABatchCtn.h"
 #include "DenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \

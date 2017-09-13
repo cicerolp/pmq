@@ -55,9 +55,9 @@ add_executable(bench_queries_region
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-        ../include/PostGisCtn.cpp
-        ../include/PMABatchCtn.cpp
-        ../include/SpatiaLiteCtn.cpp
+#        ../include/PostGisCtn.cpp
+#        ../include/PMABatchCtn.cpp
+#        ../include/SpatiaLiteCtn.cpp
         ../include/DenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
@@ -80,9 +80,9 @@ add_executable(bench_insert_and_scan
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-        ../include/PostGisCtn.cpp
-        ../include/PMABatchCtn.cpp
-        ../include/SpatiaLiteCtn.cpp
+#        ../include/PostGisCtn.cpp
+#        ../include/PMABatchCtn.cpp
+#        ../include/SpatiaLiteCtn.cpp
         ../include/DenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
@@ -105,9 +105,9 @@ add_executable(bench_memory
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-        ../include/PostGisCtn.cpp
-        ../include/PMABatchCtn.cpp
-        ../include/SpatiaLiteCtn.cpp
+#        ../include/PostGisCtn.cpp
+#        ../include/PMABatchCtn.cpp
+#        ../include/SpatiaLiteCtn.cpp
         ../include/DenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
