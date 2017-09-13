@@ -1,0 +1,80 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+Scanning dependencies of target twitterVis
+[  1%] Building CXX object CMakeFiles/twitterVis.dir/include/BTreeCtn.cpp.o
+[  2%] Building CXX object CMakeFiles/twitterVis.dir/include/GeoHash.cpp.o
+[  3%] Linking CXX executable twitterVis
+[ 23%] Built target twitterVis
+Scanning dependencies of target test_geohash
+[ 25%] Building CXX object tests/CMakeFiles/test_geohash.dir/__/include/GeoHash.cpp.o
+[ 26%] Linking CXX executable test_geohash
+[ 28%] Built target test_geohash
+[ 34%] Built target test_pma_diff
+Scanning dependencies of target test_geohash_count
+[ 35%] Building CXX object tests/CMakeFiles/test_geohash_count.dir/__/include/GeoHash.cpp.o
+[ 36%] Linking CXX executable test_geohash_count
+[ 39%] Built target test_geohash_count
+Scanning dependencies of target test_insert_remove_scan
+[ 40%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 42%] Linking CXX executable test_insert_remove_scan
+[ 47%] Built target test_insert_remove_scan
+Scanning dependencies of target test_containers_count
+[ 48%] Building CXX object tests/CMakeFiles/test_containers_count.dir/__/include/GeoHash.cpp.o
+[ 50%] Building CXX object tests/CMakeFiles/test_containers_count.dir/__/include/BTreeCtn.cpp.o
+[ 51%] Linking CXX executable test_containers_count
+[ 53%] Built target test_containers_count
+Scanning dependencies of target bench_insert_remove_count
+[ 55%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/GeoHash.cpp.o
+[ 56%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/BTreeCtn.cpp.o
+[ 57%] Linking CXX executable bench_insert_remove_count
+[ 60%] Built target bench_insert_remove_count
+Scanning dependencies of target bench_topk_search
+[ 61%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/BTreeCtn.cpp.o
+[ 63%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/GeoHash.cpp.o
+[ 64%] Linking CXX executable bench_topk_search
+[ 68%] Built target bench_topk_search
+Scanning dependencies of target bench_queries_region
+[ 69%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/bench_queries_region.cpp.o
+[ 71%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/GeoHash.cpp.o
+[ 72%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/BTreeCtn.cpp.o
+[ 73%] Linking CXX executable bench_queries_region
+[ 81%] Built target bench_queries_region
+Scanning dependencies of target bench_insert_remove_scan
+[ 82%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 84%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/BTreeCtn.cpp.o
+[ 85%] Linking CXX executable bench_insert_remove_scan
+[ 88%] Built target bench_insert_remove_scan
+Scanning dependencies of target bench_insert_and_scan
+[ 89%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/GeoHash.cpp.o
+[ 90%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/BTreeCtn.cpp.o
+[ 92%] Linking CXX executable bench_insert_and_scan
+[100%] Built target bench_insert_and_scan
+bench_queries_region_random_10000_100_8_1504649431.log
+Already on 'exp20170830124159'
+A	data/cicero/exp20170830124159/run_1504649431
+Your branch is up-to-date with 'origin/exp20170830124159'.

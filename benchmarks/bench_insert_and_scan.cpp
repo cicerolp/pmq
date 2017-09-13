@@ -32,6 +32,12 @@
    std::cout << std::endl ;\
 } while (0)
 
+/*void printStats(duration_t timer){
+  for (auto &info : timer) {
+    std::cout << info ;
+  }
+}*/
+
 /*#define PRINTBENCH( ... ) do { \
 } while (0)*/
 
@@ -72,15 +78,17 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
     timer = container.scan_at_region(region, read_element);
 
-    for (auto &info : timer) {
-      PRINTBENCH(info.name, id, info.duration, "ms");
-    }
+    PRINTBENCH(id, timer);
+//    for (auto &info : timer) {
+//      PRINTBENCH(info.name, id, info.duration, "ms");
+//    }
   }
 
   timer = container.apply_at_region(region, _apply);
-  for (auto &info : timer) {
-    PRINTBENCH(info.name, id, info.duration, "ms", count);
-  }
+  PRINTBENCH(id, timer, "count", count);
+  //for (auto &info : timer) {
+  //  PRINTBENCH(info.name, id, info.duration, "ms", count);
+ // }
 }
 
 template<typename T>
@@ -103,9 +111,7 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const 
     // insert batch
     timer = container->insert(batch);
 
-    for (auto &info : timer) {
-      PRINTBENCH_PTR(info.name, id, info.duration, "ms");
-    }
+    PRINTBENCH_PTR(id, timer);
 
     // update iterator
     it_begin = it_curr;
@@ -129,10 +135,10 @@ int main(int argc, char *argv[]) {
 
   cimg_usage("Queries Benchmark inserts elements in batches.");
 
-  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
+  std::string fname(cimg_option("-f", "", "File with tweets to load"));
 
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -144,9 +150,9 @@ int main(int argc, char *argv[]) {
 
   std::vector<elttype> input;
 
-  if (nb_elements == 0) {
+  if (!fname.empty()) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-    input = input::load(fname, quadtree_depth);
+    input = input::loadn(fname, quadtree_depth,nb_elements);
     PRINTOUT("%d teewts loaded \n", (uint32_t) input.size());
   } else {
     PRINTOUT("Generate random keys...\n");
@@ -160,12 +166,12 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
- //run_bench<GeoHashSequential>(argc, argv, input, parameters);
+ // run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters);
 
   run_bench<BTreeCtn>(argc, argv, input, parameters);
 
-  run_bench<RTreeCtn<bgi::rstar<16>>>(argc, argv, input, parameters);
+  run_bench<RTreeCtn<bgi::quadratic<16>>>(argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }

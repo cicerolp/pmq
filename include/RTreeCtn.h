@@ -12,13 +12,15 @@ namespace bgi = boost::geometry::index;
 template<typename Balancing>
 class RTreeCtn : public GeoCtnIntf {
  public:
-  RTreeCtn(int argc, char *argv[]) : GeoCtnIntf() {
+  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) {
 
   }
-  virtual ~RTreeCtn() = default;
+  virtual ~RTreeCtn() {
+    _rtree->clear();
+  };
 
   // build container
-  duration_t create(uint32_t size) override {
+  virtual duration_t create(uint32_t size) override {
     Timer timer;
     timer.start();
 
@@ -32,7 +34,7 @@ class RTreeCtn : public GeoCtnIntf {
   }
 
   // update container
-  duration_t insert(std::vector<elttype> batch) override {
+  virtual duration_t insert(std::vector<elttype> batch) override {
     Timer timer;
     timer.start();
 
@@ -127,7 +129,7 @@ class RTreeCtn : public GeoCtnIntf {
     curr_z += region.z;
 
     // temporary result
-    std::vector<value> result;
+    RTreeCtnCounter<value> result;
 
     for (uint32_t x = x_min; x < x_max; ++x) {
       for (uint32_t y = y_min; y < y_max; ++y) {
@@ -162,7 +164,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     // longitude
     float xmin = mercator_util::tilex2lon(region.x0, region.z);
-    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);
+    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);  // JULIO : why + 1 ??
 
     // latitude
     float ymin = mercator_util::tiley2lat(region.y1 + 1, region.z);
@@ -172,7 +174,7 @@ class RTreeCtn : public GeoCtnIntf {
     box query_box(point(ymin, xmin), point(ymax, xmax));
 
     // temporary result
-    std::vector<value> result;
+    RTreeCtnCounter<value> result;
     _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
 
     __apply(spatial_t(region.x0 + (uint32_t) ((region.x1 - region.x0) / 2),
@@ -193,8 +195,94 @@ class RTreeCtn : public GeoCtnIntf {
     return _rtree->size();
   }
 
-  inline std::string name() const override {
+  virtual inline std::string name() const override {
     static auto name_str = "RTree";
+    return name_str;
+  }
+
+ protected:
+  template<typename _Tp>
+  class RTreeCtnCounter {
+   public:
+    typedef _Tp value_type;
+
+    uint32_t
+    size() const _GLIBCXX_NOEXCEPT {
+      return _count;
+    }
+
+    void
+    clear() _GLIBCXX_NOEXCEPT {
+      _count = 0;
+      return;
+    }
+
+    void
+    push_back(const value_type &__x) {
+      ++_count;
+      return;
+    }
+
+   private:
+    uint32_t _count = 0;
+  };
+
+  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  typedef bg::model::box<point> box;
+  typedef std::pair<point, valuetype> value;
+  typedef bgi::rtree<value, Balancing> rtree_t;
+
+  std::unique_ptr<rtree_t> _rtree{nullptr};
+  uint32_t _size;
+};
+
+template<typename Balancing>
+class RTreeBulkCtn : public RTreeCtn<Balancing> {
+ public:
+  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<Balancing>(argc, argv, _refLevel) {}
+  virtual ~RTreeBulkCtn() = default;
+
+  // build container
+  duration_t create(uint32_t size) override {
+    Timer timer;
+    timer.start();
+
+    this->_size = size;
+
+    timer.stop();
+    return {duration_info("create", timer)};
+  }
+
+  // update container
+  duration_t insert(std::vector<elttype> batch) override {
+    Timer timer;
+    timer.start();
+
+    if (this->_rtree == nullptr) {
+      // bulk loading
+      std::vector<value> data;
+
+      std::transform(
+          batch.begin(), batch.end(), std::back_inserter(data),
+          [&](const auto &elt) {
+            return std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value);
+          }
+      );
+
+      this->_rtree = std::make_unique<rtree_t>(data);
+
+    } else {
+      for (const auto &elt: batch) {
+        this->_rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      }
+    }
+
+    timer.stop();
+    return {duration_info("insert", timer)};
+  }
+
+  inline std::string name() const override {
+    static auto name_str = "RTreeBulk";
     return name_str;
   }
 
@@ -203,7 +291,4 @@ class RTreeCtn : public GeoCtnIntf {
   typedef bg::model::box<point> box;
   typedef std::pair<point, valuetype> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
-
-  std::unique_ptr<rtree_t> _rtree;
-  uint32_t _size;
 };

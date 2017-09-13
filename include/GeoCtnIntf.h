@@ -10,7 +10,7 @@ using applytype_function = std::function<void(const spatial_t & /*spatial area*/
 
 class GeoCtnIntf {
  public:
-  GeoCtnIntf() = default;
+  GeoCtnIntf(int _refLevel = 8):refLevel(_refLevel){}
 
   virtual ~GeoCtnIntf() = default;
 
@@ -49,6 +49,11 @@ class GeoCtnIntf {
   inline virtual size_t size() const { return 0; }
 
   inline virtual std::string name() const;
+
+ protected:
+  const int refLevel; // Max number of levels to refine searches in the GeoHash
+
+
 };
 
 std::string GeoCtnIntf::name() const {

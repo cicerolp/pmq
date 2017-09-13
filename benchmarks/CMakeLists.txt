@@ -1,3 +1,11 @@
+set(Boost_USE_STATIC_LIBS ON) # only find static libs
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+find_package(Boost 1.64.0 REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 add_executable(bench_topk_search
         bench_topk_search.cpp
 
@@ -56,7 +64,15 @@ add_executable(bench_queries_region
         #../include/RTreeCtn.h
         )
 
-target_link_libraries(bench_queries_region pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
+target_link_libraries(bench_queries_region
+        pma
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${SPATIALITE_LIBRARY}
+        ${SQLITE_LIBRARY}
+        ${GEOS_C_LIBRARY}
+        ${PQ_C_LIBRARY}
+        ${Boost_LIBRARIES}
+        )
 
 add_executable(bench_insert_and_scan
         bench_insert_and_scan.cpp
@@ -73,4 +89,12 @@ add_executable(bench_insert_and_scan
         #../include/RTreeCtn.h
         )
 
-target_link_libraries(bench_insert_and_scan pma ${CMAKE_THREAD_LIBS_INIT} ${SPATIALITE_LIBRARY} ${SQLITE_LIBRARY} ${GEOS_C_LIBRARY} ${PQ_C_LIBRARY})
+target_link_libraries(bench_insert_and_scan
+        pma
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${SPATIALITE_LIBRARY}
+        ${SQLITE_LIBRARY}
+        ${GEOS_C_LIBRARY}
+        ${PQ_C_LIBRARY}
+        ${Boost_LIBRARIES}
+        )

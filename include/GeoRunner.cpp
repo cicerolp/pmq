@@ -16,10 +16,12 @@ GeoRunner::GeoRunner(int argc, char* argv[]) {
    _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
 
    if (_opts.n_elts > 0){
-       _input = input::load_dmp_text(input_file, 25, _opts.n_elts);
+       //_input = input::load_dmp_text(input_file, 25, _opts.n_elts);
+       _input = input::load(input_file, 25, _opts.n_elts);
    }
    else{
-       _input = input::load_dmp_text(input_file, 25);
+       //_input = input::load_dmp_text(input_file, 25);
+       _input = input::load(input_file, 25);
    }
 
    _grid.resize(_x_grid * _y_grid, 0);

@@ -52,14 +52,6 @@ struct code_t {
     }
   }
 
-  /*inline bool operator==(const spatial_t& rhs) const {
-  return code == rhs.code;
-  }
-
-  inline bool operator<(const spatial_t& rhs) const {
-  return code < rhs.code;
-  }*/
-
   operator spatial_t() const {
     return spatial_t(code, z);
   }
@@ -71,35 +63,22 @@ struct code_t {
 struct region_t {
   region_t() = default;
 
-  region_t(float _lat, float _lon, float radius, uint32_t zoom) {
-    static const float PI_180_INV = 180.f / (float) M_PI;
-    static const float PI_180 = (float) M_PI / 180.f;
-    static const float r_earth = 6378.f;
-
-    lon = _lon;
-    lat = _lat;
-
-    float lat0 = lat + (radius / r_earth) * (PI_180_INV);
-
+  // make a region given uper-left ( _lat0,_lon0) and bottom-right (_lat1,_lon1) corners
+  region_t(float lat0, float lon0, float lat1, float lon1) {
     if (lat0 < -85.051132f) lat0 = -85.051132f;
     else if (lat0 > 85.051132f) lat0 = 85.051132f;
-
-    float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
 
     if (lon0 < -180.f) lon0 = -180.f;
     else if (lon0 > 180.f) lon0 = 180.f;
 
-    float lat1 = lat - (radius / r_earth) * (PI_180_INV);
-
     if (lat1 < -85.051132f) lat1 = -85.051132f;
     else if (lat1 > 85.051132f) lat1 = 85.051132f;
-
-    float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
 
     if (lon1 < -180.f) lon1 = -180.f;
     else if (lon1 > 180.f) lon1 = 180.f;
 
-    z = zoom;
+    // computes the corners of the bounding box aligned to the morton codes of a quadtree at level Z
+    z = 25;
 
     x0 = mercator_util::lon2tilex(lon0, z);
     y0 = mercator_util::lat2tiley(lat0, z);
@@ -108,6 +87,10 @@ struct region_t {
 
     code0 = mortonEncode_RAM(x0, y0);
     code1 = mortonEncode_RAM(x1, y1);
+
+    // final bb center
+    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
+    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
   }
 
   region_t(float _lat, float _lon, float radius) {
@@ -147,63 +130,6 @@ struct region_t {
 
     code0 = mortonEncode_RAM(x0, y0);
     code1 = mortonEncode_RAM(x1, y1);
-  }
-
-  region_t(uint32_t _x, uint32_t _y, uint8_t _z, double d) {
-    static const double PI_180_INV = 180.0 / M_PI;
-    static const double PI_180 = M_PI / 180.0;
-    static const double r_earth = 6378;
-
-    // temporary bb center
-    lon = mercator_util::tilex2lon(_x + 0.5, _z);
-    lat = mercator_util::tiley2lat(_y + 0.5, _z);
-
-    double lat0 = lat + (d / r_earth) * (PI_180_INV);
-
-    if (lat0 < -85.051132f) lat0 = -85.051132f;
-    else if (lat0 > 85.051132f) lat0 = 85.051132f;
-
-    double lon0 = lon - (d / r_earth) * (PI_180_INV) / cos(lat * PI_180);
-
-    if (lon0 < -180.f) lon0 = -180.f;
-    else if (lon0 > 180.f) lon0 = 180.f;
-
-    double lat1 = lat - (d / r_earth) * (PI_180_INV);
-
-    if (lat1 < -85.051132f) lat1 = -85.051132f;
-    else if (lat1 > 85.051132f) lat1 = 85.051132f;
-
-    double lon1 = lon + (d / r_earth) * (PI_180_INV) / cos(lat * PI_180);
-
-    if (lon1 < -180.f) lon1 = -180.f;
-    else if (lon1 > 180.f) lon1 = 180.f;
-
-    z = std::min(25, _z + 8);
-
-    x0 = mercator_util::lon2tilex(lon0, z);
-    y0 = mercator_util::lat2tiley(lat0, z);
-    x1 = mercator_util::lon2tilex(lon1, z);
-    y1 = mercator_util::lat2tiley(lat1, z);
-
-    code0 = mortonEncode_RAM(x0, y0);
-    code1 = mortonEncode_RAM(x1, y1);
-
-    // final bb center
-    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
-    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
-  }
-
-  region_t(uint64_t _code0, uint64_t _code1, uint8_t _z) {
-    z = _z;
-
-    code0 = _code0;
-    code1 = _code1;
-
-    mortonDecode_RAM(code0, x0, y0);
-    mortonDecode_RAM(code1, x1, y1);
-
-    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
-    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
   }
 
   region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
@@ -322,6 +248,16 @@ struct tweet_all_t {
     writer.Uint(el.app);
     writer.EndArray();
   }
+
+  bool operator==(const tweet_all_t &rhs) const {
+    // simplified comparison
+    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
+  };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; "
+               << (int) e.device << "; " << (int) e.app;
+  }
 };
 
 struct tweet_text_t {
@@ -341,10 +277,44 @@ struct tweet_text_t {
     // simplified comparison
     return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
   };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_text_t &e) {
+    return out << e.latitude << "; " << e.longitude << "; " << e.text;
+  }
+
 };
 
-using tweet_t = tweet_text_t;
+//using tweet_t = tweet_text_t;
+using tweet_t = tweet_all_t;
 using valuetype = tweet_t;
+
+// JULIO : elttype conflict with definition on pma / test_utils.h
+// Check how to fix this later
+
+template<typename valuetype_>
+struct elttype_pmq {
+  uint64_t key;
+  valuetype_ value;
+
+  elttype_pmq() {
+  };
+
+  elttype_pmq(const valuetype_ &el, uint32_t depth) : value(el) {
+    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
+    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
+    key = mortonEncode_RAM(x, y);
+  }
+
+  friend inline bool operator<(const elttype_pmq &lhs, const elttype_pmq &rhs) {
+    return (lhs.key < rhs.key);
+  }
+
+  friend inline std::ostream &operator<<(std::ostream &out, const elttype_pmq &e) {
+    return out << e.key;
+  }
+};
+
+using elttype = elttype_pmq<tweet_t>;
 
 struct triggers_t {
   float frequency;
@@ -440,28 +410,6 @@ struct topk_cnt {
   }
 };
 
-struct elttype {
-  uint64_t key;
-  valuetype value;
-
-  elttype() {
-  };
-
-  elttype(const tweet_t &el, uint32_t depth) : value(el) {
-    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
-    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-    key = mortonEncode_RAM(x, y);
-  }
-
-  friend inline bool operator<(const elttype &lhs, const elttype &rhs) {
-    return (lhs.key < rhs.key);
-  }
-
-  friend inline std::ostream &operator<<(std::ostream &out, const elttype &e) {
-    return out << e.key;
-  }
-};
-
 struct elinfo_t {
   elinfo_t() = default;
 
@@ -507,6 +455,19 @@ struct duration_info {
 
   duration_info(const std::string &_name, double _duration) : name(_name), duration(_duration) {
   };
+
+  friend inline std::ostream &operator<<(std::ostream &out, const duration_info &e) {
+    return out << e.name << " ; " << e.duration;
+  }
+
 };
 
 using duration_t = std::vector<duration_info>;
+inline std::ostream &operator<<(std::ostream &out, const duration_t &vec) {
+  auto it = vec.begin();
+  out << *it++;
+  for (; it < vec.end(); it++) {
+    out << " ; " << *it;
+  }
+  return out;
+}
