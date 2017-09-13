@@ -136,9 +136,9 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input,
     // ========================================
     // Count elements on the container
     if (!parameters.dryrun) {
-      PRINTBENCH_PTR(temp_window, t_now, timer, "count", container->size());
+      PRINTBENCH_PTR(temp_window, t_now, "count", container->size(), timer);
     } else {
-      PRINTBENCH_PTR("dryrun", temp_window, t_now, 0, "count", container->size());
+      PRINTBENCH_PTR("dryrun", temp_window, t_now, "count", container->size(), 0);
     }
 
     // update iterator

@@ -61,24 +61,25 @@ class RTreeCtn : public GeoCtnIntf {
     timer.stop();
     duration.emplace_back("insert", timer);
 
-    // remove start
-    timer.start();
     if (_rtree->size() > _size) {
 
-      DBG_PRINTOUT("RTREE remove %d\n", _rtree->size());
-      
-      // temporary result
-      std::vector<value> result;
-      _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
-                    std::back_inserter(result));
+       DBG_PRINTOUT("RTREE remove %d\n", _rtree->size());
+       // remove start
+       timer.start();
 
-      for (const auto &elt : result) {
-        _rtree->remove(elt);
-      }
+       // temporary result
+       std::vector<value> result;
+       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
+             std::back_inserter(result));
+
+       for (const auto &elt : result) {
+          _rtree->remove(elt);
+       }
+
+       // remove end
+       timer.stop();
+       duration.emplace_back("remove", timer);
     }
-    // remove end
-    timer.stop();
-    duration.emplace_back("remove", timer);
 
     return duration;
   }
