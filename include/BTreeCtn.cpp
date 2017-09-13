@@ -51,6 +51,22 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
   if (_btree->size() > _size) {
      DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
 
+     //remove based on a key value
+     /** we want to simulate a case where the key is together with the data */
+
+     unsigned int key = _btree->begin()->first;
+
+     // could also find randomly using same seed as for insertion.
+
+     while (_btree->size() > 1500){
+        //deleting always from the beginning
+        _btree->erase( _btree->lower_bound(key) ) ;
+        //map.erase( map.find(rand())
+     }
+
+#if 0
+     //remove based on a data value
+
      unsigned int key = _btree->begin()->first;
 
      bool erased = true;
@@ -73,6 +89,7 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
         }
 
      }
+#endif
 
   }
   // remove end
