@@ -56,35 +56,39 @@ void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
 template<typename T>
 void inline run_queries(T &container, const region_t &region, uint64_t id, const bench_t &parameters) {
 
-  Timer timer;
+  duration_t timer;
 
   // 1 - gets the minimum set of nodes that are inside the queried region
   // QueryRegion will traverse the tree and return the intervals to query;
   // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
 
+#if 1
+  uint32_t count = 0;
+  applytype_function count_element_wrapper = std::bind(count_element, std::ref(count),
+                                                       std::placeholders::_1, std::placeholders::_2);
+  container.apply_at_region(region, count_element_wrapper);
+//  PRINTBENCH(id,"ElementsCount", count);
+#endif
 
   // warm up
   container.scan_at_region(region, read_element);
 
   // access the container to count the number of elements inside the region
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer.start();
-    container.scan_at_region(region, read_element);
-    timer.stop();
+    timer = container.scan_at_region(region, read_element);
 
-    PRINTBENCH("ReadElts", id, timer.milliseconds(), "ms");
+    PRINTBENCH(id, timer,"count",count);
   }
 
-  uint32_t count = 0;
-  applytype_function count_element_wrapper = std::bind(count_element, std::ref(count),
-                                                       std::placeholders::_1, std::placeholders::_2);
-  container.apply_at_region(region, count_element_wrapper);
-  PRINTBENCH("ElementsCount", id, count);
+
 
 }
 
 template<typename T>
 void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const bench_t &parameters) {
+
+
+
   //create container
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
   container->create((uint32_t) input.size());
@@ -111,9 +115,7 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const 
       return ((elttype *) el)->value.time < oldest_time;
     });
 
-    for (auto &info : timer) {
-      PRINTBENCH_PTR(info.name, t, info.duration, "ms");
-    }
+    PRINTBENCH_PTR(t, timer );
 
     // update iterator
     it_begin = it_curr;
@@ -167,12 +169,14 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  run_bench<GeoHashSequential>(argc, argv, input, parameters);
+
+
+//  run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters);
 
-  run_bench<BTreeCtn>(argc, argv, input, parameters);
+//  run_bench<BTreeCtn>(argc, argv, input, parameters);
 
-  run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, parameters);
+//  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }
