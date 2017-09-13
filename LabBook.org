@@ -250,6 +250,7 @@ fi
 ** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
 ** TODO Fix implementation to allow change in size of the value data easily 
 ** TODO Implement Removals on the dense containers
+** TODO Benchmark of memory consuption
 * Data
 :PROPERTIES:
 :EXPORT_OPTIONS: H:2
@@ -406,7 +407,7 @@ echo $expFolder
 
   
 
-*** TODO [2017-08-22 Ter] =bench_insert_and_scan= V.2
+*** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2     :exp20170907112116:
 
 - Old exeperiment used Rtree* algorithm, use the quadratic one now.
 - Count was not correct in the plots

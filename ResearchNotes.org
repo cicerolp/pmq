@@ -187,6 +187,11 @@ https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time
 
 https://github.com/diegocaro/cpp-btree
 
+
+NOTE about safe containers: don't have a version of multi-map implemented. 
+https://code.google.com/archive/p/cpp-btree/wikis/UsageInstructions.wiki
+
+
 *** Fractal Tree
 - Implemented in Tokutek Database
 - Originated from BIB:Bender2007a
