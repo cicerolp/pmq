@@ -63,7 +63,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     if (_rtree->size() > _size) {
 
-       DBG_PRINTOUT("RTREE remove %d\n", _rtree->size());
+       PRINTOUT("RTREE before remove %d\n", _rtree->size());
        // remove start
        timer.start();
 
@@ -72,9 +72,13 @@ class RTreeCtn : public GeoCtnIntf {
        _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
              std::back_inserter(result));
 
+       PRINTOUT("RTREE to be removed: %d \n",result.size());
        for (const auto &elt : result) {
-          _rtree->remove(elt);
+          if (_rtree->remove(elt) == 0 ){
+              PRINTOUT("Elt not Removed: (%f, %f)\n",elt.second.latitude, elt.second.longitude);
+          }
        }
+       PRINTOUT("RTREE after remove %d\n", _rtree->size());
 
        // remove end
        timer.stop();
