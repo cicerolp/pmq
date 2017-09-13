@@ -8,7 +8,8 @@
 
 class BTreeCtn : public GeoCtnIntf {
  public:
-  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) { }
+  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel), gen(123) { }
+
   virtual ~BTreeCtn();
 
   duration_t create(uint32_t size) override;
@@ -69,4 +70,7 @@ class BTreeCtn : public GeoCtnIntf {
 
   uint32_t _size;
   std::unique_ptr<stx::btree_multimap<key, data>> _btree;
+
+  std::mt19937 gen; //random generator for benchmark
+
 };
