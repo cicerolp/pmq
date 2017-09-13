@@ -435,7 +435,7 @@ echo $expFolder
 
   
 
-*** TODO [2017-08-22 Ter] =bench_insert_and_scan= V.2     :exp20170907112116:
+*** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2     :exp20170907112116:
 
 - Old exeperiment used Rtree* algorithm, use the quadratic one now.
 - Count was not correct in the plots

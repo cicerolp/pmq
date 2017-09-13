@@ -354,7 +354,7 @@ Applying: wip
 #+end_example
 
 
-* TODO Analisys
+* DONE Analisys
 ** Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -597,7 +597,7 @@ ggplot(aes(x=id,y=ms, color=factor(algo))) +
 #+RESULTS:
 [[file:./img/overview.png]]
 
-*** TODO Insertion performance
+*** DONE Insertion performance
 
 #+begin_src R :results output :exports both :session 
  dfplot %>% filter( bench == "insert") -> dfinsert
