@@ -112,9 +112,14 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
              rm.push_back(it->first);
          }
      }
-     std::cout << "rm size : " << rm.size() << "\n" ;
+
      for (auto& e : rm ){
-         _btree->erase(_btree->find(e));
+         auto it = _btree->find(e);
+         //prevents deleting wrong element (same key with different timestamp)
+         while( ! is_removed( &(it->second) )) it++ ;
+
+         _btree->erase(it);
+
      }
 
   }
