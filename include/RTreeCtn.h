@@ -231,7 +231,8 @@ class RTreeCtn : public GeoCtnIntf {
     uint32_t _count = 0;
   };
 
-  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  //typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  typedef bg::model::point<float, 2, bg::cs::cartesian> point;
   typedef bg::model::box<point> box;
   typedef std::pair<point, valuetype> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
@@ -291,8 +292,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
  protected:
-  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
-  typedef bg::model::box<point> box;
-  typedef std::pair<point, valuetype> value;
-  typedef bgi::rtree<value, Balancing> rtree_t;
+  typedef typename RTreeCtn<Balancing>::point point;
+  typedef typename RTreeCtn<Balancing>::value value;
+  typedef typename RTreeCtn<Balancing>::rtree_t rtree_t;
 };
