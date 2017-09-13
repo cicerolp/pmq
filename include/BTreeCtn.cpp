@@ -53,7 +53,7 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
 
      //remove based on a key
      /** we want to simulate a case where the key is together with the data, avoid the cost of accessing data */
-
+#if 0
      // Delete randomly using same seed as for insertion.
      std::uniform_real_distribution<> lon(-180, 180);
      std::uniform_real_distribution<> lat(-85, 85);
@@ -67,6 +67,7 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
         //Cost = Search + remove
         _btree->erase( _btree->find(el_key_val.key) ) ;
      }
+#endif
 
 #if 0
      //deleting always from the beginning
@@ -103,6 +104,18 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
 
      }
 #endif
+
+     //using a temporary array
+     std::vector<uint64_t> rm;
+     for (auto it = _btree->begin() ; it != _btree->end(); it++){
+         if ( is_removed( &(it->second) ) ){
+             rm.push_back(it->first);
+         }
+     }
+     std::cout << "rm size : " << rm.size() << "\n" ;
+     for (auto& e : rm ){
+         _btree->erase(_btree->find(e));
+     }
 
   }
   // remove end
