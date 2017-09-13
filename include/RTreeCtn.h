@@ -63,7 +63,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     if (_rtree->size() > _size) {
 
-       DBG_PRINTOUT("RTREE remove %d\n", _rtree->size());
+       DBG_PRINTOUT("RTREE before remove %d\n", _rtree->size());
        // remove start
        timer.start();
 
@@ -72,9 +72,13 @@ class RTreeCtn : public GeoCtnIntf {
        _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
              std::back_inserter(result));
 
+       DBG_PRINTOUT("RTREE to be removed: %d \n",result.size());
        for (const auto &elt : result) {
-          _rtree->remove(elt);
+          if (_rtree->remove(elt) == 0 ){
+              PRINTOUT("Elt not Removed: (%f, %f)\n",elt.second.latitude, elt.second.longitude);
+          }
        }
+       DBG_PRINTOUT("RTREE after remove %d\n", _rtree->size());
 
        // remove end
        timer.stop();
@@ -227,7 +231,8 @@ class RTreeCtn : public GeoCtnIntf {
     uint32_t _count = 0;
   };
 
-  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  //typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
+  typedef bg::model::point<float, 2, bg::cs::cartesian> point;
   typedef bg::model::box<point> box;
   typedef std::pair<point, valuetype> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
@@ -287,8 +292,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
  protected:
-  typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
-  typedef bg::model::box<point> box;
-  typedef std::pair<point, valuetype> value;
-  typedef bgi::rtree<value, Balancing> rtree_t;
+  typedef typename RTreeCtn<Balancing>::point point;
+  typedef typename RTreeCtn<Balancing>::value value;
+  typedef typename RTreeCtn<Balancing>::rtree_t rtree_t;
 };
