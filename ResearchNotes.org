@@ -104,10 +104,15 @@ http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_ind
 
   but dosomething() cannot modify the tree, otherwise it invalidade the iterator. 
 
+- The R-tree doesn't seems to have any batch operation for deleting several elements. 
 
-- The R-tree doesn't seems to have any batch operation for deleting severl elements. 
+***** Removals 
+Removals are done by searching all the elements satisfing the removal predicate. 
 
-  
+Using the list of elements to be removed we call the _rtree->remove function.
+
+note: Boost doesn't support very well the =cs::geographic= coordinate system. Use instead =cs::cartesian= that gives better results and is also correct.  http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/reference/cs/cs_cartesian.html 
+
 *** Other implementations - libspatialindex
 http://libspatialindex.github.io/
 https://github.com/libspatialindex/libspatialindex

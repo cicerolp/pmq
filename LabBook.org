@@ -248,6 +248,8 @@ fi
 
 * Task list [0/1]
 ** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
+** TODO Fix implementation to allow change in size of the value data easily 
+** TODO Implement Removals on the dense containers
 * Data
 :PROPERTIES:
 :EXPORT_OPTIONS: H:2
