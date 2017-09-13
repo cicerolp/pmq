@@ -51,6 +51,9 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
   if (_btree->size() > _size) {
      DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
 
+#if 0
+     //remove based on a data value
+
      unsigned int key = _btree->begin()->first;
 
      bool erased = true;
@@ -71,6 +74,24 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
               break;
            }
         }
+
+     }
+#endif
+
+     //using a temporary array
+     std::vector<uint64_t> rm;
+     for (auto it = _btree->begin() ; it != _btree->end(); it++){
+         if ( is_removed( &(it->second) ) ){
+             rm.push_back(it->first);
+         }
+     }
+
+     for (auto& e : rm ){
+         auto it = _btree->find(e);
+         //prevents deleting wrong element (same key with different timestamp)
+         while( ! is_removed( &(it->second) )) it++ ;
+
+         _btree->erase(it);
 
      }
 
