@@ -9,6 +9,8 @@
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
+#include "ImplicitDenseVectorCtn.h"
+
 #include "InputIntf.h"
 
 uint32_t g_Quadtree_Depth = 25;
@@ -214,9 +216,11 @@ int main(int argc, char *argv[]) {
   ctn_t containers;
 
   // add containers to test
-  containers.emplace_back(std::make_unique<GeoHashBinary>(argc, argv));
+  //containers.emplace_back(std::make_unique<GeoHashBinary>(argc, argv));
 
-  containers.emplace_back(std::make_unique<BTreeCtn>(argc, argv));
+  //containers.emplace_back(std::make_unique<BTreeCtn>(argc, argv));
+
+  containers.emplace_back(std::make_unique<ImplicitDenseVectorCtn>(argc, argv));
 
   //containers.emplace_back(std::make_unique<RTreeCtn<bgi::quadratic < 16>> > (argc, argv));
 

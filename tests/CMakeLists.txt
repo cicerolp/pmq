@@ -63,6 +63,7 @@ add_executable(test_containers_count
         ../include/QuadtreeIntf.cpp
         ../include/GeoHash.cpp
         ../include/BTreeCtn.cpp
+        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(test_containers_count pma ${CMAKE_THREAD_LIBS_INIT})
