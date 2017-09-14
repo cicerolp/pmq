@@ -36,6 +36,9 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf {
   uint32_t scan_ctn_at_region(const code_t &el, ctn_t::iterator &it,
                               const region_t &region, scantype_function __apply);
 
+  uint32_t apply_ctn_at_region(const code_t &el, ctn_t::iterator &it,
+                               const region_t &region, applytype_function __apply);
+
   ctn_t::iterator search_ctn(const code_t &el, ctn_t::iterator &it);
 };
 
