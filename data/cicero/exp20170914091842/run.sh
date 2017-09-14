@@ -30,7 +30,7 @@ mkdir -p $TMPDIR
 # make pma
 mkdir -p $PMABUILD_DIR
 cd $PMABUILD_DIR
-cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
 make 
 
 # make twitterVis
