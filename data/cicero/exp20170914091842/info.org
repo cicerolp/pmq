@@ -1,0 +1,714 @@
+
+#+TITLE: Experiment results
+#+DATE: Qui Set 14 15:02:35 BRT 2017
+#+AUTHOR: julio
+#+MACHINE: inf-desktop
+#+FILE: info.org
+ 
+* MACHINE INFO:
+** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
+julio    tty7         2017-09-04 09:43 (:0)
+julio    pts/1        2017-09-14 09:07 (:0)
+julio    pts/0        2017-09-14 09:06 (:0)
+julio    pts/6        2017-09-14 14:46 (:0)
+julio    pts/3        2017-09-14 10:39 (:0)
+julio    pts/7        2017-09-14 14:58 (tmux(17912).%0)
+############################################
+** ENVIRONMENT VARIABLES:
+XDG_VTNR=7
+LC_PAPER=pt_BR.UTF-8
+SSH_AGENT_PID=2085
+LC_ADDRESS=pt_BR.UTF-8
+XDG_SESSION_ID=c2
+LC_MONETARY=pt_BR.UTF-8
+XDG_GREETER_DATA_DIR=/var/lib/lightdm-data/julio
+CUPS_USER=jtoss
+GPG_AGENT_INFO=/home/julio/.gnupg/S.gpg-agent:0:1
+SHELL=/bin/bash
+DESKTOP_STARTUP_ID=i3/|usr|bin|emacs24/2026-71-inf-desktop_TIME861259863
+TERM=screen
+DERBY_HOME=/usr/lib/jvm/java-8-oracle/db
+QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1
+LC_NUMERIC=pt_BR.UTF-8
+GTK_MODULES=gail:atk-bridge
+USER=julio
+EMACS=t
+QT_ACCESSIBILITY=1
+LC_TELEPHONE=pt_BR.UTF-8
+XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session0
+XDG_SEAT_PATH=/org/freedesktop/DisplayManager/Seat0
+SSH_AUTH_SOCK=/tmp/ssh-AwOcxDe3p2el/agent.2026
+TERMCAP=
+DEFAULTS_PATH=/usr/share/gconf/i3.default.path
+COLUMNS=116
+TMUX=/tmp/tmux-1000/default,17912,0
+XDG_CONFIG_DIRS=/etc/xdg/xdg-i3:/etc/xdg
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin
+DESKTOP_SESSION=i3
+LC_IDENTIFICATION=pt_BR.UTF-8
+PWD=/home/julio/Projects/pmq/build-release
+XDG_SESSION_TYPE=x11
+JAVA_HOME=/usr/lib/jvm/java-8-oracle
+LANG=en_US.UTF-8
+MANDATORY_PATH=/usr/share/gconf/i3.mandatory.path
+GDM_LANG=en_US
+LC_MEASUREMENT=pt_BR.UTF-8
+NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
+TMUX_PANE=%0
+GDMSESSION=i3
+HOME=/home/julio
+SHLVL=3
+XDG_SEAT=seat0
+LANGUAGE=en_US
+XDG_SESSION_DESKTOP=i3
+LOGNAME=julio
+J2SDKDIR=/usr/lib/jvm/java-8-oracle
+XDG_DATA_DIRS=/usr/share/i3:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-dQCEQhZj2j,guid=953a3608a1614e8349dc64ba59ad4a8d
+LC_CTYPE=pt_BR.UTF-8
+XDG_RUNTIME_DIR=/run/user/1000
+DISPLAY=:0
+J2REDIR=/usr/lib/jvm/java-8-oracle/jre
+INSIDE_EMACS=24.5.1,comint
+XDG_CURRENT_DESKTOP=i3
+LC_TIME=pt_BR.UTF-8
+XAUTHORITY=/home/julio/.Xauthority
+LC_NAME=pt_BR.UTF-8
+_=/usr/bin/env
+############################################
+** HOSTNAME:
+inf-desktop
+############################################
+** CPU INFO:
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3409.296
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3534.140
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3783.429
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3508.773
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3656.992
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3592.843
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3692.585
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3544.632
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 6800.30
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+############################################
+** CPU GOVERNOR:
+powersave
+############################################
+** CPU FREQUENCY:
+3409296
+############################################
+** MEM INFO:
+MemTotal:       32800596 kB
+MemFree:        24068384 kB
+MemAvailable:   30837404 kB
+Buffers:          553452 kB
+Cached:          6185932 kB
+SwapCached:            0 kB
+Active:          5430352 kB
+Inactive:        2471168 kB
+Active(anon):    1220008 kB
+Inactive(anon):   110568 kB
+Active(file):    4210344 kB
+Inactive(file):  2360600 kB
+Unevictable:          36 kB
+Mlocked:              36 kB
+SwapTotal:      16629756 kB
+SwapFree:       16629756 kB
+Dirty:              2112 kB
+Writeback:             0 kB
+AnonPages:       1161952 kB
+Mapped:           509540 kB
+Shmem:            168688 kB
+Slab:             658364 kB
+SReclaimable:     600920 kB
+SUnreclaim:        57444 kB
+KernelStack:        8768 kB
+PageTables:        24812 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    33030052 kB
+Committed_AS:    4291788 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:    591872 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      232388 kB
+DirectMap2M:    11155456 kB
+DirectMap1G:    22020096 kB
+############################################
+** GPU INFO FROM NVIDIA-SMI:
+
+==============NVSMI LOG==============
+
+Timestamp                           : Thu Sep 14 15:02:36 2017
+Driver Version                      : 375.66
+
+Attached GPUs                       : 2
+GPU 0000:01:00.0
+    Product Name                    : GeForce GTX 980
+    Product Brand                   : GeForce
+    Display Mode                    : Disabled
+    Display Active                  : Disabled
+    Persistence Mode                : Disabled
+    Accounting Mode                 : Disabled
+    Accounting Mode Buffer Size     : 1920
+    Driver Model
+        Current                     : N/A
+        Pending                     : N/A
+    Serial Number                   : N/A
+    GPU UUID                        : GPU-d18532ab-1250-ab3a-dd6a-f13d838d587b
+    Minor Number                    : 0
+    VBIOS Version                   : 84.04.1F.00.C6
+    MultiGPU Board                  : No
+    Board ID                        : 0x100
+    GPU Part Number                 : N/A
+    Inforom Version
+        Image Version               : N/A
+        OEM Object                  : N/A
+        ECC Object                  : N/A
+        Power Management Object     : N/A
+    GPU Operation Mode
+        Current                     : N/A
+        Pending                     : N/A
+    GPU Virtualization Mode
+        Virtualization mode         : None
+    PCI
+        Bus                         : 0x01
+        Device                      : 0x00
+        Domain                      : 0x0000
+        Device Id                   : 0x13C010DE
+        Bus Id                      : 0000:01:00.0
+        Sub System Id               : 0x236819DA
+        GPU Link Info
+            PCIe Generation
+                Max                 : 3
+                Current             : 1
+            Link Width
+                Max                 : 16x
+                Current             : 8x
+        Bridge Chip
+            Type                    : N/A
+            Firmware                : N/A
+        Replays since reset         : 0
+        Tx Throughput               : 0 KB/s
+        Rx Throughput               : 0 KB/s
+    Fan Speed                       : 48 %
+    Performance State               : P8
+    Clocks Throttle Reasons
+        Idle                        : Active
+        Applications Clocks Setting : Not Active
+        SW Power Cap                : Not Active
+        HW Slowdown                 : Not Active
+        Sync Boost                  : Not Active
+        Unknown                     : Not Active
+    FB Memory Usage
+        Total                       : 4036 MiB
+        Used                        : 1 MiB
+        Free                        : 4035 MiB
+    BAR1 Memory Usage
+        Total                       : 256 MiB
+        Used                        : 4 MiB
+        Free                        : 252 MiB
+    Compute Mode                    : Default
+    Utilization
+        Gpu                         : 0 %
+        Memory                      : 2 %
+        Encoder                     : 0 %
+        Decoder                     : 0 %
+    Encoder Stats
+        Active Sessions             : 0
+        Average FPS                 : 0
+        Average Latency             : 0 ms
+    Ecc Mode
+        Current                     : N/A
+        Pending                     : N/A
+    ECC Errors
+        Volatile
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+        Aggregate
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+    Retired Pages
+        Single Bit ECC              : N/A
+        Double Bit ECC              : N/A
+        Pending                     : N/A
+    Temperature
+        GPU Current Temp            : 46 C
+        GPU Shutdown Temp           : 96 C
+        GPU Slowdown Temp           : 91 C
+    Power Readings
+        Power Management            : Supported
+        Power Draw                  : 24.67 W
+        Power Limit                 : 390.00 W
+        Default Power Limit         : 390.00 W
+        Enforced Power Limit        : 390.00 W
+        Min Power Limit             : 100.00 W
+        Max Power Limit             : 435.00 W
+    Clocks
+        Graphics                    : 135 MHz
+        SM                          : 135 MHz
+        Memory                      : 324 MHz
+        Video                       : 405 MHz
+    Applications Clocks
+        Graphics                    : 1291 MHz
+        Memory                      : 3600 MHz
+    Default Applications Clocks
+        Graphics                    : 1291 MHz
+        Memory                      : 3600 MHz
+    Max Clocks
+        Graphics                    : 1557 MHz
+        SM                          : 1557 MHz
+        Memory                      : 3600 MHz
+        Video                       : 1432 MHz
+    Clock Policy
+        Auto Boost                  : N/A
+        Auto Boost Default          : N/A
+    Processes                       : None
+
+GPU 0000:02:00.0
+    Product Name                    : GeForce GTX 580
+    Product Brand                   : GeForce
+    Display Mode                    : N/A
+    Display Active                  : N/A
+    Persistence Mode                : Disabled
+    Accounting Mode                 : N/A
+    Accounting Mode Buffer Size     : N/A
+    Driver Model
+        Current                     : N/A
+        Pending                     : N/A
+    Serial Number                   : N/A
+    GPU UUID                        : GPU-7842f6d6-3e6d-47f8-4324-db5e0eea6548
+    Minor Number                    : 1
+    VBIOS Version                   : 70.10.20.00.62
+    MultiGPU Board                  : N/A
+    Board ID                        : N/A
+    GPU Part Number                 : N/A
+    Inforom Version
+        Image Version               : N/A
+        OEM Object                  : N/A
+        ECC Object                  : N/A
+        Power Management Object     : N/A
+    GPU Operation Mode
+        Current                     : N/A
+        Pending                     : N/A
+    GPU Virtualization Mode
+        Virtualization mode         : N/A
+    PCI
+        Bus                         : 0x02
+        Device                      : 0x00
+        Domain                      : 0x0000
+        Device Id                   : 0x108010DE
+        Bus Id                      : 0000:02:00.0
+        Sub System Id               : 0x20271019
+        GPU Link Info
+            PCIe Generation
+                Max                 : N/A
+                Current             : N/A
+            Link Width
+                Max                 : N/A
+                Current             : N/A
+        Bridge Chip
+            Type                    : N/A
+            Firmware                : N/A
+        Replays since reset         : N/A
+        Tx Throughput               : N/A
+        Rx Throughput               : N/A
+    Fan Speed                       : 53 %
+    Performance State               : P0
+    Clocks Throttle Reasons         : N/A
+    FB Memory Usage
+        Total                       : 1474 MiB
+        Used                        : 144 MiB
+        Free                        : 1330 MiB
+    BAR1 Memory Usage
+        Total                       : N/A
+        Used                        : N/A
+        Free                        : N/A
+    Compute Mode                    : Default
+    Utilization
+        Gpu                         : N/A
+        Memory                      : N/A
+        Encoder                     : N/A
+        Decoder                     : N/A
+    Encoder Stats
+        Active Sessions             : N/A
+        Average FPS                 : N/A
+        Average Latency             : N/A
+    Ecc Mode
+        Current                     : N/A
+        Pending                     : N/A
+    ECC Errors
+        Volatile
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+        Aggregate
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Texture Shared      : N/A
+                Total               : N/A
+    Retired Pages
+        Single Bit ECC              : N/A
+        Double Bit ECC              : N/A
+        Pending                     : N/A
+    Temperature
+        GPU Current Temp            : 69 C
+        GPU Shutdown Temp           : N/A
+        GPU Slowdown Temp           : N/A
+    Power Readings
+        Power Management            : N/A
+        Power Draw                  : N/A
+        Power Limit                 : N/A
+        Default Power Limit         : N/A
+        Enforced Power Limit        : N/A
+        Min Power Limit             : N/A
+        Max Power Limit             : N/A
+    Clocks
+        Graphics                    : N/A
+        SM                          : N/A
+        Memory                      : N/A
+        Video                       : N/A
+    Applications Clocks
+        Graphics                    : N/A
+        Memory                      : N/A
+    Default Applications Clocks
+        Graphics                    : N/A
+        Memory                      : N/A
+    Max Clocks
+        Graphics                    : N/A
+        SM                          : N/A
+        Memory                      : N/A
+        Video                       : N/A
+    Clock Policy
+        Auto Boost                  : N/A
+        Auto Boost Default          : N/A
+    Processes                       : N/A
+
+############################################
+** LINUX AND GCC VERSIONS:
+Linux version 4.4.0-93-generic (buildd@lgw01-03) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ) #116-Ubuntu SMP Fri Aug 11 21:17:51 UTC 2017
+############################################
+* CODE REVISIONS:
+** GIT REVISION OF TWITTERVIS:
+commit 3ae2d2f23c9d17bc594357a5d5a481c2bc156748
+Author: Julio Toss <jutoss@gmail.com>
+Date:   Thu Sep 14 14:50:36 2017 -0300
+
+    UPD: run.sh script
+*** CMAKE VARIABLES:
+-- cotire 1.7.8 loaded.
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/twitterVis/build-release
+-- Cache values
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
+COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_EXTENSIONS:STRING=inc;inl;ipp
+COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_PATH:STRING=
+COTIRE_DEBUG:BOOL=OFF
+COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES:STRING=0
+COTIRE_MINIMUM_NUMBER_OF_TARGET_SOURCES:STRING=3
+COTIRE_UNITY_SOURCE_EXCLUDE_EXTENSIONS:STRING=m;mm
+COTIRE_VERBOSE:BOOL=OFF
+GEOS_C_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so
+PMA_BUILD_DIR:PATH=/home/julio/Projects/hppsimulations/build-release
+PQ_C_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpq.so
+SPATIALITE_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libspatialite.so
+SQLITE_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libsqlite3.so
+** GIT REVISION OF PMA :
+commit f37b6b60b2fc16adef345f4097fe54f1996a2213
+Author: Julio Toss <jutoss@gmail.com>
+Date:   Wed Sep 13 10:39:02 2017 -0300
+
+    upd: return del counter on add_rm_array_elts
+*** CMAKE VARIABLES:
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+-- Cache values
+CMAKE_BACKWARDS_COMPATIBILITY:STRING=2.4
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
+DO_PMA_STATS:BOOL=OFF
+EXECUTABLE_OUTPUT_PATH:PATH=
+LIBRARY_OUTPUT_PATH:PATH=
+LOCAL_REMOVES:BOOL=OFF
+MATH_INCLUDE_DIR:PATH=/usr/include
+MATH_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libm.so
+M_LIB:FILEPATH=/usr/lib/x86_64-linux-gnu/libm.so
+PMA_DEBUG:BOOL=OFF
+PMA_DEBUG_BAL:BOOL=OFF
+PMA_TRACE_MOVE:BOOL=OFF
+RHO_INIT:BOOL=OFF
+TWITTERVIS:BOOL=ON
+TWITTER_BENCH:BOOL=ON
+############################################
