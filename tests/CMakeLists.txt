@@ -39,7 +39,7 @@ add_executable(test_insert_remove_scan
         ../include/QuadtreeIntf.cpp
         ../include/GeoHash.cpp
 #        ../include/PMABatchCtn.cpp
-        ../include/DenseVectorCtn.cpp
+        ../include/ExplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(test_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})

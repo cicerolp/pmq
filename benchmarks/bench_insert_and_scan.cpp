@@ -18,7 +18,7 @@
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
-#include "DenseVectorCtn.h"
+#include "ExplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\

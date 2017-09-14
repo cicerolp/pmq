@@ -27,7 +27,7 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
    #     include/PostGisCtn.cpp
    #     include/PMABatchCtn.cpp
    #     include/SpatiaLiteCtn.cpp
-        include/DenseVectorCtn.cpp
+        include/ExplicitDenseVectorCtn.cpp
 
         include/string_util.cpp
         include/nc_query_util.cpp

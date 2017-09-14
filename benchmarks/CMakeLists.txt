@@ -58,7 +58,7 @@ add_executable(bench_queries_region
 #        ../include/PostGisCtn.cpp
 #        ../include/PMABatchCtn.cpp
 #        ../include/SpatiaLiteCtn.cpp
-        ../include/DenseVectorCtn.cpp
+        ../include/ExplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
         #../include/RTreeCtn.h
@@ -83,7 +83,7 @@ add_executable(bench_insert_and_scan
 #        ../include/PostGisCtn.cpp
 #        ../include/PMABatchCtn.cpp
 #        ../include/SpatiaLiteCtn.cpp
-        ../include/DenseVectorCtn.cpp
+        ../include/ExplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
         #../include/RTreeCtn.h
@@ -108,7 +108,7 @@ add_executable(bench_memory
 #        ../include/PostGisCtn.cpp
 #        ../include/PMABatchCtn.cpp
 #        ../include/SpatiaLiteCtn.cpp
-        ../include/DenseVectorCtn.cpp
+        ../include/ExplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
         #../include/RTreeCtn.h
