@@ -17,6 +17,8 @@ First benchmark to check the performance of
 - BTREE 
 - RTREE
 
+Element structure used is tweet_text_t : { Longitude, Latitude, timestamp , text[140] } 
+
 ** Standalone script 
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
@@ -236,7 +238,7 @@ git pull origin $expId
 
 
 * Analisys
-** Generate csv files
+** Generate csv files                                             :noexport:
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
 :END:      
