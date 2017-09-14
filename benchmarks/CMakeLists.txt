@@ -84,6 +84,7 @@ add_executable(bench_insert_and_scan
 #        ../include/PMABatchCtn.cpp
 #        ../include/SpatiaLiteCtn.cpp
         ../include/ExplicitDenseVectorCtn.cpp
+        ../include/ImplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
         #../include/RTreeCtn.h

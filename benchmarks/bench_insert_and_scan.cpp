@@ -19,6 +19,7 @@
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
 #include "ExplicitDenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\
@@ -161,11 +162,13 @@ int main(int argc, char *argv[]) {
 #endif
 
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  //run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  run_bench<ImplicitDenseVectorCtn>(argc, argv, input, parameters);
 
-  run_bench<BTreeCtn>(argc, argv, input, parameters);
 
-  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
+  //run_bench<BTreeCtn>(argc, argv, input, parameters);
+
+  //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }

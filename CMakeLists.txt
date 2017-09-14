@@ -24,10 +24,11 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
 
         include/BTreeCtn.cpp
         include/GeoHash.cpp
-   #     include/PostGisCtn.cpp
-   #     include/PMABatchCtn.cpp
-   #     include/SpatiaLiteCtn.cpp
+        #include/PostGisCtn.cpp
+        #include/PMABatchCtn.cpp
+        #include/SpatiaLiteCtn.cpp
         include/ExplicitDenseVectorCtn.cpp
+        include/ImplicitDenseVectorCtn.cpp
 
         include/string_util.cpp
         include/nc_query_util.cpp

@@ -4,68 +4,68 @@
 #include "QuadtreeIntf.h"
 
 class ExplicitDenseVectorCtn : public GeoCtnIntf {
-public:
-   ExplicitDenseVectorCtn();
+ public:
+  ExplicitDenseVectorCtn();
 
-   virtual ~ExplicitDenseVectorCtn() = default;
+  virtual ~ExplicitDenseVectorCtn() = default;
 
-   // build container
-   duration_t create(uint32_t size) override;
+  // build container
+  duration_t create(uint32_t size) override;
 
-   // update container
-   duration_t insert(std::vector<elttype> batch) override;
+  // update container
+  duration_t insert(std::vector<elttype> batch) override;
 
-   // apply function for every el<valuetype>
-   duration_t scan_at_region(const region_t& region, scantype_function __apply) override;
+  // apply function for every el<valuetype>
+  duration_t scan_at_region(const region_t &region, scantype_function __apply) override;
 
-   // apply function for every spatial area/region
-   duration_t apply_at_tile(const region_t& region, applytype_function __apply) override;
+  // apply function for every spatial area/region
+  duration_t apply_at_tile(const region_t &region, applytype_function __apply) override;
 
-   duration_t apply_at_region(const region_t& region, applytype_function __apply) override;
+  duration_t apply_at_region(const region_t &region, applytype_function __apply) override;
 
-   inline virtual std::string name() const = 0;
+  inline virtual std::string name() const = 0;
 
-protected:
-   diff_cnt diff();
+ protected:
+  diff_cnt diff();
 
-   void clear_diff();
+  void clear_diff();
 
-private:
-   virtual void sort(std::vector<elttype>& cnt) = 0;
+ private:
+  virtual void sort(std::vector<elttype> &cnt) = 0;
 
-   uint32_t _diff_index{0};
-   std::vector<elttype> _container;
-   std::unique_ptr<QuadtreeIntf> _quadtree;
+  uint32_t _diff_index{0};
+  std::vector<elttype> _container;
+  std::unique_ptr<QuadtreeIntf> _quadtree;
 };
 
 class DenseCtnStdSort : public ExplicitDenseVectorCtn {
-public:
-   DenseCtnStdSort(int argc, char* argv[]) : ExplicitDenseVectorCtn() {};
-   virtual ~DenseCtnStdSort() = default;
+ public:
+  DenseCtnStdSort(int argc, char *argv[]) : ExplicitDenseVectorCtn() {};
+  virtual ~DenseCtnStdSort() = default;
 
-   inline virtual std::string name() const {
-      static auto name_str = "StdDense";
-      return name_str;
-   }
+  inline virtual std::string name() const {
+    static auto name_str = "StdDense";
+    return name_str;
+  }
 
-protected:
-   inline void sort(std::vector<elttype>& cnt) override final {
-      std::sort(cnt.begin(), cnt.end());
-   }
+ protected:
+  inline void sort(std::vector<elttype> &cnt) override final {
+    std::sort(cnt.begin(), cnt.end());
+  }
 };
 
 class DenseCtnTimSort : public ExplicitDenseVectorCtn {
-public:
-   DenseCtnTimSort(int argc, char* argv[]) : ExplicitDenseVectorCtn() {};
-   virtual ~DenseCtnTimSort() = default;
+ public:
+  DenseCtnTimSort(int argc, char *argv[]) : ExplicitDenseVectorCtn() {};
+  virtual ~DenseCtnTimSort() = default;
 
-   inline virtual std::string name() const {
-      static auto name_str = "TimDense";
-      return name_str;
-   }
+  inline virtual std::string name() const {
+    static auto name_str = "TimDense";
+    return name_str;
+  }
 
-protected:
-   inline void sort(std::vector<elttype>& cnt) override final {
-      gfx::timsort(cnt.begin(), cnt.end());
-   }
+ protected:
+  inline void sort(std::vector<elttype> &cnt) override final {
+    gfx::timsort(cnt.begin(), cnt.end());
+  }
 };
