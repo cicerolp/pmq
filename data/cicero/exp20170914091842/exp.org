@@ -161,6 +161,7 @@ At each removal all the elements inserted more =T= Batches in the past are delet
 
 ** Execution parameters 
 
+#+NAME: execParam
 | Time Window Size | Batch |    tSize | Results in removal % |
 |------------------+-------+----------+----------------------|
 |            11745 |  1000 | 23488000 |                  0.5 |
@@ -210,7 +211,6 @@ git checkout master
 #+end_src
 
 #+RESULTS:
-: M	LabBook.org
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -228,18 +228,21 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170907112116
+On branch exp20170914091842
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
+	exp.html
 	exp.org
-	run.sh
+	exp.pdf
+	exp.rst
+	exp.tex
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170907112116 b2bf67c] Initial commit for exp20170907112116
- 1 file changed, 457 insertions(+)
- create mode 100644 data/cicero/exp20170907112116/exp.org
+[exp20170914091842 87d4f4c] Initial commit for exp20170914091842
+ 1 file changed, 884 insertions(+)
+ create mode 100644 data/cicero/exp20170914091842/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -247,11 +250,33 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * b2bf67c (HEAD -> exp20170907112116) Initial commit for exp20170907112116
-: * 0440ec8 (master) upd: bench insert and scan
-: * 7af0672 wip labbook
+: * 87d4f4c (HEAD -> exp20170914091842) Initial commit for exp20170914091842
+: * dd21b9e (master) exp insert remove count
+: * 1b319c5 wip: labbook
 
-** DONE Export run script 
+** TODO Export run script 
+
+#+begin_src sh :results output :exports both :var T=execParam[,0] R=execParam[2,1] tSize=execParam[2,2]
+n=$((2 * tSize))
+for t in $T ;
+do
+echo "stdbuf -oL ./benchmarks/bench_insert_remove_count -rate ${R} -n ${n} -T ${t} -tSize ${tSize} > \${TMPDIR}/bench_ins_rm_${t}_\${EXECID}.log"
+done;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
+#+end_example
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -303,9 +328,17 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-n=$((10**6))
-b=100
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
+
 
 set -e
 
@@ -324,7 +357,7 @@ git push origin $expId
 #+end_src 
 
 
-** DONE Commit local changes
+** TODO Commit local changes
 #+begin_src sh :results output :exports both
 git status .
 #+end_src
