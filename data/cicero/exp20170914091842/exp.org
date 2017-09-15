@@ -793,8 +793,7 @@ df %>% filter(remove > 0) %>%
 *** Overview of results                                       :export:plot:
 
 Plot an overview of every benchmark , doing average of times. 
-#+begin_src R :results output :exports both
-
+#+begin_src R :results output :exports code
 df %>% filter(remove > 0) %>% 
     mutate(remove=as.numeric(remove)) %>%
     mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
@@ -839,7 +838,7 @@ dfplot %>%
 
 *** INPROGRESS Insertion performance
 
-#+begin_src R :results output :exports both :session 
+#+begin_src R :results output :exports code :session 
 df %>% filter(is.na(remove)) %>%  # get only lines with no removes
        mutate(remove=as.numeric(remove)) %>%
        mutate(T = as.factor(T))-> dfinsert
@@ -878,7 +877,7 @@ facet_wrap(~T, scales="free")
 #+RESULTS:
 [[file:./img/overallInsertion.png]]
 
-Total insertion time (without the removals) :
+***** Total insertion time (without the removals) :
 #+begin_src R :results table :session :exports both :colnames yes
 dfinsert %>% 
     group_by(algo, T) %>%
@@ -921,7 +920,6 @@ arrange(T,algo)
 | GeoHashBinary | 23465 |  1.11899 | 0.0164199 | 25213.1 |
 | RTree         | 23465 |   1.1056 | 0.0431989 | 24911.5 |
 
-
 #+begin_src R :results output graphics :file "./img/averageInsOnly.png" :exports both :width 600 :height 400
 library(ggplot2)
 
@@ -940,8 +938,7 @@ dfinsert %>%
 [[file:./img/averageInsOnly.png]]
 
 
-
-Total benchmark time with the removals:
+***** Total benchmark time with the removals:
 #+begin_src R :results table :session :exports both :colnames yes
 options(digits=6)
 df %>% 
@@ -988,8 +985,7 @@ dfTotals %>% arrange(T,algo)
 | GeoHashBinary | 23465 |  26.5392 | 121.956 |  623964 |
 | RTree         | 23465 |  20.8363 | 94.6915 |  489883 |
 
-#+begin_src R :results output :exports both :session 
-
+#+begin_src R :results output :exports code :session 
 df %>% 
     mutate(remove = if_else(is.na(remove), 0 , as.numeric(remove))) %>%
     mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, as.numeric(remove) + insert)) %>% 
@@ -1018,7 +1014,7 @@ totalPlot
 # ... with 20 more rows
 #+end_example
 
-#+begin_src R :results output graphics :file "./img/averageInsRm.png" :exports both :width 600 :height 400
+#+begin_src R :results output graphics :file "./img/totalInsRm.png" :exports both :width 600 :height 400
 library(ggplot2)
 
 totalPlot %>%
@@ -1028,7 +1024,7 @@ totalPlot %>%
 #+end_src
 
 #+RESULTS:
-[[file:./img/averageInsRm.png]]
+[[file:./img/totalInsRm.png]]
 
 **** Amortized time :ARCHIVE:
 
