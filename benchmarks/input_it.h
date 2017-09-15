@@ -44,7 +44,17 @@ class input_tweet_it : public input_it {
     return input_tweet_it(fname, true);
   }
 
+  input_tweet_it(const input_tweet_it& elt) {
+    _curr_elt = elt._curr_elt;
+    _size = elt._size;
+    _fname = elt._fname;
+
+    _infile = std::ifstream(elt._fname, std::ios::binary);
+  }
+
   input_tweet_it(const std::string &fname, bool end = false) : input_it() {
+
+    _fname = fname;
 
     _infile = std::ifstream(fname, std::ios::binary);
 
@@ -117,6 +127,7 @@ class input_tweet_it : public input_it {
   }
 
  protected:
+  std::string _fname;
   size_type _curr_elt{0};
   size_type _size{0};
   std::ifstream _infile;
