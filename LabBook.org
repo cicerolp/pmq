@@ -503,3 +503,27 @@ mkdir -p $expFolder
   2a5b5d2 UPD: report in markdown
   $ $ [[./data/cicero/exp20170915143003/exp.org]]
   
+
+*** TODO [2017-09-15 Sex] Experiment =bench_insert_and_scan=
+
+- [ ] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170822165129/exp.org]]
+  
