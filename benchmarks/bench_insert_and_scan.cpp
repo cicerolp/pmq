@@ -109,7 +109,7 @@ void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const ben
       batch.emplace_back(*begin);
       ++begin;
 
-      ++n_elts;
+      --n_elts;
     }
 
     // insert batch
