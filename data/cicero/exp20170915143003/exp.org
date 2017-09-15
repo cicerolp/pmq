@@ -16,14 +16,16 @@
 Test the queries on uniform data. 
 And compare the folling performances.
 
-Use 10**8 elements. 
-
 - PMQ / GEOHASH
 - BTREE 
 - RTREE - quadratic algorithm 
 - RTREE - quadratic algorithm with bulk loading
 
 Use the refinement level = 8 
+
+Elements:
+- Timewindow = 26000
+- Batch size = 1000
 
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
@@ -33,7 +35,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * TODO Experiment Script
-** TODO Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -94,7 +96,7 @@ git la -3
 : | * e4b0e35 (origin/exp20170914091842, exp20170914091842) Report exporte in .rst format (preview in bitbucket)
 : | * a4a4bba Analysis bench insertions and removals
 
-** TODO Export run script 
+** DONE Export run script 
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -171,19 +173,30 @@ git push origin $expId
 #+end_src 
 
 
-** TODO Commit local changes
+** DONE Commit local changes
 #+begin_src sh :results output :exports both
 git status .
 #+end_src
 
 #+RESULTS:
-: On branch exp20170907145711
-: Untracked files:
-:   (use "git add <file>..." to include in what will be committed)
-: 
-: 	.#exp.org
-: 
-: nothing added to commit but untracked files present (use "git add" to track)
+#+begin_example
+On branch exp20170915143003
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	parse.sh
+	plotResults.R
+	run.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
 
 #+begin_src sh :results output :exports both
 git add run.sh exp.org
@@ -192,9 +205,9 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20170907145711 b02a7c4] UPD: run.sh script
-:  2 files changed, 85 insertions(+), 16 deletions(-)
-:  create mode 100755 data/cicero/exp20170907145711/run.sh
+: [exp20170915143003 33c9084] UPD: run.sh script
+:  2 files changed, 90 insertions(+), 18 deletions(-)
+:  create mode 100755 data/cicero/exp20170915143003/run.sh
 
 Push to remote
 #+begin_src sh :results output :exports both :var expId=expId
@@ -223,7 +236,7 @@ tmux ls
 ps ux
 #+end_src
 
-** DONE Remote Execution                                            :remote:
+** TODO Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -239,11 +252,11 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
  ,* Management:     https://landscape.canonical.com
  ,* Support:        https://ubuntu.com/advantage
 
-34 packages can be updated.
-0 updates are security updates.
+44 packages can be updated.
+4 updates are security updates.
 
 ,*** System restart required ***
-Last login: Thu Sep  7 15:06:36 2017 from 143.54.11.6
+Last login: Thu Sep 14 17:24:35 2017 from 143.54.13.218
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -260,20 +273,20 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 18, done.
-(1/15)           remote: Compressing objects:  13% (2/15)           remote: Compressing objects:  20% (3/15)           remote: Compressing objects:  26% (4/15)           remote: Compressing objects:  33% (5/15)           remote: Compressing objects:  40% (6/15)           remote: Compressing objects:  46% (7/15)           remote: Compressing objects:  53% (8/15)           remote: Compressing objects:  60% (9/15)           remote: Compressing objects:  66% (10/15)           remote: Compressing objects:  73% (11/15)           remote: Compressing objects:  80% (12/15)           remote: Compressing objects:  86% (13/15)           remote: Compressing objects:  93% (14/15)           remote: Compressing objects: 100% (15/15)           remote: Compressing objects: 100% (15/15), done.
-(1/18)   Unpacking objects:  11% (2/18)   Unpacking objects:  16% (3/18)   Unpacking objects:  22% (4/18)   Unpacking objects:  27% (5/18)   Unpacking objects:  33% (6/18)   Unpacking objects:  38% (7/18)   Unpacking objects:  44% (8/18)   Unpacking objects:  50% (9/18)   Unpacking objects:  55% (10/18)   remote: Total 18 (delta 9), reused 0 (delta 0)
-(11/18)   Unpacking objects:  66% (12/18)   Unpacking objects:  72% (13/18)   Unpacking objects:  77% (14/18)   Unpacking objects:  83% (15/18)   Unpacking objects:  88% (16/18)   Unpacking objects:  94% (17/18)   Unpacking objects: 100% (18/18)   Unpacking objects: 100% (18/18), done.
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 13, done.
+(1/10)           remote: Compressing objects:  20% (2/10)           remote: Compressing objects:  30% (3/10)           remote: Compressing objects:  40% (4/10)           remote: Compressing objects:  50% (5/10)           remote: Compressing objects:  60% (6/10)           remote: Compressing objects:  70% (7/10)           remote: Compressing objects:  80% (8/10)           remote: Compressing objects:  90% (9/10)           remote: Compressing objects: 100% (10/10)           remote: Compressing objects: 100% (10/10), done.        
+remote: Total 13 (delta 6), reused 0 (delta 0)
+(1/13)   Unpacking objects:  15% (2/13)   Unpacking objects:  23% (3/13)   Unpacking objects:  30% (4/13)   Unpacking objects:  38% (5/13)   Unpacking objects:  46% (6/13)   Unpacking objects:  53% (7/13)   Unpacking objects:  61% (8/13)   Unpacking objects:  69% (9/13)   Unpacking objects:  76% (10/13)   Unpacking objects:  84% (11/13)   Unpacking objects:  92% (12/13)   Unpacking objects: 100% (13/13)   Unpacking objects: 100% (13/13), done.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-origin/exp20170907145711
-Branch exp20170907145711 set up to track remote branch exp20170907145711 from origin.
-Switched to a new branch 'exp20170907145711'
+origin/exp20170915143003
+Branch exp20170915143003 set up to track remote branch exp20170915143003 from origin.
+Switched to a new branch 'exp20170915143003'
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 Already up-to-date.
-commit b02a7c45018c0698a48021288f89e1fff87597a1
-Date:   Thu Sep 7 16:00:38 2017 -0300
+commit 33c9084e53b9bd302e928ff9226e970e7086ac4f
+Date:   Fri Sep 15 14:40:11 2017 -0300
 
     UPD: run.sh script
 #+end_example
@@ -295,7 +308,7 @@ git log -1 | cat
 : 
 :     Bugfix: corrected pointer casts
 
-*** DONE Execute Remotely                                          :remote:
+*** TODO Execute Remotely                                          :remote:
 
 Opens ssh connection and a tmux session
 
@@ -309,7 +322,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ julio@cicero:~/Projects/pmq/data/cicero/exp20170907145711$ 1504810921
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170915143003$ julio@cicero:~/Projects/pmq/data/cicero/exp20170915143003$ julio@cicero:~/Projects/pmq/data/cicero/exp20170915143003$ julio@cicero:~/Projects/pmq/data/cicero/exp20170915143003$ 1505503014
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -319,25 +332,20 @@ ps ux
 
 #+RESULTS:
 #+begin_example
-runExp: 1 windows (created Thu Sep  7 16:02:01 2017) [80x23]
+runExp: 1 windows (created Fri Sep 15 16:16:54 2017) [80x23]
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-julio      511  0.0  0.0  45248  4592 ?        Ss   14:59   0:00 /lib/systemd/sy
-julio      513  0.0  0.0 145408  2156 ?        S    14:59   0:00 (sd-pam)
-julio     1364  0.0  0.0  97464  3388 ?        S    16:00   0:00 sshd: julio@pts
-julio     1365  0.0  0.0  22684  5236 pts/10   Ss   16:00   0:00 -bash
-julio     1415  0.0  0.0  29420  2888 ?        Ss   16:02   0:00 tmux new -d -s 
-julio     1416  0.0  0.0  12532  3028 pts/8    Ss+  16:02   0:00 bash -c cd ~/Pr
-julio     1418  0.0  0.0  12536  3088 pts/8    S+   16:02   0:00 /bin/bash ./run
-julio     1544  0.0  0.0   9676  2264 pts/8    S+   16:02   0:00 make
-julio     1547  0.0  0.0   9676  2400 pts/8    S+   16:02   0:00 make -f CMakeFi
-julio     1630  4.0  0.0  12488  5024 pts/8    S+   16:02   0:00 make -f benchma
-julio     1633  0.0  0.0   4508   852 pts/8    S+   16:02   0:00 /bin/sh -c cd /
-julio     1634  0.0  0.0   8352   856 pts/8    S+   16:02   0:00 /usr/bin/c++ -I
-julio     1635  120  1.3 552444 448236 pts/8   R+   16:02   0:02 /usr/lib/gcc/x8
-julio     1637  0.0  0.0  37368  3332 pts/10   R+   16:02   0:00 ps ux
+julio    24661  0.0  0.0  45248  4608 ?        Ss   14:39   0:00 /lib/systemd/sy
+julio    24663  0.0  0.0 145364  2112 ?        S    14:39   0:00 (sd-pam)
+julio    24713  0.0  0.0  97464  3332 ?        D    14:39   0:00 sshd: julio@pts
+julio    24714  0.0  0.0  22688  5180 pts/8    Ss   14:39   0:00 -bash
+julio    25332  0.0  0.0  29420  2904 ?        Ss   16:16   0:00 tmux new -d -s 
+julio    25333  0.0  0.0  12532  3020 pts/9    Ss+  16:16   0:00 bash -c cd ~/Pr
+julio    25335  0.0  0.0  12544  3024 pts/9    S+   16:16   0:00 /bin/bash ./run
+julio    25561 87.6  0.9 542264 306924 pts/9   R+   16:16   0:02 ./benchmarks/be
+julio    25563  0.0  0.0  37368  3316 pts/8    R+   16:16   0:00 ps ux
 #+end_example
 
-**** DONE Pull local 
+**** TODO Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
 #git commit -a -m "wip"
 git status
@@ -346,40 +354,43 @@ git pull origin $expId
 
 #+RESULTS:
 #+begin_example
-On branch exp20170907145711
+On branch exp20170915143003
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git checkout -- <file>..." to discard changes in working directory)
 
+	modified:   ../../../LabBook.org
 	modified:   exp.org
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	../../../.#LabBook.org
+	../../../LabBook.org.bkp
 	../../../LabBook.org.orig
-	../../../LabBook_BACKUP_19287.org
-	../../../LabBook_BASE_19287.org
-	../../../LabBook_LOCAL_19287.org
-	../../../LabBook_REMOTE_19287.org
-	../../../benchmarks/bench_insert_and_scan.cpp.orig
-	../../../benchmarks/bench_queries_region.cpp.orig
-	../../../build-Release/
+	../../../benchmarks/bench_insert_remove_count.cpp.orig
+	../exp20170830124159/
+	../exp20170904152622/
 	../exp20170904153555/
-	../exp20170907105314/
-	../exp20170907105804/
-	../exp20170907112116/
+	../exp20170914091842/
 	.#exp.org
+	bench_queries_region_random_26000_1000_8_1505497224.csv
+	bench_queries_region_random_26000_1000_8_1505497224.log
+	img/
+	parse.sh
+	plotResults.R
+	../../../include/types.h.orig
 
 no changes added to commit (use "git add" and/or "git commit -a")
-Merge made by the 'recursive' strategy.
- data/cicero/exp20170907145711/info.org           | 691 +++++++++++++++++++++++
- data/cicero/exp20170907145711/log_1504810921.tgz | Bin 0 -> 39043 bytes
- data/cicero/exp20170907145711/run_1504810921     |  48 ++
- 3 files changed, 739 insertions(+)
- create mode 100644 data/cicero/exp20170907145711/info.org
- create mode 100644 data/cicero/exp20170907145711/log_1504810921.tgz
- create mode 100644 data/cicero/exp20170907145711/run_1504810921
+Updating c084370..05add9e
+Fast-forward
+ data/cicero/exp20170915143003/info.org           |  76 +++++++++++------------
+ data/cicero/exp20170915143003/log_1505503014.tgz | Bin 0 -> 38556 bytes
+ data/cicero/exp20170915143003/run.sh             |   2 +-
+ data/cicero/exp20170915143003/run_1505497224     |  11 ++++
+ data/cicero/exp20170915143003/run_1505503014     |  44 +++++++++++++
+ 5 files changed, 94 insertions(+), 39 deletions(-)
+ create mode 100644 data/cicero/exp20170915143003/log_1505503014.tgz
+ create mode 100644 data/cicero/exp20170915143003/run_1505503014
 #+end_example
 
 
@@ -395,15 +406,16 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 39K Set  8 09:21 log_1504810921.tgz |
+| -rw-rw-r-- | 1 | julio | julio | 38K | Set | 15 | 16:20 | log_1505503014.tgz |
+| -rw-rw-r-- | 1 | julio | julio | 16K | Set | 15 | 14:42 | log_1505497224.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both 
-tar xvzf log_*.tgz
+tar xvzf log_1505503014.tgz
 #+end_src
 
 #+RESULTS: logFile
-: bench_queries_region_random_1000000_100_8_1504810921.log
+: bench_queries_region_random_26000_1000_8_1505503014.log
 
 Create CSV using logFile 
 #+begin_src sh :results output :exports both :var logFile=logFile[0]
@@ -414,7 +426,7 @@ grep "; query ;" $logFile | sed "s/QueryBench//g" >  $(basename -s .log $logFile
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_queries_region_random_1000000_100_8_1504810921.csv
+: bench_queries_region_random_26000_1000_8_1505503014.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -470,18 +482,18 @@ Warning message:
 In rbind(names(probs), probs_f) :
   number of columns of result is not a multiple of vector length (arg 1)
 # A tibble: 6,400 x 11
-              V1    V2    V3    V4      V5             V6      V7
-           <chr> <chr> <int> <lgl>   <int>          <chr>   <dbl>
- 1 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4893
- 2 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4472
- 3 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4070
- 4 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4292
- 5 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4498
- 6 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.3831
- 7 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4557
- 8 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4722
- 9 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.4505
-10 GeoHashBinary query     0  TRUE 1000000 scan_at_region 71.6551
+              V1    V2    V3    V4    V5             V6      V7
+           <chr> <chr> <int> <lgl> <int>          <chr>   <dbl>
+ 1 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6587
+ 2 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.7821
+ 3 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6673
+ 4 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6728
+ 5 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6935
+ 6 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.7203
+ 7 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6842
+ 8 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6659
+ 9 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6754
+10 GeoHashBinary query     0  TRUE 26000 scan_at_region 18.6662
 # ... with 6,390 more rows, and 4 more variables: V8 <chr>, V9 <int>,
 #   V10 <chr>, V11 <int>
 #+end_example
@@ -499,16 +511,16 @@ df
 # A tibble: 6,400 x 6
             algo queryId          bench      ms Refine Count
            <chr>   <int>          <chr>   <dbl>  <int> <int>
- 1 GeoHashBinary       0 scan_at_region 71.4893    482    NA
- 2 GeoHashBinary       0 scan_at_region 71.4472    482    NA
- 3 GeoHashBinary       0 scan_at_region 71.4070    482    NA
- 4 GeoHashBinary       0 scan_at_region 71.4292    482    NA
- 5 GeoHashBinary       0 scan_at_region 71.4498    482    NA
- 6 GeoHashBinary       0 scan_at_region 71.3831    482    NA
- 7 GeoHashBinary       0 scan_at_region 71.4557    482    NA
- 8 GeoHashBinary       0 scan_at_region 71.4722    482    NA
- 9 GeoHashBinary       0 scan_at_region 71.4505    482    NA
-10 GeoHashBinary       0 scan_at_region 71.6551    482    NA
+ 1 GeoHashBinary       0 scan_at_region 18.6587    482    NA
+ 2 GeoHashBinary       0 scan_at_region 18.7821    482    NA
+ 3 GeoHashBinary       0 scan_at_region 18.6673    482    NA
+ 4 GeoHashBinary       0 scan_at_region 18.6728    482    NA
+ 5 GeoHashBinary       0 scan_at_region 18.6935    482    NA
+ 6 GeoHashBinary       0 scan_at_region 18.7203    482    NA
+ 7 GeoHashBinary       0 scan_at_region 18.6842    482    NA
+ 8 GeoHashBinary       0 scan_at_region 18.6659    482    NA
+ 9 GeoHashBinary       0 scan_at_region 18.6754    482    NA
+10 GeoHashBinary       0 scan_at_region 18.6662    482    NA
 # ... with 6,390 more rows
 #+end_example
 
@@ -522,54 +534,54 @@ summary(df[df$algo=="RTree",])
 
 #+RESULTS:
 #+begin_example
-     algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   : 0.01035  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.: 0.08939  
- Mode  :character   Median :39.50   Mode  :character   Median : 0.60609  
-                    Mean   :39.50                      Mean   : 7.28542  
-                    3rd Qu.:59.25                      3rd Qu.: 5.00355  
-                    Max.   :79.00                      Max.   :72.42790  
-                                                                         
-     Refine          Count         
- Min.   :  1.0   Min.   :     762  
- 1st Qu.:  9.0   1st Qu.:   10335  
- Median : 51.0   Median :  129030  
- Mean   :143.4   Mean   : 2205996  
- 3rd Qu.:189.0   3rd Qu.: 1447410  
- Max.   :744.0   Max.   :13239675  
+     algo              queryId         bench                 ms           
+ Length:1600        Min.   : 0.00   Length:1600        Min.   : 0.002588  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.: 0.027660  
+ Mode  :character   Median :39.50   Mode  :character   Median : 0.144764  
+                    Mean   :39.50                      Mean   : 1.919891  
+                    3rd Qu.:59.25                      3rd Qu.: 1.354142  
+                    Max.   :79.00                      Max.   :19.097100  
+                                                                          
+     Refine          Count        
+ Min.   :  1.0   Min.   :    184  
+ 1st Qu.:  9.0   1st Qu.:   2702  
+ Median : 51.0   Median :  33371  
+ Mean   :143.4   Mean   : 573496  
+ 3rd Qu.:189.0   3rd Qu.: 376592  
+ Max.   :744.0   Max.   :3443858  
                  NA's   :800
      algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   :  0.0096  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.:  0.1720  
- Mode  :character   Median :39.50   Mode  :character   Median :  2.6652  
-                    Mean   :39.50                      Mean   : 51.8230  
-                    3rd Qu.:59.25                      3rd Qu.: 34.4182  
-                    Max.   :79.00                      Max.   :360.9100  
+ Length:1600        Min.   : 0.00   Length:1600        Min.   : 0.00219  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.: 0.03647  
+ Mode  :character   Median :39.50   Mode  :character   Median : 0.38434  
+                    Mean   :39.50                      Mean   :10.02570  
+                    3rd Qu.:59.25                      3rd Qu.: 7.28446  
+                    Max.   :79.00                      Max.   :70.42940  
                                                                          
-     Refine          Count         
- Min.   :  1.0   Min.   :     762  
- 1st Qu.:  9.0   1st Qu.:   10335  
- Median : 51.0   Median :  129030  
- Mean   :143.4   Mean   : 2205996  
- 3rd Qu.:189.0   3rd Qu.: 1447410  
- Max.   :744.0   Max.   :13239675  
+     Refine          Count        
+ Min.   :  1.0   Min.   :    184  
+ 1st Qu.:  9.0   1st Qu.:   2702  
+ Median : 51.0   Median :  33371  
+ Mean   :143.4   Mean   : 573496  
+ 3rd Qu.:189.0   3rd Qu.: 376592  
+ Max.   :744.0   Max.   :3443858  
                  NA's   :800
      algo              queryId         bench                 ms          
- Length:1600        Min.   : 0.00   Length:1600        Min.   :  0.0135  
- Class :character   1st Qu.:19.75   Class :character   1st Qu.:  0.1794  
- Mode  :character   Median :39.50   Mode  :character   Median :  2.9282  
-                    Mean   :39.50                      Mean   : 52.1705  
-                    3rd Qu.:59.25                      3rd Qu.: 37.2051  
-                    Max.   :79.00                      Max.   :386.8580  
+ Length:1600        Min.   : 0.00   Length:1600        Min.   : 0.00093  
+ Class :character   1st Qu.:19.75   Class :character   1st Qu.: 0.02808  
+ Mode  :character   Median :39.50   Mode  :character   Median : 0.29411  
+                    Mean   :39.50                      Mean   :12.06190  
+                    3rd Qu.:59.25                      3rd Qu.: 7.73104  
+                    Max.   :79.00                      Max.   :96.55800  
                                                                          
-     Refine             Count     
- Min.   :     762   Min.   : NA   
- 1st Qu.:   10335   1st Qu.: NA   
- Median :  129030   Median : NA   
- Mean   : 2205996   Mean   :NaN   
- 3rd Qu.: 1447410   3rd Qu.: NA   
- Max.   :13239675   Max.   : NA   
- NA's   :800        NA's   :1600
+     Refine            Count     
+ Min.   :    184   Min.   : NA   
+ 1st Qu.:   2702   1st Qu.: NA   
+ Median :  33371   Median : NA   
+ Mean   : 573496   Mean   :NaN   
+ 3rd Qu.: 376592   3rd Qu.: NA   
+ Max.   :3443858   Max.   : NA   
+ NA's   :800       NA's   :1600
 #+end_example
 
 Summarize the averages
@@ -590,14 +602,14 @@ dfplot %>% filter(queryId == 20)
 # A tibble: 8 x 7
            algo queryId           bench Refine  Count    avg_ms       stdv
           <chr>   <int>           <chr>  <int>  <int>     <dbl>      <dbl>
-1         BTree      20 apply_at_region    108 827282 16.629540 0.17565999
-2         BTree      20  scan_at_region    108     NA 22.749580 0.18731222
-3 GeoHashBinary      20 apply_at_region    108 827282  2.073683 0.04198312
-4 GeoHashBinary      20  scan_at_region    108     NA  5.553596 0.01273674
-5         RTree      20 apply_at_region     NA 827283 15.927710 0.50594676
-6         RTree      20  scan_at_region     NA     NA 29.117670 0.13794564
-7     RTreeBulk      20 apply_at_region     NA 827283  2.448958 0.01890487
-8     RTreeBulk      20  scan_at_region     NA     NA 14.568580 0.05626716
+1         BTree      20 apply_at_region    108 214775 2.6816880 0.22956214
+2         BTree      20  scan_at_region    108     NA 4.8140650 0.07039210
+3 GeoHashBinary      20 apply_at_region    108 214775 0.4694510 0.09968918
+4 GeoHashBinary      20  scan_at_region    108     NA 1.4375940 0.01467585
+5         RTree      20 apply_at_region     NA 214776 3.3167700 0.29691903
+6         RTree      20  scan_at_region     NA     NA 6.3906740 0.02903651
+7     RTreeBulk      20 apply_at_region     NA 214776 0.5004929 0.01524547
+8     RTreeBulk      20  scan_at_region     NA     NA 2.7961820 0.02158188
 #+end_example
 
 #+begin_src R :results output :exports both :session 
@@ -606,15 +618,16 @@ dfplot %>% filter(queryId == 10, bench == "scan_at_region", algo=="BTree")
 
 #+RESULTS:
 : # A tibble: 1 x 7
-:    algo queryId          bench Refine Count   avg_ms      stdv
-:   <chr>   <int>          <chr>  <int> <int>    <dbl>     <dbl>
-: 1 BTree      10 scan_at_region    255    NA 89.45239 0.4070152
+:    algo queryId          bench Refine Count   avg_ms       stdv
+:   <chr>   <int>          <chr>  <int> <int>    <dbl>      <dbl>
+: 1 BTree      10 scan_at_region    255    NA 17.79931 0.09214822
 
 *** Plot overview                                                  :export:
 #+begin_src R :results output graphics :file "./img/overview_query_region.png" :exports results :width 800 :height 600 :session 
 
 myplot <- function(data) {
     data %>%
+#    filter( algo == "GeoHashBinary" ) %>%    
     #mutate(queryW = queryId %/% 10) %>%
     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
 #    arrange(desc(queryW)) %>%
@@ -663,7 +676,7 @@ dfplot %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-303604q/figure3036vdb.png]]
+[[file:/tmp/babel-9388tZA/figure9388YFH.png]]
 
 
 *** Table                                                          :export:
@@ -682,43 +695,32 @@ dfplot %>% filter( bench=="apply_at_region" ) %>% arrange(queryId)
 
 #+RESULTS:
 #+begin_example
-# A tibble: 20 x 4
-# Groups:   queryId [20]
-   queryId           bench          c         s
-     <int>           <chr>      <dbl>     <dbl>
- 1       1 apply_at_region 13238672.0 1.4142136
- 2       2 apply_at_region 13232631.5 0.5773503
- 3       3 apply_at_region 13236198.0 1.1547005
- 4       5 apply_at_region 13234142.5 0.5773503
- 5       6 apply_at_region 13236458.2 1.5000000
- 6       7 apply_at_region 13237089.5 1.7320508
- 7       8 apply_at_region 13237619.2 1.5000000
- 8      11 apply_at_region  3307715.0 1.1547005
- 9      14 apply_at_region  3311511.0 1.1547005
-10      15 apply_at_region  3307750.0 0.8164966
-11      16 apply_at_region  3306478.8 0.9574271
-12      20 apply_at_region   827282.5 0.5773503
-13      23 apply_at_region   826549.8 0.5000000
-14      26 apply_at_region   826960.8 0.5000000
-15      27 apply_at_region   826865.5 0.5773503
-16      30 apply_at_region   206005.8 0.5000000
-17      33 apply_at_region   206557.5 0.5773503
-18      41 apply_at_region    51758.5 0.5773503
-19      42 apply_at_region    51959.5 0.5773503
-20      56 apply_at_region    12961.5 0.5773503
+# A tibble: 9 x 4
+# Groups:   queryId [9]
+  queryId           bench         c         s
+    <int>           <chr>     <dbl>     <dbl>
+1       1 apply_at_region 3440446.5 0.5773503
+2       3 apply_at_region 3440915.5 0.5773503
+3       7 apply_at_region 3442233.5 0.5773503
+4      14 apply_at_region  862262.5 0.5773503
+5      16 apply_at_region  859265.0 1.1547005
+6      20 apply_at_region  214775.5 0.5773503
+7      41 apply_at_region   13399.5 0.5773503
+8      42 apply_at_region   13513.5 0.5773503
+9      56 apply_at_region    3356.5 0.5773503
 # A tibble: 320 x 7
-            algo queryId           bench Refine    Count     avg_ms       stdv
-           <chr>   <int>           <chr>  <int>    <int>      <dbl>      <dbl>
- 1         BTree       0 apply_at_region    482 13239675 261.008800 1.32437472
- 2 GeoHashBinary       0 apply_at_region    482 13239675   9.993922 0.02765056
- 3         RTree       0 apply_at_region     NA 13239675 232.691200 0.15173793
- 4     RTreeBulk       0 apply_at_region     NA 13239675  37.106310 0.02105287
- 5         BTree       1 apply_at_region    519 13238671 264.323400 0.47537358
- 6 GeoHashBinary       1 apply_at_region    519 13238671  10.146100 0.06975201
- 7         RTree       1 apply_at_region     NA 13238672 230.822700 0.14978581
- 8     RTreeBulk       1 apply_at_region     NA 13238674  37.150580 0.02902730
- 9         BTree       2 apply_at_region    708 13232631 262.139700 0.51322619
-10 GeoHashBinary       2 apply_at_region    708 13232631   9.751330 0.01564733
+            algo queryId           bench Refine   Count    avg_ms        stdv
+           <chr>   <int>           <chr>  <int>   <int>     <dbl>       <dbl>
+ 1         BTree       0 apply_at_region    482 3440580 49.647600 0.150356676
+ 2 GeoHashBinary       0 apply_at_region    482 3440580  3.061860 0.022543467
+ 3         RTree       0 apply_at_region     NA 3440580 50.613267 0.066850605
+ 4     RTreeBulk       0 apply_at_region     NA 3440580  7.803137 0.002283010
+ 5         BTree       1 apply_at_region    519 3440446 50.317533 0.119569617
+ 6 GeoHashBinary       1 apply_at_region    519 3440446  2.969117 0.163947325
+ 7         RTree       1 apply_at_region     NA 3440447 49.870900 0.758116462
+ 8     RTreeBulk       1 apply_at_region     NA 3440447  7.776700 0.005880366
+ 9         BTree       2 apply_at_region    708 3438884 49.964267 0.068276375
+10 GeoHashBinary       2 apply_at_region    708 3438884  2.900493 0.036675551
 # ... with 310 more rows
 #+end_example
 
@@ -751,25 +753,14 @@ dfplot %>%
 #+RESULTS:
 | queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
 |---------+-------------+---------------------+-----------------+-------------+-------|
-|       1 |    13238671 |            13238671 |        13238674 |    13238672 |     2 |
-|       2 |    13232631 |            13232631 |        13232632 |    13232632 | 0.333 |
-|       3 |    13236197 |            13236197 |        13236199 |    13236199 | 1.333 |
-|       5 |    13234142 |            13234142 |        13234143 |    13234143 | 0.333 |
-|       6 |    13236459 |            13236459 |        13236459 |    13236456 |  2.25 |
-|       7 |    13237088 |            13237088 |        13237091 |    13237091 |     3 |
-|       8 |    13237620 |            13237620 |        13237620 |    13237617 |  2.25 |
-|      11 |     3307714 |             3307714 |         3307716 |     3307716 | 1.333 |
-|      14 |     3311510 |             3311510 |         3311512 |     3311512 | 1.333 |
-|      15 |     3307750 |             3307750 |         3307751 |     3307749 | 0.667 |
-|      16 |     3306478 |             3306478 |         3306479 |     3306480 | 0.917 |
-|      20 |      827282 |              827282 |          827283 |      827283 | 0.333 |
-|      23 |      826550 |              826550 |          826550 |      826549 |  0.25 |
-|      26 |      826961 |              826961 |          826961 |      826960 |  0.25 |
-|      27 |      826865 |              826865 |          826866 |      826866 | 0.333 |
-|      30 |      206006 |              206006 |          206006 |      206005 |  0.25 |
-|      33 |      206557 |              206557 |          206558 |      206558 | 0.333 |
-|      41 |       51758 |               51758 |           51759 |       51759 | 0.333 |
-|      42 |       51959 |               51959 |           51960 |       51960 | 0.333 |
-|      56 |       12961 |               12961 |           12962 |       12962 | 0.333 |
+|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
+|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
+|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
+|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
+|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
+|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
+|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
+|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
+|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
 #+TBLFM: $6=$0;%0.3f
 
