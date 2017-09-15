@@ -990,27 +990,27 @@ df %>%
     mutate(remove = if_else(is.na(remove), 0 , as.numeric(remove))) %>%
     mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, as.numeric(remove) + insert)) %>% 
     group_by(algo,T) %>%
-    summarize(total = sum(ins_rm)) %>%
+    summarize(total = sum(ins_rm) , avg = mean(ins_rm), std= sd(ins_rm)) %>%
     mutate(T = as.factor(T)) -> totalPlot
 totalPlot
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 30 x 3
+# A tibble: 30 x 5
 # Groups:   algo [3]
-    algo      T  total
-   <chr> <fctr>  <dbl>
- 1 BTree  11745  23653
- 2 BTree  17616  23119
- 3 BTree  20552  24617
- 4 BTree  22020  29476
- 5 BTree  22754  38603
- 6 BTree  23121  57309
- 7 BTree  23305  95316
- 8 BTree  23396 162774
- 9 BTree  23442 304839
-10 BTree  23465 569311
+    algo      T    total       avg      std
+   <chr> <fctr>    <dbl>     <dbl>    <dbl>
+ 1 BTree  11745  23653.0  0.671368  23.3574
+ 2 BTree  17616  23119.1  0.787435  23.7736
+ 3 BTree  20552  24617.3  0.931626  24.6810
+ 4 BTree  22020  29475.7  1.181109  26.7139
+ 5 BTree  22754  38602.7  1.593706  30.1175
+ 6 BTree  23121  57309.0  2.402389  36.6960
+ 7 BTree  23305  95316.1  4.026705  47.7524
+ 8 BTree  23396 162774.4  6.903072  61.5190
+ 9 BTree  23442 304839.4 12.953148  84.4147
+10 BTree  23465 569311.0 24.214666 113.6551
 # ... with 20 more rows
 #+end_example
 
@@ -1025,6 +1025,26 @@ totalPlot %>%
 
 #+RESULTS:
 [[file:./img/totalInsRm.png]]
+
+
+***** Average benchmark time with the removals:
+
+Bimodal behaviour, it doesn't make sense to do an average of removals together with insertions. 
+
+#+begin_src R :results output graphics :file "./img/totalAvgRm.png" :exports both :width 600 :height 400
+library(ggplot2)
+
+totalPlot %>%
+    ggplot( aes(x=T,y=avg, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    geom_errorbar( position=position_dodge(0.9), 
+                   aes(ymin = avg - std, ymax = avg + std), width=0.5) +
+    labs(title = "Average Insertions and Removals") 
+#+end_src
+
+#+RESULTS:
+[[file:./img/totalAvgRm.png]]
+
 
 **** Amortized time :ARCHIVE:
 
@@ -1041,12 +1061,15 @@ avgTime = cbind(dfinsert,
 #+end_src
 
 #+RESULTS:
-: # A tibble: 3 x 3
-:            algo    Avergae     Total
-:           <chr>      <dbl>     <dbl>
-: 1         BTree 0.03546119  354.6119
-: 2 GeoHashBinary 0.07933301  793.3301
-: 3         RTree 0.58647694 5864.7694
+: Error in data.frame(..., check.names = FALSE) : 
+:   arguments imply differing number of rows: 769074, 0
+: In addition: Warning messages:
+: 1: Unknown or uninitialised column: 'ms'. 
+: 2: Unknown or uninitialised column: 'ms'. 
+: 3: Unknown or uninitialised column: 'ms'. 
+: 4: Unknown or uninitialised column: 'ms'. 
+: 5: Unknown or uninitialised column: 'ms'. 
+: 6: Unknown or uninitialised column: 'ms'.
 
 ***** Melting the data (time / avgTime)
 We need to melt the time columns to be able to plot as a grid
@@ -1060,26 +1083,8 @@ melted_times
 #+end_src
 
 #+RESULTS:
-#+begin_example
-Warning message:
-attributes are not identical across measure variables;
-they will be dropped
-# A tibble: 90,000 x 5
-# Groups:   algo, id, bench [30,000]
-    algo    id  bench  stat    value
-   <chr> <int>  <chr> <chr>    <dbl>
- 1 BTree     0 insert    ms 0.007075
- 2 BTree     1 insert    ms 0.007709
- 3 BTree     2 insert    ms 0.006893
- 4 BTree     3 insert    ms 0.006529
- 5 BTree     4 insert    ms 0.006903
- 6 BTree     5 insert    ms 0.006266
- 7 BTree     6 insert    ms 0.006714
- 8 BTree     7 insert    ms 0.007016
- 9 BTree     8 insert    ms 0.006645
-10 BTree     9 insert    ms 0.007688
-# ... with 89,990 more rows
-#+end_example
+: Error in eval(lhs, parent, parent) : object 'avgTime' not found
+: Error: object 'melted_times' not found
 
 ***** Comparison Time X avgTime                                    :plot:
 #+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
