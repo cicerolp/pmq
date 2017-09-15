@@ -54,7 +54,7 @@ t=26000
 b=1000
 #n=$(($t*$b))
 ref=8
-stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 3 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
 
 set -e
 
