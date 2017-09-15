@@ -87,6 +87,8 @@ add_executable(bench_insert_and_scan
 
         ../include/BTreeCtn.cpp
         #../include/RTreeCtn.h
+
+        input_it.h
         )
 
 target_link_libraries(bench_insert_and_scan
