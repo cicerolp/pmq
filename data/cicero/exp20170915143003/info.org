@@ -1,6 +1,6 @@
 
 #+TITLE: Experiment results
-#+DATE: Sex Set 15 14:40:26 BRT 2017
+#+DATE: Sex Set 15 16:16:56 BRT 2017
 #+AUTHOR: julio
 #+MACHINE: cicero
 #+FILE: info.org
@@ -8,7 +8,7 @@
 * MACHINE INFO:
 ** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
 julio    pts/8        2017-09-15 14:39 (143.54.13.218)
-julio    pts/9        2017-09-15 14:40 (tmux(24751).%0)
+julio    pts/9        2017-09-15 16:16 (tmux(25332).%0)
 ############################################
 ** ENVIRONMENT VARIABLES:
 LC_PAPER=pt_BR.UTF-8
@@ -24,7 +24,7 @@ USER=julio
 LC_TELEPHONE=pt_BR.UTF-8
 LS_COLORS=
 SSH_AUTH_SOCK=/tmp/ssh-fwLey3Ss3R/agent.24713
-TMUX=/tmp/tmux-1001/default,24751,0
+TMUX=/tmp/tmux-1001/default,25332,0
 MAIL=/var/mail/julio
 PATH=/home/julio/bin:/home/julio/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QT_QPA_PLATFORMTHEME=appmenu-qt5
@@ -58,7 +58,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3980.390
+cpu MHz		: 3985.171
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -85,7 +85,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3987.703
+cpu MHz		: 3974.906
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -112,7 +112,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3995.015
+cpu MHz		: 3999.796
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -139,7 +139,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3990.375
+cpu MHz		: 3999.234
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -166,7 +166,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3983.484
+cpu MHz		: 3999.796
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -193,7 +193,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3994.734
+cpu MHz		: 3913.875
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -220,7 +220,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3993.187
+cpu MHz		: 3903.046
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -247,7 +247,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3959.578
+cpu MHz		: 3991.359
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -272,40 +272,40 @@ power management:
 powersave
 ############################################
 ** CPU FREQUENCY:
-3980390
+3985171
 ############################################
 ** MEM INFO:
 MemTotal:       32895452 kB
-MemFree:        30582312 kB
-MemAvailable:   32045300 kB
-Buffers:          288448 kB
-Cached:          1373612 kB
+MemFree:        30580368 kB
+MemAvailable:   32044364 kB
+Buffers:          288820 kB
+Cached:          1374372 kB
 SwapCached:            0 kB
-Active:          1344060 kB
-Inactive:         497908 kB
-Active(anon):     197576 kB
+Active:          1345284 kB
+Inactive:         497964 kB
+Active(anon):     197932 kB
 Inactive(anon):    49520 kB
-Active(file):    1146484 kB
-Inactive(file):   448388 kB
+Active(file):    1147352 kB
+Inactive(file):   448444 kB
 Unevictable:          32 kB
 Mlocked:              32 kB
 SwapTotal:             0 kB
 SwapFree:              0 kB
-Dirty:              1392 kB
+Dirty:              1220 kB
 Writeback:             0 kB
-AnonPages:        180280 kB
-Mapped:           146132 kB
-Shmem:             67188 kB
-Slab:             314064 kB
-SReclaimable:     270944 kB
-SUnreclaim:        43120 kB
-KernelStack:        5072 kB
-PageTables:        12276 kB
+AnonPages:        180124 kB
+Mapped:           146308 kB
+Shmem:             67396 kB
+Slab:             315260 kB
+SReclaimable:     271028 kB
+SUnreclaim:        44232 kB
+KernelStack:        5104 kB
+PageTables:        12284 kB
 NFS_Unstable:          0 kB
 Bounce:                0 kB
 WritebackTmp:          0 kB
 CommitLimit:    16447724 kB
-Committed_AS:    1545200 kB
+Committed_AS:    1533464 kB
 VmallocTotal:   34359738367 kB
 VmallocUsed:           0 kB
 VmallocChunk:          0 kB
@@ -326,7 +326,7 @@ DirectMap1G:    28311552 kB
 
 ==============NVSMI LOG==============
 
-Timestamp                           : Fri Sep 15 14:40:26 2017
+Timestamp                           : Fri Sep 15 16:16:56 2017
 Driver Version                      : 375.66
 
 Attached GPUs                       : 2
@@ -453,7 +453,7 @@ GPU 0000:01:00.0
         GPU Slowdown Temp           : 91 C
     Power Readings
         Power Management            : Supported
-        Power Draw                  : 15.50 W
+        Power Draw                  : 15.99 W
         Power Limit                 : 170.00 W
         Default Power Limit         : 170.00 W
         Enforced Power Limit        : 170.00 W
@@ -607,7 +607,7 @@ GPU 0000:02:00.0
         GPU Slowdown Temp           : 91 C
     Power Readings
         Power Management            : Supported
-        Power Draw                  : 13.57 W
+        Power Draw                  : 13.47 W
         Power Limit                 : 170.00 W
         Default Power Limit         : 170.00 W
         Enforced Power Limit        : 170.00 W
@@ -640,11 +640,11 @@ Linux version 4.4.0-92-generic (buildd@lcy01-17) (gcc version 5.4.0 20160609 (Ub
 ############################################
 * CODE REVISIONS:
 ** GIT REVISION OF TWITTERVIS:
-commit 33c9084e53b9bd302e928ff9226e970e7086ac4f
-Author: Julio Toss <jutoss@gmail.com>
-Date:   Fri Sep 15 14:40:11 2017 -0300
+commit 402b5e00736b83fcc1c8ac423c6d7961349989d7
+Author: Julio Toss <jutoss@inf.ufrgs.br>
+Date:   Fri Sep 15 16:16:44 2017 -0300
 
-    UPD: run.sh script
+    re run with exp = 10
 *** CMAKE VARIABLES:
 -- cotire 1.7.8 loaded.
 -- Configuring done
