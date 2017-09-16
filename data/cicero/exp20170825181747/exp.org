@@ -332,7 +332,7 @@ julio     7121  103  1.7 673400 571216 pts/20  R+   20:06   0:04 /usr/lib/gcc/x8
 julio     7123  0.0  0.0  37368  3328 pts/19   R+   20:06   0:00 ps ux
 #+end_example
 
-**** TODO Pull local 
+**** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
 #git commit -a -m "wip"
 git status
@@ -340,8 +340,8 @@ git pull origin $expId
 #+end_src
 
 
-* Analisys
-** Generate csv files
+* TODO Analisys
+** TODO Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
 :END:      
@@ -352,7 +352,7 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 861K Ago 23 14:41 log_1503497835.tgz |
+| -rw-rw-r-- 1 julio julio 2 | 5M Set 16 17:59 log_1503702288.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both 
@@ -380,7 +380,7 @@ mkdir img
 
 #+RESULTS:
 
-** Results
+** TODO Results
 :PROPERTIES: 
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
