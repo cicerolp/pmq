@@ -263,7 +263,7 @@ results of different experiments.
 ** Sample machine                                                 :template:
 Copy the subtree bellow to start a new experiment 
 
-*** TODO Template Experiment
+*** TODO Template Experiment                               :YYYYMMDDHHMMSS:
 
 - [ ] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -288,7 +288,8 @@ Copy the subtree bellow to start a new experiment
 
 
 ** Cicero 
-*** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
+*** Benchmark Insert and Scan
+**** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
 :PROPERTIES:
 :CUSTOM_ID: exp20170822165129
 :END:
@@ -314,11 +315,11 @@ mkdir -p $expFolder
 
   [[./data/inf-desktop/exp20170822165129/exp.org]]
   
-*** TODO [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
+**** INPROGRESS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
 
 Testing with twitter distribution of data
 
-**** Setup 
+***** Setup 
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
@@ -342,9 +343,67 @@ mkdir -p $expFolder
 
   [[./data/cicero/exp20170825181747/exp.org]]
 
-*** DONE [2017-08-30 Qua] =bench_queries_region=          :exp20170830124159:
+  
 
-**** Setup
+**** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
+
+- Old exeperiment used Rtree* algorithm, use the quadratic one now.
+- Count was not correct in the plots
+[[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
+
+***** Setup
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170822165129/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  0b5f0d6 UPD: fixed paths
+  $ $ [[./data/cicero/exp20170907112116/exp.org]]
+  
+**** TODO [2017-09-15 Sex] Experiment =bench_insert_and_scan=
+
+- [ ] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+  [[./data/inf-desktop/exp20170822165129/exp.org]]
+
+*** Benchmark Queries region 
+  
+**** DONE [2017-08-30 Qua] =bench_queries_region=        :exp20170830124159:
+
+***** Setup
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
@@ -369,14 +428,14 @@ mkdir -p $expFolder
 
   $ [[./data/cicero/exp20170830124159/exp.org]]
 
-**** Final notes
+***** Final notes
 - PMQ best on queries with large amount of elements
   
-*** DONE [2017-09-04 Seg] Test the refinments levels    :exp20170904153555:
+**** DONE [2017-09-04 Seg] Test the refinments levels  :exp20170904153555:
 
 Test the best refinement level to use in Geohash programs. 
 
-**** Setup
+***** Setup
 
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -404,22 +463,22 @@ echo $expFolder
   #+RESULTS:
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
-
   
 
-*** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2     :exp20170907112116:
 
-- Old exeperiment used Rtree* algorithm, use the quadratic one now.
-- Count was not correct in the plots
-[[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
+**** INPROGRESS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170907145711:
 
-**** Setup
+Test with a larger ammount of data -> 10*8
 
+- added bulk RTREE loading to the experiments
+
+***** Setup
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
 expId=$(date +%Y%m%d%H%M%S)
-machineDesc="cicero"
+#machineDesc=$(hostname)
+machineDesc=cicero
 expFolder=./data/$machineDesc/exp$expId
 mkdir -p $expFolder
 #+end_src
@@ -427,58 +486,22 @@ mkdir -p $expFolder
   #+RESULTS:
   
 - [X] Use the template to run your experiment
+  
   #+begin_src sh :results output raw :exports both :session template
-  git log -1 DATA --oneline | cat
-  git show DATA:./data/cicero/exp20170822165129/exp.org > ${expFolder}/exp.org
-
-  echo "[[$expFolder/exp.org]]"
+git show DATA:./data/cicero/exp20170830124159/exp.org > ${expFolder}/exp.org
+echo "[[$expFolder/exp.org]]"
   #+end_src
 
   #+RESULTS:
-  0b5f0d6 UPD: fixed paths
-  $ $ [[./data/cicero/exp20170907112116/exp.org]]
+
+  [[./data/cicero/exp20170907145711/exp.org]]
   
-
-*** INPROGRESS [2017-09-14 Qui] =bench_insert_remove_count= :exp20170914091842:
-
-Test performance of removals in the PMQ. 
-
-[[./data/cicero/exp20170914091842/exp.org]]
-  
-**** Setup
-
-- [X] Create a direcorty for this experiment 
-  #+begin_src sh :results output :exports both :session template
-set -e
-expId=$(date +%Y%m%d%H%M%S)
-machineDesc="cicero"
-expFolder=./data/$machineDesc/exp$expId
-mkdir -p $expFolder
-#+end_src
-
-  #+RESULTS:
-  
-- [X] Use the template to run your experiment
-  #+begin_src sh :results output raw :exports both :session template
-  git log -1 DATA --oneline | cat
-  git show DATA:./data/cicero/exp20170907112116/exp.org > ${expFolder}/exp.org
-
-  echo "[[$expFolder/exp.org]]"
-  #+end_src
-
-  #+RESULTS:
-  22e9c95 upd exp info
-  $ $ [[./data/cicero/exp20170914091842/exp.org]]
-  
-
-  
-
-*** INPROGRESS [2017-09-15 Sex] =bench_queries_region= V.3
+**** INPROGRESS [2017-09-15 Sex] =bench_queries_region= V.3 :exp20170915143003:
 
 - Fixed code of Rtree. 
 - More elements in the time window: 6h * batches of size 1000
 
-**** Setup
+***** Setup
 
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -502,28 +525,35 @@ mkdir -p $expFolder
   #+RESULTS:
   2a5b5d2 UPD: report in markdown
   $ $ [[./data/cicero/exp20170915143003/exp.org]]
+
+*** Benchmark Insert and Remove
+**** INPROGRESS [2017-09-14 Qui] =bench_insert_remove_count= :exp20170914091842:
+
+Test performance of removals in the PMQ. 
+
+[[./data/cicero/exp20170914091842/exp.org]]
   
+***** Setup
 
-*** TODO [2017-09-15 Sex] Experiment =bench_insert_and_scan=
-
-- [ ] Create a direcorty for this experiment 
+- [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
 set -e
 expId=$(date +%Y%m%d%H%M%S)
-machineDesc=$(hostname)
+machineDesc="cicero"
 expFolder=./data/$machineDesc/exp$expId
 mkdir -p $expFolder
 #+end_src
 
   #+RESULTS:
   
-- [ ] Use the template to run your experiment
+- [X] Use the template to run your experiment
   #+begin_src sh :results output raw :exports both :session template
-  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170907112116/exp.org > ${expFolder}/exp.org
+
   echo "[[$expFolder/exp.org]]"
   #+end_src
 
   #+RESULTS:
-
-  [[./data/inf-desktop/exp20170822165129/exp.org]]
-  
+  22e9c95 upd exp info
+  $ $ [[./data/cicero/exp20170914091842/exp.org]]
