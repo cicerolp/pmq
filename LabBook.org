@@ -4,6 +4,7 @@
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+SEQ_TODO: TODO RUNNING ANALYSIS | FINISHED CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
 #+TAGS: ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
 #+CATEGORY: TwitterVis
@@ -332,7 +333,7 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
   [[./data/inf-desktop/exp20170822165129/exp.org]]
   
-**** INPROGRESS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
+**** ANALYSIS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
 
 Testing with twitter distribution of data
 
@@ -498,8 +499,7 @@ echo $expFolder
   [[./data/cicero/exp20170904153555/exp.org]]
   
 
-
-**** INPROGRESS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170907145711:
+**** ANALYSIS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170907145711:
 
 Test with a larger ammount of data -> 10*8
 
@@ -530,7 +530,7 @@ echo "[[$expFolder/exp.org]]"
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170907145711/exp.org]]
   
-**** INPROGRESS [2017-09-15 Sex] =bench_queries_region= V.3 :exp20170915143003:
+**** DONE [2017-09-15 Sex] =bench_queries_region= V.3    :exp20170915143003:
 
 - Fixed code of Rtree. 
 - More elements in the time window: 6h * batches of size 1000
@@ -565,7 +565,7 @@ mkdir -p $expFolder
 [[./data/cicero/exp20170915143003/exp.org]]
 
 *** Benchmark Insert and Remove
-**** INPROGRESS [2017-09-14 Qui] =bench_insert_remove_count= :exp20170914091842:
+**** ANALYSIS [2017-09-14 Qui] =bench_insert_remove_count= :exp20170914091842:
 
 Test performance of removals in the PMQ. 
 
