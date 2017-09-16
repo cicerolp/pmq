@@ -1,0 +1,1114 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Experiment Diary
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4
+#+PROPERTY: header-args :cache no :eval no-export 
+
+
+* Description 
+Benchmark of the remove operation ;
+
+- PMQ / GEOHASH
+- BTREE -
+- RTREE -  Quadratic algorithm 
+
+
+** DEFERRED Standalone script 
+:LOGBOOK:
+- State "DEFERRED"   from "TODO"       [2017-09-14 Qui 10:07]
+:END:
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* DONE Design of Experiment                                          :export:
+
+PMA remove elements timely before doubling the array.
+The array double only when \tau * PMA_Capacity it reached. 
+
+For several PMA sizes, how is the performance of the remove operation? 
+Variables that may affect the remove performance:
+
+- Amount of elements removed at each time: 
+  - as a percentage of the total of elements in the data structure. 
+  - as an absolute value of elements removed.
+
+- Size of the data structure: because before each removal we need to scan the storage array.
+  
+** Computation of PMA Capacity
+
+Pma Capacity is computed based on the desired number of elements to store and the \tau parameter:
+
+#+NAME: PmaCap
+#+begin_src python :results output :exports both :var n=1000 th=0.7
+import math as m
+def tauInit(n,th):
+    s = n / th / 8
+    seg = 2**(m.ceil(m.log2(s)))
+    return seg*8
+
+print( tauInit(n,th))
+#+end_src
+
+#+RESULTS: PmaCap
+: 2048
+
+** Computation of size and frequency of remove operations
+
+- Time window size :: a lower bound on the amount of =Batches= we will keep in-memory 
+- Batch size :: the number of elements inserted in each batch
+- EMin :: the lower bound of the amount of /elements/ kept in memory ( time window \times batch size ).
+- PMA Size :: The capacity of the PMA computed to store =EMin= elements given a \tau value of =0.7=
+- Tau Size :: The amount of elements at which the given PMA will be required to remove elements. ( PMA Size \times \tau)
+
+#+CAPTION: Example
+| Time Window Size | Batch |  EMin | PMA Size | Rho Size | Tau Size | First removal at batch | #del | Interval (# Batches) |       rm % |
+|------------------+-------+-------+----------+----------+----------+------------------------+------+----------------------+------------|
+|               15 |  1000 | 15000 |    32768 |    10000 |    22000 |                     22 | 8000 |                    8 | 0.36363636 |
+#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
+
+
+We first will test , for a fixed PMA Size, how the percentage of removals affects the performance.
+
+We choose a target Emin = 21600000 and compute the resulting PMA Capacity:
+PmaCap(n=21600000,th=0.7) = call_PmaCap(n=21600000,th=0.7) {{{results(=33554432=)}}}. 
+
+
+This will result in the following setup: 
+| Time Window Size | Batch |     EMin | PMA Size | Rho Size | Tau Size | First removal at batch |    #del | Interval (# Batches) |        rm % |
+|------------------+-------+----------+----------+----------+----------+------------------------+---------+----------------------+-------------|
+|            21600 |  1000 | 21600000 | 33554432 | 10067000 | 23488000 |                  23488 | 1889000 |                 1889 | 0.080424046 |
+#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
+
+The minimum =EMin= value that result in a PMA Size of =33554432= is \( \frac{PMA\_SIZE}{2}+1 \) = src_python{return (33554432 / 2.0 * 0.7 + 1)} {{{results(=11744052.2=)}}} . 
+Example: 
+- tauInit(n=11744052,th=0.7) =  call_PmaCap(n=11744052,th=0.7) {{{results(=33554432=)}}}
+- tauInit(n=11744051,th=0.7) =  call_PmaCap(n=11744051,th=0.7) {{{results(=16777216=)}}}
+
+
+The maximum =EMin= value with the this same size is equal to \( PMA\_SIZE \times \tau_h \) = src_python{return (33554432 * 0.7) } {{{results(=23488102.4=)}}} ( when \tau_{h} is =0.7= ) .
+
+
+We generate several window sizes to test with the allow boundaries of chosen PMA size.
+#+begin_src python :results output :exports both
+import math as m
+batch = 1000
+minWs = m.ceil(11744052 / batch)
+maxWs = m.floor(23488102.4 / batch)
+
+# Possible variation of window size.
+diff = maxWs - minWs;
+
+# Increase the window size logarithmicly from minWs to MaxWs
+wSizes = [ round(maxWs - diff/2**i) for i in range(0,10) ]
+print( wSizes )
+#print ("| Window Size",*wSizes,sep="|\n| ")
+
+#wSizes = [ round(minWs + diff/2**i) for i in range(0,10) ]
+#print (wSizes)
+
+#+end_src
+
+#+RESULTS:
+: [11745, 17616, 20552, 22020, 22754, 23121, 23305, 23396, 23442, 23465]
+
+#+CAPTION: Experiment variables
+| Time Window Size | Batch |     EMin | PMA Size | Rho Size | Tau Size | First removal at batch |     #del | Interval (# Batches) |         rm % |
+|------------------+-------+----------+----------+----------+----------+------------------------+----------+----------------------+--------------|
+|            11745 |  1000 | 11745000 | 33554432 | 10067000 | 23488000 |                  23488 | 11744000 |                11744 |          0.5 |
+|            17616 |  1000 | 17616000 | 33554432 | 10067000 | 23488000 |                  23488 |  5873000 |                 5873 |   0.25004257 |
+|            20552 |  1000 | 20552000 | 33554432 | 10067000 | 23488000 |                  23488 |  2937000 |                 2937 |   0.12504257 |
+|            22020 |  1000 | 22020000 | 33554432 | 10067000 | 23488000 |                  23488 |  1469000 |                 1469 |  0.062542575 |
+|            22754 |  1000 | 22754000 | 33554432 | 10067000 | 23488000 |                  23488 |   735000 |                  735 |  0.031292575 |
+|            23121 |  1000 | 23121000 | 33554432 | 10067000 | 23488000 |                  23488 |   368000 |                  368 |  0.015667575 |
+|            23305 |  1000 | 23305000 | 33554432 | 10067000 | 23488000 |                  23488 |   184000 |                  184 | 7.8337875e-3 |
+|            23396 |  1000 | 23396000 | 33554432 | 10067000 | 23488000 |                  23488 |    93000 |                   93 | 3.9594687e-3 |
+|            23442 |  1000 | 23442000 | 33554432 | 10067000 | 23488000 |                  23488 |    47000 |                   47 | 2.0010218e-3 |
+|            23465 |  1000 | 23465000 | 33554432 | 10067000 | 23488000 |                  23488 |    24000 |                   24 | 1.0217984e-3 |
+#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
+
+
+** Parameters for RTree and Btree 
+
+
+To compare the BTree / TREE with the PMQ we will define a MAXSIZE that these data structure can have.
+This way we afford some slack to perform the removals. 
+
+We set the max size equal to the max number of elements that the PMA can host ( =Tau Size= ). 
+At each removal all the elements inserted more =T= Batches in the past are deleted. 
+
+ | Time Window Size (Batches) | Batch | n elts (min elts in tree) | PMA Size | % of Tau Size | Tau Size (Max elts in tree) |
+ |----------------------------+-------+---------------------------+----------+---------------+-----------------------------|
+ |                      11745 |  1000 |                  11745000 | 33554432 |    0.50004257 |                    23488000 |
+ |                      17616 |  1000 |                  17616000 | 33554432 |          0.75 |                    23488000 |
+ |                      20552 |  1000 |                  20552000 | 33554432 |         0.875 |                    23488000 |
+ |                      22020 |  1000 |                  22020000 | 33554432 |        0.9375 |                    23488000 |
+ |                      22754 |  1000 |                  22754000 | 33554432 |       0.96875 |                    23488000 |
+ |                      23121 |  1000 |                  23121000 | 33554432 |      0.984375 |                    23488000 |
+ |                      23305 |  1000 |                  23305000 | 33554432 |    0.99220879 |                    23488000 |
+ |                      23396 |  1000 |                  23396000 | 33554432 |    0.99608311 |                    23488000 |
+ |                      23442 |  1000 |                  23442000 | 33554432 |    0.99804155 |                    23488000 |
+ |                      23465 |  1000 |                  23465000 | 33554432 |    0.99902078 |                    23488000 |
+ #+TBLFM: $3=$2*$1::$5=$3/$6
+
+** Execution parameters 
+
+#+NAME: execParam
+| Time Window Size | Batch |    tSize | Results in removal % |
+|------------------+-------+----------+----------------------|
+|            11745 |  1000 | 23488000 |                  0.5 |
+|            17616 |  1000 | 23488000 |           0.25004257 |
+|            20552 |  1000 | 23488000 |           0.12504257 |
+|            22020 |  1000 | 23488000 |          0.062542575 |
+|            22754 |  1000 | 23488000 |          0.031292575 |
+|            23121 |  1000 | 23488000 |          0.015667575 |
+|            23305 |  1000 | 23488000 |         7.8337875e-3 |
+|            23396 |  1000 | 23488000 |         3.9594687e-3 |
+|            23442 |  1000 | 23488000 |         2.0010218e-3 |
+|            23465 |  1000 | 23488000 |         1.0217984e-3 |
+
+We will run the experiment inserting src_python{return (23488000 * 2)} {{{results(=46976000=)}}} elements.
+The measured times are reported in terms of % of Removals:
+
+| % of elts RM | Time of the RM OP | Avg time of the Period |
+|--------------+-------------------+------------------------|
+|        0.500 |                   |                        |
+|        0.250 |                   |                        |
+|        0.125 |                   |                        |
+|        0.063 |                   |                        |
+|        0.031 |                   |                        |
+|        0.016 |                   |                        |
+|        0.008 |                   |                        |
+|        0.004 |                   |                        |
+|        0.002 |                   |                        |
+|        0.001 |                   |                        |
+#+TBLFM: $1=$0;%.3f
+
+
+* DONE Experiment Script
+** DONE Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20170914091842
+
+Set up git branch
+#+begin_src sh :results output :exports both
+git checkout master
+#+end_src
+
+#+RESULTS:
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170914091842
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.html
+	exp.org
+	exp.pdf
+	exp.rst
+	exp.tex
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170914091842 87d4f4c] Initial commit for exp20170914091842
+ 1 file changed, 884 insertions(+)
+ create mode 100644 data/cicero/exp20170914091842/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 87d4f4c (HEAD -> exp20170914091842) Initial commit for exp20170914091842
+: * dd21b9e (master) exp insert remove count
+: * 1b319c5 wip: labbook
+
+** DONE Export run script 
+
+#+begin_src sh :results output :exports both :var T=execParam[,0] R=execParam[2,1] tSize=execParam[2,2]
+n=$((2 * tSize))
+for t in $T ;
+do
+echo "stdbuf -oL ./benchmarks/bench_insert_remove_count -rate ${R} -n ${n} -T ${t} -tSize ${tSize} > \${TMPDIR}/bench_ins_rm_${t}_\${EXECID}.log"
+done;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
+#+end_example
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
+
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170907145711
+Your branch is up-to-date with 'origin/exp20170907145711'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	$HA
+	.#exp.org
+	exp.html
+	exp.pdf
+	exp.rst
+	exp.tex
+
+nothing added to commit but untracked files present (use "git add" to track)
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170914091842 3ae2d2f] UPD: run.sh script
+:  2 files changed, 123 insertions(+), 14 deletions(-)
+:  create mode 100755 data/cicero/exp20170914091842/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** Local Execution                                                   :local:ARCHIVE:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** DONE Remote Execution                                            :remote:
+
+*** Get new changes on remote                                      :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+41 packages can be updated.
+1 update is a security update.
+
+,*** System restart required ***
+Last login: Thu Sep 14 14:59:11 2017 from 143.54.13.218
+#+end_example
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 20, done.
+(1/17)           remote: Compressing objects:  11% (2/17)           remote: Compressing objects:  17% (3/17)           remote: Compressing objects:  23% (4/17)           remote: Compressing objects:  29% (5/17)           remote: Compressing objects:  35% (6/17)           remote: Compressing objects:  41% (7/17)           remote: Compressing objects:  47% (8/17)           remote: Compressing objects:  52% (9/17)           remote: Compressing objects:  58% (10/17)           remote: Compressing objects:  64% (11/17)           remote: Compressing objects:  70% (12/17)           remote: Compressing objects:  76% (13/17)           remote: Compressing objects:  82% (14/17)           remote: Compressing objects:  88% (15/17)           remote: Compressing objects:  94% (16/17)           remote: Compressing objects: 100% (17/17)           remote: Compressing objects: 100% (17/17), done.        
+remote: Total 20 (delta 10), reused 0 (delta 0)
+(1/20)   Unpacking objects:  10% (2/20)   Unpacking objects:  15% (3/20)   Unpacking objects:  20% (4/20)   Unpacking objects:  25% (5/20)   Unpacking objects:  30% (6/20)   Unpacking objects:  35% (7/20)   Unpacking objects:  40% (8/20)   Unpacking objects:  45% (9/20)   Unpacking objects:  50% (10/20)   Unpacking objects:  55% (11/20)   Unpacking objects:  60% (12/20)   Unpacking objects:  65% (13/20)   Unpacking objects:  70% (14/20)   Unpacking objects:  75% (15/20)   Unpacking objects:  80% (16/20)   Unpacking objects:  85% (17/20)   Unpacking objects:  90% (18/20)   Unpacking objects:  95% (19/20)   Unpacking objects: 100% (20/20)   Unpacking objects: 100% (20/20), done.
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+origin/exp20170914091842
+Branch exp20170914091842 set up to track remote branch exp20170914091842 from origin.
+Switched to a new branch 'exp20170914091842'
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Already up-to-date.
+commit 3ae2d2f23c9d17bc594357a5d5a481c2bc156748
+Date:   Thu Sep 14 14:50:36 2017 -0300
+
+    UPD: run.sh script
+#+end_example
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/hppsimulations$ remote: Counting objects: 7, done.
+(1/7)           remote: Compressing objects:  28% (2/7)           remote: Compressing objects:  42% (3/7)           remote: Compressing objects:  57% (4/7)           remote: Compressing objects:  71% (5/7)           remote: Compressing objects:  85% (6/7)           remote: Compressing objects: 100% (7/7)           remote: Compressing objects: 100% (7/7), done.        
+remote: Total 7 (delta 6), reused 0 (delta 0)
+(1/7)   Unpacking objects:  28% (2/7)   Unpacking objects:  42% (3/7)   Unpacking objects:  57% (4/7)   Unpacking objects:  71% (5/7)   Unpacking objects:  85% (6/7)   Unpacking objects: 100% (7/7)   Unpacking objects: 100% (7/7), done.
+From bitbucket.org:joaocomba/pma
+FETCH_HEAD
+origin/PMA_2016
+Updating 011775f..f37b6b6
+Fast-forward
+ pma_cd/inc/pma/pma.h         | 10 ++++++++++
+ pma_cd/inc/pma/pma_batch.cpp | 15 +++------------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
+commit f37b6b60b2fc16adef345f4097fe54f1996a2213
+Date:   Wed Sep 13 10:39:02 2017 -0300
+
+    upd: return del counter on add_rm_array_elts
+#+end_example
+
+*** Execute Remotely                                               :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ 1505412384
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+#+RESULTS:
+: no server running on /tmp/tmux-1001/default
+: USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+: julio    19348  0.0  0.0  45248  4668 ?        Ss   14:59   0:00 /lib/systemd/sy
+: julio    19350  0.0  0.0 145364  2112 ?        S    14:59   0:00 (sd-pam)
+: julio    19423  0.0  0.0  97464  3328 ?        S    15:00   0:00 sshd: julio@pts
+: julio    19424  0.0  0.0  22688  5224 pts/9    Ss   15:00   0:00 -bash
+: julio    20198  0.0  0.0  97464  3328 ?        S    15:04   0:00 sshd: julio@pts
+: julio    20199  0.0  0.0  23716  6432 pts/8    Ss+  15:04   0:00 -bash
+: julio    21473  0.0  0.0  37368  3308 pts/9    R+   17:19   0:00 ps ux
+
+**** DONE Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+git commit -a -m "wip"
+git status
+git pull --rebase origin $expId
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170914091842
+Untracked files:
+	../../../.#LabBook.org
+	../../../LabBook.org.bkp
+	../../../LabBook.org.orig
+	../../../benchmarks/bench_insert_remove_count.cpp.orig
+	../exp20170830124159/
+	../exp20170904152622/
+	../exp20170904153555/
+	$HA
+	.#exp.org
+	exp.html
+	exp.pdf
+	exp.rst
+	exp.tex
+	../../../include/types.h.orig
+
+nothing added to commit but untracked files present
+On branch exp20170914091842
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../../.#LabBook.org
+	../../../LabBook.org.bkp
+	../../../LabBook.org.orig
+	../../../benchmarks/bench_insert_remove_count.cpp.orig
+	../exp20170830124159/
+	../exp20170904152622/
+	../exp20170904153555/
+	$HA
+	.#exp.org
+	exp.html
+	exp.pdf
+	exp.rst
+	exp.tex
+	../../../include/types.h.orig
+
+nothing added to commit but untracked files present (use "git add" to track)
+First, rewinding head to replay your work on top of it...
+Fast-forwarded exp20170914091842 to 1adced939ed1e68bf901e82bd40097309abecf9e.
+#+end_example
+
+
+* INPROGRESS Analisys
+** Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+begin_src sh :results table :exports both
+ls -htl *tgz
+#+end_src
+
+#+RESULTS:
+| -rw-rw-r-- 1 julio julio 6 | 6M Set 14 17:42 log_1505412384.tgz |
+| -rw-rw-r-- 1 julio julio 6 | 6M Set 14 16:22 log_1505411932.tgz |
+
+:NOTE: the execution from log_1505411932.tgz was executed on inf-desktop by mistake. But results might be ok.
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both 
+tar xvzf log_1505411932.tgz
+#+end_src
+
+#+RESULTS: logFile
+#+begin_example
+bench_ins_rm_11745_1505411932.log
+bench_ins_rm_17616_1505411932.log
+bench_ins_rm_20552_1505411932.log
+bench_ins_rm_22020_1505411932.log
+bench_ins_rm_22754_1505411932.log
+bench_ins_rm_23121_1505411932.log
+bench_ins_rm_23305_1505411932.log
+bench_ins_rm_23396_1505411932.log
+bench_ins_rm_23442_1505411932.log
+bench_ins_rm_23465_1505411932.log
+#+end_example
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFileList=logFile
+
+f=$(echo $logFileList | cut -d" " -f1)
+
+output=$( basename -s .log $f | sed "s/_[[:digit:]]\{5\}_/_/g").csv
+echo $output
+rm $output
+touch $output
+
+for logFile in $logFileList ; 
+do
+grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionRemoveBench//g" >>  $output
+done
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_ins_rm_1505411932.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+
+*** Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile
+library(tidyverse)
+
+df <- f[[1]] %>%
+    read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:9),sep="") , progress=FALSE)
+
+str(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_integer(),
+  V3 = col_integer(),
+  V4 = col_character(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_character()
+)
+Warning: 775032 parsing failures.
+row # A tibble: 5 x 5 col     row   col  expected    actual                          file expected   <int> <chr>     <chr>     <chr>                         <chr> actual 1     1  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' file 2     2  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' row 3     3  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' col 4     4  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' expected 5     5  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv'
+... ................. ... ............................................................... ........ ............................................................... ...... ............................................................... .... ............................................................... ... ............................................................... ... ............................................................... ........ ............... [... truncated]
+Warning message:
+In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	775032 obs. of  9 variables:
+ $ V1: chr  "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" ...
+ $ V2: int  11745 11745 11745 11745 11745 11745 11745 11745 11745 11745 ...
+ $ V3: int  11745 11746 11747 11748 11749 11750 11751 11752 11753 11754 ...
+ $ V4: chr  "count" "count" "count" "count" ...
+ $ V5: int  11746000 11747000 11748000 11749000 11750000 11751000 11752000 11753000 11754000 11755000 ...
+ $ V6: chr  "insert" "insert" "insert" "insert" ...
+ $ V7: num  1.12 1.11 1.12 1.1 1.11 ...
+ $ V8: chr  NA NA NA NA ...
+ $ V9: chr  NA NA NA NA ...
+ - attr(*, "problems")=Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	775032 obs. of  5 variables:
+  ..$ row     : int  1 2 3 4 5 6 7 8 9 10 ...
+  ..$ col     : chr  NA NA NA NA ...
+  ..$ expected: chr  "9 columns" "9 columns" "9 columns" "9 columns" ...
+  ..$ actual  : chr  "8 columns" "8 columns" "8 columns" "8 columns" ...
+  ..$ file    : chr  "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" ...
+ - attr(*, "spec")=List of 2
+  ..$ cols   :List of 9
+  .. ..$ V1: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V2: list()
+  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
+  .. ..$ V3: list()
+  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
+  .. ..$ V4: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V5: list()
+  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
+  .. ..$ V6: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V7: list()
+  .. .. ..- attr(*, "class")= chr  "collector_double" "collector"
+  .. ..$ V8: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V9: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  ..$ default: list()
+  .. ..- attr(*, "class")= chr  "collector_guess" "collector"
+  ..- attr(*, "class")= chr "col_spec"
+#+end_example
+
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+
+names(df) <- c("algo", "T", "id", "V4", "count", "V5", "insert" , "V8" , "remove")
+
+df <- select(df, -V4, -V5, -V8)
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 775,032 x 6
+            algo     T    id    count  insert remove
+           <chr> <int> <int>    <int>   <dbl>  <chr>
+ 1 GeoHashBinary 11745 11745 11746000 1.11850   <NA>
+ 2 GeoHashBinary 11745 11746 11747000 1.11290   <NA>
+ 3 GeoHashBinary 11745 11747 11748000 1.12108   <NA>
+ 4 GeoHashBinary 11745 11748 11749000 1.10338   <NA>
+ 5 GeoHashBinary 11745 11749 11750000 1.10573   <NA>
+ 6 GeoHashBinary 11745 11750 11751000 1.10949   <NA>
+ 7 GeoHashBinary 11745 11751 11752000 1.10577   <NA>
+ 8 GeoHashBinary 11745 11752 11753000 1.10275   <NA>
+ 9 GeoHashBinary 11745 11753 11754000 1.09749   <NA>
+10 GeoHashBinary 11745 11754 11755000 1.10592   <NA>
+# ... with 775,022 more rows
+#+end_example
+
+*** Summary Tables of Remove Times                                 :export:
+
+#+begin_src R :results table :exports both :session :colnames yes
+df %>% filter(remove > 0) %>%
+    group_by(algo,T) %>%
+    summarize(RemoveTime = signif(mean(as.numeric(remove))), stdv = signif(sd(as.numeric(remove)))) %>%
+    arrange(T,algo)
+#+end_src
+
+#+RESULTS:
+| algo          |     T | RemoveTime |    stdv |
+|---------------+-------+------------+---------|
+| BTree         | 11745 |    3100.06 | 17.2888 |
+| GeoHashBinary | 11745 |    655.565 | 13.6641 |
+| RTree         | 11745 |    10274.9 | 586.411 |
+| BTree         | 17616 |    2036.75 | 25.0953 |
+| GeoHashBinary | 17616 |    675.602 | 13.8337 |
+| RTree         | 17616 |    6037.96 | 261.868 |
+| BTree         | 20552 |    1418.43 | 25.5424 |
+| GeoHashBinary | 20552 |    662.776 | 10.9497 |
+| RTree         | 20552 |    3661.58 | 69.8569 |
+| BTree         | 22020 |    1055.16 | 19.9216 |
+| GeoHashBinary | 22020 |    658.074 | 8.00363 |
+| RTree         | 22020 |    2276.79 | 60.3141 |
+| BTree         | 22754 |    829.013 | 14.5278 |
+| GeoHashBinary | 22754 |    652.435 | 6.01608 |
+| RTree         | 22754 |    1466.19 | 44.3631 |
+| BTree         | 23121 |    709.294 | 12.3565 |
+| GeoHashBinary | 23121 |    604.964 | 4.68194 |
+| RTree         | 23121 |     1014.4 | 34.1498 |
+| BTree         | 23305 |    651.033 | 11.2973 |
+| GeoHashBinary | 23305 |    606.779 | 3.53975 |
+| RTree         | 23305 |    741.601 | 20.4287 |
+| BTree         | 23396 |    596.991 | 12.3706 |
+| GeoHashBinary | 23396 |    608.559 | 2.47598 |
+| RTree         | 23396 |    604.497 |  21.108 |
+| BTree         | 23442 |    585.298 |  10.511 |
+| GeoHashBinary | 23442 |    615.599 | 3.09548 |
+| RTree         | 23442 |    522.008 | 15.3026 |
+| BTree         | 23465 |    568.854 | 10.2702 |
+| GeoHashBinary | 23465 |    611.594 | 2.81889 |
+| RTree         | 23465 |    473.858 | 12.2305 |
+
+*** Overview of results                                       :export:plot:
+
+Plot an overview of every benchmark , doing average of times. 
+#+begin_src R :results output :exports code
+df %>% filter(remove > 0) %>% 
+    mutate(remove=as.numeric(remove)) %>%
+    mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
+    group_by(algo,T) %>%
+    summarize(RemoveTime = mean(as.numeric(remove)), stdv = sd(as.numeric(remove))) %>%
+    mutate(T = as.factor(T))-> dfplot
+
+dfplot
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 30 x 4
+# Groups:   algo [3]
+    algo      T RemoveTime     stdv
+   <chr> <fctr>      <dbl>    <dbl>
+ 1 BTree  11745  3100.5820 17.31363
+ 2 BTree  17616  2037.2749 25.07677
+ 3 BTree  20552  1418.9489 25.53222
+ 4 BTree  22020  1055.6771 19.91421
+ 5 BTree  22754   829.5136 14.52060
+ 6 BTree  23121   709.7961 12.35102
+ 7 BTree  23305   651.5366 11.29169
+ 8 BTree  23396   597.4781 12.36994
+ 9 BTree  23442   585.7980 10.50778
+10 BTree  23465   569.3625 10.26845
+# ... with 20 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 600 :height 400
+library(ggplot2)
+
+dfplot %>% 
+    ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    geom_errorbar( position=position_dodge(0.9), 
+                   aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** INPROGRESS Insertion performance
+
+#+begin_src R :results output :exports code :session 
+df %>% filter(is.na(remove)) %>%  # get only lines with no removes
+       mutate(remove=as.numeric(remove)) %>%
+       mutate(T = as.factor(T))-> dfinsert
+
+dfinsert
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 769,074 x 6
+            algo      T    id    count  insert remove
+           <chr> <fctr> <int>    <int>   <dbl>  <dbl>
+ 1 GeoHashBinary  11745 11745 11746000 1.11850     NA
+ 2 GeoHashBinary  11745 11746 11747000 1.11290     NA
+ 3 GeoHashBinary  11745 11747 11748000 1.12108     NA
+ 4 GeoHashBinary  11745 11748 11749000 1.10338     NA
+ 5 GeoHashBinary  11745 11749 11750000 1.10573     NA
+ 6 GeoHashBinary  11745 11750 11751000 1.10949     NA
+ 7 GeoHashBinary  11745 11751 11752000 1.10577     NA
+ 8 GeoHashBinary  11745 11752 11753000 1.10275     NA
+ 9 GeoHashBinary  11745 11753 11754000 1.09749     NA
+10 GeoHashBinary  11745 11754 11755000 1.10592     NA
+# ... with 769,064 more rows
+#+end_example
+
+**** Overall                                                 :export:plot:
+
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 800 :height 600
+dfinsert %>%
+ggplot(aes(x=id,y=insert, color=factor(algo))) + 
+geom_line() +
+labs(title = "Insertions") + 
+facet_wrap(~T, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+***** Total insertion time (without the removals) :
+#+begin_src R :results table :session :exports both :colnames yes
+dfinsert %>% 
+    group_by(algo, T) %>%
+    summarize(Average = signif(mean(insert)), Stdv = signif(sd(insert)), Total = signif(sum(insert))) %>%
+arrange(T,algo)
+
+#+end_src
+
+#+RESULTS:
+| algo          |     T |  Average |      Stdv |   Total |
+|---------------+-------+----------+-----------+---------|
+| BTree         | 11745 | 0.495382 | 0.0255292 | 17451.8 |
+| GeoHashBinary | 11745 |  1.12823 | 0.0315277 | 39746.3 |
+| RTree         | 11745 |  1.08808 | 0.0785254 | 38331.9 |
+| BTree         | 17616 | 0.509947 | 0.0228411 |   14970 |
+| GeoHashBinary | 17616 |  1.12955 | 0.0243671 |   33159 |
+| RTree         | 17616 |  1.08252 | 0.0738378 | 31778.4 |
+| BTree         | 20552 | 0.502184 | 0.0210777 | 13265.7 |
+| GeoHashBinary | 20552 |  1.11536 |  0.015826 | 29463.4 |
+| RTree         | 20552 |  1.06048 | 0.0596721 | 28013.5 |
+| BTree         | 22020 | 0.504608 | 0.0204988 | 12584.9 |
+| GeoHashBinary | 22020 |  1.12174 | 0.0149165 | 27976.1 |
+| RTree         | 22020 |  1.06306 | 0.0500795 | 26512.8 |
+| BTree         | 22754 | 0.498483 | 0.0155592 | 12058.3 |
+| GeoHashBinary | 22754 |  1.11479 | 0.0151073 | 26966.8 |
+| RTree         | 22754 |  1.06271 | 0.0425487 | 25706.9 |
+| BTree         | 23121 | 0.499434 | 0.0162469 |   11882 |
+| GeoHashBinary | 23121 |  1.12981 | 0.0164901 | 26879.3 |
+| RTree         | 23121 |  1.08129 |  0.041588 |   25725 |
+| BTree         | 23305 | 0.506284 | 0.0180502 | 11919.5 |
+| GeoHashBinary | 23305 |  1.13558 | 0.0142027 |   26735 |
+| RTree         | 23305 |  1.08075 | 0.0489447 | 25444.1 |
+| BTree         | 23396 | 0.497812 | 0.0221871 | 11612.5 |
+| GeoHashBinary | 23396 |  1.11638 | 0.0143327 | 26041.8 |
+| RTree         | 23396 |   1.0969 | 0.0472797 | 25587.3 |
+| BTree         | 23442 |  0.51838 | 0.0202741 | 11940.4 |
+| GeoHashBinary | 23442 |  1.13043 | 0.0139346 | 26038.2 |
+| RTree         | 23442 |  1.11573 | 0.0476103 | 25699.8 |
+| BTree         | 23465 | 0.528365 | 0.0195954 | 11905.1 |
+| GeoHashBinary | 23465 |  1.11899 | 0.0164199 | 25213.1 |
+| RTree         | 23465 |   1.1056 | 0.0431989 | 24911.5 |
+
+#+begin_src R :results output graphics :file "./img/averageInsOnly.png" :exports both :width 600 :height 400
+library(ggplot2)
+
+dfinsert %>% 
+    group_by(algo, T) %>%
+    summarize(avg = mean(insert), stdv = sd(insert)) %>%
+    ggplot( aes(x="",y=avg, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    geom_errorbar( position=position_dodge(0.9), 
+                   aes(ymin = avg - stdv, ymax = avg + stdv), width=0.5) +
+    facet_wrap(~T, scale="free_x")+ 
+    labs(title = "Average Insertions (without removals)") 
+#+end_src
+
+#+RESULTS:
+[[file:./img/averageInsOnly.png]]
+
+
+***** Total benchmark time with the removals:
+#+begin_src R :results table :session :exports both :colnames yes
+options(digits=6)
+df %>% 
+    mutate(remove = if_else(is.na(remove), 0 , as.numeric(remove))) %>%
+    mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, as.numeric(remove) + insert)) %>% 
+    group_by(algo,T) %>%
+    summarize(AvgTime = signif(mean(ins_rm)), stdv = signif(sd(ins_rm)), total = signif(sum(ins_rm))) %>%
+    mutate(T = as.factor(T))-> dfTotals
+
+dfTotals %>% arrange(T,algo)
+#+end_src
+
+#+RESULTS:
+| algo          |     T |  AvgTime |    stdv |   total |
+|---------------+-------+----------+---------+---------|
+| BTree         | 11745 | 0.671368 | 23.3574 |   23653 |
+| GeoHashBinary | 11745 |  1.16538 |  4.9314 | 41057.5 |
+| RTree         | 11745 |  1.67137 | 77.4789 | 58884.2 |
+| BTree         | 17616 | 0.787435 | 23.7736 | 23119.1 |
+| GeoHashBinary | 17616 |  1.22144 | 7.87344 | 35861.4 |
+| RTree         | 17616 |  1.90514 | 70.5232 | 55934.9 |
+| BTree         | 20552 | 0.931626 |  24.681 | 24617.3 |
+| GeoHashBinary | 20552 |  1.31568 | 11.5127 | 34765.6 |
+| RTree         | 20552 |  2.16905 | 63.7135 |   57315 |
+| BTree         | 22020 |  1.18111 | 26.7139 | 29475.7 |
+| GeoHashBinary | 22020 |  1.54293 | 16.6305 | 38505.3 |
+| RTree         | 22020 |  2.52279 | 57.6517 | 62958.8 |
+| BTree         | 22754 |  1.59371 | 30.1175 | 38602.7 |
+| GeoHashBinary | 22754 |  1.97526 | 23.6595 | 47844.7 |
+| RTree         | 22754 |  2.99974 |  53.282 | 72659.6 |
+| BTree         | 23121 |  2.40239 |  36.696 |   57309 |
+| GeoHashBinary | 23121 |  2.74982 | 31.2361 | 65597.1 |
+| RTree         | 23121 |  3.80278 | 52.5019 | 90715.3 |
+| BTree         | 23305 |  4.02671 | 47.7524 | 95316.1 |
+| GeoHashBinary | 23305 |  4.41057 | 44.4174 |  104403 |
+| RTree         | 23305 |  5.09086 | 54.4071 |  120506 |
+| BTree         | 23396 |  6.90307 |  61.519 |  162774 |
+| GeoHashBinary | 23396 |  7.63389 | 62.5841 |  180007 |
+| RTree         | 23396 |  7.58268 | 62.3171 |  178800 |
+| BTree         | 23442 |  12.9531 | 84.4147 |  304839 |
+| GeoHashBinary | 23442 |  14.1853 | 88.6112 |  333838 |
+| RTree         | 23442 |  12.2057 | 75.3058 |  287249 |
+| BTree         | 23465 |  24.2147 | 113.655 |  569311 |
+| GeoHashBinary | 23465 |  26.5392 | 121.956 |  623964 |
+| RTree         | 23465 |  20.8363 | 94.6915 |  489883 |
+
+#+begin_src R :results output :exports code :session 
+df %>% 
+    mutate(remove = if_else(is.na(remove), 0 , as.numeric(remove))) %>%
+    mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, as.numeric(remove) + insert)) %>% 
+    group_by(algo,T) %>%
+    summarize(total = sum(ins_rm) , avg = mean(ins_rm), std= sd(ins_rm)) %>%
+    mutate(T = as.factor(T)) -> totalPlot
+totalPlot
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 30 x 5
+# Groups:   algo [3]
+    algo      T    total       avg      std
+   <chr> <fctr>    <dbl>     <dbl>    <dbl>
+ 1 BTree  11745  23653.0  0.671368  23.3574
+ 2 BTree  17616  23119.1  0.787435  23.7736
+ 3 BTree  20552  24617.3  0.931626  24.6810
+ 4 BTree  22020  29475.7  1.181109  26.7139
+ 5 BTree  22754  38602.7  1.593706  30.1175
+ 6 BTree  23121  57309.0  2.402389  36.6960
+ 7 BTree  23305  95316.1  4.026705  47.7524
+ 8 BTree  23396 162774.4  6.903072  61.5190
+ 9 BTree  23442 304839.4 12.953148  84.4147
+10 BTree  23465 569311.0 24.214666 113.6551
+# ... with 20 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file "./img/totalInsRm.png" :exports both :width 600 :height 400
+library(ggplot2)
+
+totalPlot %>%
+    ggplot( aes(x=T,y=total, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    labs(title = "Total sum of Insertions and Removals") 
+#+end_src
+
+#+RESULTS:
+[[file:./img/totalInsRm.png]]
+
+
+***** Average benchmark time with the removals:
+
+Bimodal behaviour, it doesn't make sense to do an average of removals together with insertions. 
+
+#+begin_src R :results output graphics :file "./img/totalAvgRm.png" :exports both :width 600 :height 400
+library(ggplot2)
+
+totalPlot %>%
+    ggplot( aes(x=T,y=avg, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    geom_errorbar( position=position_dodge(0.9), 
+                   aes(ymin = avg - std, ymax = avg + std), width=0.5) +
+    labs(title = "Average Insertions and Removals") 
+#+end_src
+
+#+RESULTS:
+[[file:./img/totalAvgRm.png]]
+
+
+**** Amortized time :ARCHIVE:
+
+We compute tree time:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both
+avgTime = cbind(dfinsert, 
+                sumTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)), recursive=T),
+                avgTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)/(x$id+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+: Error in data.frame(..., check.names = FALSE) : 
+:   arguments imply differing number of rows: 769074, 0
+: In addition: Warning messages:
+: 1: Unknown or uninitialised column: 'ms'. 
+: 2: Unknown or uninitialised column: 'ms'. 
+: 3: Unknown or uninitialised column: 'ms'. 
+: 4: Unknown or uninitialised column: 'ms'. 
+: 5: Unknown or uninitialised column: 'ms'. 
+: 6: Unknown or uninitialised column: 'ms'.
+
+***** Melting the data (time / avgTime)
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :exports both :session 
+avgTime %>% 
+    select(-count,-stdv) %>%
+    gather(stat, value, ms, sumTime, avgTime) -> melted_times
+
+melted_times
+#+end_src
+
+#+RESULTS:
+: Error in eval(lhs, parent, parent) : object 'avgTime' not found
+: Error: object 'melted_times' not found
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+melted_times %>%
+    ggplot(aes(x=id,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+
+**** Zoom View                                                      :plot:ARCHIVE:
+
+#+begin_src R :results output graphics :file "./img/Zoom.png" :exports both :width 600 :height 400
+avgTime %>% 
+    ggplot(aes(x=id, color=factor(algo))) + 
+    labs(title="Insertions") +
+    geom_point(aes(y=ms), alpha=1) +
+#    geom_line(aes(y=avgTime)) + 
+    ylim(0,1) 
+#+end_src
+
+#+RESULTS:
+[[file:./img/Zoom.png]]
+

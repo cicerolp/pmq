@@ -1,0 +1,786 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+Scanning dependencies of target pma
+[  2%] Building CXX object inc/pma/CMakeFiles/pma.dir/pma_common.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma.h:24:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp:18:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/x86_64-linux-gnu/c++/6/bits/os_defines.h:39:0,
+                 from /usr/include/x86_64-linux-gnu/c++/6/bits/c++config.h:507,
+                 from /usr/include/c++/6/utility:68,
+                 from /usr/include/c++/6/algorithm:60,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp:8:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp:20:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp: In function ‘unsigned int pma::rm_packatbeginning(pma_struct*, unsigned int, std::function<int(const void*)>)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:28:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT( __VA_ARGS__ ) \
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp:401:5: note: in expansion of macro ‘DBG_PRINTOUT’
+     DBG_PRINTOUT( "ELT IS DELETED %d \n",*(uint64_t* )src_pt);
+     ^~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:28:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT( __VA_ARGS__ ) \
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_common.cpp:412:11: note: in expansion of macro ‘DBG_PRINTOUT’
+           DBG_PRINTOUT( "ELT IS DELETED %d \n",*(uint64_t* )src_pt);
+           ^~~~~~~~~~~~
+[  5%] Building CXX object inc/pma/CMakeFiles/pma.dir/pma_bender.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma.h:24:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_bender.cpp:10:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/inttypes.h:25:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_bender.cpp:1:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+[  7%] Building CXX object inc/pma/CMakeFiles/pma.dir/pma_batch.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma.h:24:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_batch.cpp:10:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/inttypes.h:25:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_batch.cpp:1:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_batch.cpp:14:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_merge.h: In function ‘void pma::batch::merge_pma_array_uni_spread(pma_struct*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, void*, void*, int (*)(const void*, const void*), std::function<int(const void*)>)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:28:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT( __VA_ARGS__ ) \
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_merge.h:174:11: note: in expansion of macro ‘DBG_PRINTOUT’
+           DBG_PRINTOUT( "ELT IS DELETED %d \n",*(uint64_t* )src_pt);
+           ^~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:28:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT( __VA_ARGS__ ) \
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_merge.h:215:13: note: in expansion of macro ‘DBG_PRINTOUT’
+             DBG_PRINTOUT( "ELT IS DELETED %d \n",*(uint64_t* )src_pt);
+             ^~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_batch.cpp: In function ‘int pma::batch::add_rm_array_rebalance_dbl(pma_struct*, unsigned int, void*, void*, unsigned int, int (*)(const void*, const void*), std::function<int(const void*)>)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:28:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT( __VA_ARGS__ ) \
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/pma_batch.cpp:580:11: note: in expansion of macro ‘DBG_PRINTOUT’
+           DBG_PRINTOUT( "ELT IS DELETED %d \n",*(uint64_t* )ptr_src);
+           ^~~~~~~~~~~~
+[ 10%] Building CXX object inc/pma/CMakeFiles/pma.dir/utils/pma_utils.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/pma_utils.cpp:8:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/pma_utils.cpp:6:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/pma_utils.cpp: In function ‘void print_pma(void*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/pma_utils.cpp:58:88: warning: too many arguments for format [-Wformat-extra-args]
+             if ( i % pma->cap_segments == 0) fprintf(stdout,"| ", i / pma->cap_segments);
+                                                                                        ^
+[ 13%] Building CXX object inc/pma/CMakeFiles/pma.dir/utils/coherency.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/../pma.h:24:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/coherency.h:2,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/coherency.cpp:1:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/inttypes.h:25:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/../pma.h:18,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/coherency.h:2,
+                 from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/coherency.cpp:1:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+[ 15%] Linking CXX static library libpma.a
+[ 15%] Built target pma
+Scanning dependencies of target bench_insert
+[ 18%] Building CXX object benchmarks/CMakeFiles/bench_insert.dir/bench_insertions.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions.cpp:14:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions.cpp:7:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions.cpp:21:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions.cpp:20:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = elttype_t<unsigned int>]’:
+/home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions.cpp:284:61:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘const elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 21%] Linking CXX executable bench_insert
+[ 21%] Built target bench_insert
+Scanning dependencies of target test_movepma
+[ 23%] Building CXX object benchmarks/CMakeFiles/test_movepma.dir/test_movepma.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:14:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:7:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:21:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:20:0:
+/home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 5 has type ‘valuetype {aka unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:828:4: note: in expansion of macro ‘PRINTOUT’
+    PRINTOUT("PMA SCAN SUM=%lu\n",sum);
+    ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = elttype_t<unsigned int>]’:
+/home/julio/Projects/hppsimulations/pma_cd/benchmarks/test_movepma.cpp:971:54:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘const elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 26%] Linking CXX executable test_movepma
+[ 26%] Built target test_movepma
+Scanning dependencies of target bench_insertions_k
+[ 28%] Building CXX object benchmarks/CMakeFiles/bench_insertions_k.dir/bench_insertions_k.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions_k.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions_k.cpp:6:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions_k.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions_k.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = elttype_t<unsigned int>]’:
+/home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_insertions_k.cpp:286:62:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘const elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘elttype_t<unsigned int>’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 31%] Linking CXX executable bench_insertions_k
+[ 31%] Built target bench_insertions_k
+Scanning dependencies of target bench_scan
+[ 34%] Building CXX object benchmarks/CMakeFiles/bench_scan.dir/bench_scan.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_scan.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_scan.cpp:6:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/benchmarks/bench_scan.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+[ 36%] Linking CXX executable bench_scan
+[ 36%] Built target bench_scan
+Scanning dependencies of target test_batch_remove_empty_seg_V3
+[ 39%] Building CXX object tests/CMakeFiles/test_batch_remove_empty_seg_V3.dir/test_batch_remove_empty_seg_V3.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V3.cpp:15:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V3.cpp:7:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V3.cpp:17:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V3.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V3.cpp:82:72: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", input_array[i].key,input_array[i].value);
+                                                                        ^
+[ 42%] Linking CXX executable test_batch_remove_empty_seg_V3
+[ 42%] Built target test_batch_remove_empty_seg_V3
+Scanning dependencies of target test_bug_tweet8k_remove
+[ 44%] Building CXX object tests/CMakeFiles/test_bug_tweet8k_remove.dir/test_bug_tweet8k_remove.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp:8:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bug_tweet8k_remove.cpp:174:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT("Remove elements with value less that %d\n", oldest_val);
+         ^~~~~~~~
+[ 47%] Linking CXX executable test_bug_tweet8k_remove
+[ 47%] Built target test_bug_tweet8k_remove
+Scanning dependencies of target test_batch_remove_empty_seg
+[ 50%] Building CXX object tests/CMakeFiles/test_batch_remove_empty_seg.dir/test_batch_remove_empty_seg.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg.cpp:18:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg.cpp:10:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg.cpp:20:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg.cpp:85:72: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", input_array[i].key,input_array[i].value);
+                                                                        ^
+[ 52%] Linking CXX executable test_batch_remove_empty_seg
+[ 52%] Built target test_batch_remove_empty_seg
+Scanning dependencies of target test_batch_remove_shrink
+[ 55%] Building CXX object tests/CMakeFiles/test_batch_remove_shrink.dir/test_batch_remove_shrink.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_shrink.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_shrink.cpp:8:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_shrink.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_shrink.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_shrink.cpp:83:72: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", input_array[i].key,input_array[i].value);
+                                                                        ^
+[ 57%] Linking CXX executable test_batch_remove_shrink
+[ 57%] Built target test_batch_remove_shrink
+Scanning dependencies of target test_batch_remove
+[ 60%] Building CXX object tests/CMakeFiles/test_batch_remove.dir/test_batch_remove.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:8:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:84:72: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", input_array[i].key,input_array[i].value);
+                                                                        ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp: In lambda function:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 5 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:231:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT("Elm out of order: %u > %u\n", l , k);
+         ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 6 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove.cpp:231:9: note: in expansion of macro ‘PRINTOUT’
+         PRINTOUT("Elm out of order: %u > %u\n", l , k);
+         ^~~~~~~~
+[ 63%] Linking CXX executable test_batch_remove
+[ 63%] Built target test_batch_remove
+Scanning dependencies of target test_batch_remove_empty_seg_V2
+[ 65%] Building CXX object tests/CMakeFiles/test_batch_remove_empty_seg_V2.dir/test_batch_remove_empty_seg_V2.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V2.cpp:15:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V2.cpp:7:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V2.cpp:17:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V2.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_remove_empty_seg_V2.cpp:82:72: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", input_array[i].key,input_array[i].value);
+                                                                        ^
+[ 68%] Linking CXX executable test_batch_remove_empty_seg_V2
+[ 68%] Built target test_batch_remove_empty_seg_V2
+Scanning dependencies of target test_build_pma
+[ 71%] Building CXX object tests/CMakeFiles/test_build_pma.dir/test_build_pma.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_build_pma.cpp:12:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_build_pma.cpp:9:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+[ 73%] Linking CXX executable test_build_pma
+[ 73%] Built target test_build_pma
+Scanning dependencies of target getElem_test
+[ 76%] Building CXX object tests/CMakeFiles/getElem_test.dir/test_getElements.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:11:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:4:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:13:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:13:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘long int’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:97:7: note: in expansion of macro ‘PRINTOUT’
+       PRINTOUT("Random seed: %d\n",random_init);
+       ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = unsigned int]’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_getElements.cpp:226:53:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 78%] Linking CXX executable getElem_test
+[ 78%] Built target getElem_test
+Scanning dependencies of target test_bender_insertion
+[ 81%] Building CXX object tests/CMakeFiles/test_bender_insertion.dir/test_bender_insertion.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insertion.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insertion.cpp:9:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insertion.cpp:21:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insertion.cpp:19:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = unsigned int]’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insertion.cpp:217:53:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 84%] Linking CXX executable test_bender_insertion
+[ 84%] Built target test_bender_insertion
+Scanning dependencies of target test_bender_insert_remove_rand
+[ 86%] Building CXX object tests/CMakeFiles/test_bender_insert_remove_rand.dir/test_bender_insert_remove_rand.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:9:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘long int’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:105:7: note: in expansion of macro ‘PRINTOUT’
+       PRINTOUT("Random seed: %d\n",random_init);
+       ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = unsigned int]’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_insert_remove_rand.cpp:261:53:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 89%] Linking CXX executable test_bender_insert_remove_rand
+[ 89%] Built target test_bender_insert_remove_rand
+Scanning dependencies of target test_bender_rand_insertions
+[ 92%] Building CXX object tests/CMakeFiles/test_bender_rand_insertions.dir/test_bender_rand_insertions.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:9:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:14:80: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘long int’ [-Wformat=]
+         fprintf(stdout,"[%s:%u] " format ,  __FILE__, __LINE__ , ##__VA_ARGS__ );\
+                                                                                ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:99:7: note: in expansion of macro ‘PRINTOUT’
+       PRINTOUT("Random seed: %d\n",random_init);
+       ^~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = unsigned int]’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_bender_rand_insertions.cpp:253:53:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘unsigned int’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[ 94%] Linking CXX executable test_bender_rand_insertions
+[ 94%] Built target test_bender_rand_insertions
+Scanning dependencies of target test_batch_insertions
+[ 97%] Building CXX object tests/CMakeFiles/test_batch_insertions.dir/test_batch_insertions.cpp.o
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:16:0:
+/home/julio/Projects/hppsimulations/build-release/PmaConfig.h:13:0: warning: "_XOPEN_SOURCE" redefined
+ #define _XOPEN_SOURCE 500
+ 
+In file included from /usr/include/stdio.h:27:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:9:
+/usr/include/features.h:169:0: note: this is the location of the previous definition
+ # define _XOPEN_SOURCE 700
+ 
+In file included from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:18:0:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys(const pma_struct*)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:168:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In function ‘void print_pma_keys_range(pma_struct*, unsigned int, unsigned int)’:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:187:45: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+             printf("%llu ", *(uint64_t* )el );
+                                             ^
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp: In function ‘int main(int, char**)’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:165:74: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
+     fprintf(stdout, "[%d,%d] ", sorted_array[i].key,sorted_array[i].value);
+                                                                          ^
+In file included from /home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:8:0,
+                 from /home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:18:
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h: In instantiation of ‘unsigned int reference_check(const T*, void*) [with T = elttype]’:
+/home/julio/Projects/hppsimulations/pma_cd/tests/test_batch_insertions.cpp:203:53:   required from here
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘const elttype’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/debugMacros.h:19:16: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 5 has type ‘elttype’ [-Wformat=]
+         fprintf(stdout,"[%s] " format ,  __FUNCTION__ , ##__VA_ARGS__ );\
+         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/julio/Projects/hppsimulations/pma_cd/inc/pma/utils/test_utils.h:60:7: note: in expansion of macro ‘PRINTOUTF’
+       PRINTOUTF("SORT ERROR: expected %llu, got %llu\n",reference[i],elt);
+       ^~~~~~~~~
+[100%] Linking CXX executable test_batch_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+[  1%] Building CXX precompiled header cotire/twitterVis_CXX_prefix.hxx.gch
+Scanning dependencies of target twitterVis
+[  2%] Building CXX object CMakeFiles/twitterVis.dir/main.cpp.o
+[  4%] Building CXX object CMakeFiles/twitterVis.dir/include/GeoRunner.cpp.o
+[  5%] Building CXX object CMakeFiles/twitterVis.dir/include/QuadtreeIntf.cpp.o
+[  7%] Building CXX object CMakeFiles/twitterVis.dir/include/BTreeCtn.cpp.o
+[  8%] Building CXX object CMakeFiles/twitterVis.dir/include/GeoHash.cpp.o
+[ 10%] Building CXX object CMakeFiles/twitterVis.dir/include/DenseVectorCtn.cpp.o
+[ 11%] Building CXX object CMakeFiles/twitterVis.dir/include/string_util.cpp.o
+[ 13%] Building CXX object CMakeFiles/twitterVis.dir/include/nc_query_util.cpp.o
+[ 14%] Building CXX object CMakeFiles/twitterVis.dir/include/Query.cpp.o
+[ 16%] Building CXX object CMakeFiles/twitterVis.dir/include/Server.cpp.o
+[ 17%] Linking CXX executable twitterVis
+[ 22%] Built target twitterVis
+Scanning dependencies of target test_insert_remove_scan
+[ 23%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/test_insert_remove_scan.cpp.o
+[ 25%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 26%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 27%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/DenseVectorCtn.cpp.o
+[ 29%] Linking CXX executable test_insert_remove_scan
+[ 29%] Built target test_insert_remove_scan
+Scanning dependencies of target test_containers_count
+[ 30%] Building CXX object tests/CMakeFiles/test_containers_count.dir/test_containers_count.cpp.o
+[ 32%] Building CXX object tests/CMakeFiles/test_containers_count.dir/__/include/QuadtreeIntf.cpp.o
+[ 33%] Building CXX object tests/CMakeFiles/test_containers_count.dir/__/include/GeoHash.cpp.o
+[ 35%] Building CXX object tests/CMakeFiles/test_containers_count.dir/__/include/BTreeCtn.cpp.o
+[ 36%] Linking CXX executable test_containers_count
+[ 36%] Built target test_containers_count
+Scanning dependencies of target test_geohash
+[ 38%] Building CXX object tests/CMakeFiles/test_geohash.dir/test_geohash.cpp.o
+[ 39%] Building CXX object tests/CMakeFiles/test_geohash.dir/__/include/QuadtreeIntf.cpp.o
+[ 41%] Building CXX object tests/CMakeFiles/test_geohash.dir/__/include/GeoHash.cpp.o
+[ 42%] Linking CXX executable test_geohash
+[ 42%] Built target test_geohash
+Scanning dependencies of target test_geohash_count
+[ 44%] Building CXX object tests/CMakeFiles/test_geohash_count.dir/test_geohash_count.cpp.o
+[ 45%] Building CXX object tests/CMakeFiles/test_geohash_count.dir/__/include/QuadtreeIntf.cpp.o
+[ 47%] Building CXX object tests/CMakeFiles/test_geohash_count.dir/__/include/GeoHash.cpp.o
+[ 48%] Linking CXX executable test_geohash_count
+[ 48%] Built target test_geohash_count
+Scanning dependencies of target bench_insert_remove_count
+[ 50%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/bench_insert_remove_count.cpp.o
+[ 51%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/QuadtreeIntf.cpp.o
+[ 52%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/GeoHash.cpp.o
+[ 54%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/BTreeCtn.cpp.o
+[ 55%] Linking CXX executable bench_insert_remove_count
+[ 55%] Built target bench_insert_remove_count
+Scanning dependencies of target bench_topk_search
+[ 57%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/bench_topk_search.cpp.o
+[ 58%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/BTreeCtn.cpp.o
+[ 60%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/GeoHash.cpp.o
+[ 61%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/string_util.cpp.o
+[ 63%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/QuadtreeIntf.cpp.o
+[ 64%] Linking CXX executable bench_topk_search
+[ 64%] Built target bench_topk_search
+Scanning dependencies of target bench_queries_region
+[ 66%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/bench_queries_region.cpp.o
+[ 67%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/string_util.cpp.o
+[ 69%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/QuadtreeIntf.cpp.o
+[ 70%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/GeoHash.cpp.o
+[ 72%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/DenseVectorCtn.cpp.o
+[ 73%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/BTreeCtn.cpp.o
+[ 75%] Linking CXX executable bench_queries_region
+[ 75%] Built target bench_queries_region
+Scanning dependencies of target bench_memory
+[ 76%] Building CXX object benchmarks/CMakeFiles/bench_memory.dir/bench_memory.cpp.o
+[ 77%] Building CXX object benchmarks/CMakeFiles/bench_memory.dir/__/include/QuadtreeIntf.cpp.o
+[ 79%] Building CXX object benchmarks/CMakeFiles/bench_memory.dir/__/include/GeoHash.cpp.o
+[ 80%] Building CXX object benchmarks/CMakeFiles/bench_memory.dir/__/include/DenseVectorCtn.cpp.o
+[ 82%] Building CXX object benchmarks/CMakeFiles/bench_memory.dir/__/include/BTreeCtn.cpp.o
+[ 83%] Linking CXX executable bench_memory
+[ 83%] Built target bench_memory
+Scanning dependencies of target bench_insert_remove_scan
+[ 85%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/bench_insert_remove_scan.cpp.o
+[ 86%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 88%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 89%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/BTreeCtn.cpp.o
+[ 91%] Linking CXX executable bench_insert_remove_scan
+[ 91%] Built target bench_insert_remove_scan
+Scanning dependencies of target bench_insert_and_scan
+[ 92%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/bench_insert_and_scan.cpp.o
+[ 94%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 95%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/GeoHash.cpp.o
+[ 97%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/DenseVectorCtn.cpp.o
+[ 98%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/BTreeCtn.cpp.o
+[100%] Linking CXX executable bench_insert_and_scan
+[100%] Built target bench_insert_and_scan
+bench_ins_rm_11745_1505412384.log
+bench_ins_rm_17616_1505412384.log
+bench_ins_rm_20552_1505412384.log
+bench_ins_rm_22020_1505412384.log
+bench_ins_rm_22754_1505412384.log
+bench_ins_rm_23121_1505412384.log
+bench_ins_rm_23305_1505412384.log
+bench_ins_rm_23396_1505412384.log
+bench_ins_rm_23442_1505412384.log
+bench_ins_rm_23465_1505412384.log
+Already on 'exp20170914091842'
+M	data/cicero/exp20170914091842/run_1505412076
+A	data/cicero/exp20170914091842/run_1505412384
+Your branch is ahead of 'origin/exp20170914091842' by 1 commit.
+  (use "git push" to publish your local commits)
+[exp20170914091842 632dd11] Finish execution 1505412384
+ 4 files changed, 2197 insertions(+)
+ create mode 100644 data/cicero/exp20170914091842/info.org
+ create mode 100644 data/cicero/exp20170914091842/log_1505412384.tgz
+ create mode 100644 data/cicero/exp20170914091842/run_1505412384
+To git@bitbucket.org:jtoss/pmq.git
+ ! [rejected]        exp20170914091842 -> exp20170914091842 (fetch first)
+error: failed to push some refs to 'git@bitbucket.org:jtoss/pmq.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
