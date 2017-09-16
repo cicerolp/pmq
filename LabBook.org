@@ -434,9 +434,11 @@ mkdir -p $expFolder
   $ $ [[./data/cicero/exp20170907112116/exp.org]]
   
 
-*** INPROGRESS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170830124159:
+*** INPROGRESS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170907145711:
 
 Test with a larger ammount of data -> 10*8
+
+- added bulk RTREE loading to the experiments
 
 **** Setup
 - [X] Create a direcorty for this experiment 
