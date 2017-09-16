@@ -107,7 +107,7 @@ void run_bench(int argc,
     uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * t);
 
     //create container
-    std::unique_ptr < T > container = std::make_unique<T>(argc, argv,parameters.refLevel);
+    std::unique_ptr < T > container = std::make_unique<T>(argc, argv, parameters.refLevel);
     timer = container->create((uint32_t) ctn_size);
 
     PRINTBENCH_PTR("init", timer);
@@ -218,9 +218,9 @@ int main(int argc, char *argv[]) {
 
   PRINTOUT("Refinement level = %d\n", parameters.refLevel);
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
-  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
-  //run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
-  //run_bench<RTreeCtn<bgi::rstar < 16>> > (argc, argv, input, queries, parameters);
+
+  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
   run_bench<RTreeBulkCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
 

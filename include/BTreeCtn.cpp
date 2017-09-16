@@ -46,24 +46,61 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
   timer.stop();
   duration.emplace_back("insert", timer);
 
-  // remove start
-  timer.start();
-  if (_btree->size() >= _size) {
-    auto it = _btree->begin();
-    while (it != _btree->end()) {
-      // keep valid iterator
-      auto it_rm = it;
-      // increment to the next iterator
-      ++it;
 
-      if (is_removed(&(*it_rm).second)) {
-        _btree->erase(it_rm);
-      }
-    }
+  if (_btree->size() > _size) {
+     DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
+
+     // remove start
+     timer.start();
+
+#if 0
+     //remove based on a data value
+
+     unsigned int key = _btree->begin()->first;
+
+     bool erased = true;
+
+     while( erased ) {
+        // find position of last erased key
+        auto it = _btree->lower_bound(key);
+
+        erased = false;
+        for ( ; it != _btree->end() ; it++ ) {
+           //test remove condition
+           if ( is_removed( &(it->second) ) ){
+              // saves key erased
+              key = it->first;
+              _btree->erase(it);
+              erased = true;
+              // ends the loop because iterartor were invalidated
+              break;
+           }
+        }
+
+     }
+#endif
+
+     //using a temporary array
+     std::vector<uint64_t> rm;
+     for (auto it = _btree->begin() ; it != _btree->end(); it++){
+        if ( is_removed( &(it->second) ) ){
+           rm.push_back(it->first);
+        }
+     }
+
+     for (auto& e : rm ){
+        auto it = _btree->find(e);
+        //prevents deleting wrong element (same key with different timestamp)
+        while( ! is_removed( &(it->second) )) it++ ;
+
+        _btree->erase(it);
+
+     }
+
+     // remove end
+     timer.stop();
+     duration.emplace_back("remove", timer);
   }
-  // remove end
-  timer.stop();
-  duration.emplace_back("remove", timer);
 
   return duration;
 }

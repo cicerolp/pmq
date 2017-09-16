@@ -106,6 +106,6 @@ CTestTestfile.cmake
 
 # End of https://www.gitignore.io/api/cmake,clion,linux,visualstudiocode
 
-build
+build*
 CMakeLists.txt.user
 \#*\#

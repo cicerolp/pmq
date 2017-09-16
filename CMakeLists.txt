@@ -24,9 +24,9 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
 
         include/BTreeCtn.cpp
         include/GeoHash.cpp
-        include/PostGisCtn.cpp
-        include/PMABatchCtn.cpp
-        include/SpatiaLiteCtn.cpp
+   #     include/PostGisCtn.cpp
+   #     include/PMABatchCtn.cpp
+   #     include/SpatiaLiteCtn.cpp
         include/DenseVectorCtn.cpp
 
         include/string_util.cpp

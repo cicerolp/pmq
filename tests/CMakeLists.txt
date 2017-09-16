@@ -1,4 +1,4 @@
-
+if(FALSE) #Disable test for explicit PMQ
 add_executable(test_pma_diff
         test_pma_diff.cpp
         ../include/PMABatchCtn.cpp
@@ -7,7 +7,7 @@ add_executable(test_pma_diff
 
 target_link_libraries(test_pma_diff pma ${CMAKE_THREAD_LIBS_INIT})
 add_test(pma_diff_b10 test_pma_diff -f ${CMAKE_SOURCE_DIR}/data/tweet10_4.dat -b 10)
-
+endif()
 ########################################################
 
 # TODO fix this test
@@ -38,7 +38,7 @@ add_executable(test_insert_remove_scan
 
         ../include/QuadtreeIntf.cpp
         ../include/GeoHash.cpp
-        ../include/PMABatchCtn.cpp
+#        ../include/PMABatchCtn.cpp
         ../include/DenseVectorCtn.cpp
         )
 

@@ -104,10 +104,15 @@ http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_ind
 
   but dosomething() cannot modify the tree, otherwise it invalidade the iterator. 
 
+- The R-tree doesn't seems to have any batch operation for deleting several elements. 
 
-- The R-tree doesn't seems to have any batch operation for deleting severl elements. 
+***** Removals 
+Removals are done by searching all the elements satisfing the removal predicate. 
 
-  
+Using the list of elements to be removed we call the _rtree->remove function.
+
+note: Boost doesn't support very well the =cs::geographic= coordinate system. Use instead =cs::cartesian= that gives better results and is also correct.  http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/reference/cs/cs_cartesian.html 
+
 *** Other implementations - libspatialindex
 http://libspatialindex.github.io/
 https://github.com/libspatialindex/libspatialindex
@@ -182,6 +187,11 @@ https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time
 
 https://github.com/diegocaro/cpp-btree
 
+
+NOTE about safe containers: don't have a version of multi-map implemented. 
+https://code.google.com/archive/p/cpp-btree/wikis/UsageInstructions.wiki
+
+
 *** Fractal Tree
 - Implemented in Tokutek Database
 - Originated from BIB:Bender2007a
@@ -206,3 +216,12 @@ https://github.com/runshenzhu/palmtree
 Sequential comparison witgh stx:Btree
 https://panthema.net/2007/stx-btree/
 https://github.com/bingmann/stx-btree
+
+*** Stx-btree 
+Implementation of an efficient Btree available at: 
+https://github.com/bingmann/stx-btree
+
+This is the sequential implementation used for comparison in the Palm-Tree paper. 
+
+Detailed performance tests in: 
+http://panthema.net/2007/stx-btree/speedtest/
