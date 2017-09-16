@@ -7,14 +7,14 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4 toc:nil tags:nil
-#+PROPERTY: header-args :cache no :eval no-export 
+#+OPTIONS: ^:{} todo:nil H:4 toc:t tags:nil
+#+PROPERTY: header-args :cache no :eval never-export 
 
 
-* TODO Description                                                   :export:
+* DONE Description                                                   :export:
 
 Test the queries on uniform data. 
-And compare the folling performances.
+And compare the following performances.
 
 - PMQ / GEOHASH
 - BTREE 
@@ -34,7 +34,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - plotResults.R : generate the plots 
   
 
-* TODO Experiment Script
+* DONE Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -154,7 +154,7 @@ t=26000
 b=1000
 #n=$(($t*$b))
 ref=8
-stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 3 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
 
 set -e
 
@@ -308,7 +308,7 @@ git log -1 | cat
 : 
 :     Bugfix: corrected pointer casts
 
-*** TODO Execute Remotely                                          :remote:
+*** DONE Execute Remotely                                          :remote:
 
 Opens ssh connection and a tmux session
 
@@ -345,7 +345,7 @@ julio    25561 87.6  0.9 542264 306924 pts/9   R+   16:16   0:02 ./benchmarks/be
 julio    25563  0.0  0.0  37368  3316 pts/8    R+   16:16   0:00 ps ux
 #+end_example
 
-**** TODO Pull local 
+**** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
 #git commit -a -m "wip"
 git status
@@ -406,8 +406,8 @@ ls -htl *tgz
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- | 1 | julio | julio | 38K | Set | 15 | 16:20 | log_1505503014.tgz |
-| -rw-rw-r-- | 1 | julio | julio | 16K | Set | 15 | 14:42 | log_1505497224.tgz |
+| -rw-rw-r-- | 1 | julio | julio | 16K | Set | 16 | 11:58 | log_1505497224.tgz |
+| -rw-rw-r-- | 1 | julio | julio | 38K | Set | 16 | 11:58 | log_1505503014.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both 
@@ -450,15 +450,6 @@ df
 
 #+RESULTS:
 #+begin_example
-Loading tidyverse: ggplot2
-Loading tidyverse: tibble
-Loading tidyverse: tidyr
-Loading tidyverse: readr
-Loading tidyverse: purrr
-Loading tidyverse: dplyr
-Conflicts with tidy packages ---------------------------------------------------
-filter(): dplyr, stats
-lag():    dplyr, stats
 Parsed with column specification:
 cols(
   V1 = col_character(),
@@ -653,86 +644,25 @@ dfplot %>%
 *** Conclusions                                                    :export:
 
 - PMQ shows its best benefits on large range queries
-- for very small queries we are similar to othe Btree an Rtree
+- for very small queries we are similar to othe Btree an Rtree.
 - Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
-** What is the actual count of elements per query ?: 
 
-*** Plot                                                         :noexport:
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session 
-
-myplot <- function(data) {
-    data %>%
-    mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-    ggplot(aes(x = as.factor(queryId), color = algo)) +  
-    geom_point(aes(y = Count)) +
-    facet_wrap(~queryId,scale="free", labeller = "label_both") + 
-    theme(legend.position = "bottom",)
-}
-#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
-#dfplot %>% filter(bench == "apply_at_region") %>% myplot()
-dfplot %>% 
-    myplot() 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-9388tZA/figure9388YFH.png]]
+*NOTE* that the size (in degrees) of the query in this synthetic dataset is only proportional to the amount of elements because we have elements uniformly distributed. 
+In a scenario of a Twitter Distribution for Instance, small queries will possibly result in very large amount of elements. We should expect a very different performance behaviour in that cases.
+** What is the actual count of elements per query ?
 
 
 *** Table                                                          :export:
-There are some queries where the count differs for Rtree by a small amout of elements
-Counts have some differences :
-#+begin_src R :results output :exports none :session 
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    #group to see if every algo has same coubts
-    group_by(queryId, bench) %>%
-    summarize(c = mean(Count), s = sd(Count)  ) %>% filter ( s > 0)
 
-dfplot %>% filter( bench=="apply_at_region" ) %>% arrange(queryId)
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 9 x 4
-# Groups:   queryId [9]
-  queryId           bench         c         s
-    <int>           <chr>     <dbl>     <dbl>
-1       1 apply_at_region 3440446.5 0.5773503
-2       3 apply_at_region 3440915.5 0.5773503
-3       7 apply_at_region 3442233.5 0.5773503
-4      14 apply_at_region  862262.5 0.5773503
-5      16 apply_at_region  859265.0 1.1547005
-6      20 apply_at_region  214775.5 0.5773503
-7      41 apply_at_region   13399.5 0.5773503
-8      42 apply_at_region   13513.5 0.5773503
-9      56 apply_at_region    3356.5 0.5773503
-# A tibble: 320 x 7
-            algo queryId           bench Refine   Count    avg_ms        stdv
-           <chr>   <int>           <chr>  <int>   <int>     <dbl>       <dbl>
- 1         BTree       0 apply_at_region    482 3440580 49.647600 0.150356676
- 2 GeoHashBinary       0 apply_at_region    482 3440580  3.061860 0.022543467
- 3         RTree       0 apply_at_region     NA 3440580 50.613267 0.066850605
- 4     RTreeBulk       0 apply_at_region     NA 3440580  7.803137 0.002283010
- 5         BTree       1 apply_at_region    519 3440446 50.317533 0.119569617
- 6 GeoHashBinary       1 apply_at_region    519 3440446  2.969117 0.163947325
- 7         RTree       1 apply_at_region     NA 3440447 49.870900 0.758116462
- 8     RTreeBulk       1 apply_at_region     NA 3440447  7.776700 0.005880366
- 9         BTree       2 apply_at_region    708 3438884 49.964267 0.068276375
-10 GeoHashBinary       2 apply_at_region    708 3438884  2.900493 0.036675551
-# ... with 310 more rows
-#+end_example
-
-Cases where the Count doesn't match exactly. 
-#+begin_src R :results table :exports results :session :colnames yes
+Variance shows that some counts differ between algorithms:
+#+begin_src R :results output :exports none :session :colnames yes
 
 dfplot %>% 
     filter( bench== "apply_at_region") %>% 
-    #group to see if every algo has same coubts
-    group_by(queryId) %>%
-    summarize(Var = round(var(Count),3)  ) %>% filter ( Var > 0) -> 
-countVariation
+    group_by(queryId) %>%                     #group to see if every algo has same coubts
+    summarize(Var = round(var(Count),3)  ) -> 
+    countVariation
 
 options(dplyr.width = Inf)
 dfplot %>% 
@@ -745,11 +675,118 @@ dfplot %>%
     #select(queryId,ends_with("Count") , ends_with("ms")) %>%
     select(queryId,ends_with("Count") ) %>%
  #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
-    inner_join(countVariation) %>%
+    inner_join(countVariation) -> wideTable
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = "queryId"
+
+#+CAPTION: Number of elements returned in each query
+#+begin_src R :results table :exports results :session :colnames yes
+wideTable %>%
     as_tibble() %>%
     print(n = nrow(.))
 #+end_src
 
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
+|---------+-------------+---------------------+-----------------+-------------+-------|
+|       0 |     3440580 |             3440580 |         3440580 |     3440580 |     0 |
+|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
+|       2 |     3438884 |             3438884 |         3438884 |     3438884 |     0 |
+|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
+|       4 |     3442356 |             3442356 |         3442356 |     3442356 |     0 |
+|       5 |     3439224 |             3439224 |         3439224 |     3439224 |     0 |
+|       6 |     3438953 |             3438953 |         3438953 |     3438953 |     0 |
+|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
+|       8 |     3441859 |             3441859 |         3441859 |     3441859 |     0 |
+|       9 |     3443858 |             3443858 |         3443858 |     3443858 |     0 |
+|      10 |      859819 |              859819 |          859819 |      859819 |     0 |
+|      11 |      860304 |              860304 |          860304 |      860304 |     0 |
+|      12 |      862004 |              862004 |          862004 |      862004 |     0 |
+|      13 |      859895 |              859895 |          859895 |      859895 |     0 |
+|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
+|      15 |      859189 |              859189 |          859189 |      859189 |     0 |
+|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
+|      17 |      861935 |              861935 |          861935 |      861935 |     0 |
+|      18 |      861341 |              861341 |          861341 |      861341 |     0 |
+|      19 |      859799 |              859799 |          859799 |      859799 |     0 |
+|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
+|      21 |      214220 |              214220 |          214220 |      214220 |     0 |
+|      22 |      215543 |              215543 |          215543 |      215543 |     0 |
+|      23 |      214932 |              214932 |          214932 |      214932 |     0 |
+|      24 |      215726 |              215726 |          215726 |      215726 |     0 |
+|      25 |      214526 |              214526 |          214526 |      214526 |     0 |
+|      26 |      215502 |              215502 |          215502 |      215502 |     0 |
+|      27 |      214199 |              214199 |          214199 |      214199 |     0 |
+|      28 |      215471 |              215471 |          215471 |      215471 |     0 |
+|      29 |      214738 |              214738 |          214738 |      214738 |     0 |
+|      30 |       53488 |               53488 |           53488 |       53488 |     0 |
+|      31 |       54129 |               54129 |           54129 |       54129 |     0 |
+|      32 |       53212 |               53212 |           53212 |       53212 |     0 |
+|      33 |       53584 |               53584 |           53584 |       53584 |     0 |
+|      34 |       53724 |               53724 |           53724 |       53724 |     0 |
+|      35 |       53825 |               53825 |           53825 |       53825 |     0 |
+|      36 |       53856 |               53856 |           53856 |       53856 |     0 |
+|      37 |       53236 |               53236 |           53236 |       53236 |     0 |
+|      38 |       53837 |               53837 |           53837 |       53837 |     0 |
+|      39 |       53767 |               53767 |           53767 |       53767 |     0 |
+|      40 |       13230 |               13230 |           13230 |       13230 |     0 |
+|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
+|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
+|      43 |       13251 |               13251 |           13251 |       13251 |     0 |
+|      44 |       13524 |               13524 |           13524 |       13524 |     0 |
+|      45 |       13356 |               13356 |           13356 |       13356 |     0 |
+|      46 |       13401 |               13401 |           13401 |       13401 |     0 |
+|      47 |       13530 |               13530 |           13530 |       13530 |     0 |
+|      48 |       13417 |               13417 |           13417 |       13417 |     0 |
+|      49 |       13298 |               13298 |           13298 |       13298 |     0 |
+|      50 |        3358 |                3358 |            3358 |        3358 |     0 |
+|      51 |        3304 |                3304 |            3304 |        3304 |     0 |
+|      52 |        3517 |                3517 |            3517 |        3517 |     0 |
+|      53 |        3338 |                3338 |            3338 |        3338 |     0 |
+|      54 |        3394 |                3394 |            3394 |        3394 |     0 |
+|      55 |        3353 |                3353 |            3353 |        3353 |     0 |
+|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
+|      57 |        3440 |                3440 |            3440 |        3440 |     0 |
+|      58 |        3455 |                3455 |            3455 |        3455 |     0 |
+|      59 |        3461 |                3461 |            3461 |        3461 |     0 |
+|      60 |         842 |                 842 |             842 |         842 |     0 |
+|      61 |         808 |                 808 |             808 |         808 |     0 |
+|      62 |         840 |                 840 |             840 |         840 |     0 |
+|      63 |         834 |                 834 |             834 |         834 |     0 |
+|      64 |         839 |                 839 |             839 |         839 |     0 |
+|      65 |         852 |                 852 |             852 |         852 |     0 |
+|      66 |         797 |                 797 |             797 |         797 |     0 |
+|      67 |         843 |                 843 |             843 |         843 |     0 |
+|      68 |         813 |                 813 |             813 |         813 |     0 |
+|      69 |         895 |                 895 |             895 |         895 |     0 |
+|      70 |         225 |                 225 |             225 |         225 |     0 |
+|      71 |         184 |                 184 |             184 |         184 |     0 |
+|      72 |         209 |                 209 |             209 |         209 |     0 |
+|      73 |         199 |                 199 |             199 |         199 |     0 |
+|      74 |         212 |                 212 |             212 |         212 |     0 |
+|      75 |         222 |                 222 |             222 |         222 |     0 |
+|      76 |         213 |                 213 |             213 |         213 |     0 |
+|      77 |         192 |                 192 |             192 |         192 |     0 |
+|      78 |         196 |                 196 |             196 |         196 |     0 |
+|      79 |         188 |                 188 |             188 |         188 |     0 |
+#+TBLFM: $6=$0;%0.3f
+
+
+
+Just the diverging queries : 
+#+begin_src R :results table :exports results :session :colnames yes
+
+wideTable %>%
+    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
+    as_tibble() %>%
+    print(n = nrow(.))
+
+#+end_src
+
+#+CAPTION: Queries that returned different result depending on the algorithm 
 #+RESULTS:
 | queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
 |---------+-------------+---------------------+-----------------+-------------+-------|
@@ -762,5 +799,56 @@ dfplot %>%
 |      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
 |      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
 |      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
-#+TBLFM: $6=$0;%0.3f
+
+
+*** Plot                                                           :export:
+
+There are some queries where the count differs for Rtree by a small amount of elements.
+
+Counts have some differences :
+#+begin_src R :results output :exports none :session 
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId, bench) %>% #group to see if every algo has same counts
+    summarize(c = mean(Count), s = sd(Count)  ) %>% 
+    filter ( s > 0) %>% 
+    select(queryId, bench) %>% 
+    left_join(dfplot) -> dfWrongCounts
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = c("queryId", "bench")
+
+
+These are the queries that for some misterious reason resulted in different counts.
+#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
+
+myplot <- function(data) {
+    data %>%
+   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
+# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
+        #geom_jitter( width=0.1, height=0) +
+        geom_point( ) +
+        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
+        theme(legend.position = "bottom",) + 
+#        labs(x = "Query width (degrees)") +
+        #scale_y_continuous(breaks=c(3440446,3440447) )
+        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
+    
+}
+
+#dfWrongCounts %>% myplot() 
+
+dfWrongCounts %>% myplot()
+
+#dfWrongCounts %>% 
+#group_by(queryId) %>% filter(queryId == 1 ) %>%
+#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/differing_counts.png]]
 
