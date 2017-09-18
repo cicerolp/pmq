@@ -10,7 +10,6 @@ add_executable(bench_topk_search
         bench_topk_search.cpp
 
         ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
         ../include/GeoHash.cpp
         ../include/string_util.cpp
         ../include/QuadtreeIntf.cpp
@@ -25,7 +24,7 @@ add_executable(bench_insert_remove_scan
         ../include/GeoHash.cpp
 
         ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
+        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
@@ -37,7 +36,7 @@ add_executable(bench_insert_remove_count
         ../include/GeoHash.cpp
 
         ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
+        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
@@ -55,13 +54,12 @@ add_executable(bench_queries_region
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-#        ../include/PostGisCtn.cpp
-#        ../include/PMABatchCtn.cpp
-#        ../include/SpatiaLiteCtn.cpp
+        #../include/PostGisCtn.cpp
+        #../include/PMABatchCtn.cpp
+        #../include/SpatiaLiteCtn.cpp
         ../include/ExplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
         )
 
 target_link_libraries(bench_queries_region
@@ -80,14 +78,13 @@ add_executable(bench_insert_and_scan
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-#        ../include/PostGisCtn.cpp
-#        ../include/PMABatchCtn.cpp
-#        ../include/SpatiaLiteCtn.cpp
+        #../include/PostGisCtn.cpp
+        #../include/PMABatchCtn.cpp
+        #../include/SpatiaLiteCtn.cpp
         ../include/ExplicitDenseVectorCtn.cpp
         ../include/ImplicitDenseVectorCtn.cpp
 
         ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
         )
 
 target_link_libraries(bench_insert_and_scan
@@ -106,13 +103,10 @@ add_executable(bench_memory
         ../include/QuadtreeIntf.cpp
 
         ../include/GeoHash.cpp
-#        ../include/PostGisCtn.cpp
-#        ../include/PMABatchCtn.cpp
-#        ../include/SpatiaLiteCtn.cpp
+        #../include/PostGisCtn.cpp
+        #../include/PMABatchCtn.cpp
+        #../include/SpatiaLiteCtn.cpp
         ../include/ExplicitDenseVectorCtn.cpp
-
-        ../include/BTreeCtn.cpp
-        #../include/RTreeCtn.h
         )
 
 target_link_libraries(bench_memory
