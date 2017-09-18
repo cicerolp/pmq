@@ -15,7 +15,7 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf {
 
   // update container
   duration_t insert(std::vector<elttype> batch) override;
-  // Only for GeoHash
+  // Only for PMQ
   duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override;
 
   duration_t scan_at_region(const region_t &region, scantype_function __apply) override;

@@ -7,7 +7,7 @@
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "MemoryBench " << container.name() << " ; ";\
@@ -104,9 +104,9 @@ int main(int argc, char *argv[]) {
   }
 
   if (container == "ghb") {
-    run_bench<GeoHashBinary>(argc, argv, input, parameters);
+    run_bench<PMQBinary>(argc, argv, input, parameters);
   } else if (container == "ghs") {
-    run_bench<GeoHashSequential>(argc, argv, input, parameters);
+    run_bench<PMQSequential>(argc, argv, input, parameters);
   } else if (container == "bt") {
     run_bench<BTreeCtn>(argc, argv, input, parameters);
   } else if (container == "rt") {

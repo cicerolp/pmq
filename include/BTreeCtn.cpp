@@ -46,60 +46,59 @@ duration_t BTreeCtn::insert_rm(std::vector<elttype> batch, std::function<int(con
   timer.stop();
   duration.emplace_back("insert", timer);
 
-
   if (_btree->size() > _size) {
-     DBG_PRINTOUT("BTREE remove %d\n",_btree->size());
+    DBG_PRINTOUT("BTREE remove %d\n", _btree->size());
 
-     // remove start
-     timer.start();
+    // remove start
+    timer.start();
 
 #if 0
-     //remove based on a data value
+    //remove based on a data value
 
-     unsigned int key = _btree->begin()->first;
+    unsigned int key = _btree->begin()->first;
 
-     bool erased = true;
+    bool erased = true;
 
-     while( erased ) {
-        // find position of last erased key
-        auto it = _btree->lower_bound(key);
+    while( erased ) {
+       // find position of last erased key
+       auto it = _btree->lower_bound(key);
 
-        erased = false;
-        for ( ; it != _btree->end() ; it++ ) {
-           //test remove condition
-           if ( is_removed( &(it->second) ) ){
-              // saves key erased
-              key = it->first;
-              _btree->erase(it);
-              erased = true;
-              // ends the loop because iterartor were invalidated
-              break;
-           }
-        }
+       erased = false;
+       for ( ; it != _btree->end() ; it++ ) {
+          //test remove condition
+          if ( is_removed( &(it->second) ) ){
+             // saves key erased
+             key = it->first;
+             _btree->erase(it);
+             erased = true;
+             // ends the loop because iterartor were invalidated
+             break;
+          }
+       }
 
-     }
+    }
 #endif
 
-     //using a temporary array
-     std::vector<uint64_t> rm;
-     for (auto it = _btree->begin() ; it != _btree->end(); it++){
-        if ( is_removed( &(it->second) ) ){
-           rm.push_back(it->first);
-        }
-     }
+    //using a temporary array
+    std::vector<uint64_t> rm;
+    for (auto it = _btree->begin(); it != _btree->end(); it++) {
+      if (is_removed(&(it->second))) {
+        rm.push_back(it->first);
+      }
+    }
 
-     for (auto& e : rm ){
-        auto it = _btree->find(e);
-        //prevents deleting wrong element (same key with different timestamp)
-        while( ! is_removed( &(it->second) )) it++ ;
+    for (auto &e : rm) {
+      auto it = _btree->find(e);
+      //prevents deleting wrong element (same key with different timestamp)
+      while (!is_removed(&(it->second))) it++;
 
-        _btree->erase(it);
+      _btree->erase(it);
 
-     }
+    }
 
-     // remove end
-     timer.stop();
-     duration.emplace_back("remove", timer);
+    // remove end
+    timer.stop();
+    duration.emplace_back("remove", timer);
   }
 
   return duration;
@@ -142,7 +141,7 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
       return 0;
     }
   } else if (overlap == region_t::partial) {
-    if (el.z < refLevel) {
+    if (el.z < getRefLevel()) {
       uint32_t refinements = 0;
 
       // break morton code into four
@@ -180,14 +179,6 @@ uint32_t BTreeCtn::scan_btree_at_region(const code_t &el, const region_t &region
   } else {
     return 0;
   }
-}
-duration_t BTreeCtn::apply_at_tile(const region_t &region, applytype_function __apply) {
-  duration_t duration;
-
-  duration.emplace_back("apply_at_tile", 0);
-  duration.emplace_back("apply_at_tile_refinements", 0);
-
-  return duration;
 }
 
 duration_t BTreeCtn::apply_at_region(const region_t &region, applytype_function __apply) {
@@ -228,7 +219,7 @@ uint32_t BTreeCtn::apply_btree_at_region(const code_t &el, const region_t &regio
       return 0;
     }
   } else if (overlap == region_t::partial) {
-    if (el.z < refLevel) {
+    if (el.z < getRefLevel()) {
       uint32_t refinements = 0;
 
       // break morton code into four

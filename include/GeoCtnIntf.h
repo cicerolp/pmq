@@ -10,7 +10,7 @@ using applytype_function = std::function<void(const spatial_t & /*spatial area*/
 
 class GeoCtnIntf {
  public:
-  GeoCtnIntf(int _refLevel = 8):refLevel(_refLevel){}
+  GeoCtnIntf(uint8_t refLevel = 8) : _refLevel(refLevel) {}
 
   virtual ~GeoCtnIntf() = default;
 
@@ -19,10 +19,7 @@ class GeoCtnIntf {
 
   // update container
   virtual duration_t insert(std::vector<elttype> batch) = 0;
-  // Only for GeoHash
-  virtual duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) {
-    return duration_t();
-  }
+  virtual duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) = 0;
 
   /** @brief Applies a scantype_function on the elements contained on a selection region .
    *
@@ -34,7 +31,9 @@ class GeoCtnIntf {
    *
    * This function decomposed the selected 'region' using a grid of 2^8 tiles (256 X 256)
    */
-  virtual duration_t apply_at_tile(const region_t &region, applytype_function __apply) = 0;
+  virtual duration_t apply_at_tile(const region_t &region, applytype_function __apply) {
+    return duration_t();
+  };
 
   /** @brief Uses the applytype function to count elements on tiles (spatial_t)
    *
@@ -42,18 +41,17 @@ class GeoCtnIntf {
    */
   virtual duration_t apply_at_region(const region_t &region, applytype_function __apply) = 0;
 
-  virtual duration_t topk_search(const region_t &region, topk_t &topk, scantype_function __apply) {
-    return duration_t();
-  };
-
   inline virtual size_t size() const { return 0; }
 
   inline virtual std::string name() const;
 
+  inline uint8_t getRefLevel() const {
+    return _refLevel;
+  }
+
  protected:
-  const int refLevel; // Max number of levels to refine searches in the GeoHash
-
-
+  // max number of levels to refine searches in geohash
+  const uint8_t _refLevel;
 };
 
 std::string GeoCtnIntf::name() const {

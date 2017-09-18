@@ -63,25 +63,12 @@
 #pragma warning( pop )
 #endif
 
-#ifdef __GNUC__
-// geos lib
-#include <geos_c.h>
-
-// spatialite
-#include <sqlite3.h>
-#include <spatialite.h>
-#include <spatialite/gaiageo.h>
-
-// postgis
-#include <postgresql/libpq-fe.h>
-#endif
-
-// boost rtree
-#include <boost/geometry.hpp>
-
 // stx btree
 #include <stx/btree.h>
 #include <stx/btree_multimap.h>
+
+// boost rtree
+#include <boost/geometry.hpp>
 
 // boost tokenizer
 #include<boost/tokenizer.hpp>

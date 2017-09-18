@@ -3,297 +3,251 @@
 
 #include"InputIntf.h"
 
-GeoRunner::GeoRunner(int argc, char* argv[]) {
-   std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
-   _opts.n_elts = cimg_option("-n", 0, "program arg: number of elements to insert");
+GeoRunner::GeoRunner(int argc, char *argv[]) {
+  std::string input_file(cimg_option("-f", "../data/tweet100.dat", "program arg: twitter input file"));
+  _opts.n_elts = cimg_option("-n", 0, "program arg: number of elements to insert");
 
- //  _input = input::loadn(input_file, 25, _opts.n_elts);
-   _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
-   _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
-   _trigger_alert = std::max(cimg_option("-alert", 2, "program arg: trigger alert"), 0);
+  //  _input = input::loadn(input_file, 25, _opts.n_elts);
+  _x_grid = std::max(cimg_option("-x_grid", 360, "program arg: grid resolution x"), 180);
+  _y_grid = std::max(cimg_option("-y_grid", 180, "program arg: grid resolution y"), 360);
+  _trigger_alert = std::max(cimg_option("-alert", 2, "program arg: trigger alert"), 0);
 
-   _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
-   _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
+  _opts.batch = cimg_option("-b", 100, "runner arg: batch size");
+  _opts.interval = cimg_option("-i", 10, "runner arg: insertion interval");
 
-   if (_opts.n_elts > 0){
-       //_input = input::load_dmp_text(input_file, 25, _opts.n_elts);
-       _input = input::load(input_file, 25, _opts.n_elts);
-   }
-   else{
-       //_input = input::load_dmp_text(input_file, 25);
-       _input = input::load(input_file, 25);
-   }
+  if (_opts.n_elts > 0) {
+    //_input = input::load_dmp_text(input_file, 25, _opts.n_elts);
+    _input = input::load(input_file, 25, _opts.n_elts);
+  } else {
+    //_input = input::load_dmp_text(input_file, 25);
+    _input = input::load(input_file, 25);
+  }
 
-   _grid.resize(_x_grid * _y_grid, 0);
+  _grid.resize(_x_grid * _y_grid, 0);
 
-   _grid_thread = std::make_unique<std::thread>(&GeoRunner::grid_runner, this);
+  _grid_thread = std::make_unique<std::thread>(&GeoRunner::grid_runner, this);
 }
 
 void GeoRunner::set(std::shared_ptr<GeoCtnIntf> container) {
-   _mutex.lock();
-   _container = container;
-   _mutex.unlock();
+  _mutex.lock();
+  _container = container;
+  _mutex.unlock();
 }
 
 void GeoRunner::run() {
-   if (!_container) return;
+  if (!_container) return;
 
-   std::vector<elttype>::iterator it_begin = _input.begin();
-   std::vector<elttype>::iterator it_curr = _input.begin();
-   uint64_t oldest_time = 0;
+  std::vector<elttype>::iterator it_begin = _input.begin();
+  std::vector<elttype>::iterator it_curr = _input.begin();
+  uint64_t oldest_time = 0;
 
-   while (it_begin != _input.end() && _running) {
-      it_curr = std::min(it_begin + _opts.batch, _input.end());
+  while (it_begin != _input.end() && _running) {
+    it_curr = std::min(it_begin + _opts.batch, _input.end());
 
-      std::vector<elttype> batch(it_begin, it_curr);
-      _opts.now = batch.back().value.time;
+    std::vector<elttype> batch(it_begin, it_curr);
+    _opts.now = batch.back().value.time;
 
+    std::unique_lock<std::mutex> lock(_grid_mutex);
+    // add tweets to grid buffer
+    _grid_buffer.emplace(batch);
+    lock.unlock();
+    _grid_condition.notify_all();
 
-      std::unique_lock<std::mutex> lock(_grid_mutex);
-      // add tweets to grid buffer
-      _grid_buffer.emplace(batch);
-      lock.unlock();
-      _grid_condition.notify_all();
+    // lock container
+    _mutex.lock();
 
-      // lock container
-      _mutex.lock();
+    // insert batch
+    _container->insert(batch);
+    /*_container->insert_rm(batch, [ oldest_time ]( const void* el) {
+          return ((elttype*)el)->value.time < oldest_time;
+    });*/
 
-      // insert batch
-      _container->insert(batch);
-      /*_container->insert_rm(batch, [ oldest_time ]( const void* el) {
-            return ((elttype*)el)->value.time < oldest_time;
-      });*/
+    oldest_time = _opts.now;
 
-      oldest_time = _opts.now;
+    // unlock container
+    _mutex.unlock();
 
-      // unlock container
-      _mutex.unlock();
+    if (_opts.hint_server) Server::getInstance().renew_data();
 
-      if (_opts.hint_server) Server::getInstance().renew_data();
+    // update iterator
+    it_begin = it_curr;
 
-      // update iterator
-      it_begin = it_curr;
+    std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
+  }
+  _running = false;
+  _grid_condition.notify_all();
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(_opts.interval));
-   }
-   _running = false;
-   _grid_condition.notify_all();
+  _grid_thread->join();
 
-   _grid_thread->join();
-
-   std::cout << "*Runner* Stopped." << std::endl;
+  std::cout << "*Runner* Stopped." << std::endl;
 }
 
-std::string GeoRunner::query(const Query& query) {
-   if (!_container) return "[]";
+std::string GeoRunner::query(const Query &query) {
+  if (!_container) return "[]";
 
-   // serialization
-   rapidjson::StringBuffer buffer;
-   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  // serialization
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
-   switch (query.type) {
-      case Query::TILE: {
-         uint32_t max = 0;
-         uint32_t min = std::numeric_limits<uint32_t>::max();
+  switch (query.type) {
+    case Query::TILE: {
+      uint32_t max = 0;
+      uint32_t min = std::numeric_limits<uint32_t>::max();
 
-         applytype_function _apply = std::bind(GeoRunner::write_tile, std::ref(writer), std::ref(min),
-                                               std::ref(max), std::placeholders::_1, std::placeholders::_2);
+      applytype_function _apply = std::bind(GeoRunner::write_tile, std::ref(writer), std::ref(min),
+                                            std::ref(max), std::placeholders::_1, std::placeholders::_2);
 
-         // start json
-         writer.StartArray();
+      // start json
+      writer.StartArray();
 
-         writer.StartObject();
+      writer.StartObject();
 
-         writer.String("data");
-         writer.StartArray();
+      writer.String("data");
+      writer.StartArray();
 
-         // lock mutex
-         _mutex.lock();
+      // lock mutex
+      _mutex.lock();
 
-         _container->apply_at_tile(query.region, _apply);
+      _container->apply_at_tile(query.region, _apply);
 
-         // unlock mutex
-         _mutex.unlock();
+      // unlock mutex
+      _mutex.unlock();
 
-         writer.EndArray();
+      writer.EndArray();
 
-         writer.String("min");
-         writer.Uint(min);
+      writer.String("min");
+      writer.Uint(min);
 
-         writer.String("max");
-         writer.Uint(max);
+      writer.String("max");
+      writer.Uint(max);
 
-         writer.EndObject();
+      writer.EndObject();
 
-         // end json
-         writer.EndArray();
-      }
-         break;
+      // end json
+      writer.EndArray();
+    }
+      break;
 
-      case Query::REGION: {
-         uint32_t count = 0;
-         applytype_function _apply = std::bind(GeoRunner::accum_region, std::ref(count),
-                                               std::placeholders::_1, std::placeholders::_2);
+    case Query::REGION: {
+      uint32_t count = 0;
+      applytype_function _apply = std::bind(GeoRunner::accum_region, std::ref(count),
+                                            std::placeholders::_1, std::placeholders::_2);
 
-         // start json
-         writer.StartArray();
+      // start json
+      writer.StartArray();
 
-         // lock mutex
-         _mutex.lock();
+      // lock mutex
+      _mutex.lock();
 
-         _container->apply_at_region(query.region, _apply);
+      _container->apply_at_region(query.region, _apply);
 
-         // unlock mutex
-         _mutex.unlock();
+      // unlock mutex
+      _mutex.unlock();
 
-         writer.Uint(count);
+      writer.Uint(count);
 
-         // end json
-         writer.EndArray();
-      }
-         break;
+      // end json
+      writer.EndArray();
+    }
+      break;
 
-      case Query::DATA: {
-         writer.StartObject();
+    case Query::DATA: {
+      writer.StartObject();
 
-         writer.String("draw");
-         writer.Int(1);
+      writer.String("draw");
+      writer.Int(1);
 
-         uint32_t count = 0;
-         scantype_function _apply = std::bind(GeoRunner::write_data, std::ref(writer),
-                                              std::ref(count), std::placeholders::_1);
+      uint32_t count = 0;
+      scantype_function _apply = std::bind(GeoRunner::write_data, std::ref(writer),
+                                           std::ref(count), std::placeholders::_1);
 
-         writer.String("data");
-         writer.StartArray();
+      writer.String("data");
+      writer.StartArray();
 
-         // lock mutex
-         _mutex.lock();
+      // lock mutex
+      _mutex.lock();
 
-         _container->scan_at_region(query.region, _apply);
+      _container->scan_at_region(query.region, _apply);
 
-         // unlock mutex
-         _mutex.unlock();
+      // unlock mutex
+      _mutex.unlock();
 
-         writer.EndArray();
+      writer.EndArray();
 
-         writer.String("recordsTotal");
-         writer.Int(count);
+      writer.String("recordsTotal");
+      writer.Int(count);
 
-         writer.String("recordsFiltered");
-         writer.Int(count);
+      writer.String("recordsFiltered");
+      writer.Int(count);
 
-         writer.EndObject();
-      }
-         break;
+      writer.EndObject();
+    }
+      break;
 
-      case Query::TOPK: {
-         writer.StartObject();
+    default: {
+      return ("[]");
+    }
+      break;
+  }
 
-         topk_t topk_info = query.topk_info;
-         topk_info.now = _opts.now;
-
-         uint32_t count = 0;
-         scantype_function _apply = std::bind(GeoRunner::write_data, std::ref(writer),
-                                              std::ref(count), std::placeholders::_1);
-
-         writer.String("data");
-         writer.StartArray();
-
-         // lock mutex
-         _mutex.lock();
-
-         _container->topk_search(query.region, topk_info, _apply);
-
-         // unlock mutex
-         _mutex.unlock();
-
-         writer.EndArray();
-         writer.EndObject();
-      }
-         break;
-
-      case Query::TRIGGER: {
-         _mutex.lock();
-
-         _trigger_alert = query.triggers_info.frequency;
-
-         _mutex.unlock();
-
-         writer.StartObject();
-
-         writer.String("trigger");
-
-         writer.StartArray();
-         writer.String("ok");
-         writer.EndArray();
-
-         writer.EndObject();
-      }
-         break;
-      default: {
-         return ("[]");
-      }
-         break;
-   }
-
-   return buffer.GetString();
+  return buffer.GetString();
 }
 
 void GeoRunner::grid_runner() {
-   while (true) {
-      std::unique_lock<std::mutex> lock(_grid_mutex);
+  while (true) {
+    std::unique_lock<std::mutex> lock(_grid_mutex);
 
-      _grid_condition.wait(lock, [this] { return !_running || _grid_buffer.size() != 0; });
+    _grid_condition.wait(lock, [this] { return !_running || _grid_buffer.size() != 0; });
 
-      if (!_running && _grid_buffer.empty()) return;
+    if (!_running && _grid_buffer.empty()) return;
 
-      auto item = _grid_buffer.front();
-      _grid_buffer.pop();
+    auto item = _grid_buffer.front();
+    _grid_buffer.pop();
 
-      lock.unlock();
+    lock.unlock();
 
-      std::unordered_map<grid_coord, uint32_t> grid_map;
+    std::unordered_map<grid_coord, uint32_t> grid_map;
 
-      for (auto& el : item) {
-         grid_coord index = grid_coord_to_index(el.value.latitude, el.value.longitude);
-         grid_map[index]++;
+    for (auto &el : item) {
+      grid_coord index = grid_coord_to_index(el.value.latitude, el.value.longitude);
+      grid_map[index]++;
+    }
+
+    for (auto &el : grid_map) {
+      if (el.second > (_opts.batch * (_trigger_alert / 100.f))) {
+        Server::getInstance().push_trigger(el.first);
       }
-
-      for (auto& el : grid_map) {
-         if (el.second > (_opts.batch * (_trigger_alert / 100.f))) {
-            Server::getInstance().push_trigger(el.first);
-         }
-      }
-   }
+    }
+  }
 }
 
-void GeoRunner::accum_region(uint32_t& accum, const spatial_t& area, uint32_t count) {
-   accum += count;
+void GeoRunner::accum_region(uint32_t &accum, const spatial_t &area, uint32_t count) {
+  accum += count;
 }
 
-void GeoRunner::write_data(json_writer& writer, uint32_t& accum, const valuetype& el) {
-   static const uint32_t max = 100;
+void GeoRunner::write_data(json_writer &writer, uint32_t &accum, const valuetype &el) {
+  static const uint32_t max = 100;
 
-   if (accum >= max) return;
+  if (accum >= max) return;
 
-   tweet_t::write(el, writer);
+  tweet_t::write(el, writer);
 
-   accum += 1;
+  accum += 1;
 }
 
-void GeoRunner::write_tile(json_writer& writer, uint32_t& min, uint32_t& max, const spatial_t& area, uint32_t count) {
-   // update min/max
-   max = std::max(max, count);
-   min = std::min(min, count);
+void GeoRunner::write_tile(json_writer &writer, uint32_t &min, uint32_t &max, const spatial_t &area, uint32_t count) {
+  // update min/max
+  max = std::max(max, count);
+  min = std::min(min, count);
 
-   uint32_t x, y;
-   mortonDecode_RAM(area.code, x, y);
+  uint32_t x, y;
+  mortonDecode_RAM(area.code, x, y);
 
-   writer.StartArray();
+  writer.StartArray();
 
-   writer.Double(mercator_util::tiley2lat(y + 0.5, area.z));
-   writer.Double(mercator_util::tilex2lon(x + 0.5, area.z));
+  writer.Double(mercator_util::tiley2lat(y + 0.5, area.z));
+  writer.Double(mercator_util::tilex2lon(x + 0.5, area.z));
 
-   writer.Uint(count);
-   writer.EndArray();
+  writer.Uint(count);
+  writer.EndArray();
 }

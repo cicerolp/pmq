@@ -131,7 +131,7 @@ uint32_t ImplicitDenseVectorCtn::scan_ctn_at_region(const code_t &el, ctn_t::ite
     }
   } else if (overlap == region_t::partial) {
 
-    if (el.z < refLevel) {
+    if (el.z < getRefLevel()) {
       //Keep doing recursive refinements
       uint32_t refinements = 0;
 
@@ -232,7 +232,7 @@ uint32_t ImplicitDenseVectorCtn::apply_ctn_at_region(const code_t &el, ctn_t::it
     }
   } else if (overlap == region_t::partial) {
 
-    if (el.z < refLevel) {
+    if (el.z < getRefLevel()) {
       //Keep doing recursive refinements
       uint32_t refinements = 0;
 

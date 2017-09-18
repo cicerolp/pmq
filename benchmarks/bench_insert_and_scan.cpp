@@ -13,7 +13,7 @@
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 #include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 
   const uint32_t quadtree_depth = 25;
 
-  std::unique_ptr<input_it> begin, end;
+  std::unique_ptr < input_it > begin, end;
 
   if (!fname.empty()) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
   }
 
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, (*begin), (*end), parameters);
+  run_bench<PMQBinary>(argc, argv, (*begin), (*end), parameters);
 
   run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 

@@ -5,7 +5,7 @@
 #include "stde.h"
 #include "types.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
@@ -22,9 +22,9 @@ typedef std::vector<std::unique_ptr<GeoCtnIntf>> ctn_t;
    std::cout << std::endl ;\
 } while (0)
 
-class TEST_GeoHashBinary : public GeoHashBinary {
+class TEST_GeoHashBinary : public PMQBinary {
  public:
-  TEST_GeoHashBinary(int argc, char **argv) : GeoHashBinary(argc, argv) {}
+  TEST_GeoHashBinary(int argc, char **argv) : PMQBinary(argc, argv) {}
 
   uint32_t test_count(const region_t &region) {
     if (_pma == nullptr) return 0;

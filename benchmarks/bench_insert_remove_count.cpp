@@ -11,7 +11,7 @@
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 #include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
   parameters.ctn_size = parameters.rate * parameters.t_win;
 
   //run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters, remove_elttype);
+  run_bench<PMQBinary>(argc, argv, input, parameters, remove_elttype);
 
   // parameters setup
   parameters.ctn_size = parameters.max_tree_size;

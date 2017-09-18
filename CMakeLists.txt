@@ -19,24 +19,17 @@ include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
-        include/GeoRunner.cpp
-        include/QuadtreeIntf.cpp
 
-        include/BTreeCtn.cpp
-        include/GeoHash.cpp
-        #include/PostGisCtn.cpp
-        #include/PMABatchCtn.cpp
-        #include/SpatiaLiteCtn.cpp
-        include/ExplicitDenseVectorCtn.cpp
-        include/ImplicitDenseVectorCtn.cpp
-
-        include/string_util.cpp
-        include/nc_query_util.cpp
+        include/mongoose/mongoose.c
 
         include/Query.cpp
         include/Server.cpp
+        include/GeoRunner.cpp
 
-        include/mongoose/mongoose.c
+        include/PMQ.cpp
+        include/BTreeCtn.cpp
+
+        include/ImplicitDenseVectorCtn.cpp
         )
 
 include_directories(
@@ -54,22 +47,9 @@ find_package(Boost 1.64.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
-#FIND_PACKAGE(PostgreSQL REQUIRED)
-FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
-FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
-FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
-
-include_directories(${PostgreSQL_INCLUDE_DIRS})
-
 target_link_libraries(${PROJECT_NAME}
         pma
         ${CMAKE_THREAD_LIBS_INIT}
-        ${SPATIALITE_LIBRARY}
-        ${SQLITE_LIBRARY}
-        ${GEOS_C_LIBRARY}
-        #${PostgreSQL_LIBRARIES}
-        ${PQ_C_LIBRARY}
         ${Boost_LIBRARIES}
         )
 

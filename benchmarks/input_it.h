@@ -44,7 +44,7 @@ class input_tweet_it : public input_it {
     return input_tweet_it(fname, true);
   }
 
-  input_tweet_it(const input_tweet_it& elt) {
+  input_tweet_it(const input_tweet_it &elt) {
     _curr_elt = elt._curr_elt;
     _size = elt._size;
     _fname = elt._fname;

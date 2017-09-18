@@ -5,7 +5,7 @@
 #include "stde.h"
 #include "types.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 #include "InputIntf.h"
 
 uint32_t g_Quadtree_Depth = 25;
@@ -15,9 +15,9 @@ uint32_t g_Quadtree_Depth = 25;
    std::cout << std::endl ;\
 } while (0)
 
-class TEST_GeoHashBinary : public GeoHashBinary {
+class TEST_GeoHashBinary : public PMQBinary {
  public:
-  TEST_GeoHashBinary(int argc, char **argv) : GeoHashBinary(argc, argv) {}
+  TEST_GeoHashBinary(int argc, char **argv) : PMQBinary(argc, argv) {}
 
   uint32_t test_count(const region_t &region) {
     if (_pma == nullptr) return 0;

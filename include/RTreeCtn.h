@@ -63,26 +63,26 @@ class RTreeCtn : public GeoCtnIntf {
 
     if (_rtree->size() > _size) {
 
-       DBG_PRINTOUT("RTREE before remove %d\n", _rtree->size());
-       // remove start
-       timer.start();
+      DBG_PRINTOUT("RTREE before remove %d\n", _rtree->size());
+      // remove start
+      timer.start();
 
-       // temporary result
-       std::vector<value> result;
-       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
-             std::back_inserter(result));
+      // temporary result
+      std::vector<value> result;
+      _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
+                    std::back_inserter(result));
 
-       DBG_PRINTOUT("RTREE to be removed: %d \n",result.size());
-       for (const auto &elt : result) {
-          if (_rtree->remove(elt) == 0 ){
-              PRINTOUT("Elt not Removed: (%f, %f)\n",elt.second.latitude, elt.second.longitude);
-          }
-       }
-       DBG_PRINTOUT("RTREE after remove %d\n", _rtree->size());
+      DBG_PRINTOUT("RTREE to be removed: %d \n", result.size());
+      for (const auto &elt : result) {
+        if (_rtree->remove(elt) == 0) {
+          PRINTOUT("Elt not Removed: (%f, %f)\n", elt.second.latitude, elt.second.longitude);
+        }
+      }
+      DBG_PRINTOUT("RTREE after remove %d\n", _rtree->size());
 
-       // remove end
-       timer.stop();
-       duration.emplace_back("remove", timer);
+      // remove end
+      timer.stop();
+      duration.emplace_back("remove", timer);
     }
 
     return duration;
@@ -116,52 +116,6 @@ class RTreeCtn : public GeoCtnIntf {
     return {duration_info("scan_at_region", timer)};
   }
 
-  // apply function for every spatial area/region
-  duration_t apply_at_tile(const region_t &region, applytype_function __apply) override {
-    Timer timer;
-    timer.start();
-
-    uint32_t curr_z = std::min((uint32_t) 8, 25 - region.z);
-    uint32_t n = (uint64_t) 1 << curr_z;
-
-    uint32_t x_min = region.x0 * n;
-    uint32_t x_max = (region.x1 + 1) * n;
-
-    uint32_t y_min = region.y0 * n;
-    uint32_t y_max = (region.y1 + 1) * n;
-
-    curr_z += region.z;
-
-    // temporary result
-    RTreeCtnCounter<value> result;
-
-    for (uint32_t x = x_min; x < x_max; ++x) {
-      for (uint32_t y = y_min; y < y_max; ++y) {
-
-        // longitude
-        float xmin = mercator_util::tilex2lon(x, curr_z);
-        float xmax = mercator_util::tilex2lon(x + 1, curr_z);
-
-        // latitude
-        float ymin = mercator_util::tiley2lat(y + 1, curr_z);
-        float ymax = mercator_util::tiley2lat(y, curr_z);
-
-        // convert from region_t to boost:box
-        box query_box(point(ymin, xmin), point(ymax, xmax));
-
-        result.clear();
-        _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
-
-        if (result.size() != 0) {
-          __apply(spatial_t(x, y, curr_z), result.size());
-        }
-      }
-    }
-
-    timer.stop();
-    return {duration_info("apply_at_tile", timer)};
-  }
-
   duration_t apply_at_region(const region_t &region, applytype_function __apply) override {
     Timer timer;
     timer.start();
@@ -187,12 +141,6 @@ class RTreeCtn : public GeoCtnIntf {
 
     timer.stop();
     return {duration_info("apply_at_region", timer)};
-  }
-
-  duration_t topk_search(const region_t &region, topk_t &topk, scantype_function __apply) override {
-    Timer timer;
-    timer.start();
-    return {duration_info("nullptr", timer)};
   }
 
   size_t size() const override {

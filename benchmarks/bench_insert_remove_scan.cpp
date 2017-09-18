@@ -10,7 +10,7 @@
 
 #include "RTreeCtn.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
@@ -71,10 +71,8 @@ void inline run_queries(T &container, const region_t &region, uint64_t id, const
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
     timer = container.scan_at_region(region, read_element);
 
-    PRINTBENCH(id, timer,"count",count);
+    PRINTBENCH(id, timer, "count", count);
   }
-
-
 
 }
 
@@ -109,7 +107,7 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const 
       return ((elttype *) el)->value.time < oldest_time;
     });
 
-    PRINTBENCH_PTR(t, timer );
+    PRINTBENCH_PTR(t, timer);
 
     // update iterator
     it_begin = it_curr;
@@ -166,7 +164,7 @@ int main(int argc, char *argv[]) {
 
 
 //  run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
+  run_bench<PMQBinary>(argc, argv, input, parameters);
 
 //  run_bench<BTreeCtn>(argc, argv, input, parameters);
 

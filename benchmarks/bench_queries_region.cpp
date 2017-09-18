@@ -12,7 +12,7 @@
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
-#include "GeoHash.h"
+#include "PMQ.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "QueryBench " << container.name() << " ; ";\
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
   PRINTOUT("Refinement level = %d\n", parameters.refLevel);
   //run_bench<GeoHashSequential>(argc, argv, input, queries, parameters);
 
-  run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  run_bench<PMQBinary>(argc, argv, input, queries, parameters);
   run_bench<BTreeCtn>(argc, argv, input, queries, parameters);
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);
   run_bench<RTreeBulkCtn<bgi::quadratic < 16>> > (argc, argv, input, queries, parameters);

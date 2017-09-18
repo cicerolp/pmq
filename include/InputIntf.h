@@ -7,149 +7,150 @@
 #include "date_util.h"
 
 namespace input {
-   inline std::vector<elttype> loadn(const std::string& fname, int mCodeSize, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
-      std::vector<elttype> tweets;
+inline std::vector<elttype> loadn(const std::string &fname,
+                                  int mCodeSize,
+                                  uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
+  std::vector<elttype> tweets;
 
-      std::ifstream infile(fname, std::ios::binary);
-      if (! infile.is_open() ){
-         PRINTOUT("ERROR OPENING FILE\n");
-         return tweets;
-      }
-      infile.unsetf(std::ios_base::skipws);
+  std::ifstream infile(fname, std::ios::binary);
+  if (!infile.is_open()) {
+    PRINTOUT("ERROR OPENING FILE\n");
+    return tweets;
+  }
+  infile.unsetf(std::ios_base::skipws);
 
-      // skip file header
-      for (int i = 0; i < 32; ++i) {
-         infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      }
+  // skip file header
+  for (int i = 0; i < 32; ++i) {
+    infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  }
 
-      tweet_t record;
-      size_t record_size = 19; //file record size
+  tweet_t record;
+  size_t record_size = 19; //file record size
 
-      while (n_elts--) {
-         try {
+  while (n_elts--) {
+    try {
 
-            infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
-            if (infile.eof()) break;
+      infile.read((char *) &record, record_size); // Must read BEFORE checking EOF
+      if (infile.eof()) break;
 
-            tweets.emplace_back(record, mCodeSize);
-         } catch (...) {
-            break;
-         }
-      }
-      infile.close();
+      tweets.emplace_back(record, mCodeSize);
+    } catch (...) {
+      break;
+    }
+  }
+  infile.close();
 
-      return tweets;
-   }
+  return tweets;
+}
 
-   inline std::vector<elttype> load(const std::string& fname, int mCodeSize){
-       return loadn(fname,mCodeSize);
-   }
+inline std::vector<elttype> load(const std::string &fname, int mCodeSize) {
+  return loadn(fname, mCodeSize);
+}
 
-inline std::vector<elttype_pmq<tweet_text_t>> load_dmp_text(const std::string& fname, int mCodeSize,
-                                             /*uint64_t time_res,*/ uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
-      std::vector<elttype_pmq<tweet_text_t>> tweets;
+inline std::vector<elttype_pmq<tweet_text_t>> load_dmp_text(const std::string &fname, int mCodeSize,
+    /*uint64_t time_res,*/ uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
+  std::vector<elttype_pmq<tweet_text_t>> tweets;
 
-      std::ifstream infile(fname, std::ios::binary);
+  std::ifstream infile(fname, std::ios::binary);
 
-      if (!infile.is_open()) {
-         PRINTOUT("ERROR OPENING FILE\n");
-         return tweets;
-      }
+  if (!infile.is_open()) {
+    PRINTOUT("ERROR OPENING FILE\n");
+    return tweets;
+  }
 
-      infile.unsetf(std::ios_base::skipws);
+  infile.unsetf(std::ios_base::skipws);
 
-      tweet_text_t record;
-      size_t record_size = sizeof(tweet_text_t::latitude) + sizeof(tweet_text_t::longitude) + sizeof(tweet_text_t::time) + sizeof(tweet_text_t::text);
-      PRINTOUT("Record size %llu \n", record_size);
+  tweet_text_t record;
+  size_t record_size = sizeof(tweet_text_t::latitude) + sizeof(tweet_text_t::longitude) + sizeof(tweet_text_t::time)
+      + sizeof(tweet_text_t::text);
+  PRINTOUT("Record size %llu \n", record_size);
 
-      unsigned int i = 0; //time counter;
+  unsigned int i = 0; //time counter;
 
-      while (n_elts--) {
-         try {
+  while (n_elts--) {
+    try {
 
-            infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
-            if (infile.eof()) break;
+      infile.read((char *) &record, record_size); // Must read BEFORE checking EOF
+      if (infile.eof()) break;
 
-            record.time+= 7200;
+      record.time += 7200;
 
-            tweets.emplace_back(record, mCodeSize);
-         } catch (...) {
-            break;
-         }
-         i++;
-      }
-      infile.close();
+      tweets.emplace_back(record, mCodeSize);
+    } catch (...) {
+      break;
+    }
+    i++;
+  }
+  infile.close();
 
-      return tweets;
-   }
+  return tweets;
+}
 
+inline std::vector<elttype> load(const std::string &fname, int mCodeSize,
+                                 uint64_t time_res, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
+  std::vector<elttype> tweets;
 
-   inline std::vector<elttype> load(const std::string& fname, int mCodeSize, 
-				     uint64_t time_res, uint64_t n_elts = std::numeric_limits<uint32_t>::max()) {
-      std::vector<elttype> tweets;
+  std::ifstream infile(fname, std::ios::binary);
 
-      std::ifstream infile(fname, std::ios::binary);
+  if (!infile.is_open()) {
+    PRINTOUT("ERROR OPENING FILE\n");
+    return tweets;
+  }
 
-      if (! infile.is_open() ){
-         PRINTOUT("ERROR OPENING FILE\n");
-         return tweets;
-      }
+  infile.unsetf(std::ios_base::skipws);
 
+  // skip file header
+  for (int i = 0; i < 32; ++i) {
+    infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  }
 
-      infile.unsetf(std::ios_base::skipws);
+  tweet_t record;
+  size_t record_size = 19; //file record size
 
-      // skip file header
-      for (int i = 0; i < 32; ++i) {
-         infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      }
+  unsigned int i = 0; //time counter;
 
-      tweet_t record;
-      size_t record_size = 19; //file record size
+  while (n_elts--) {
+    try {
 
-      unsigned int i = 0; //time counter;
+      infile.read((char *) &record, record_size); // Must read BEFORE checking EOF
+      if (infile.eof()) break;
 
-      while (n_elts--) {
-         try {
+      record.time = i / time_res;
+      tweets.emplace_back(record, mCodeSize);
+    } catch (...) {
+      break;
+    }
+    i++;
+  }
+  infile.close();
 
-            infile.read((char*)&record, record_size); // Must read BEFORE checking EOF
-            if (infile.eof()) break;
+  return tweets;
+}
 
-            record.time = i / time_res;
-            tweets.emplace_back(record, mCodeSize);
-         } catch (...) {
-            break;
-         }
-         i++;
-      }
-      infile.close();
+/**
+ * @brief dist_random Create a synthetic input for benchmark
+ * @param nb_el
+ * @param rseed
+ * @param time_res Tweets created will have the time incremented every time_res;
+ * @return
+ */
+inline std::vector<elttype> dist_random(uint64_t nb_el, long rseed, uint64_t time_res) {
+  std::vector<elttype> keyVal_vec;
 
-      return tweets;
-   }
+  std::mt19937 gen(rseed);
 
-   /**
-    * @brief dist_random Create a synthetic input for benchmark
-    * @param nb_el
-    * @param rseed
-    * @param time_res Tweets created will have the time incremented every time_res;
-    * @return
-    */
-   inline std::vector<elttype> dist_random(uint64_t nb_el, long rseed, uint64_t time_res) {
-      std::vector<elttype> keyVal_vec;
+  std::uniform_real_distribution<> lon(-180, 180);
+  std::uniform_real_distribution<> lat(-85, 85);
 
-      std::mt19937 gen(rseed);
+  for (uint64_t i = 0; i < nb_el; i++) {
+    tweet_t el;
+    el.longitude = (float) lon(gen);
+    el.latitude = (float) lat(gen);
+    el.time = i / time_res;
+    keyVal_vec.emplace_back(el, 25);
+  }
 
-      std::uniform_real_distribution<> lon(-180, 180);
-      std::uniform_real_distribution<> lat(-85, 85);
-
-      for (uint64_t i = 0; i < nb_el; i++) {
-         tweet_t el;
-         el.longitude = (float)lon(gen);
-         el.latitude = (float)lat(gen);
-         el.time = i / time_res;
-         keyVal_vec.emplace_back(el, 25);
-      }
-
-      return keyVal_vec;
-   }
+  return keyVal_vec;
+}
 
 } // namespace input
