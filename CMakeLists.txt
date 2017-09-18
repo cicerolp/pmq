@@ -26,7 +26,6 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
         include/Server.cpp
         include/GeoRunner.cpp
 
-        include/PMQ.cpp
         include/BTreeCtn.cpp
 
         include/ImplicitDenseVectorCtn.cpp

@@ -6,9 +6,9 @@
 
 #include "GeoCtnIntf.h"
 
-class BTreeCtn : public GeoCtnIntf {
+class BTreeCtn : public GeoCtnIntf<GenericType> {
  public:
-  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) {}
+  BTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf<GenericType>(_refLevel) {}
   virtual ~BTreeCtn();
 
   duration_t create(uint32_t size) override;

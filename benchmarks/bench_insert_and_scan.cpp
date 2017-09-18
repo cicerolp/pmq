@@ -10,11 +10,11 @@
 #include "types.h"
 #include "input_it.h"
 
-#include "RTreeCtn.h"
-#include "BTreeCtn.h"
+//#include "RTreeCtn.h"
+//#include "BTreeCtn.h"
 
 #include "PMQ.h"
-#include "ImplicitDenseVectorCtn.h"
+//#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\
@@ -28,15 +28,6 @@
    std::cout << std::endl ;\
 } while (0)
 
-/*void printStats(duration_t timer){
-  for (auto &info : timer) {
-    std::cout << info ;
-  }
-}*/
-
-/*#define PRINTBENCH( ... ) do { \
-} while (0)*/
-
 struct bench_t {
   // benchmark parameters
   uint32_t n_exp;
@@ -46,20 +37,29 @@ struct bench_t {
 uint32_t g_Quadtree_Depth = 25;
 
 // reads the full element
-void inline read_element(const valuetype &el) {
-  valuetype volatile elemt = *(valuetype *) &el;
+template<typename T>
+void inline read_element(const T &el) {
+  T volatile elemt = *(T *) &el;
 }
 
+template<typename T>
 void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
   accum += count;
 }
 
-template<typename T>
+template<typename T, typename Tp>
 void inline run_queries(T &container, const region_t &region, uint32_t id, const bench_t &parameters) {
 
   uint32_t count = 0;
-  applytype_function _apply = std::bind(count_element, std::ref(count),
-                                        std::placeholders::_1, std::placeholders::_2);
+  typename GeoCtnIntf<Tp>::scantype_function
+      _scan = std::bind([](uint32_t &accum, const Tp &el) {
+    accum++;
+  }, std::ref(count), std::placeholders::_1);
+
+  typename GeoCtnIntf<Tp>::applytype_function
+      _apply = std::bind([](uint32_t &accum, const spatial_t &, uint32_t count) {
+    accum += count;
+  }, std::ref(count), std::placeholders::_1, std::placeholders::_2);
 
   duration_t timer;
 
@@ -68,21 +68,23 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
 
   // warm up
-  container.scan_at_region(region, read_element);
+  container.scan_at_region(region, _scan);
 
   // access the container to count the number of elements inside the region
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer = container.scan_at_region(region, read_element);
+    count = 0;
+    timer = container.scan_at_region(region, _scan);
 
-    PRINTBENCH(id, timer);
+    PRINTBENCH(id, timer, "count", count);
   }
 
+  count = 0;
   timer = container.apply_at_region(region, _apply);
   PRINTBENCH(id, timer, "count", count);
 }
 
-template<typename T>
-void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const bench_t &parameters) {
+template<typename T, typename Tp>
+void run_bench(int argc, char *argv[], input_it<Tp> &begin, input_it<Tp> &end, const bench_t &parameters) {
   // reset iterator
   begin.reset();
 
@@ -98,7 +100,7 @@ void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const ben
   while (begin != end) {
 
     size_t n_elts = parameters.batch_size;
-    std::vector<elttype> batch;
+    std::vector<Tp> batch;
 
     while (begin != end && n_elts != 0) {
       batch.emplace_back(*begin);
@@ -117,7 +119,7 @@ void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const ben
     // ========================================
 
     //Run a scan on the whole array
-    run_queries((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
+    run_queries<T, Tp>((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
 
     ++id;
   }
@@ -144,15 +146,17 @@ int main(int argc, char *argv[]) {
 
   const uint32_t quadtree_depth = 25;
 
-  std::unique_ptr < input_it > begin, end;
+  std::unique_ptr < input_it<GenericType> > begin, end;
 
   if (!fname.empty()) {
-    PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+    /*PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
 
-    begin = std::make_unique<input_tweet_it>(fname, false);
-    end = std::make_unique<input_tweet_it>(fname, true);
+    std::shared_ptr<std::ifstream> file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
 
-    PRINTOUT("%d teewts loaded \n", (uint32_t) begin->size());
+    begin = std::make_unique<input_tweet_it>(file_ptr, false);
+    end = std::make_unique<input_tweet_it>(file_ptr, true);
+
+    PRINTOUT("%d teewts loaded \n", (uint32_t) begin->size());*/
 
   } else {
     PRINTOUT("Generate random keys...\n");
@@ -163,14 +167,15 @@ int main(int argc, char *argv[]) {
     PRINTOUT("%d teewts generated \n", (uint32_t) begin->size());
   }
 
+
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<PMQBinary>(argc, argv, (*begin), (*end), parameters);
+  run_bench<PMQBinary<GenericType>, GenericType>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
+  //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
+  //run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+  //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }

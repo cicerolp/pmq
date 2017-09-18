@@ -9,7 +9,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_executable(bench_insert_remove_scan
         bench_insert_remove_scan.cpp
 
-        ../include/PMQ.cpp
         ../include/BTreeCtn.cpp
         ../include/ImplicitDenseVectorCtn.cpp
         )
@@ -19,7 +18,6 @@ target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bench_insert_remove_count
         bench_insert_remove_count.cpp
 
-        ../include/PMQ.cpp
         ../include/BTreeCtn.cpp
         ../include/ImplicitDenseVectorCtn.cpp
         )
@@ -29,7 +27,6 @@ target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bench_queries_region
         bench_queries_region.cpp
 
-        ../include/PMQ.cpp
         ../include/BTreeCtn.cpp
         ../include/ImplicitDenseVectorCtn.cpp
         )
@@ -43,9 +40,8 @@ target_link_libraries(bench_queries_region
 add_executable(bench_insert_and_scan
         bench_insert_and_scan.cpp
 
-        ../include/PMQ.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
+        #../include/BTreeCtn.cpp
+        #../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_and_scan
@@ -57,7 +53,6 @@ target_link_libraries(bench_insert_and_scan
 add_executable(bench_memory
         bench_memory.cpp
 
-        ../include/PMQ.cpp
         ../include/BTreeCtn.cpp
         ../include/ImplicitDenseVectorCtn.cpp
         )

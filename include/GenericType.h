@@ -19,89 +19,122 @@ class GenericType {
       : _time(time), _lat(lat), _lon(lon) {
   }
 
-  virtual ~GenericType() = default;
+  ~GenericType() = default;
 
-  virtual inline uint64_t getTime() const;
-  virtual inline void setTime(uint64_t time);
+  inline uint64_t getTime() const {
+    return _time;
+  }
+  inline void setTime(uint64_t time) {
+    _time = time;
+  }
 
-  virtual inline float getLatitude() const;
-  virtual inline void setLatitude(float lat);
+  inline float getLatitude() const {
+    return _lat;
+  }
+  inline void setLatitude(float lat) {
+    _lat = lat;
+  }
 
-  virtual inline float getLongitude() const;
-  virtual inline void setLongitude(float lon);
+  inline float getLongitude() const {
+    return _lon;
+  }
+  inline void setLongitude(float lon) {
+    _lon = lon;
+  }
 
-  virtual inline pointer operator->() const {
+  inline pointer operator->() const {
     return this;
   }
 
-  virtual inline reference operator*() const {
+  inline reference operator*() const {
     return *this;
   }
 
-  virtual bool operator==(const GenericType &rhs) const;
-  virtual bool operator!=(const GenericType &rhs) const;
+  inline bool operator==(const GenericType &rhs) const {
+    return _time == rhs._time &&
+        _lat == rhs._lat &&
+        _lon == rhs._lon;
+  }
+  inline bool operator!=(const GenericType &rhs) const {
+    return !(*this == rhs);
+  }
 
-  bool operator<(const GenericType &rhs) const;
-  bool operator>(const GenericType &rhs) const;
-  bool operator<=(const GenericType &rhs) const;
-  bool operator>=(const GenericType &rhs) const;
-
-  friend std::ostream &operator<<(std::ostream &os, const GenericType &data);
+  friend inline std::ostream &operator<<(std::ostream &os, const GenericType &data) {
+    os << "lat: " << data._lat << " lon: " << data._lon << " time: " << data._time;
+    return os;
+  }
 
  protected:
   uint64_t _time;
   float _lat, _lon;
 };
 
-uint64_t GenericType::getTime() const {
-  return _time;
-}
-float GenericType::getLatitude() const {
-  return _lat;
-}
-float GenericType::getLongitude() const {
-  return _lon;
-}
+class TweetType {
+ public:
+  // this type represents a pointer-to-value_type.
+  using pointer = const TweetType *;
+  // this type represents a reference-to-value_type.
+  using reference = const TweetType &;
 
-void GenericType::setTime(uint64_t time) {
-  _time = time;
-}
+  TweetType() = default;
 
-void GenericType::setLatitude(float lat) {
-  _lat = lat;
-}
+  TweetType(uint64_t time, float lat, float lon)
+      : _time(time), _lat(lat), _lon(lon) {
+  }
 
-void GenericType::setLongitude(float lon) {
-  _lon = lon;
-}
+  ~TweetType() = default;
 
-bool GenericType::operator==(const GenericType &rhs) const {
-  return _time == rhs._time &&
-      _lat == rhs._lat &&
-      _lon == rhs._lon;
-}
+  inline uint64_t getTime() const {
+    return _time;
+  }
+  inline void setTime(uint64_t time) {
+    _time = time;
+  }
 
-bool GenericType::operator!=(const GenericType &rhs) const {
-  return !(rhs == *this);
-}
+  inline float getLatitude() const {
+    return _lat;
+  }
+  inline void setLatitude(float lat) {
+    _lat = lat;
+  }
 
-bool GenericType::operator<(const GenericType &rhs) const {
-  return _time < rhs._time;
-}
+  inline float getLongitude() const {
+    return _lon;
+  }
+  inline void setLongitude(float lon) {
+    _lon = lon;
+  }
 
-bool GenericType::operator>(const GenericType &rhs) const {
-  return rhs < *this;
-}
+  inline pointer operator->() const {
+    return this;
+  }
 
-bool GenericType::operator<=(const GenericType &rhs) const {
-  return !(rhs < *this);
-}
+  inline reference operator*() const {
+    return *this;
+  }
 
-bool GenericType::operator>=(const GenericType &rhs) const {
-  return !(*this < rhs);
-}
+  inline bool operator==(const TweetType &rhs) const {
+    return _time == rhs._time &&
+        _lat == rhs._lat &&
+        _lon == rhs._lon;
+  }
+  inline bool operator!=(const TweetType &rhs) const {
+    return !(*this == rhs);
+  }
 
-std::ostream &operator<<(std::ostream &os, const GenericType &data) {
-  os << "lat: " << data._lat << " lon: " << data._lon << " time: " << data._time;
-  return os;
-}
+  friend inline std::ostream &operator<<(std::ostream &os, const TweetType &data) {
+    os << "lat: " << data._lat << " lon: " << data._lon << " time: " << data._time;
+    return os;
+  }
+
+ protected:
+  float _lat;
+  float _lon;
+
+  uint64_t _time;
+
+  uint8_t _language;
+  uint8_t _device;
+  uint8_t _app;
+
+};

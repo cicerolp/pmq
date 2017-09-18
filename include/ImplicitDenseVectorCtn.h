@@ -2,7 +2,7 @@
 
 #include "GeoCtnIntf.h"
 
-class ImplicitDenseVectorCtn : public GeoCtnIntf {
+class ImplicitDenseVectorCtn : public GeoCtnIntf<GenericType> {
  public:
   using ctn_t = std::vector<elttype>;
 

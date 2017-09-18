@@ -203,7 +203,7 @@ struct region_t {
   uint32_t x0, y0, x1, y1, z;
 };
 
-struct tweet_all_t {
+struct tweet_t {
   float latitude;
   float longitude;
 
@@ -213,7 +213,7 @@ struct tweet_all_t {
   uint8_t device;
   uint8_t app;
 
-  static void write(const tweet_all_t &el, json_writer &writer) {
+  static void write(const tweet_t &el, json_writer &writer) {
     writer.StartArray();
     writer.Uint((unsigned int) el.time);
     writer.Uint(el.language);
@@ -222,72 +222,16 @@ struct tweet_all_t {
     writer.EndArray();
   }
 
-  bool operator==(const tweet_all_t &rhs) const {
+  bool operator==(const tweet_t &rhs) const {
     // simplified comparison
     return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
   };
 
-  friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_t &e) {
     return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; "
                << (int) e.device << "; " << (int) e.app;
   }
 };
-
-struct tweet_text_t {
-  float latitude;
-  float longitude;
-  uint64_t time;
-  char text[140];
-
-  static void write(const tweet_text_t &el, json_writer &writer) {
-    writer.StartArray();
-    writer.Uint((unsigned int) el.time);
-    writer.String(el.text);
-    writer.EndArray();
-  }
-
-  bool operator==(const tweet_text_t &rhs) const {
-    // simplified comparison
-    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
-  };
-
-  friend inline std::ostream &operator<<(std::ostream &out, const tweet_text_t &e) {
-    return out << e.latitude << "; " << e.longitude << "; " << e.text;
-  }
-
-};
-
-//using tweet_t = tweet_text_t;
-using tweet_t = tweet_all_t;
-using valuetype = tweet_t;
-
-// JULIO : elttype conflict with definition on pma / test_utils.h
-// Check how to fix this later
-
-template<typename valuetype_>
-struct elttype_pmq {
-  uint64_t key;
-  valuetype_ value;
-
-  elttype_pmq() {
-  };
-
-  elttype_pmq(const valuetype_ &el, uint32_t depth) : value(el) {
-    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
-    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-    key = mortonEncode_RAM(x, y);
-  }
-
-  friend inline bool operator<(const elttype_pmq &lhs, const elttype_pmq &rhs) {
-    return (lhs.key < rhs.key);
-  }
-
-  friend inline std::ostream &operator<<(std::ostream &out, const elttype_pmq &e) {
-    return out << e.key;
-  }
-};
-
-using elttype = elttype_pmq<tweet_t>;
 
 struct triggers_t {
   float frequency;
