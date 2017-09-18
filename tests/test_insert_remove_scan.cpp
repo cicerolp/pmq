@@ -12,7 +12,7 @@
 
 #include "GeoHash.h"
 //#include "PMABatchCtn.h"
-#include "DenseVectorCtn.h"
+#include "ExplicitDenseVectorCtn.h"
 
 #define PRINTBENCH( ... ) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\

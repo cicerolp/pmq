@@ -16,7 +16,8 @@
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
-#include "DenseVectorCtn.h"
+#include "ExplicitDenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
@@ -203,14 +204,17 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-
+  // parameters setup
   parameters.ctn_size = parameters.rate * parameters.t_win;
+
   //run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, input, parameters, remove_elttype);
 
+  // parameters setup
   parameters.ctn_size = parameters.max_tree_size;
-  run_bench<BTreeCtn>(argc, argv, input, parameters, remove_valuetype);
 
+  run_bench<ImplicitDenseVectorCtn>(argc, argv, input, parameters, remove_elttype);
+  run_bench<BTreeCtn>(argc, argv, input, parameters, remove_valuetype);
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters, remove_valuetype);
 
   return EXIT_SUCCESS;
