@@ -12,6 +12,7 @@ duration_t ImplicitDenseVectorCtn::create(uint32_t size) {
   Timer timer;
 
   timer.start();
+  _size = size;
   _container.reserve(size);
   timer.stop();
 
@@ -38,7 +39,50 @@ duration_t ImplicitDenseVectorCtn::insert(std::vector<elttype> batch) {
   return duration;
 }
 duration_t ImplicitDenseVectorCtn::insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) {
-  return GeoCtnIntf::insert_rm(batch, is_removed);
+  duration_t duration;
+  Timer timer;
+
+  // remove before reallocation
+  if ((_container.size() + batch.size()) > _size) {
+    uint32_t removed_elts = 0;
+
+    // tagging start
+    timer.start();
+    for (auto &elt: _container) {
+      if (is_removed(&(elt))) {
+        elt.key = ~0;
+        ++removed_elts;
+      }
+    }
+    // tagging end
+    timer.stop();
+    duration.emplace_back("tagging", timer);
+
+
+    // remove start
+    timer.start();
+    gfx::timsort(_container.begin(), _container.end());
+    _container.resize(_container.size() - removed_elts);
+    // remove end
+    timer.stop();
+    duration.emplace_back("remove", timer);
+  }
+
+  // insert start
+  timer.start();
+  _container.insert(_container.end(), batch.begin(), batch.end());
+  // insert end
+  timer.stop();
+  duration.emplace_back("insert", timer);
+
+  // sorting start
+  timer.start();
+  gfx::timsort(_container.begin(), _container.end());
+  // sorting end
+  timer.stop();
+  duration.emplace_back("sorting", timer);
+
+  return duration;
 }
 duration_t ImplicitDenseVectorCtn::scan_at_region(const region_t &region, scantype_function __apply) {
   duration_t duration;

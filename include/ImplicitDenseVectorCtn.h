@@ -4,6 +4,8 @@
 
 class ImplicitDenseVectorCtn : public GeoCtnIntf {
  public:
+  using ctn_t = std::vector<elttype>;
+
   ImplicitDenseVectorCtn(int argc, char *argv[]);
 
   virtual ~ImplicitDenseVectorCtn() = default;
@@ -22,16 +24,12 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf {
 
   duration_t apply_at_region(const region_t &region, applytype_function __apply) override;
 
-  inline size_t size() const { return 0; }
+  inline size_t size() const { return _container.size(); }
 
   inline std::string name() const;
 
  protected:
-
   inline code_t get_parent_quadrant(const region_t &region) const;
-
-  using ctn_t = std::vector<elttype>;
-  ctn_t _container;
 
   uint32_t scan_ctn_at_region(const code_t &el, ctn_t::iterator &it,
                               const region_t &region, scantype_function __apply);
@@ -40,6 +38,9 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf {
                                const region_t &region, applytype_function __apply);
 
   ctn_t::iterator search_ctn(const code_t &el, ctn_t::iterator &it);
+
+  ctn_t _container;
+  size_t _size;
 };
 
 inline code_t ImplicitDenseVectorCtn::get_parent_quadrant(const region_t &region) const {
