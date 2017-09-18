@@ -7,16 +7,11 @@
 #include "stde.h"
 #include "types.h"
 #include "InputIntf.h"
-#include "string_util.h"
 
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
 #include "GeoHash.h"
-#include "PMABatchCtn.h"
-#include "PostGisCtn.h"
-#include "SpatiaLiteCtn.h"
-#include "ExplicitDenseVectorCtn.h"
 #include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
