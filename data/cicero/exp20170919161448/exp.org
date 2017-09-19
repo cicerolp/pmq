@@ -104,10 +104,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 66e1694 (HEAD -> exp20170919161448) Initial commit for exp20170919161448
-: * a5c9090 (origin/master, origin/HEAD, master) optimize benchmark imports
-: *   3ebe9cf Merge branch 'ftr-dense-geohash'
-: |\  
+: * ae8f92f (HEAD -> exp20170919161448) test dense vector at last
+: * 778294e Initial commit for exp20170919161448
+: * ce6f828 Initial commit for exp20170919161448
 
 
 ** TODO Export run script 
