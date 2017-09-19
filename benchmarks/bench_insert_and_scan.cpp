@@ -166,11 +166,11 @@ int main(int argc, char *argv[]) {
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
   run_bench<GeoHashBinary>(argc, argv, (*begin), (*end), parameters);
 
-  run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
-
   run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
 
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+
+  run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }
