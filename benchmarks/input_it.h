@@ -11,7 +11,6 @@ template<typename T>
 class input_it : public std::iterator<std::forward_iterator_tag, T> {
  public:
   typedef size_t size_type;
-
   // this type represents a pointer-to-value_type
   using pointer = const T *;
   // this type represents a reference-to-value_type
@@ -29,15 +28,15 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
     return _curr_value;
   }
 
-  difference_type operator-(const input_it &rhs) const {
+  difference_type operator-(const input_it<T> &rhs) const {
     return _curr_elt - rhs._curr_elt;
   }
 
-  bool operator<(const input_it &rhs) const {
+  bool operator<(const input_it<T> &rhs) const {
     return _curr_elt < rhs._curr_elt;
   }
 
-  virtual bool operator!=(const input_it &rhs) const {
+  virtual bool operator!=(const input_it<T> &rhs) const {
     return _curr_elt != rhs._curr_elt;
   };
 
@@ -46,21 +45,28 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
   T _curr_value;
 };
 
-class input_tweet_it : public input_it<TweetDatType> {
+template <typename T>
+class input_file_it : public input_it<T> {
  public:
   typedef size_t size_type;
+  // this type represents a pointer-to-value_type
+  using pointer = typename input_it<T>::pointer ;
+  // this type represents a reference-to-value_type
+  using reference = typename input_it<T>::reference ;
+  /// Distance between iterators is represented as this type.
+  using difference_type = typename input_it<T>::difference_type ;
 
-  static input_tweet_it begin(const std::shared_ptr<std::ifstream> &file_ptr) {
-    return input_tweet_it(file_ptr);
+  static input_file_it<T> begin(const std::shared_ptr<std::ifstream> &file_ptr) {
+    return input_file_it(file_ptr);
   }
 
-  static input_tweet_it end(const std::shared_ptr<std::ifstream> &file_ptr) {
-    auto _it = input_tweet_it(file_ptr);
+  static input_file_it<T> end(const std::shared_ptr<std::ifstream> &file_ptr) {
+    auto _it = input_file_it(file_ptr);
 
     // seek to end
     while (true) {
       // must read BEFORE checking EOF
-      file_ptr->read((char *) &_it._curr_value, RecordSize);
+      file_ptr->read((char *) &_it._curr_value, T::record_size);
 
       if (file_ptr->eof()) {
         break;
@@ -76,8 +82,8 @@ class input_tweet_it : public input_it<TweetDatType> {
     return _it;
   }
 
-  input_tweet_it(const std::shared_ptr<std::ifstream> &file_ptr)
-      : input_it() {
+  input_file_it(const std::shared_ptr<std::ifstream> &file_ptr)
+      : input_it<T>() {
 
     _file_ptr = file_ptr;
 
@@ -88,19 +94,15 @@ class input_tweet_it : public input_it<TweetDatType> {
 
     _file_ptr->unsetf(std::ios_base::skipws);
 
-    seek(_file_ptr, 0);
-
-    // skip file header
-    for (int i = 0; i < 32; ++i) {
-      _file_ptr->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
+    // skip header
+    seek(this->_file_ptr, T::header_size);
 
     _pos = _file_ptr->tellg();
   }
 
-  virtual ~input_tweet_it() = default;
+  virtual ~input_file_it() = default;
 
-  input_tweet_it operator+(difference_type n) {
+  input_file_it<T> operator+(difference_type n) {
     auto _it = *this;
     while (n-- != 0) {
       _it.operator++();
@@ -108,7 +110,7 @@ class input_tweet_it : public input_it<TweetDatType> {
     return _it;
   }
 
-  input_tweet_it &operator++() {
+  input_file_it<T> &operator++() {
     if (!_file_ptr->is_open()) {
       std::cerr << "error opening file" << std::endl;
       return *this;
@@ -121,12 +123,10 @@ class input_tweet_it : public input_it<TweetDatType> {
     }
 
     // must read BEFORE checking EOF
-    _file_ptr->read((char *) &_curr_value, RecordSize);
+    _file_ptr->read((char *) &this->_curr_value, T::record_size);
 
     if (!_file_ptr->eof()) {
-      ++_curr_elt;
-
-      std::cout << _curr_value << std::endl;
+      ++this->_curr_elt;
     }
 
     _pos = _file_ptr->tellg();
@@ -141,7 +141,6 @@ class input_tweet_it : public input_it<TweetDatType> {
     file_ptr->seekg(pos);
   }
 
-  static const size_t RecordSize = 19; //file record size
   std::shared_ptr<std::ifstream> _file_ptr;
   std::streampos _pos{0};
 };

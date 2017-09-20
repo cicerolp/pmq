@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <ostream>
 #include "stde.h"
 
 class GenericType {
@@ -72,6 +71,10 @@ class GenericType {
 
 class TweetDatType {
  public:
+  // file header size
+  static const size_t header_size = (size_t) 764;
+  // file record size
+  static const size_t record_size = (size_t) 19;
   // this type represents a pointer-to-value_type.
   using pointer = const TweetDatType *;
   // this type represents a reference-to-value_type.
@@ -123,13 +126,13 @@ class TweetDatType {
     return !(*this == rhs);
   }
 
-  friend std::ostream &operator<<(std::ostream &os, const TweetDatType &tweetType) {
-    os << "lat: " << tweetType._lat
-       << " lon: " << tweetType._lon
-       << " time: " << tweetType._time
-       << " language: " << (uint32_t)tweetType._language
-       << " device: " << (uint32_t)tweetType._device
-       << " app: " << (uint32_t)tweetType._app;
+  friend std::ostream &operator<<(std::ostream &os, const TweetDatType &rhs) {
+    os << "lat: " << rhs._lat
+       << " lon: " << rhs._lon
+       << " time: " << rhs._time
+       << " language: " << (uint32_t) rhs._language
+       << " device: " << (uint32_t) rhs._device
+       << " app: " << (uint32_t) rhs._app;
     return os;
   }
 
@@ -142,5 +145,78 @@ class TweetDatType {
   uint8_t _language;
   uint8_t _device;
   uint8_t _app;
+};
 
+class TweetDmpType {
+ public:
+  // file header size
+  static const size_t header_size = (size_t) 0;
+  // file record size
+  static const size_t record_size = (size_t) 156;
+  // this type represents a pointer-to-value_type.
+  using pointer = const TweetDmpType *;
+  // this type represents a reference-to-value_type.
+  using reference = const TweetDmpType &;
+
+  TweetDmpType() = default;
+
+  TweetDmpType(uint64_t time, float lat, float lon)
+      : _time(time), _lat(lat), _lon(lon) {
+  }
+
+  ~TweetDmpType() = default;
+
+  inline uint64_t getTime() const {
+    return _time;
+  }
+  inline void setTime(uint64_t time) {
+    _time = time;
+  }
+
+  inline float getLatitude() const {
+    return _lat;
+  }
+  inline void setLatitude(float lat) {
+    _lat = lat;
+  }
+
+  inline float getLongitude() const {
+    return _lon;
+  }
+  inline void setLongitude(float lon) {
+    _lon = lon;
+  }
+
+  inline pointer operator->() const {
+    return this;
+  }
+
+  inline reference operator*() const {
+    return *this;
+  }
+
+  inline bool operator==(const TweetDmpType &rhs) const {
+    return _time == rhs._time &&
+        _lat == rhs._lat &&
+        _lon == rhs._lon;
+  }
+  inline bool operator!=(const TweetDmpType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const TweetDmpType &rhs) {
+    os << "lat: " << rhs._lat
+       << " lon: " << rhs._lon
+       << " time: " << rhs._time
+       << " text: " << rhs._text;
+    return os;
+  }
+
+ protected:
+  float _lat;
+  float _lon;
+
+  uint64_t _time;
+
+  char _text[140];
 };

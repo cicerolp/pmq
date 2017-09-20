@@ -129,7 +129,9 @@ int main(int argc, char *argv[]) {
   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "", "File with tweets to load"));
+  std::string fname(cimg_option("-f", "", "File with tweets to load (.dat)"));
+
+  std::string fname_dmp(cimg_option("-d", "", "File with tweets to load (.dmp)"));
 
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -137,21 +139,36 @@ int main(int argc, char *argv[]) {
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
 
-  const uint32_t quadtree_depth = 25;
-
-  //std::unique_ptr < input_random_it > begin, end;
-
   if (!fname.empty()) {
-    using it_t = input_tweet_it;
     using el_t = TweetDatType;
+    using it_t = input_file_it<el_t>;
 
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
 
     // open file
-    std::shared_ptr<std::ifstream> file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
 
-    auto begin = input_tweet_it::begin(file_ptr);
-    auto end = input_tweet_it::end(file_ptr);
+    auto begin = it_t::begin(file_ptr);
+    auto end = it_t::end(file_ptr);
+
+    PRINTOUT("%d teewts loaded \n", end - begin);
+
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    //run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
+    //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+    //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
+
+  } else if (!fname_dmp.empty()) {
+    using el_t = TweetDmpType;
+    using it_t = input_file_it<el_t>;
+
+    PRINTOUT("Loading twitter dataset... %s \n", fname_dmp.c_str());
+
+    // open file
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname_dmp, std::ios::binary);
+
+    auto begin = it_t::begin(file_ptr);
+    auto end = it_t::end(file_ptr);
 
     PRINTOUT("%d teewts loaded \n", end - begin);
 
@@ -161,13 +178,13 @@ int main(int argc, char *argv[]) {
     //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
   } else {
-    using it_t = input_random_it;
     using el_t = GenericType;
+    using it_t = input_random_it;
 
     PRINTOUT("Generate random keys...\n");
 
-    auto begin = input_random_it::begin(seed, parameters.batch_size);
-    auto end = input_random_it::end(seed, parameters.batch_size, nb_elements);
+    auto begin = it_t::begin(seed, parameters.batch_size);
+    auto end = it_t::end(seed, parameters.batch_size, nb_elements);
 
     PRINTOUT("%d teewts generated \n", end - begin);
 
