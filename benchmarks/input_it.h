@@ -46,7 +46,7 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
   T _curr_value;
 };
 
-class input_tweet_it : public input_it<TweetType> {
+class input_tweet_it : public input_it<TweetDatType> {
  public:
   typedef size_t size_type;
 
@@ -57,17 +57,21 @@ class input_tweet_it : public input_it<TweetType> {
   static input_tweet_it end(const std::shared_ptr<std::ifstream> &file_ptr) {
     auto _it = input_tweet_it(file_ptr);
 
+    // seek to end
     while (true) {
       // must read BEFORE checking EOF
-      _it._file_ptr->read((char *) &_it._curr_value, RecordSize);
+      file_ptr->read((char *) &_it._curr_value, RecordSize);
 
-      if (_it._file_ptr->eof()) {
+      if (file_ptr->eof()) {
         break;
       }
+
+      // update current element
       _it._curr_elt++;
     }
 
-    _it.reset();
+    // update current istream position
+    _it._pos = file_ptr->tellg();
 
     return _it;
   }
@@ -84,7 +88,14 @@ class input_tweet_it : public input_it<TweetType> {
 
     _file_ptr->unsetf(std::ios_base::skipws);
 
-    reset();
+    seek(_file_ptr, 0);
+
+    // skip file header
+    for (int i = 0; i < 32; ++i) {
+      _file_ptr->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+    _pos = _file_ptr->tellg();
   }
 
   virtual ~input_tweet_it() = default;
@@ -103,33 +114,36 @@ class input_tweet_it : public input_it<TweetType> {
       return *this;
     }
 
+    seek(_file_ptr, _pos);
+
+    if (_file_ptr->eof()) {
+      return *this;
+    }
 
     // must read BEFORE checking EOF
     _file_ptr->read((char *) &_curr_value, RecordSize);
 
     if (!_file_ptr->eof()) {
       ++_curr_elt;
+
+      std::cout << _curr_value << std::endl;
     }
+
+    _pos = _file_ptr->tellg();
 
     return *this;
   }
 
-  void reset() {
+ protected:
+  static void seek(const std::shared_ptr<std::ifstream> &file_ptr, std::streampos pos) {
     // rewind file
-    _file_ptr->clear();
-    _file_ptr->seekg(0);
-
-    // skip file header
-    for (int i = 0; i < 32; ++i) {
-      _file_ptr->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-
-    _curr_elt = 0;
+    file_ptr->clear();
+    file_ptr->seekg(pos);
   }
 
- protected:
   static const size_t RecordSize = 19; //file record size
   std::shared_ptr<std::ifstream> _file_ptr;
+  std::streampos _pos{0};
 };
 
 class input_random_it : public input_it<GenericType> {

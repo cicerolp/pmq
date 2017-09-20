@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <ostream>
 #include "stde.h"
 
 class GenericType {
@@ -69,20 +70,20 @@ class GenericType {
   float _lat, _lon;
 };
 
-class TweetType {
+class TweetDatType {
  public:
   // this type represents a pointer-to-value_type.
-  using pointer = const TweetType *;
+  using pointer = const TweetDatType *;
   // this type represents a reference-to-value_type.
-  using reference = const TweetType &;
+  using reference = const TweetDatType &;
 
-  TweetType() = default;
+  TweetDatType() = default;
 
-  TweetType(uint64_t time, float lat, float lon)
+  TweetDatType(uint64_t time, float lat, float lon)
       : _time(time), _lat(lat), _lon(lon) {
   }
 
-  ~TweetType() = default;
+  ~TweetDatType() = default;
 
   inline uint64_t getTime() const {
     return _time;
@@ -113,17 +114,22 @@ class TweetType {
     return *this;
   }
 
-  inline bool operator==(const TweetType &rhs) const {
+  inline bool operator==(const TweetDatType &rhs) const {
     return _time == rhs._time &&
         _lat == rhs._lat &&
         _lon == rhs._lon;
   }
-  inline bool operator!=(const TweetType &rhs) const {
+  inline bool operator!=(const TweetDatType &rhs) const {
     return !(*this == rhs);
   }
 
-  friend inline std::ostream &operator<<(std::ostream &os, const TweetType &data) {
-    os << "lat: " << data._lat << " lon: " << data._lon << " time: " << data._time;
+  friend std::ostream &operator<<(std::ostream &os, const TweetDatType &tweetType) {
+    os << "lat: " << tweetType._lat
+       << " lon: " << tweetType._lon
+       << " time: " << tweetType._time
+       << " language: " << (uint32_t)tweetType._language
+       << " device: " << (uint32_t)tweetType._device
+       << " app: " << (uint32_t)tweetType._app;
     return os;
   }
 

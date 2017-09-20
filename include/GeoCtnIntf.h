@@ -1,7 +1,6 @@
 #pragma once
 
 #include "types.h"
-#include "GenericType.h"
 
 template<typename T>
 class GeoCtnIntf {
@@ -21,11 +20,11 @@ class GeoCtnIntf {
   }
 
   // update container
-  virtual duration_t insert(std::vector<GenericType> batch) {
+  virtual duration_t insert(std::vector<T> batch) {
     return duration_t();
   }
 
-  virtual duration_t insert_rm(std::vector<GenericType> batch, std::function<int(const void *)> pred) {
+  virtual duration_t insert_rm(std::vector<T> batch, std::function<int(const void *)> pred) {
     return duration_t();
   }
 

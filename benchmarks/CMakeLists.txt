@@ -6,7 +6,10 @@ find_package(Boost 1.64.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(bench_insert_remove_scan
+file(GLOB HEADERS "*.h")
+source_group("Header Files" FILES ${HEADERS})
+
+add_executable(bench_insert_remove_scan ${HEADERS}
         bench_insert_remove_scan.cpp
 
         ../include/BTreeCtn.cpp
@@ -15,7 +18,7 @@ add_executable(bench_insert_remove_scan
 
 target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(bench_insert_remove_count
+add_executable(bench_insert_remove_count ${HEADERS}
         bench_insert_remove_count.cpp
 
         ../include/BTreeCtn.cpp
@@ -24,7 +27,7 @@ add_executable(bench_insert_remove_count
 
 target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(bench_queries_region
+add_executable(bench_queries_region ${HEADERS}
         bench_queries_region.cpp
 
         ../include/BTreeCtn.cpp
@@ -37,7 +40,7 @@ target_link_libraries(bench_queries_region
         ${Boost_LIBRARIES}
         )
 
-add_executable(bench_insert_and_scan
+add_executable(bench_insert_and_scan ${HEADERS}
         bench_insert_and_scan.cpp
 
         #../include/BTreeCtn.cpp
@@ -50,7 +53,7 @@ target_link_libraries(bench_insert_and_scan
         ${Boost_LIBRARIES}
         )
 
-add_executable(bench_memory
+add_executable(bench_memory ${HEADERS}
         bench_memory.cpp
 
         ../include/BTreeCtn.cpp

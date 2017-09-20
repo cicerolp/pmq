@@ -142,16 +142,28 @@ int main(int argc, char *argv[]) {
   //std::unique_ptr < input_random_it > begin, end;
 
   if (!fname.empty()) {
-    /*PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+    using it_t = input_tweet_it;
+    using el_t = TweetDatType;
 
+    PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+
+    // open file
     std::shared_ptr<std::ifstream> file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
 
-    begin = std::make_unique<input_tweet_it>(file_ptr, false);
-    end = std::make_unique<input_tweet_it>(file_ptr, true);
+    auto begin = input_tweet_it::begin(file_ptr);
+    auto end = input_tweet_it::end(file_ptr);
 
-    PRINTOUT("%d teewts loaded \n", (uint32_t) begin->size());*/
+    PRINTOUT("%d teewts loaded \n", end - begin);
+
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    //run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
+    //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+    //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
   } else {
+    using it_t = input_random_it;
+    using el_t = GenericType;
+
     PRINTOUT("Generate random keys...\n");
 
     auto begin = input_random_it::begin(seed, parameters.batch_size);
@@ -159,18 +171,11 @@ int main(int argc, char *argv[]) {
 
     PRINTOUT("%d teewts generated \n", end - begin);
 
-    run_bench<PMQBinary<GenericType>, input_random_it, GenericType>(argc, argv, begin, end, parameters);
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    //run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
+    //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+    //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
   }
-
-
-  // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-//  run_bench<PMQBinary<GenericType>, input_random_it, GenericType>(argc, argv, (*begin), (*end), parameters);
-
-  //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
-
-  //run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
-
-  //run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }
