@@ -3,7 +3,7 @@
 #include "GeoCtnIntf.h"
 
 template<typename T>
-class ImplicitDenseVectorCtn : public GeoCtnIntf<T> {
+class DenseCtn : public GeoCtnIntf<T> {
  public:
   // function that access a reference to the element in the container
   using scantype_function = typename GeoCtnIntf<T>::scantype_function;
@@ -14,9 +14,9 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf<T> {
   using ctn_t = std::vector<elt_type>;
   using ctn_it = typename std::vector<elt_type>::iterator;
 
-  ImplicitDenseVectorCtn(int argc, char *argv[], int refLevel = 8) : GeoCtnIntf<T>(refLevel) {};
+  DenseCtn(int argc, char *argv[], int refLevel = 8) : GeoCtnIntf<T>(refLevel) {};
 
-  virtual ~ImplicitDenseVectorCtn() = default;
+  virtual ~DenseCtn() = default;
 
   // build container
   duration_t create(uint32_t size) override {
@@ -339,7 +339,7 @@ class ImplicitDenseVectorCtn : public GeoCtnIntf<T> {
 };
 
 template<typename T>
-inline code_t ImplicitDenseVectorCtn<T>::get_parent_quadrant(const region_t &region) const {
+inline code_t DenseCtn<T>::get_parent_quadrant(const region_t &region) const {
   uint64_t mask = region.code0 ^region.code1;
 
   mask |= mask >> 32;
@@ -365,7 +365,7 @@ inline code_t ImplicitDenseVectorCtn<T>::get_parent_quadrant(const region_t &reg
 }
 
 template<typename T>
-inline std::string ImplicitDenseVectorCtn<T>::name() const {
+inline std::string DenseCtn<T>::name() const {
   static auto name_str = "ImplicitDenseVector";
   return name_str;
 }

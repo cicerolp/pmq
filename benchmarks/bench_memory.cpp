@@ -7,7 +7,7 @@
 #include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-#include "ImplicitDenseVectorCtn.h"
+#include "DenseCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "MemoryBench " << container.name() << " ; ";\
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
     } else if (container == "rt") {
       run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
     } else if (container == "dv") {
-      run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+      run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     }
 
   } else {
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     } else if (container == "rt") {
       run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
     } else if (container == "dv") {
-      run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+      run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     }
   }
 

@@ -11,7 +11,7 @@
 #include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-#include "ImplicitDenseVectorCtn.h"
+#include "DenseCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     parameters.ctn_size = parameters.max_tree_size;
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
-    run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
 
   } else {
     using el_t = GenericType;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
     parameters.ctn_size = parameters.max_tree_size;
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
-    run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
   }
 
   return EXIT_SUCCESS;
