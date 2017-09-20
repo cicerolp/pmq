@@ -28,7 +28,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - parse.sh : parse the results to CSV
 - plotResults.R : generate the plots 
   
-
+  
 * DONE Design of Experiment                                          :export:
 
 PMA remove elements timely before doubling the array.
@@ -120,6 +120,7 @@ print( wSizes )
 #+RESULTS:
 : [11745, 17616, 20552, 22020, 22754, 23121, 23305, 23396, 23442, 23465]
 
+#+NAME: tbl:ExpVariables
 #+CAPTION: Experiment variables
 | Time Window Size | Batch |     EMin | PMA Size | Rho Size | Tau Size | First removal at batch |     #del | Interval (# Batches) |         rm % |
 |------------------+-------+----------+----------+----------+----------+------------------------+----------+----------------------+--------------|
@@ -137,6 +138,9 @@ print( wSizes )
 
 
 ** Parameters for RTree and Btree 
+:PROPERTIES:
+:CUSTOM_ID: execParameters
+:END:
 
 
 To compare the BTree / TREE with the PMQ we will define a MAXSIZE that these data structure can have.
@@ -588,33 +592,42 @@ Fast-forwarded exp20170914091842 to 1adced939ed1e68bf901e82bd40097309abecf9e.
 :END:      
 
 List logFiles
+#+NAME: tgzFiles
 #+begin_src sh :results table :exports both
-ls -htl *tgz
+ls *tgz
 #+end_src
 
-#+RESULTS:
-| -rw-rw-r-- 1 julio julio 6 | 6M Set 14 17:42 log_1505412384.tgz |
-| -rw-rw-r-- 1 julio julio 6 | 6M Set 14 16:22 log_1505411932.tgz |
+#+RESULTS: tgzFiles
+| log_1505411932.tgz |
+| log_1505412384.tgz |
 
 :NOTE: the execution from log_1505411932.tgz was executed on inf-desktop by mistake. But results might be ok.
 
+Take the last archive from the list above:
+#+begin_src sh :results output :exports both :var f=tgzFiles[-1]
+echo $f
+#+end_src
+
+#+RESULTS:
+: log_1505412384.tgz
+
 #+NAME: logFile
-#+begin_src sh :results output :exports both 
-tar xvzf log_1505411932.tgz
+#+begin_src sh :results output :exports both :var f=tgzFiles[-1]
+tar xvzf $f
 #+end_src
 
 #+RESULTS: logFile
 #+begin_example
-bench_ins_rm_11745_1505411932.log
-bench_ins_rm_17616_1505411932.log
-bench_ins_rm_20552_1505411932.log
-bench_ins_rm_22020_1505411932.log
-bench_ins_rm_22754_1505411932.log
-bench_ins_rm_23121_1505411932.log
-bench_ins_rm_23305_1505411932.log
-bench_ins_rm_23396_1505411932.log
-bench_ins_rm_23442_1505411932.log
-bench_ins_rm_23465_1505411932.log
+bench_ins_rm_11745_1505412384.log
+bench_ins_rm_17616_1505412384.log
+bench_ins_rm_20552_1505412384.log
+bench_ins_rm_22020_1505412384.log
+bench_ins_rm_22754_1505412384.log
+bench_ins_rm_23121_1505412384.log
+bench_ins_rm_23305_1505412384.log
+bench_ins_rm_23396_1505412384.log
+bench_ins_rm_23442_1505412384.log
+bench_ins_rm_23465_1505412384.log
 #+end_example
 
 Create CSV using logFile 
@@ -635,7 +648,7 @@ done
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_ins_rm_1505411932.csv
+: bench_ins_rm_1505412384.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -674,7 +687,7 @@ cols(
   V9 = col_character()
 )
 Warning: 775032 parsing failures.
-row # A tibble: 5 x 5 col     row   col  expected    actual                          file expected   <int> <chr>     <chr>     <chr>                         <chr> actual 1     1  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' file 2     2  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' row 3     3  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' col 4     4  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv' expected 5     5  <NA> 9 columns 8 columns 'bench_ins_rm_1505411932.csv'
+row # A tibble: 5 x 5 col     row   col  expected    actual                          file expected   <int> <chr>     <chr>     <chr>                         <chr> actual 1     1  <NA> 9 columns 8 columns 'bench_ins_rm_1505412384.csv' file 2     2  <NA> 9 columns 8 columns 'bench_ins_rm_1505412384.csv' row 3     3  <NA> 9 columns 8 columns 'bench_ins_rm_1505412384.csv' col 4     4  <NA> 9 columns 8 columns 'bench_ins_rm_1505412384.csv' expected 5     5  <NA> 9 columns 8 columns 'bench_ins_rm_1505412384.csv'
 ... ................. ... ............................................................... ........ ............................................................... ...... ............................................................... .... ............................................................... ... ............................................................... ... ............................................................... ........ ............... [... truncated]
 Warning message:
 In rbind(names(probs), probs_f) :
@@ -686,7 +699,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	775032 obs. of  9 variables:
  $ V4: chr  "count" "count" "count" "count" ...
  $ V5: int  11746000 11747000 11748000 11749000 11750000 11751000 11752000 11753000 11754000 11755000 ...
  $ V6: chr  "insert" "insert" "insert" "insert" ...
- $ V7: num  1.12 1.11 1.12 1.1 1.11 ...
+ $ V7: num  1.06 1.06 1.05 1.06 1.05 ...
  $ V8: chr  NA NA NA NA ...
  $ V9: chr  NA NA NA NA ...
  - attr(*, "problems")=Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	775032 obs. of  5 variables:
@@ -694,7 +707,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	775032 obs. of  9 variables:
   ..$ col     : chr  NA NA NA NA ...
   ..$ expected: chr  "9 columns" "9 columns" "9 columns" "9 columns" ...
   ..$ actual  : chr  "8 columns" "8 columns" "8 columns" "8 columns" ...
-  ..$ file    : chr  "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" "'bench_ins_rm_1505411932.csv'" ...
+  ..$ file    : chr  "'bench_ins_rm_1505412384.csv'" "'bench_ins_rm_1505412384.csv'" "'bench_ins_rm_1505412384.csv'" "'bench_ins_rm_1505412384.csv'" ...
  - attr(*, "spec")=List of 2
   ..$ cols   :List of 9
   .. ..$ V1: list()
@@ -734,16 +747,16 @@ df
 # A tibble: 775,032 x 6
             algo     T    id    count  insert remove
            <chr> <int> <int>    <int>   <dbl>  <chr>
- 1 GeoHashBinary 11745 11745 11746000 1.11850   <NA>
- 2 GeoHashBinary 11745 11746 11747000 1.11290   <NA>
- 3 GeoHashBinary 11745 11747 11748000 1.12108   <NA>
- 4 GeoHashBinary 11745 11748 11749000 1.10338   <NA>
- 5 GeoHashBinary 11745 11749 11750000 1.10573   <NA>
- 6 GeoHashBinary 11745 11750 11751000 1.10949   <NA>
- 7 GeoHashBinary 11745 11751 11752000 1.10577   <NA>
- 8 GeoHashBinary 11745 11752 11753000 1.10275   <NA>
- 9 GeoHashBinary 11745 11753 11754000 1.09749   <NA>
-10 GeoHashBinary 11745 11754 11755000 1.10592   <NA>
+ 1 GeoHashBinary 11745 11745 11746000 1.06247   <NA>
+ 2 GeoHashBinary 11745 11746 11747000 1.05632   <NA>
+ 3 GeoHashBinary 11745 11747 11748000 1.05376   <NA>
+ 4 GeoHashBinary 11745 11748 11749000 1.06071   <NA>
+ 5 GeoHashBinary 11745 11749 11750000 1.05004   <NA>
+ 6 GeoHashBinary 11745 11750 11751000 1.04954   <NA>
+ 7 GeoHashBinary 11745 11751 11752000 1.12759   <NA>
+ 8 GeoHashBinary 11745 11752 11753000 1.06108   <NA>
+ 9 GeoHashBinary 11745 11753 11754000 1.05192   <NA>
+10 GeoHashBinary 11745 11754 11755000 1.04592   <NA>
 # ... with 775,022 more rows
 #+end_example
 
@@ -759,36 +772,36 @@ df %>% filter(remove > 0) %>%
 #+RESULTS:
 | algo          |     T | RemoveTime |    stdv |
 |---------------+-------+------------+---------|
-| BTree         | 11745 |    3100.06 | 17.2888 |
-| GeoHashBinary | 11745 |    655.565 | 13.6641 |
-| RTree         | 11745 |    10274.9 | 586.411 |
-| BTree         | 17616 |    2036.75 | 25.0953 |
-| GeoHashBinary | 17616 |    675.602 | 13.8337 |
-| RTree         | 17616 |    6037.96 | 261.868 |
-| BTree         | 20552 |    1418.43 | 25.5424 |
-| GeoHashBinary | 20552 |    662.776 | 10.9497 |
-| RTree         | 20552 |    3661.58 | 69.8569 |
-| BTree         | 22020 |    1055.16 | 19.9216 |
-| GeoHashBinary | 22020 |    658.074 | 8.00363 |
-| RTree         | 22020 |    2276.79 | 60.3141 |
-| BTree         | 22754 |    829.013 | 14.5278 |
-| GeoHashBinary | 22754 |    652.435 | 6.01608 |
-| RTree         | 22754 |    1466.19 | 44.3631 |
-| BTree         | 23121 |    709.294 | 12.3565 |
-| GeoHashBinary | 23121 |    604.964 | 4.68194 |
-| RTree         | 23121 |     1014.4 | 34.1498 |
-| BTree         | 23305 |    651.033 | 11.2973 |
-| GeoHashBinary | 23305 |    606.779 | 3.53975 |
-| RTree         | 23305 |    741.601 | 20.4287 |
-| BTree         | 23396 |    596.991 | 12.3706 |
-| GeoHashBinary | 23396 |    608.559 | 2.47598 |
-| RTree         | 23396 |    604.497 |  21.108 |
-| BTree         | 23442 |    585.298 |  10.511 |
-| GeoHashBinary | 23442 |    615.599 | 3.09548 |
-| RTree         | 23442 |    522.008 | 15.3026 |
-| BTree         | 23465 |    568.854 | 10.2702 |
-| GeoHashBinary | 23465 |    611.594 | 2.81889 |
-| RTree         | 23465 |    473.858 | 12.2305 |
+| BTree         | 11745 |    2938.56 | 31.9188 |
+| GeoHashBinary | 11745 |    719.014 | 134.508 |
+| RTree         | 11745 |      10268 | 345.705 |
+| BTree         | 17616 |    1897.55 | 15.5949 |
+| GeoHashBinary | 17616 |    633.379 | 12.9222 |
+| RTree         | 17616 |    6008.85 | 230.542 |
+| BTree         | 20552 |    1316.32 | 21.9188 |
+| GeoHashBinary | 20552 |    617.114 | 10.5823 |
+| RTree         | 20552 |    3569.99 | 85.4322 |
+| BTree         | 22020 |    970.417 | 17.2736 |
+| GeoHashBinary | 22020 |    616.018 | 7.95398 |
+| RTree         | 22020 |    2223.55 |  69.507 |
+| BTree         | 22754 |    760.748 | 10.4232 |
+| GeoHashBinary | 22754 |    604.105 | 5.68478 |
+| RTree         | 22754 |    1393.05 | 41.2335 |
+| BTree         | 23121 |    649.198 | 8.72301 |
+| GeoHashBinary | 23121 |    556.607 | 4.00548 |
+| RTree         | 23121 |    960.784 | 28.5292 |
+| BTree         | 23305 |    588.715 | 8.76007 |
+| GeoHashBinary | 23305 |    558.013 | 2.78677 |
+| RTree         | 23305 |    690.343 |   18.71 |
+| BTree         | 23396 |    563.927 | 14.1947 |
+| GeoHashBinary | 23396 |    562.311 | 8.97959 |
+| RTree         | 23396 |    568.807 | 25.1274 |
+| BTree         | 23442 |    535.037 | 8.12749 |
+| GeoHashBinary | 23442 |    560.956 | 13.4803 |
+| RTree         | 23442 |    491.738 | 10.9601 |
+| BTree         | 23465 |    525.734 | 8.05529 |
+| GeoHashBinary | 23465 |    564.266 | 10.6004 |
+| RTree         | 23465 |     441.24 | 22.8475 |
 
 *** Overview of results                                       :export:plot:
 
@@ -808,25 +821,26 @@ dfplot
 #+begin_example
 # A tibble: 30 x 4
 # Groups:   algo [3]
-    algo      T RemoveTime     stdv
-   <chr> <fctr>      <dbl>    <dbl>
- 1 BTree  11745  3100.5820 17.31363
- 2 BTree  17616  2037.2749 25.07677
- 3 BTree  20552  1418.9489 25.53222
- 4 BTree  22020  1055.6771 19.91421
- 5 BTree  22754   829.5136 14.52060
- 6 BTree  23121   709.7961 12.35102
- 7 BTree  23305   651.5366 11.29169
- 8 BTree  23396   597.4781 12.36994
- 9 BTree  23442   585.7980 10.50778
-10 BTree  23465   569.3625 10.26845
+    algo      T RemoveTime      stdv
+   <chr> <fctr>      <dbl>     <dbl>
+ 1 BTree  11745  2939.0430 31.976994
+ 2 BTree  17616  1898.0251 15.561384
+ 3 BTree  20552  1316.7902 21.896304
+ 4 BTree  22020   970.8734 17.255611
+ 5 BTree  22754   761.1887 10.410706
+ 6 BTree  23121   649.6426  8.713129
+ 7 BTree  23305   589.1553  8.752589
+ 8 BTree  23396   564.3692 14.193076
+ 9 BTree  23442   535.4773  8.123516
+10 BTree  23465   526.1890  8.053196
 # ... with 20 more rows
 #+end_example
 
 #+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 600 :height 400
 library(ggplot2)
 
-dfplot %>% 
+dfplot %>%
+#    filter(algo == "GeoHashBinary") %>%
     ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
     geom_bar(stat="identity", position="dodge")+
     geom_errorbar( position=position_dodge(0.9), 
@@ -835,6 +849,9 @@ dfplot %>%
 
 #+RESULTS:
 [[file:./img/overview.png]]
+
+The average remove time decreases logarithmicly for BTree and Rtree. 
+However for the PMQ the time seems much more stable no matter the amount of removals. 
 
 *** INPROGRESS Insertion performance
 
@@ -851,16 +868,16 @@ dfinsert
 # A tibble: 769,074 x 6
             algo      T    id    count  insert remove
            <chr> <fctr> <int>    <int>   <dbl>  <dbl>
- 1 GeoHashBinary  11745 11745 11746000 1.11850     NA
- 2 GeoHashBinary  11745 11746 11747000 1.11290     NA
- 3 GeoHashBinary  11745 11747 11748000 1.12108     NA
- 4 GeoHashBinary  11745 11748 11749000 1.10338     NA
- 5 GeoHashBinary  11745 11749 11750000 1.10573     NA
- 6 GeoHashBinary  11745 11750 11751000 1.10949     NA
- 7 GeoHashBinary  11745 11751 11752000 1.10577     NA
- 8 GeoHashBinary  11745 11752 11753000 1.10275     NA
- 9 GeoHashBinary  11745 11753 11754000 1.09749     NA
-10 GeoHashBinary  11745 11754 11755000 1.10592     NA
+ 1 GeoHashBinary  11745 11745 11746000 1.06247     NA
+ 2 GeoHashBinary  11745 11746 11747000 1.05632     NA
+ 3 GeoHashBinary  11745 11747 11748000 1.05376     NA
+ 4 GeoHashBinary  11745 11748 11749000 1.06071     NA
+ 5 GeoHashBinary  11745 11749 11750000 1.05004     NA
+ 6 GeoHashBinary  11745 11750 11751000 1.04954     NA
+ 7 GeoHashBinary  11745 11751 11752000 1.12759     NA
+ 8 GeoHashBinary  11745 11752 11753000 1.06108     NA
+ 9 GeoHashBinary  11745 11753 11754000 1.05192     NA
+10 GeoHashBinary  11745 11754 11755000 1.04592     NA
 # ... with 769,064 more rows
 #+end_example
 
@@ -887,38 +904,38 @@ arrange(T,algo)
 #+end_src
 
 #+RESULTS:
-| algo          |     T |  Average |      Stdv |   Total |
-|---------------+-------+----------+-----------+---------|
-| BTree         | 11745 | 0.495382 | 0.0255292 | 17451.8 |
-| GeoHashBinary | 11745 |  1.12823 | 0.0315277 | 39746.3 |
-| RTree         | 11745 |  1.08808 | 0.0785254 | 38331.9 |
-| BTree         | 17616 | 0.509947 | 0.0228411 |   14970 |
-| GeoHashBinary | 17616 |  1.12955 | 0.0243671 |   33159 |
-| RTree         | 17616 |  1.08252 | 0.0738378 | 31778.4 |
-| BTree         | 20552 | 0.502184 | 0.0210777 | 13265.7 |
-| GeoHashBinary | 20552 |  1.11536 |  0.015826 | 29463.4 |
-| RTree         | 20552 |  1.06048 | 0.0596721 | 28013.5 |
-| BTree         | 22020 | 0.504608 | 0.0204988 | 12584.9 |
-| GeoHashBinary | 22020 |  1.12174 | 0.0149165 | 27976.1 |
-| RTree         | 22020 |  1.06306 | 0.0500795 | 26512.8 |
-| BTree         | 22754 | 0.498483 | 0.0155592 | 12058.3 |
-| GeoHashBinary | 22754 |  1.11479 | 0.0151073 | 26966.8 |
-| RTree         | 22754 |  1.06271 | 0.0425487 | 25706.9 |
-| BTree         | 23121 | 0.499434 | 0.0162469 |   11882 |
-| GeoHashBinary | 23121 |  1.12981 | 0.0164901 | 26879.3 |
-| RTree         | 23121 |  1.08129 |  0.041588 |   25725 |
-| BTree         | 23305 | 0.506284 | 0.0180502 | 11919.5 |
-| GeoHashBinary | 23305 |  1.13558 | 0.0142027 |   26735 |
-| RTree         | 23305 |  1.08075 | 0.0489447 | 25444.1 |
-| BTree         | 23396 | 0.497812 | 0.0221871 | 11612.5 |
-| GeoHashBinary | 23396 |  1.11638 | 0.0143327 | 26041.8 |
-| RTree         | 23396 |   1.0969 | 0.0472797 | 25587.3 |
-| BTree         | 23442 |  0.51838 | 0.0202741 | 11940.4 |
-| GeoHashBinary | 23442 |  1.13043 | 0.0139346 | 26038.2 |
-| RTree         | 23442 |  1.11573 | 0.0476103 | 25699.8 |
-| BTree         | 23465 | 0.528365 | 0.0195954 | 11905.1 |
-| GeoHashBinary | 23465 |  1.11899 | 0.0164199 | 25213.1 |
-| RTree         | 23465 |   1.1056 | 0.0431989 | 24911.5 |
+| algo          |     T |  Average |       Stdv |   Total |
+|---------------+-------+----------+------------+---------|
+| BTree         | 11745 | 0.448848 |  0.0293204 | 15812.5 |
+| GeoHashBinary | 11745 |  1.09319 |  0.0628743 | 38512.1 |
+| RTree         | 11745 |  1.01856 |  0.0746711 | 35882.8 |
+| BTree         | 17616 | 0.451324 |  0.0268541 | 13249.1 |
+| GeoHashBinary | 17616 |  1.08116 |  0.0407717 | 31738.5 |
+| RTree         | 17616 |  1.01504 |  0.0658717 | 29797.5 |
+| BTree         | 20552 | 0.448744 |  0.0240568 |   11854 |
+| GeoHashBinary | 20552 |  1.07296 |  0.0117558 | 28343.3 |
+| RTree         | 20552 |  1.00105 |  0.0582154 | 26443.7 |
+| BTree         | 22020 | 0.447691 |  0.0193614 | 11165.4 |
+| GeoHashBinary | 22020 |  1.07911 | 0.00986746 | 26913.1 |
+| RTree         | 22020 |  1.00231 |  0.0462575 | 24997.5 |
+| BTree         | 22754 | 0.440994 |  0.0164774 | 10667.7 |
+| GeoHashBinary | 22754 |  1.07052 |  0.0297494 | 25895.8 |
+| RTree         | 22754 |  1.00679 |  0.0544763 | 24354.3 |
+| BTree         | 23121 | 0.445606 |  0.0155989 | 10601.4 |
+| GeoHashBinary | 23121 |  1.06871 | 0.00692898 | 25425.7 |
+| RTree         | 23121 |  1.02198 |  0.0449252 | 24313.9 |
+| BTree         | 23305 | 0.443706 |  0.0145924 | 10446.2 |
+| GeoHashBinary | 23305 |  1.06769 | 0.00791834 | 25136.6 |
+| RTree         | 23305 |  1.02155 |  0.0360618 | 24050.3 |
+| BTree         | 23396 | 0.452135 |  0.0186625 |   10547 |
+| GeoHashBinary | 23396 |  1.08239 |  0.0299922 |   25249 |
+| RTree         | 23396 |  1.06218 |  0.0817903 | 24777.4 |
+| BTree         | 23442 | 0.457403 |  0.0168122 | 10535.8 |
+| GeoHashBinary | 23442 |  1.07103 |  0.0219033 |   24670 |
+| RTree         | 23442 |  1.03593 |  0.0410284 | 23861.6 |
+| BTree         | 23465 | 0.472946 |  0.0166012 | 10656.4 |
+| GeoHashBinary | 23465 |  1.07213 |  0.0241641 | 24157.3 |
+| RTree         | 23465 |  1.05569 |  0.0745693 | 23786.8 |
 
 #+begin_src R :results output graphics :file "./img/averageInsOnly.png" :exports both :width 600 :height 400
 library(ggplot2)
@@ -926,17 +943,23 @@ library(ggplot2)
 dfinsert %>% 
     group_by(algo, T) %>%
     summarize(avg = mean(insert), stdv = sd(insert)) %>%
-    ggplot( aes(x="",y=avg, fill=factor(algo))) + 
+    ggplot( aes(x=T,y=avg, fill=factor(algo))) + 
     geom_bar(stat="identity", position="dodge")+
     geom_errorbar( position=position_dodge(0.9), 
                    aes(ymin = avg - stdv, ymax = avg + stdv), width=0.5) +
-    facet_wrap(~T, scale="free_x")+ 
+    #facet_wrap(~T, scale="free_x")+ 
     labs(title = "Average Insertions (without removals)") 
 #+end_src
 
 #+RESULTS:
 [[file:./img/averageInsOnly.png]]
 
+
+In average the insertions are 2X faster with standard Btrees. 
+PMQ and Rtree are not statistically different in general (except maybe on T=20552). 
+
+This means that the insertion time doesn't change with T.
+No matter the parameter T choosed, the insertions take the same time.
 
 ***** Total benchmark time with the removals:
 #+begin_src R :results table :session :exports both :colnames yes
@@ -954,36 +977,36 @@ dfTotals %>% arrange(T,algo)
 #+RESULTS:
 | algo          |     T |  AvgTime |    stdv |   total |
 |---------------+-------+----------+---------+---------|
-| BTree         | 11745 | 0.671368 | 23.3574 |   23653 |
-| GeoHashBinary | 11745 |  1.16538 |  4.9314 | 41057.5 |
-| RTree         | 11745 |  1.67137 | 77.4789 | 58884.2 |
-| BTree         | 17616 | 0.787435 | 23.7736 | 23119.1 |
-| GeoHashBinary | 17616 |  1.22144 | 7.87344 | 35861.4 |
-| RTree         | 17616 |  1.90514 | 70.5232 | 55934.9 |
-| BTree         | 20552 | 0.931626 |  24.681 | 24617.3 |
-| GeoHashBinary | 20552 |  1.31568 | 11.5127 | 34765.6 |
-| RTree         | 20552 |  2.16905 | 63.7135 |   57315 |
-| BTree         | 22020 |  1.18111 | 26.7139 | 29475.7 |
-| GeoHashBinary | 22020 |  1.54293 | 16.6305 | 38505.3 |
-| RTree         | 22020 |  2.52279 | 57.6517 | 62958.8 |
-| BTree         | 22754 |  1.59371 | 30.1175 | 38602.7 |
-| GeoHashBinary | 22754 |  1.97526 | 23.6595 | 47844.7 |
-| RTree         | 22754 |  2.99974 |  53.282 | 72659.6 |
-| BTree         | 23121 |  2.40239 |  36.696 |   57309 |
-| GeoHashBinary | 23121 |  2.74982 | 31.2361 | 65597.1 |
-| RTree         | 23121 |  3.80278 | 52.5019 | 90715.3 |
-| BTree         | 23305 |  4.02671 | 47.7524 | 95316.1 |
-| GeoHashBinary | 23305 |  4.41057 | 44.4174 |  104403 |
-| RTree         | 23305 |  5.09086 | 54.4071 |  120506 |
-| BTree         | 23396 |  6.90307 |  61.519 |  162774 |
-| GeoHashBinary | 23396 |  7.63389 | 62.5841 |  180007 |
-| RTree         | 23396 |  7.58268 | 62.3171 |  178800 |
-| BTree         | 23442 |  12.9531 | 84.4147 |  304839 |
-| GeoHashBinary | 23442 |  14.1853 | 88.6112 |  333838 |
-| RTree         | 23442 |  12.2057 | 75.3058 |  287249 |
-| BTree         | 23465 |  24.2147 | 113.655 |  569311 |
-| GeoHashBinary | 23465 |  26.5392 | 121.956 |  623964 |
-| RTree         | 23465 |  20.8363 | 94.6915 |  489883 |
+| BTree         | 11745 | 0.615667 | 22.1411 | 21690.6 |
+| GeoHashBinary | 11745 |  1.13395 |  5.4567 | 39950.2 |
+| RTree         | 11745 |  1.60146 | 77.3851 | 56420.9 |
+| BTree         | 17616 | 0.709849 | 22.1483 | 20841.2 |
+| GeoHashBinary | 17616 |   1.1673 | 7.38119 |   34272 |
+| RTree         | 17616 |  1.83369 | 70.1725 | 53837.3 |
+| BTree         | 20552 | 0.847273 | 22.9039 | 22388.3 |
+| GeoHashBinary | 20552 |  1.25947 |  10.719 | 33280.2 |
+| RTree         | 20552 |   2.0819 | 62.1257 | 55012.1 |
+| BTree         | 22020 |  1.06986 | 24.5679 | 26699.4 |
+| GeoHashBinary | 22020 |  1.47337 | 15.5671 | 36769.4 |
+| RTree         | 22020 |  2.42791 | 56.3111 | 60590.8 |
+| BTree         | 22754 |  1.44603 | 27.6358 | 35025.7 |
+| GeoHashBinary | 22754 |  1.86719 | 21.9055 | 45227.1 |
+| RTree         | 22754 |   2.8472 | 50.6234 |   68965 |
+| BTree         | 23121 |  2.18732 | 33.5847 | 52178.5 |
+| GeoHashBinary | 23121 |  2.55915 | 28.7376 | 61048.6 |
+| RTree         | 23121 |  3.59963 | 49.7209 | 85869.3 |
+| BTree         | 23305 |  3.62714 | 43.1796 | 85858.1 |
+| GeoHashBinary | 23305 |  4.07935 | 40.8457 | 96562.3 |
+| RTree         | 23305 |  4.75458 | 50.6472 |  112546 |
+| BTree         | 23396 |  6.50265 | 58.1178 |  153332 |
+| GeoHashBinary | 23396 |  7.10406 | 57.8297 |  167514 |
+| RTree         | 23396 |  7.16493 | 58.6585 |  168949 |
+| BTree         | 23442 |  11.8244 | 77.1621 |  278274 |
+| GeoHashBinary | 23442 |  12.9663 | 80.7626 |  305148 |
+| RTree         | 23442 |  11.4832 | 70.9287 |  270246 |
+| BTree         | 23465 |  22.3638 | 105.035 |  525795 |
+| GeoHashBinary | 23465 |  24.5236 |  112.53 |  576573 |
+| RTree         | 23465 |  19.4282 | 88.2658 |  456776 |
 
 #+begin_src R :results output :exports code :session 
 df %>% 
@@ -1001,16 +1024,16 @@ totalPlot
 # Groups:   algo [3]
     algo      T    total       avg      std
    <chr> <fctr>    <dbl>     <dbl>    <dbl>
- 1 BTree  11745  23653.0  0.671368  23.3574
- 2 BTree  17616  23119.1  0.787435  23.7736
- 3 BTree  20552  24617.3  0.931626  24.6810
- 4 BTree  22020  29475.7  1.181109  26.7139
- 5 BTree  22754  38602.7  1.593706  30.1175
- 6 BTree  23121  57309.0  2.402389  36.6960
- 7 BTree  23305  95316.1  4.026705  47.7524
- 8 BTree  23396 162774.4  6.903072  61.5190
- 9 BTree  23442 304839.4 12.953148  84.4147
-10 BTree  23465 569311.0 24.214666 113.6551
+ 1 BTree  11745  21690.6  0.615667  22.1411
+ 2 BTree  17616  20841.2  0.709849  22.1483
+ 3 BTree  20552  22388.3  0.847273  22.9039
+ 4 BTree  22020  26699.4  1.069858  24.5679
+ 5 BTree  22754  35025.7  1.446028  27.6358
+ 6 BTree  23121  52178.5  2.187321  33.5847
+ 7 BTree  23305  85858.1  3.627141  43.1796
+ 8 BTree  23396 153332.4  6.502645  58.1178
+ 9 BTree  23442 278274.5 11.824360  77.1621
+10 BTree  23465 525795.4 22.363805 105.0349
 # ... with 20 more rows
 #+end_example
 
@@ -1026,6 +1049,9 @@ totalPlot %>%
 #+RESULTS:
 [[file:./img/totalInsRm.png]]
 
+The total insertion time increased with parameter T. 
+Because with a lager T (closer to the limit 23488) as show in [[tbl:ExpVariables]], the frequency of expensive remotions increases. 
+The best value of T is lower than 22754 for every algorithm. 
 
 ***** Average benchmark time with the removals:
 
@@ -1044,6 +1070,11 @@ totalPlot %>%
 
 #+RESULTS:
 [[file:./img/totalAvgRm.png]]
+
+
+**** TODO Conclusion
+
+- find the best trade off between the frequency of removals and time spend on each one.
 
 
 **** Amortized time :ARCHIVE:

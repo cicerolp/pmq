@@ -361,11 +361,11 @@ mkdir -p $expFolder
 
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170825181747/exp.org]]
-
+  
 
 **** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
 
-- Old experiment used Rtree* algorithm, use the quadratic one now.
+- Old exeperiment used Rtree* algorithm, use the quadratic one now.
 - Count was not correct in the plots
 [[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
 
@@ -397,37 +397,45 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
  [[./data/cicero/exp20170907112116/exp.org]]
  
-**** TODO [2017-09-15 Sex] Experiment =bench_insert_and_scan=
-
+**** RUNNING [2017-09-15 Sex] Experiment =bench_insert_and_scan= :exp20170919161448:
 ***** Setup                                                    :noexport:
-- [ ] Create a direcorty for this experiment 
+- [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
-set -e
-expId=$(date +%Y%m%d%H%M%S)
-machineDesc=$(hostname)
-expFolder=./data/$machineDesc/exp$expId
-mkdir -p $expFolder
-#+end_src
+  set -e
+  expId=$(date +%Y%m%d%H%M%S)
+  machineDesc="cicero"
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
 
   #+RESULTS:
   
-- [ ] Use the template to run your experiment
+- [X] Use the template to run your experiment
   #+begin_src sh :results output raw :exports both :session template
-  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170907112116/exp.org > ${expFolder}/exp.org
   echo "[[$expFolder/exp.org]]"
   #+end_src
 
   #+RESULTS:
+  b299a4e Merge branch 'master' into DATA
+  $ [[./data/cicero/exp20170919161448/exp.org]]
+
 
 ***** Description                                                :ignore:
 
-Template to start an experiment:
+Test insertions with larger inputs
+- Rtree (quadratic)
+- Btree
+- PMQ
+- DenseVector
 
 #+begin_src sh :results raw :exports results :session template
 echo "[[$expFolder/exp.org]]"
 #+end_src
 
 #+RESULTS:
+[[./data/cicero/exp20170919161448/exp.org]]
 
 *** Benchmark Queries region 
   
@@ -494,7 +502,7 @@ echo $expFolder
   #+RESULTS:
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
-
+  
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170904153555/exp.org]]
   
@@ -559,7 +567,7 @@ mkdir -p $expFolder
   #+RESULTS:
   2a5b5d2 UPD: report in markdown
   $ $ [[./data/cicero/exp20170915143003/exp.org]]
-  
+
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170915143003/exp.org]]
@@ -593,7 +601,7 @@ mkdir -p $expFolder
   #+RESULTS:
   22e9c95 upd exp info
   $ $ [[./data/cicero/exp20170914091842/exp.org]]
-  
+
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]
