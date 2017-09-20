@@ -99,7 +99,7 @@ void run_bench(int argc, char *argv[], _It it_begin, _It it_end,
 
   // fills the time window
   std::vector<_T> initBatch(it_begin, it_curr);
-  container->insert_rm(initBatch, _apply);
+  container->insert(initBatch);
 
   DBG_PRINTOUT("INIT container with %d elements\n", init_size);
 
@@ -146,16 +146,9 @@ int main(int argc, char *argv[]) {
 
   std::string fname(cimg_option("-f", "", "file with tweets to load"));
 
-
-  //parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
-
   parameters.rate = (cimg_option("-rate", 1000, "Rate (elements per batch) for insertions"));
   parameters.t_win = (cimg_option("-T", 10800, "Temporal window Size"));
   parameters.max_tree_size = (cimg_option("-tSize", 10800000, "Max size for the Btree and Rtree"));
-
-  //parameters.min_t = (cimg_option("-min_t", 10800, "Temporal window: Min"));
-  //parameters.max_t = (cimg_option("-max_t", 43200, "T: Max"));
-  //parameters.inc_t = (cimg_option("-inc_t", 10800, "T: Increment"));
 
   parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
 
