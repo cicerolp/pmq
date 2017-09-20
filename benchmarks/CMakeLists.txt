@@ -56,8 +56,8 @@ target_link_libraries(bench_insert_and_scan
 add_executable(bench_memory ${HEADERS}
         bench_memory.cpp
 
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
+        #../include/BTreeCtn.cpp
+        #../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_memory

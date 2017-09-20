@@ -10,10 +10,9 @@
 #include "types.h"
 #include "input_it.h"
 
+#include "PMQ.h"
 //#include "RTreeCtn.h"
 //#include "BTreeCtn.h"
-
-#include "PMQ.h"
 //#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
@@ -33,8 +32,6 @@ struct bench_t {
   uint32_t n_exp;
   uint32_t batch_size;
 };
-
-uint32_t g_Quadtree_Depth = 25;
 
 // reads the full element
 template<typename T>
@@ -144,13 +141,9 @@ int main(int argc, char *argv[]) {
     using it_t = input_file_it<el_t>;
 
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-
-    // open file
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
-
     auto begin = it_t::begin(file_ptr);
     auto end = it_t::end(file_ptr);
-
     PRINTOUT("%d teewts loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
@@ -163,13 +156,9 @@ int main(int argc, char *argv[]) {
     using it_t = input_file_it<el_t>;
 
     PRINTOUT("Loading twitter dataset... %s \n", fname_dmp.c_str());
-
-    // open file
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname_dmp, std::ios::binary);
-
     auto begin = it_t::begin(file_ptr);
     auto end = it_t::end(file_ptr);
-
     PRINTOUT("%d teewts loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
