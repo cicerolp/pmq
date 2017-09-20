@@ -36,24 +36,6 @@ class PMQ : public GeoCtnIntf<T> {
     return {duration_info("create", timer)};
   }
 
-  std::vector<value_type> transform(std::vector<T> batch) const {
-    // convert T to value_type
-    std::vector<value_type> converted_batch;
-    std::transform(batch.begin(), batch.end(), std::back_inserter(converted_batch),
-                   [](const auto &value) -> std::pair<uint64_t, T> {
-                     uint32_t y = mercator_util::lat2tiley(value.getLatitude(), 25);
-                     uint32_t x = mercator_util::lon2tilex(value.getLongitude(), 25);
-                     return std::make_pair(mortonEncode_RAM(x, y), value);
-                   });
-
-    gfx::timsort(converted_batch.begin(), converted_batch.end(),
-                 [](const value_type &lhs, const value_type &rhs) {
-                   return lhs.first < rhs.first;
-                 });
-
-    return converted_batch;
-  }
-
   // update container
   duration_t insert(std::vector<T> batch) override {
     Timer timer;
@@ -438,6 +420,24 @@ class PMQ : public GeoCtnIntf<T> {
       }
       ++seg;
     }
+  }
+
+  std::vector<value_type> transform(std::vector<T> batch) const {
+    // convert T to value_type
+    std::vector<value_type> converted_batch;
+    std::transform(batch.begin(), batch.end(), std::back_inserter(converted_batch),
+                   [](const auto &value) -> std::pair<uint64_t, T> {
+                     uint32_t y = mercator_util::lat2tiley(value.getLatitude(), 25);
+                     uint32_t x = mercator_util::lon2tilex(value.getLongitude(), 25);
+                     return std::make_pair(mortonEncode_RAM(x, y), value);
+                   });
+
+    gfx::timsort(converted_batch.begin(), converted_batch.end(),
+                 [](const value_type &lhs, const value_type &rhs) {
+                   return lhs.first < rhs.first;
+                 });
+
+    return converted_batch;
   }
 
   inline code_t get_parent_quadrant(const region_t &region) const;

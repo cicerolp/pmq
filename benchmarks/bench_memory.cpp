@@ -7,7 +7,7 @@
 #include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-//#include "ImplicitDenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "MemoryBench " << container.name() << " ; ";\
@@ -101,6 +101,16 @@ int main(int argc, char *argv[]) {
     auto end = it_t::end(file_ptr);
     PRINTOUT("%d teewts loaded \n", end - begin);
 
+    if (container == "ghb") {
+      run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    } else if (container == "bt") {
+      run_bench<BTreeCtn < el_t>, it_t, el_t > (argc, argv, begin, end, parameters);
+    } else if (container == "rt") {
+      run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    } else if (container == "dv") {
+      run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    }
+
   } else {
     using el_t = GenericType;
     using it_t = input_random_it;
@@ -117,7 +127,7 @@ int main(int argc, char *argv[]) {
     } else if (container == "rt") {
       run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
     } else if (container == "dv") {
-      //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+      run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     }
   }
 

@@ -9,7 +9,7 @@
 #include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-//#include "ImplicitDenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINT_TEST(...) do { \
    printcsv( __VA_ARGS__ ) ; \
@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
-    //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
+    run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
   }
 
   return EXIT_SUCCESS;

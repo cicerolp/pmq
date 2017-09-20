@@ -12,7 +12,7 @@
 #include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-//#include "ImplicitDenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "QueryBench " << container.name() << " ; ";\
@@ -200,8 +200,8 @@ int main(int argc, char *argv[]) {
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
-    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
-    //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+    run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
 
   } else {
     using el_t = GenericType;
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<RTreeBulkCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
-    //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+    run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
   }
 
   return EXIT_SUCCESS;
