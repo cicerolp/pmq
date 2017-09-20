@@ -30,7 +30,7 @@ mkdir -p $TMPDIR
 # make pma
 mkdir -p $PMABUILD_DIR
 cd $PMABUILD_DIR
-cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
 make 
 
 # make twitterVis
@@ -48,7 +48,7 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-n=$((350 * 10**6))
+n=$((10**7))
 b=1000
 stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
 

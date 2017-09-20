@@ -26,7 +26,7 @@ elements of size 32 bytes:
 
 - PMA batch size = 1000
 
-350 million elements = src_python{ return ( 32 * 350 * 10**6 / 2**30) } {{{results(=10.43081283569336=)}}} GB . 
++350 million elements = src_python{ return ( 32 * 350 * 10**6 / 2**30) } {{{results(=10.43081283569336=)}}} GB .+
 
 Will use a PMA of 16 GB 
 #+begin_src python :results output :exports both
@@ -36,6 +36,13 @@ print( 536870912 * 32 / 2**30)
 #+RESULTS:
 : 16.0
 
+:UPDATE:
+The 350 M elements benchmark takes to long, mainly due to to the global scan operations done after each insertion.
+
+We will re-run this experiment with 10 M elements. Batch of size 1000. 
+To test with 350 we should disable the scans. 
+:END:
+
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
@@ -44,7 +51,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * INPROGRESS Experiment Script
-** DONE Initial Setup 
+** DONE Initial Setup
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -111,7 +118,7 @@ git la -3
 : * ce6f828 Initial commit for exp20170919161448
 
 
-** DONE Export run script 
+** DONE Export run script
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -145,7 +152,7 @@ mkdir -p $TMPDIR
 # make pma
 mkdir -p $PMABUILD_DIR
 cd $PMABUILD_DIR
-cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
 make 
 
 # make twitterVis
@@ -163,7 +170,7 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-n=$((350 * 10**6))
+n=$((10**7))
 b=1000
 stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
 
