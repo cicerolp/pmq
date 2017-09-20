@@ -67,7 +67,7 @@ void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
 }
 
 template<typename T, typename Tp>
-void inline run_queries(T &container, const region_t &region, uint32_t id, uint64_t t, const bench_t &parameters) {
+void inline run_queries(T &container, const region_t &region, uint32_t id) {
   uint32_t count_apply_at_region = 0;
   uint32_t count_scan_at_region = 0;
 
@@ -120,7 +120,7 @@ void run_bench(int argc, char *argv[], _It it_begin, _It it_end,
 
     // perform custom queries
     for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries<T, _T>((*container.get()), queries[id], id, t, parameters);
+      run_queries<T, _T>((*container.get()), queries[id], id);
     }
 
     // delete container
