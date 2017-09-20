@@ -16,6 +16,8 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
   using pointer = const T *;
   // this type represents a reference-to-value_type
   using reference = const T &;
+  /// Distance between iterators is represented as this type.
+  using difference_type = std::ptrdiff_t;
 
   virtual ~input_it() = default;
 
@@ -27,15 +29,17 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
     return _curr_value;
   }
 
-  virtual bool operator!=(const input_it &other) const {
-    return _curr_elt != other._curr_elt;
+  difference_type operator-(const input_it &rhs) const {
+    return _curr_elt - rhs._curr_elt;
+  }
+
+  bool operator<(const input_it &rhs) const {
+    return _curr_elt < rhs._curr_elt;
+  }
+
+  virtual bool operator!=(const input_it &rhs) const {
+    return _curr_elt != rhs._curr_elt;
   };
-
-  virtual input_it &operator++() = 0;
-
-  virtual size_type size() const = 0;
-
-  virtual void reset() = 0;
 
  protected:
   size_type _curr_elt{0};
@@ -51,10 +55,25 @@ class input_tweet_it : public input_it<TweetType> {
   }
 
   static input_tweet_it end(const std::shared_ptr<std::ifstream> &file_ptr) {
-    return input_tweet_it(file_ptr, true);
+    auto _it = input_tweet_it(file_ptr);
+
+    while (true) {
+      // must read BEFORE checking EOF
+      _it._file_ptr->read((char *) &_it._curr_value, RecordSize);
+
+      if (_it._file_ptr->eof()) {
+        break;
+      }
+      _it._curr_elt++;
+    }
+
+    _it.reset();
+
+    return _it;
   }
 
-  input_tweet_it(const std::shared_ptr<std::ifstream> &file_ptr, bool end = false) : input_it() {
+  input_tweet_it(const std::shared_ptr<std::ifstream> &file_ptr)
+      : input_it() {
 
     _file_ptr = file_ptr;
 
@@ -66,47 +85,36 @@ class input_tweet_it : public input_it<TweetType> {
     _file_ptr->unsetf(std::ios_base::skipws);
 
     reset();
-
-    while (true) {
-      // must read BEFORE checking EOF
-      _file_ptr->read((char *) &_curr_value, RecordSize);
-
-      if (_file_ptr->eof()) {
-        break;
-      }
-      _size++;
-    }
-
-    reset();
-
-    if (end) {
-      _curr_elt = _size;
-    }
   }
 
   virtual ~input_tweet_it() = default;
 
-  input_it<TweetType> &operator++() override {
+  input_tweet_it operator+(difference_type n) {
+    auto _it = *this;
+    while (n-- != 0) {
+      _it.operator++();
+    }
+    return _it;
+  }
+
+  input_tweet_it &operator++() {
     if (!_file_ptr->is_open()) {
       std::cerr << "error opening file" << std::endl;
       return *this;
     }
 
-    if (_curr_elt < _size) {
-      // must read BEFORE checking EOF
-      _file_ptr->read((char *) &_curr_value, RecordSize);
 
+    // must read BEFORE checking EOF
+    _file_ptr->read((char *) &_curr_value, RecordSize);
+
+    if (!_file_ptr->eof()) {
       ++_curr_elt;
     }
 
     return *this;
   }
 
-  size_type size() const override {
-    return _size;
-  }
-
-  void reset() override {
+  void reset() {
     // rewind file
     _file_ptr->clear();
     _file_ptr->seekg(0);
@@ -121,8 +129,6 @@ class input_tweet_it : public input_it<TweetType> {
 
  protected:
   static const size_t RecordSize = 19; //file record size
-
-  size_type _size{0};
   std::shared_ptr<std::ifstream> _file_ptr;
 };
 
@@ -130,51 +136,49 @@ class input_random_it : public input_it<GenericType> {
  public:
   typedef size_t size_type;
 
-  static input_random_it begin(size_type size, size_type seed, size_type timestamp) {
-    return input_random_it(size, seed, timestamp, size);
+  static input_random_it begin(size_type seed, size_type timestamp) {
+    return input_random_it(seed, timestamp);
   }
 
-  static input_random_it end(size_type size, size_type seed, size_type timestamp) {
-    return input_random_it(size, seed, timestamp, true);
+  static input_random_it end(size_type seed, size_type timestamp, size_type size) {
+    auto _it = input_random_it(seed, timestamp);
+
+    // end
+    _it._curr_elt = size;
+
+    return _it;
   }
 
-  input_random_it(size_type size, size_type seed, size_type timestamp, bool end = false) :
-      input_it(), _size(size), _gen(seed), _timestamp(timestamp) {
-    if (end) {
-      _curr_elt = _size;
-    }
+  input_random_it(size_type seed, size_type timestamp) :
+      input_it(), _gen(seed), _timestamp(timestamp) {
   }
 
   virtual ~input_random_it() = default;
 
-  input_it &operator++() override {
+  input_random_it operator+(difference_type n) {
+    auto _it = *this;
 
-    if (_curr_elt < _size) {
-
-      float latitude = lat(_gen);
-      float longitude = lon(_gen);
-      uint64_t time = _curr_elt / _timestamp;
-
-      _curr_value = GenericType(time, latitude, longitude);
-
-      ++_curr_elt;
+    while (n-- != 0) {
+      _it.operator++();
     }
+    return _it;
+  }
+
+  input_random_it &operator++() {
+
+    float latitude = lat(_gen);
+    float longitude = lon(_gen);
+    uint64_t time = _curr_elt / _timestamp;
+
+    _curr_value = GenericType(time, latitude, longitude);
+
+    ++_curr_elt;
 
     return *this;
   }
 
-  size_type size() const override {
-    return _size;
-  }
-
-  void reset() override {
-    _curr_elt = 0;
-  }
-
  protected:
   size_type _timestamp;
-
-  size_type _size;
 
   std::mt19937 _gen;
 

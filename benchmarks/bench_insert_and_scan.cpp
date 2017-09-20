@@ -83,43 +83,36 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   PRINTBENCH(id, timer, "count", count);
 }
 
-template<typename T, typename Tp>
-void run_bench(int argc, char *argv[], input_it<Tp> &begin, input_it<Tp> &end, const bench_t &parameters) {
-  // reset iterator
-  begin.reset();
-
-  size_t size = begin.size();
-
+template<typename T, typename _It, typename _T>
+void run_bench(int argc, char *argv[], _It it_begin, _It it_end, const bench_t &parameters) {
   //create container
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-  container->create((uint32_t) size);
+  container->create(it_end - it_begin);
+
+  auto it_curr = it_begin;
 
   duration_t timer;
 
   int id = 0;
-  while (begin != end) {
+  while (it_begin != it_end) {
+    it_curr = std::min(it_begin + parameters.batch_size, it_end);
 
-    size_t n_elts = parameters.batch_size;
-    std::vector<Tp> batch;
-
-    while (begin != end && n_elts != 0) {
-      batch.emplace_back(*begin);
-      ++begin;
-
-      --n_elts;
-    }
+    std::vector<_T> batch(it_begin, it_curr);
 
     // insert batch
     timer = container->insert(batch);
 
     PRINTBENCH_PTR(id, timer);
 
+    // update iterator
+    it_begin = it_curr;
+
     // ========================================
     // Performs global scan
     // ========================================
 
     //Run a scan on the whole array
-    run_queries<T, Tp>((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
+    run_queries<T, _T>((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
 
     ++id;
   }
@@ -146,7 +139,7 @@ int main(int argc, char *argv[]) {
 
   const uint32_t quadtree_depth = 25;
 
-  std::unique_ptr < input_it<GenericType> > begin, end;
+  //std::unique_ptr < input_random_it > begin, end;
 
   if (!fname.empty()) {
     /*PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
@@ -161,15 +154,17 @@ int main(int argc, char *argv[]) {
   } else {
     PRINTOUT("Generate random keys...\n");
 
-    begin = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, false);
-    end = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, true);
+    auto begin = input_random_it::begin(seed, parameters.batch_size);
+    auto end = input_random_it::end(seed, parameters.batch_size, nb_elements);
 
-    PRINTOUT("%d teewts generated \n", (uint32_t) begin->size());
+    PRINTOUT("%d teewts generated \n", end - begin);
+
+    run_bench<PMQBinary<GenericType>, input_random_it, GenericType>(argc, argv, begin, end, parameters);
   }
 
 
   // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<PMQBinary<GenericType>, GenericType>(argc, argv, (*begin), (*end), parameters);
+//  run_bench<PMQBinary<GenericType>, input_random_it, GenericType>(argc, argv, (*begin), (*end), parameters);
 
   //run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
