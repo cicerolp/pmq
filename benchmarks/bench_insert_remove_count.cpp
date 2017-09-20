@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 
   std::string fname(cimg_option("-f", "", "file with tweets to load"));
 
-  parameters.rate = (cimg_option("-rate", 1000, "Rate (elements per batch) for insertions"));
+Z  parameters.rate = (cimg_option("-rate", 1000, "Rate (elements per batch) for insertions"));
   parameters.t_win = (cimg_option("-T", 10800, "Temporal window Size"));
   parameters.max_tree_size = (cimg_option("-tSize", 10800000, "Max size for the Btree and Rtree"));
 

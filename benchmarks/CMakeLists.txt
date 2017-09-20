@@ -12,8 +12,8 @@ source_group("Header Files" FILES ${HEADERS})
 add_executable(bench_insert_remove_scan ${HEADERS}
         bench_insert_remove_scan.cpp
 
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
+        #../include/BTreeCtn.cpp
+        #../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
