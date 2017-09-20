@@ -8,9 +8,9 @@ template<typename T>
 class PMQ : public GeoCtnIntf<T> {
  public:
   // function that access a reference to the element in the container
-  using scantype_function = std::function<void(const T &)>;
+  using scantype_function = typename GeoCtnIntf<T>::scantype_function;
   // function that counts elements in spatial areas
-  using applytype_function = std::function<void(const spatial_t &, uint32_t)>;
+  using applytype_function = typename GeoCtnIntf<T>::applytype_function;
   using value_type = std::pair<uint64_t, T>;
 
   PMQ(int argc, char *argv[], int refLevel = 8) : GeoCtnIntf<T>(refLevel) {

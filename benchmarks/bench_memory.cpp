@@ -6,7 +6,7 @@
 
 #include "PMQ.h"
 //#include "RTreeCtn.h"
-//#include "BTreeCtn.h"
+#include "BTreeCtn.h"
 //#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
@@ -110,18 +110,16 @@ int main(int argc, char *argv[]) {
     auto end = it_t::end(seed, parameters.batch_size, nb_elements);
     PRINTOUT("%d teewts generated \n", end - begin);
 
-    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    if (container == "ghb") {
+      run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    } else if (container == "bt") {
+      run_bench<BTreeCtn < el_t>, it_t, el_t > (argc, argv, begin, end, parameters);
+    } else if (container == "rt") {
+      //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    } else if (container == "dv") {
+      //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    }
   }
-
-  /*if (container == "ghb") {
-    run_bench<PMQBinary>(argc, argv, input, parameters);
-  } else if (container == "ghs") {
-    run_bench<PMQSequential>(argc, argv, input, parameters);
-  } else if (container == "bt") {
-    run_bench<BTreeCtn>(argc, argv, input, parameters);
-  } else if (container == "rt") {
-    run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
-  }*/
 
   return EXIT_SUCCESS;
 }

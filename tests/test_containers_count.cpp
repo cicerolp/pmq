@@ -8,8 +8,7 @@
 
 #include "PMQ.h"
 //#include "RTreeCtn.h"
-//#include "BTreeCtn.h"
-
+#include "BTreeCtn.h"
 //#include "ImplicitDenseVectorCtn.h"
 
 #define PRINT_TEST(...) do { \
@@ -245,6 +244,7 @@ int main(int argc, char *argv[]) {
     test_count = run_test_bench<TEST_PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
   }
 
   return EXIT_SUCCESS;

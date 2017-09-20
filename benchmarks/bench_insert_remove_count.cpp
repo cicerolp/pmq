@@ -10,7 +10,7 @@
 
 #include "PMQ.h"
 //#include "RTreeCtn.h"
-//#include "BTreeCtn.h"
+#include "BTreeCtn.h"
 //#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
@@ -164,6 +164,17 @@ int main(int argc, char *argv[]) {
     auto begin = it_t::begin(file_ptr);
     auto end = it_t::end(file_ptr);
     PRINTOUT("%d teewts loaded \n", end - begin);
+
+    // parameters setup
+    parameters.ctn_size = parameters.rate * parameters.t_win;
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
+    // parameters setup
+    parameters.ctn_size = parameters.max_tree_size;
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
   } else {
     using el_t = GenericType;
     using it_t = input_random_it;
@@ -173,23 +184,17 @@ int main(int argc, char *argv[]) {
     auto end = it_t::end(seed, parameters.rate, nb_elements);
     PRINTOUT("%d teewts generated \n", end - begin);
 
+    // parameters setup
     parameters.ctn_size = parameters.rate * parameters.t_win;
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
 
+    // parameters setup
+    parameters.ctn_size = parameters.max_tree_size;
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
   }
-
-  /*// parameters setup
-  parameters.ctn_size = parameters.rate * parameters.t_win;
-
-  //run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<PMQBinary>(argc, argv, input, parameters, remove_elttype);
-
-  // parameters setup
-  parameters.ctn_size = parameters.max_tree_size;
-
-  run_bench<ImplicitDenseVectorCtn>(argc, argv, input, parameters, remove_elttype);
-  run_bench<BTreeCtn>(argc, argv, input, parameters, remove_valuetype);
-  run_bench<RTreeCtn < bgi::quadratic < 16>> > (argc, argv, input, parameters, remove_valuetype);*/
 
   return EXIT_SUCCESS;
 }
