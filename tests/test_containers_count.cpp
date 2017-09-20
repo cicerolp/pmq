@@ -22,9 +22,9 @@ typedef std::vector<std::unique_ptr<GeoCtnIntf>> ctn_t;
    std::cout << std::endl ;\
 } while (0)
 
-class TEST_GeoHashBinary : public PMQBinary {
+class TEST_PMQBinary : public PMQBinary {
  public:
-  TEST_GeoHashBinary(int argc, char **argv) : PMQBinary(argc, argv) {}
+  TEST_PMQBinary(int argc, char **argv) : PMQBinary(argc, argv) {}
 
   uint32_t test_count(const region_t &region) {
     if (_pma == nullptr) return 0;
@@ -109,7 +109,7 @@ void run_bench(int argc, char *argv[], ctn_t &containers, const std::vector<eltt
   std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
 
   // initialize test_container
-  std::unique_ptr < TEST_GeoHashBinary > test_ctn = std::make_unique<TEST_GeoHashBinary>(argc, argv);
+  std::unique_ptr < TEST_GeoHashBinary > test_ctn = std::make_unique<TEST_PMQBinary>(argc, argv);
   test_ctn->create((uint32_t) ctn_size);
   test_ctn->insert(batch);
 

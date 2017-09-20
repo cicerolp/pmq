@@ -2,6 +2,7 @@
 
 #include "GeoCtnIntf.h"
 #include "pma_it.h"
+#include "GenericType.h"
 
 template<typename T>
 class PMQ : public GeoCtnIntf<T> {
@@ -532,7 +533,9 @@ class PMQSequential : public PMQ<T> {
     return pma_seg_it::end(this->_pma);
   }
 
-  friend class TEST_GeoHashSequential; //gives access to private and protected method for testing purposes
+  template<typename _T>
+  friend
+  class TEST_PMQSequential; //gives access to private and protected method for testing purposes
 };
 
 template<typename T>
@@ -566,5 +569,7 @@ class PMQBinary : public PMQ<T> {
     return pma_seg_it::end(this->_pma);
   }
 
-  friend class TEST_GeoHashBinary; //gives access to private and protected method for testing purposes
+  template<typename _T>
+  friend
+  class TEST_PMQBinary; //gives access to private and protected method for testing purposes
 };

@@ -1,6 +1,5 @@
 add_executable(test_pmq_count
         test_pmq_count.cpp
-
         )
 
 target_link_libraries(test_pmq_count pma ${CMAKE_THREAD_LIBS_INIT})
