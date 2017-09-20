@@ -21,8 +21,8 @@ target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bench_insert_remove_count ${HEADERS}
         bench_insert_remove_count.cpp
 
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
+        #../include/BTreeCtn.cpp
+        #../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
@@ -30,8 +30,8 @@ target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bench_queries_region ${HEADERS}
         bench_queries_region.cpp
 
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
+        #../include/BTreeCtn.cpp
+        #../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_queries_region

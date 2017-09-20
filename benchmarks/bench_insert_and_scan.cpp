@@ -171,10 +171,8 @@ int main(int argc, char *argv[]) {
     using it_t = input_random_it;
 
     PRINTOUT("Generate random keys...\n");
-
     auto begin = it_t::begin(seed, parameters.batch_size);
     auto end = it_t::end(seed, parameters.batch_size, nb_elements);
-
     PRINTOUT("%d teewts generated \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
