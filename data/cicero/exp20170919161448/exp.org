@@ -265,11 +265,11 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
  ,* Management:     https://landscape.canonical.com
  ,* Support:        https://ubuntu.com/advantage
 
-69 packages can be updated.
-25 updates are security updates.
+44 packages can be updated.
+0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Tue Sep 19 17:02:17 2017 from 143.54.11.6
+Last login: Wed Sep 20 14:32:44 2017 from 143.54.11.6
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -286,22 +286,27 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 20, done.
-(1/17)           remote: Compressing objects:  11% (2/17)           remote: Compressing objects:  17% (3/17)           remote: Compressing objects:  23% (4/17)           remote: Compressing objects:  29% (5/17)           remote: Compressing objects:  35% (6/17)           remote: Compressing objects:  41% (7/17)           remote: Compressing objects:  47% (8/17)           remote: Compressing objects:  52% (9/17)           remote: Compressing objects:  58% (10/17)           remote: Compressing objects:  64% (11/17)           remote: Compressing objects:  70% (12/17)           remote: Compressing objects:  76% (13/17)           remote: Compressing objects:  82% (14/17)           remote: Compressing objects:  88% (15/17)           remote: Compressing objects:  94% (16/17)           remote: Compressing objects: 100% (17/17)           remote: Compressing objects: 100% (17/17), done.        
-remote: Total 20 (delta 10), reused 0 (delta 0)
-(1/20)   Unpacking objects:  10% (2/20)   Unpacking objects:  15% (3/20)   Unpacking objects:  20% (4/20)   Unpacking objects:  25% (5/20)   Unpacking objects:  30% (6/20)   Unpacking objects:  35% (7/20)   Unpacking objects:  40% (8/20)   Unpacking objects:  45% (9/20)   Unpacking objects:  50% (10/20)   Unpacking objects:  55% (11/20)   Unpacking objects:  60% (12/20)   Unpacking objects:  65% (13/20)   Unpacking objects:  70% (14/20)   Unpacking objects:  75% (15/20)   Unpacking objects:  80% (16/20)   Unpacking objects:  85% (17/20)   Unpacking objects:  90% (18/20)   Unpacking objects:  95% (19/20)   Unpacking objects: 100% (20/20)   Unpacking objects: 100% (20/20), done.
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 18, done.
+(1/15)           remote: Compressing objects:  13% (2/15)           remote: Compressing objects:  20% (3/15)           remote: Compressing objects:  26% (4/15)           remote: Compressing objects:  33% (5/15)           remote: Compressing objects:  40% (6/15)           remote: Compressing objects:  46% (7/15)           remote: Compressing objects:  53% (8/15)           remote: Compressing objects:  60% (9/15)           remote: Compressing objects:  66% (10/15)           remote: Compressing objects:  73% (11/15)           remote: Compressing objects:  80% (12/15)           remote: Compressing objects:  86% (13/15)           remote: Compressing objects:  93% (14/15)           remote: Compressing objects: 100% (15/15)           remote: Compressing objects: 100% (15/15), done.        
+remote: Total 18 (delta 10), reused 0 (delta 0)
+(1/18)   Unpacking objects:  11% (2/18)   Unpacking objects:  16% (3/18)   Unpacking objects:  22% (4/18)   Unpacking objects:  27% (5/18)   Unpacking objects:  33% (6/18)   Unpacking objects:  38% (7/18)   Unpacking objects:  44% (8/18)   Unpacking objects:  50% (9/18)   Unpacking objects:  55% (10/18)   Unpacking objects:  61% (11/18)   Unpacking objects:  66% (12/18)   Unpacking objects:  72% (13/18)   Unpacking objects:  77% (14/18)   Unpacking objects:  83% (15/18)   Unpacking objects:  88% (16/18)   Unpacking objects:  94% (17/18)   Unpacking objects: 100% (18/18)   Unpacking objects: 100% (18/18), done.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 origin/exp20170919161448
-Branch exp20170919161448 set up to track remote branch exp20170919161448 from origin.
-Switched to a new branch 'exp20170919161448'
+Already on 'exp20170919161448'
+Your branch is behind 'origin/exp20170919161448' by 3 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-Already up-to-date.
-commit e4d3f76500c5f879fb468cbd4f7b32b4da1c684f
-Date:   Tue Sep 19 17:23:05 2017 -0300
+Updating ab0bee4..b9c4a96
+Fast-forward
+ data/cicero/exp20170919161448/exp.org | 92 +++++++++++++++++++++--------------
+ data/cicero/exp20170919161448/run.sh  |  4 +-
+ 2 files changed, 58 insertions(+), 38 deletions(-)
+commit b9c4a967da9b70e14c827639a3f371078db6464f
+Date:   Wed Sep 20 15:10:23 2017 -0300
 
-    UPD: run.sh script
+    TODO: rerun with 10 M elements
 #+end_example
 
 Update PMA repository on exp machine
@@ -335,7 +340,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ 1505852677
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ 1505933858
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -345,22 +350,24 @@ ps ux
 
 #+RESULTS:
 #+begin_example
-runExp: 1 windows (created Tue Sep 19 17:24:37 2017) [80x23]
+runExp: 1 windows (created Wed Sep 20 15:57:38 2017) [80x23]
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-julio     4396  0.0  0.0  45248  4492 ?        Ss   17:23   0:00 /lib/systemd/sy
-julio     4398  0.0  0.0 145364  2112 ?        S    17:23   0:00 (sd-pam)
-julio     4448  0.0  0.0  97464  3404 ?        R    17:23   0:00 sshd: julio@pts
-julio     4449  0.0  0.0  22688  5192 pts/8    Ss   17:23   0:00 -bash
-julio     4494  0.0  0.0  29420  3008 ?        Ss   17:24   0:00 tmux new -d -s 
-julio     4495  0.0  0.0  12532  3092 pts/9    Ss+  17:24   0:00 bash -c cd ~/Pr
-julio     4497  0.0  0.0  12536  2908 pts/9    S+   17:24   0:00 /bin/bash ./run
-julio     4506  0.0  0.0   9676  2376 pts/9    S+   17:24   0:00 make
-julio     4509  0.0  0.0   9676  2368 pts/9    S+   17:24   0:00 make -f CMakeFi
-julio     4599  0.0  0.0   9676  2452 pts/9    S+   17:24   0:00 make -f benchma
-julio     4602  0.0  0.0   4508   736 pts/9    S+   17:24   0:00 /bin/sh -c cd /
-julio     4603  0.0  0.0   8352   724 pts/9    S+   17:24   0:00 /usr/bin/c++ -I
-julio     4604  100  0.8 342304 291324 pts/9   R+   17:24   0:02 /usr/lib/gcc/x8
-julio     4606  0.0  0.0  37368  3280 pts/8    R+   17:24   0:00 ps ux
+julio     3002  0.0  0.0  45248  4604 ?        Ss   14:32   0:00 /lib/systemd/sy
+julio     3004  0.0  0.0 145364  2112 ?        S    14:32   0:00 (sd-pam)
+julio     3054  0.0  0.0  97464  3472 ?        S    14:32   0:00 sshd: julio@pts
+julio     3055  0.0  0.0  23700  6496 pts/8    Ss+  14:32   0:00 -bash
+julio     3273  0.0  0.0  97464  3416 ?        S    15:57   0:00 sshd: julio@pts
+julio     3274  0.0  0.0  22688  5360 pts/9    Ss   15:57   0:00 -bash
+julio     3323  0.0  0.0  29420  2952 ?        Ss   15:57   0:00 tmux new -d -s 
+julio     3324  0.0  0.0  12532  3024 pts/10   Ss+  15:57   0:00 bash -c cd ~/Pr
+julio     3326  0.0  0.0  12536  3028 pts/10   S+   15:57   0:00 /bin/bash ./run
+julio     3335  0.0  0.0   9676  2324 pts/10   S+   15:57   0:00 make
+julio     3338  0.0  0.0   9676  2348 pts/10   S+   15:57   0:00 make -f CMakeFi
+julio     3504  0.0  0.0   9676  2364 pts/10   S+   15:57   0:00 make -f tests/C
+julio     3507  0.0  0.0   4508   760 pts/10   S+   15:57   0:00 /bin/sh -c cd /
+julio     3508  0.0  0.0   8352   700 pts/10   S+   15:57   0:00 /usr/bin/c++ -I
+julio     3509  0.0  0.2 125540 87696 pts/10   R+   15:57   0:00 /usr/lib/gcc/x8
+julio     3511  0.0  0.0  37368  3316 pts/9    R+   15:57   0:00 ps ux
 #+end_example
 
 **** TODO Pull local 
