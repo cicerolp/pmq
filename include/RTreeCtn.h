@@ -9,12 +9,15 @@
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 
-template<typename Balancing>
-class RTreeCtn : public GeoCtnIntf<GenericType> {
- public:
-  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf<GenericType>(_refLevel) {
+template<typename T, typename Balancing>
+class RTreeCtn : public GeoCtnIntf<T> {
+  // function that access a reference to the element in the container
+  using scantype_function = typename GeoCtnIntf<T>::scantype_function;
+  // function that counts elements in spatial areas
+  using applytype_function = typename GeoCtnIntf<T>::applytype_function;
 
-  }
+ public:
+  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf<T>(_refLevel) {}
   virtual ~RTreeCtn() {
     _rtree->clear();
   };
@@ -34,19 +37,19 @@ class RTreeCtn : public GeoCtnIntf<GenericType> {
   }
 
   // update container
-  virtual duration_t insert(std::vector<elttype> batch) override {
+  virtual duration_t insert(std::vector<T> batch) override {
     Timer timer;
     timer.start();
 
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
     }
 
     timer.stop();
     return {duration_info("insert", timer)};
   }
 
-  duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override {
+  duration_t insert_rm(std::vector<T> batch, std::function<int(const void *)> is_removed) override {
     duration_t duration;
 
     Timer timer;
@@ -54,7 +57,7 @@ class RTreeCtn : public GeoCtnIntf<GenericType> {
 
     // insertion
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
     }
 
     // insert end
@@ -63,7 +66,6 @@ class RTreeCtn : public GeoCtnIntf<GenericType> {
 
     if (_rtree->size() > _size) {
 
-      DBG_PRINTOUT("RTREE before remove %d\n", _rtree->size());
       // remove start
       timer.start();
 
@@ -71,14 +73,6 @@ class RTreeCtn : public GeoCtnIntf<GenericType> {
       std::vector<value> result;
       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
                     std::back_inserter(result));
-
-      DBG_PRINTOUT("RTREE to be removed: %d \n", result.size());
-      for (const auto &elt : result) {
-        if (_rtree->remove(elt) == 0) {
-          PRINTOUT("Elt not Removed: (%f, %f)\n", elt.second.latitude, elt.second.longitude);
-        }
-      }
-      DBG_PRINTOUT("RTREE after remove %d\n", _rtree->size());
 
       // remove end
       timer.stop();
@@ -182,17 +176,17 @@ class RTreeCtn : public GeoCtnIntf<GenericType> {
   //typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
   typedef bg::model::point<float, 2, bg::cs::cartesian> point;
   typedef bg::model::box<point> box;
-  typedef std::pair<point, valuetype> value;
+  typedef std::pair<point, T> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
 
   std::unique_ptr<rtree_t> _rtree{nullptr};
   uint32_t _size;
 };
 
-template<typename Balancing>
-class RTreeBulkCtn : public RTreeCtn<Balancing> {
+template<typename T, typename Balancing>
+class RTreeBulkCtn : public RTreeCtn<T, Balancing> {
  public:
-  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<Balancing>(argc, argv, _refLevel) {}
+  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<T, Balancing>(argc, argv, _refLevel) {}
   virtual ~RTreeBulkCtn() = default;
 
   // build container
@@ -207,7 +201,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
   // update container
-  duration_t insert(std::vector<elttype> batch) override {
+  duration_t insert(std::vector<T> batch) override {
     Timer timer;
     timer.start();
 
@@ -218,7 +212,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
       std::transform(
           batch.begin(), batch.end(), std::back_inserter(data),
           [&](const auto &elt) {
-            return std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value);
+            return std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt);
           }
       );
 
@@ -226,7 +220,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
 
     } else {
       for (const auto &elt: batch) {
-        this->_rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+        this->_rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
       }
     }
 
@@ -240,7 +234,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
  protected:
-  typedef typename RTreeCtn<Balancing>::point point;
-  typedef typename RTreeCtn<Balancing>::value value;
-  typedef typename RTreeCtn<Balancing>::rtree_t rtree_t;
+  typedef typename RTreeCtn<T, Balancing>::point point;
+  typedef typename RTreeCtn<T, Balancing>::value value;
+  typedef typename RTreeCtn<T, Balancing>::rtree_t rtree_t;
 };

@@ -11,7 +11,7 @@
 #include "input_it.h"
 
 #include "PMQ.h"
-//#include "RTreeCtn.h"
+#include "RTreeCtn.h"
 #include "BTreeCtn.h"
 //#include "ImplicitDenseVectorCtn.h"
 
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
-    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
     //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
   }
 

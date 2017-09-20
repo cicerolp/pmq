@@ -9,7 +9,7 @@
 #include "input_it.h"
 
 #include "PMQ.h"
-//#include "RTreeCtn.h"
+#include "RTreeCtn.h"
 #include "BTreeCtn.h"
 //#include "ImplicitDenseVectorCtn.h"
 
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
     // parameters setup
     parameters.ctn_size = parameters.max_tree_size;
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
-    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
     //run_bench<ImplicitDenseVectorCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
 
   }
