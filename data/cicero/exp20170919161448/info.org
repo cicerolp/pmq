@@ -1,30 +1,30 @@
 
 #+TITLE: Experiment results
-#+DATE: Ter Set 19 17:29:20 BRT 2017
+#+DATE: Qua Set 20 16:02:20 BRT 2017
 #+AUTHOR: julio
 #+MACHINE: cicero
 #+FILE: info.org
  
 * MACHINE INFO:
 ** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
-julio    pts/8        2017-09-19 17:23 (143.54.11.6)
-julio    pts/9        2017-09-19 17:24 (tmux(4494).%0)
+julio    pts/9        2017-09-20 15:57 (143.54.11.6)
+julio    pts/10       2017-09-20 15:57 (tmux(3323).%0)
 ############################################
 ** ENVIRONMENT VARIABLES:
 LC_PAPER=pt_BR.UTF-8
 LC_ADDRESS=pt_BR.UTF-8
-XDG_SESSION_ID=4407
+XDG_SESSION_ID=4575
 LC_MONETARY=pt_BR.UTF-8
 TERM=screen
 SHELL=/bin/bash
-SSH_CLIENT=143.54.11.6 60483 22
+SSH_CLIENT=143.54.11.6 44332 22
 LC_NUMERIC=pt_BR.UTF-8
-SSH_TTY=/dev/pts/8
+SSH_TTY=/dev/pts/9
 USER=julio
 LC_TELEPHONE=pt_BR.UTF-8
 LS_COLORS=
-SSH_AUTH_SOCK=/tmp/ssh-7qzKuJeUUR/agent.4448
-TMUX=/tmp/tmux-1001/default,4494,0
+SSH_AUTH_SOCK=/tmp/ssh-IQfWcXTJSM/agent.3273
+TMUX=/tmp/tmux-1001/default,3323,0
 MAIL=/var/mail/julio
 PATH=/home/julio/bin:/home/julio/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QT_QPA_PLATFORMTHEME=appmenu-qt5
@@ -39,7 +39,7 @@ SHLVL=4
 HOME=/home/julio
 LOGNAME=julio
 LC_CTYPE=pt_BR.UTF-8
-SSH_CONNECTION=143.54.11.6 60483 143.54.13.134 22
+SSH_CONNECTION=143.54.11.6 44332 143.54.13.134 22
 LESSOPEN=| /usr/bin/lesspipe %s
 XDG_RUNTIME_DIR=/run/user/1001
 LC_TIME=pt_BR.UTF-8
@@ -58,7 +58,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3961.406
+cpu MHz		: 3996.984
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -85,7 +85,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3981.656
+cpu MHz		: 3950.859
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -112,7 +112,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3997.406
+cpu MHz		: 3988.968
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -139,7 +139,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3960.140
+cpu MHz		: 3996.140
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -166,7 +166,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3997.828
+cpu MHz		: 3994.593
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -193,7 +193,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3947.062
+cpu MHz		: 3804.328
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -220,7 +220,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 4001.906
+cpu MHz		: 3990.375
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -247,7 +247,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3934.265
+cpu MHz		: 3999.375
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -272,45 +272,45 @@ power management:
 powersave
 ############################################
 ** CPU FREQUENCY:
-3961406
+3996984
 ############################################
 ** MEM INFO:
 MemTotal:       32895452 kB
-MemFree:        30300240 kB
-MemAvailable:   32034868 kB
-Buffers:          300180 kB
-Cached:          1633820 kB
+MemFree:        29754012 kB
+MemAvailable:   32032316 kB
+Buffers:          348756 kB
+Cached:          2060464 kB
 SwapCached:            0 kB
-Active:          1530072 kB
-Inactive:         586552 kB
-Active(anon):     214020 kB
+Active:          1700324 kB
+Inactive:         892308 kB
+Active(anon):     214952 kB
 Inactive(anon):    43988 kB
-Active(file):    1316052 kB
-Inactive(file):   542564 kB
+Active(file):    1485372 kB
+Inactive(file):   848320 kB
 Unevictable:          32 kB
 Mlocked:              32 kB
 SwapTotal:             0 kB
 SwapFree:              0 kB
-Dirty:              2100 kB
+Dirty:              2148 kB
 Writeback:             0 kB
-AnonPages:        182456 kB
-Mapped:           134212 kB
+AnonPages:        183596 kB
+Mapped:           136076 kB
 Shmem:             75380 kB
-Slab:             321408 kB
-SReclaimable:     278840 kB
-SUnreclaim:        42568 kB
-KernelStack:        5072 kB
-PageTables:        12216 kB
+Slab:             391428 kB
+SReclaimable:     347440 kB
+SUnreclaim:        43988 kB
+KernelStack:        5104 kB
+PageTables:        12192 kB
 NFS_Unstable:          0 kB
 Bounce:                0 kB
 WritebackTmp:          0 kB
 CommitLimit:    16447724 kB
-Committed_AS:    1562804 kB
+Committed_AS:    1523652 kB
 VmallocTotal:   34359738367 kB
 VmallocUsed:           0 kB
 VmallocChunk:          0 kB
 HardwareCorrupted:     0 kB
-AnonHugePages:    215040 kB
+AnonHugePages:    212992 kB
 CmaTotal:              0 kB
 CmaFree:               0 kB
 HugePages_Total:       0
@@ -326,7 +326,7 @@ DirectMap1G:    28311552 kB
 
 ==============NVSMI LOG==============
 
-Timestamp                           : Tue Sep 19 17:29:20 2017
+Timestamp                           : Wed Sep 20 16:02:20 2017
 Driver Version                      : 375.66
 
 Attached GPUs                       : 2
@@ -448,12 +448,12 @@ GPU 0000:01:00.0
         Double Bit ECC              : N/A
         Pending                     : N/A
     Temperature
-        GPU Current Temp            : 52 C
+        GPU Current Temp            : 54 C
         GPU Shutdown Temp           : 96 C
         GPU Slowdown Temp           : 91 C
     Power Readings
         Power Management            : Supported
-        Power Draw                  : 15.99 W
+        Power Draw                  : 15.79 W
         Power Limit                 : 170.00 W
         Default Power Limit         : 170.00 W
         Enforced Power Limit        : 170.00 W
@@ -602,12 +602,12 @@ GPU 0000:02:00.0
         Double Bit ECC              : N/A
         Pending                     : N/A
     Temperature
-        GPU Current Temp            : 48 C
+        GPU Current Temp            : 50 C
         GPU Shutdown Temp           : 96 C
         GPU Slowdown Temp           : 91 C
     Power Readings
         Power Management            : Supported
-        Power Draw                  : 13.66 W
+        Power Draw                  : 13.85 W
         Power Limit                 : 170.00 W
         Default Power Limit         : 170.00 W
         Enforced Power Limit        : 170.00 W
@@ -640,11 +640,11 @@ Linux version 4.4.0-92-generic (buildd@lcy01-17) (gcc version 5.4.0 20160609 (Ub
 ############################################
 * CODE REVISIONS:
 ** GIT REVISION OF TWITTERVIS:
-commit e4d3f76500c5f879fb468cbd4f7b32b4da1c684f
+commit b9c4a967da9b70e14c827639a3f371078db6464f
 Author: Julio Toss <jutoss@gmail.com>
-Date:   Tue Sep 19 17:23:05 2017 -0300
+Date:   Wed Sep 20 15:10:23 2017 -0300
 
-    UPD: run.sh script
+    TODO: rerun with 10 M elements
 *** CMAKE VARIABLES:
 -- cotire 1.7.8 loaded.
 -- Configuring done
@@ -686,6 +686,6 @@ PMA_DEBUG:BOOL=OFF
 PMA_DEBUG_BAL:BOOL=OFF
 PMA_TRACE_MOVE:BOOL=OFF
 RHO_INIT:BOOL=OFF
-TWITTERVIS:BOOL=ON
+TWITTERVIS:BOOL=OFF
 TWITTER_BENCH:BOOL=OFF
 ############################################
