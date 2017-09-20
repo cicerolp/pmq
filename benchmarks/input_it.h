@@ -45,16 +45,16 @@ class input_it : public std::iterator<std::forward_iterator_tag, T> {
   T _curr_value;
 };
 
-template <typename T>
+template<typename T>
 class input_file_it : public input_it<T> {
  public:
   typedef size_t size_type;
   // this type represents a pointer-to-value_type
-  using pointer = typename input_it<T>::pointer ;
+  using pointer = typename input_it<T>::pointer;
   // this type represents a reference-to-value_type
-  using reference = typename input_it<T>::reference ;
+  using reference = typename input_it<T>::reference;
   /// Distance between iterators is represented as this type.
-  using difference_type = typename input_it<T>::difference_type ;
+  using difference_type = typename input_it<T>::difference_type;
 
   static input_file_it<T> begin(const std::shared_ptr<std::ifstream> &file_ptr) {
     return input_file_it(file_ptr);
@@ -75,6 +75,9 @@ class input_file_it : public input_it<T> {
       // update current element
       _it._curr_elt++;
     }
+
+    // points to first invalid element
+    _it._curr_elt++;
 
     // update current istream position
     _it._pos = file_ptr->tellg();
@@ -97,7 +100,7 @@ class input_file_it : public input_it<T> {
     // skip header
     seek(this->_file_ptr, T::header_size);
 
-    _pos = _file_ptr->tellg();
+    readCurrValue();
   }
 
   virtual ~input_file_it() = default;
@@ -122,14 +125,7 @@ class input_file_it : public input_it<T> {
       return *this;
     }
 
-    // must read BEFORE checking EOF
-    _file_ptr->read((char *) &this->_curr_value, T::record_size);
-
-    if (!_file_ptr->eof()) {
-      ++this->_curr_elt;
-    }
-
-    _pos = _file_ptr->tellg();
+    readCurrValue();
 
     return *this;
   }
@@ -139,6 +135,14 @@ class input_file_it : public input_it<T> {
     // rewind file
     file_ptr->clear();
     file_ptr->seekg(pos);
+  }
+
+  void readCurrValue() {
+    // must read BEFORE checking EOF
+    _file_ptr->read((char *) &this->_curr_value, T::record_size);
+
+    ++this->_curr_elt;
+    _pos = _file_ptr->tellg();
   }
 
   std::shared_ptr<std::ifstream> _file_ptr;
@@ -156,14 +160,15 @@ class input_random_it : public input_it<GenericType> {
   static input_random_it end(size_type seed, size_type timestamp, size_type size) {
     auto _it = input_random_it(seed, timestamp);
 
-    // end
-    _it._curr_elt = size;
+    // points to first invalid element
+    _it._curr_elt = size + 1;
 
     return _it;
   }
 
   input_random_it(size_type seed, size_type timestamp) :
       input_it(), _gen(seed), _timestamp(timestamp) {
+    readCurrValue();
   }
 
   virtual ~input_random_it() = default;
@@ -178,19 +183,20 @@ class input_random_it : public input_it<GenericType> {
   }
 
   input_random_it &operator++() {
-
-    float latitude = lat(_gen);
-    float longitude = lon(_gen);
-    uint64_t time = _curr_elt / _timestamp;
-
-    _curr_value = GenericType(time, latitude, longitude);
-
-    ++_curr_elt;
-
+    readCurrValue();
     return *this;
   }
 
  protected:
+  void readCurrValue() {
+    float longitude = lon(_gen);
+    float latitude = lat(_gen);
+    uint64_t time = _curr_elt / _timestamp;
+
+    _curr_value = GenericType(time, latitude, longitude);
+    _curr_elt++;
+  }
+
   size_type _timestamp;
 
   std::mt19937 _gen;
