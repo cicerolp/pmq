@@ -25,22 +25,6 @@ int main(int argc, char *argv[]) {
   // btree
   std::shared_ptr < BTreeCtn > container = std::make_shared<BTreeCtn>(argc, argv);
 
-  // rtree
-  //typedef bgi::rstar<16> balacing_algorithm;
-  //std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
-
-  // implicit quadtree
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashBinary>(argc, argv);
-
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
-
-  // SQL
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PostGisCtn>();
-
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return 0;
 
