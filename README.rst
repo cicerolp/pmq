@@ -33,10 +33,20 @@ Testing with twitter distribution of data
 
 `./data/cicero/exp20170907112116/exp.rst <./data/cicero/exp20170907112116/exp.rst>`_
 
-1.4 **TODO** [2017-09-15 Sex]  Experiment *bench_insert_and_scan*
+1.4 **DONE** [2017-09-15 Sex]  Experiment *bench_insert_and_scan* ``paper:exp20170919161448``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Template to start an experiment:
+Test insertions with larger inputs
+
+- Rtree (quadratic)
+
+- Btree
+
+- PMQ
+
+- DenseVector
+
+`./data/cicero/exp20170919161448/exp.rst <./data/cicero/exp20170919161448/exp.rst>`_
 
 2 Benchmark Queries region
 --------------------------

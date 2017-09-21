@@ -7,7 +7,7 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4
+#+OPTIONS: ^:{} todo:nil H:4 author:nil
 #+PROPERTY: header-args :cache no :eval no-export 
 
 
@@ -45,7 +45,7 @@ To test with 350 we should disable the scans.
 
 With 10 M elemtents PMA has size src_python{return( 16777216 * 32 / 2**20) ;} {{{results(=512.0=)}}} Megabytes. 
 
-Test with larger Size will be done in the querying and scanning benchmark.
+Tests with larger Size will be done in the querying and scanning benchmark.
 
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
