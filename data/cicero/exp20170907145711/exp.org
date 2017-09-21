@@ -13,6 +13,8 @@
 
 * DONE Description                                                   :export:
 
+*DISCLAIMER:* This bencmark used an ineficient (and unstable) algorithm from Boost for dealing with spacial coordinates. 
+
 Test the queries on uniform data. 
 And compare the folling performances.
 
@@ -24,6 +26,7 @@ Use 10**8 elements.
 - RTREE - quadratic algorithm with bulk loading
 
 Use the refinement level = 8 
+
 
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
@@ -438,15 +441,6 @@ df
 
 #+RESULTS:
 #+begin_example
-Loading tidyverse: ggplot2
-Loading tidyverse: tibble
-Loading tidyverse: tidyr
-Loading tidyverse: readr
-Loading tidyverse: purrr
-Loading tidyverse: dplyr
-Conflicts with tidy packages ---------------------------------------------------
-filter(): dplyr, stats
-lag():    dplyr, stats
 Parsed with column specification:
 cols(
   V1 = col_character(),
@@ -623,7 +617,8 @@ myplot <- function(data) {
     geom_point() +
     #labs(title= data$bench) +     
 #    scale_x_continuous(breaks=seq(0, 14, by=1)) +
-    facet_wrap(bench~`Query Width`,scale="free", labeller = "label_both") + 
+    #facet_wrap(bench~`Query Width`,scale="free", labeller = "label_both") + 
+    facet_wrap(bench~`Query Width`,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
 #    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
 #    facet_grid(queryW~bench,scale="free") + 
     theme(legend.position = "bottom",)
@@ -643,94 +638,19 @@ dfplot %>%
 - for very small queries we are similar to othe Btree an Rtree
 - Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
-** What is the actual count of elements per query ?: 
 
-*** Plot                                                         :noexport:
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session 
-
-myplot <- function(data) {
-    data %>%
-    mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-    ggplot(aes(x = as.factor(queryId), color = algo)) +  
-    geom_point(aes(y = Count)) +
-    facet_wrap(~queryId,scale="free", labeller = "label_both") + 
-    theme(legend.position = "bottom",)
-}
-#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
-#dfplot %>% filter(bench == "apply_at_region") %>% myplot()
-dfplot %>% 
-    myplot() 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-303604q/figure3036vdb.png]]
-
+** What is the actual count of elements per query ?
 
 *** Table                                                          :export:
-There are some queries where the count differs for Rtree by a small amout of elements
-Counts have some differences :
-#+begin_src R :results output :exports none :session 
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    #group to see if every algo has same coubts
-    group_by(queryId, bench) %>%
-    summarize(c = mean(Count), s = sd(Count)  ) %>% filter ( s > 0)
 
-dfplot %>% filter( bench=="apply_at_region" ) %>% arrange(queryId)
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 20 x 4
-# Groups:   queryId [20]
-   queryId           bench          c         s
-     <int>           <chr>      <dbl>     <dbl>
- 1       1 apply_at_region 13238672.0 1.4142136
- 2       2 apply_at_region 13232631.5 0.5773503
- 3       3 apply_at_region 13236198.0 1.1547005
- 4       5 apply_at_region 13234142.5 0.5773503
- 5       6 apply_at_region 13236458.2 1.5000000
- 6       7 apply_at_region 13237089.5 1.7320508
- 7       8 apply_at_region 13237619.2 1.5000000
- 8      11 apply_at_region  3307715.0 1.1547005
- 9      14 apply_at_region  3311511.0 1.1547005
-10      15 apply_at_region  3307750.0 0.8164966
-11      16 apply_at_region  3306478.8 0.9574271
-12      20 apply_at_region   827282.5 0.5773503
-13      23 apply_at_region   826549.8 0.5000000
-14      26 apply_at_region   826960.8 0.5000000
-15      27 apply_at_region   826865.5 0.5773503
-16      30 apply_at_region   206005.8 0.5000000
-17      33 apply_at_region   206557.5 0.5773503
-18      41 apply_at_region    51758.5 0.5773503
-19      42 apply_at_region    51959.5 0.5773503
-20      56 apply_at_region    12961.5 0.5773503
-# A tibble: 320 x 7
-            algo queryId           bench Refine    Count     avg_ms       stdv
-           <chr>   <int>           <chr>  <int>    <int>      <dbl>      <dbl>
- 1         BTree       0 apply_at_region    482 13239675 261.008800 1.32437472
- 2 GeoHashBinary       0 apply_at_region    482 13239675   9.993922 0.02765056
- 3         RTree       0 apply_at_region     NA 13239675 232.691200 0.15173793
- 4     RTreeBulk       0 apply_at_region     NA 13239675  37.106310 0.02105287
- 5         BTree       1 apply_at_region    519 13238671 264.323400 0.47537358
- 6 GeoHashBinary       1 apply_at_region    519 13238671  10.146100 0.06975201
- 7         RTree       1 apply_at_region     NA 13238672 230.822700 0.14978581
- 8     RTreeBulk       1 apply_at_region     NA 13238674  37.150580 0.02902730
- 9         BTree       2 apply_at_region    708 13232631 262.139700 0.51322619
-10 GeoHashBinary       2 apply_at_region    708 13232631   9.751330 0.01564733
-# ... with 310 more rows
-#+end_example
-
-Cases where the Count doesn't match exactly. 
-#+begin_src R :results table :exports results :session :colnames yes
+Variance shows that some counts differ between algorithms:
+#+begin_src R :results output :exports none :session :colnames yes
 
 dfplot %>% 
     filter( bench== "apply_at_region") %>% 
-    #group to see if every algo has same coubts
-    group_by(queryId) %>%
-    summarize(Var = round(var(Count),3)  ) %>% filter ( Var > 0) -> 
-countVariation
+    group_by(queryId) %>%                     #group to see if every algo has same coubts
+    summarize(Var = round(var(Count),3)  ) -> 
+    countVariation
 
 options(dplyr.width = Inf)
 dfplot %>% 
@@ -743,11 +663,118 @@ dfplot %>%
     #select(queryId,ends_with("Count") , ends_with("ms")) %>%
     select(queryId,ends_with("Count") ) %>%
  #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
-    inner_join(countVariation) %>%
+    inner_join(countVariation) -> wideTable
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = "queryId"
+
+#+CAPTION: Number of elements returned in each query
+#+begin_src R :results table :exports results :session :colnames yes
+wideTable %>%
     as_tibble() %>%
     print(n = nrow(.))
 #+end_src
 
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
+|---------+-------------+---------------------+-----------------+-------------+-------|
+|       0 |    13239675 |            13239675 |        13239675 |    13239675 |     0 |
+|       1 |    13238671 |            13238671 |        13238674 |    13238672 |     2 |
+|       2 |    13232631 |            13232631 |        13232632 |    13232632 | 0.333 |
+|       3 |    13236197 |            13236197 |        13236199 |    13236199 | 1.333 |
+|       4 |    13235039 |            13235039 |        13235039 |    13235039 |     0 |
+|       5 |    13234142 |            13234142 |        13234143 |    13234143 | 0.333 |
+|       6 |    13236459 |            13236459 |        13236459 |    13236456 |  2.25 |
+|       7 |    13237088 |            13237088 |        13237091 |    13237091 |     3 |
+|       8 |    13237620 |            13237620 |        13237620 |    13237617 |  2.25 |
+|       9 |    13236585 |            13236585 |        13236585 |    13236585 |     0 |
+|      10 |     3307999 |             3307999 |         3307999 |     3307999 |     0 |
+|      11 |     3307714 |             3307714 |         3307716 |     3307716 | 1.333 |
+|      12 |     3311742 |             3311742 |         3311742 |     3311742 |     0 |
+|      13 |     3309493 |             3309493 |         3309493 |     3309493 |     0 |
+|      14 |     3311510 |             3311510 |         3311512 |     3311512 | 1.333 |
+|      15 |     3307750 |             3307750 |         3307751 |     3307749 | 0.667 |
+|      16 |     3306478 |             3306478 |         3306479 |     3306480 | 0.917 |
+|      17 |     3310550 |             3310550 |         3310550 |     3310550 |     0 |
+|      18 |     3308792 |             3308792 |         3308792 |     3308792 |     0 |
+|      19 |     3306174 |             3306174 |         3306174 |     3306174 |     0 |
+|      20 |      827282 |              827282 |          827283 |      827283 | 0.333 |
+|      21 |      826201 |              826201 |          826201 |      826201 |     0 |
+|      22 |      827822 |              827822 |          827822 |      827822 |     0 |
+|      23 |      826550 |              826550 |          826550 |      826549 |  0.25 |
+|      24 |      827529 |              827529 |          827529 |      827529 |     0 |
+|      25 |      827031 |              827031 |          827031 |      827031 |     0 |
+|      26 |      826961 |              826961 |          826961 |      826960 |  0.25 |
+|      27 |      826865 |              826865 |          826866 |      826866 | 0.333 |
+|      28 |      827114 |              827114 |          827114 |      827114 |     0 |
+|      29 |      827674 |              827674 |          827674 |      827674 |     0 |
+|      30 |      206006 |              206006 |          206006 |      206005 |  0.25 |
+|      31 |      207318 |              207318 |          207318 |      207318 |     0 |
+|      32 |      206660 |              206660 |          206660 |      206660 |     0 |
+|      33 |      206557 |              206557 |          206558 |      206558 | 0.333 |
+|      34 |      206389 |              206389 |          206389 |      206389 |     0 |
+|      35 |      207421 |              207421 |          207421 |      207421 |     0 |
+|      36 |      207564 |              207564 |          207564 |      207564 |     0 |
+|      37 |      207137 |              207137 |          207137 |      207137 |     0 |
+|      38 |      206811 |              206811 |          206811 |      206811 |     0 |
+|      39 |      206995 |              206995 |          206995 |      206995 |     0 |
+|      40 |       51787 |               51787 |           51787 |       51787 |     0 |
+|      41 |       51758 |               51758 |           51759 |       51759 | 0.333 |
+|      42 |       51959 |               51959 |           51960 |       51960 | 0.333 |
+|      43 |       51525 |               51525 |           51525 |       51525 |     0 |
+|      44 |       51759 |               51759 |           51759 |       51759 |     0 |
+|      45 |       51614 |               51614 |           51614 |       51614 |     0 |
+|      46 |       52054 |               52054 |           52054 |       52054 |     0 |
+|      47 |       51658 |               51658 |           51658 |       51658 |     0 |
+|      48 |       52017 |               52017 |           52017 |       52017 |     0 |
+|      49 |       51573 |               51573 |           51573 |       51573 |     0 |
+|      50 |       12944 |               12944 |           12944 |       12944 |     0 |
+|      51 |       12679 |               12679 |           12679 |       12679 |     0 |
+|      52 |       13078 |               13078 |           13078 |       13078 |     0 |
+|      53 |       12915 |               12915 |           12915 |       12915 |     0 |
+|      54 |       12945 |               12945 |           12945 |       12945 |     0 |
+|      55 |       12978 |               12978 |           12978 |       12978 |     0 |
+|      56 |       12961 |               12961 |           12962 |       12962 | 0.333 |
+|      57 |       12816 |               12816 |           12816 |       12816 |     0 |
+|      58 |       13050 |               13050 |           13050 |       13050 |     0 |
+|      59 |       12981 |               12981 |           12981 |       12981 |     0 |
+|      60 |        3185 |                3185 |            3185 |        3185 |     0 |
+|      61 |        3229 |                3229 |            3229 |        3229 |     0 |
+|      62 |        3203 |                3203 |            3203 |        3203 |     0 |
+|      63 |        3303 |                3303 |            3303 |        3303 |     0 |
+|      64 |        3227 |                3227 |            3227 |        3227 |     0 |
+|      65 |        3276 |                3276 |            3276 |        3276 |     0 |
+|      66 |        3181 |                3181 |            3181 |        3181 |     0 |
+|      67 |        3238 |                3238 |            3238 |        3238 |     0 |
+|      68 |        3173 |                3173 |            3173 |        3173 |     0 |
+|      69 |        3214 |                3214 |            3214 |        3214 |     0 |
+|      70 |         840 |                 840 |             840 |         840 |     0 |
+|      71 |         859 |                 859 |             859 |         859 |     0 |
+|      72 |         855 |                 855 |             855 |         855 |     0 |
+|      73 |         795 |                 795 |             795 |         795 |     0 |
+|      74 |         802 |                 802 |             802 |         802 |     0 |
+|      75 |         816 |                 816 |             816 |         816 |     0 |
+|      76 |         832 |                 832 |             832 |         832 |     0 |
+|      77 |         762 |                 762 |             762 |         762 |     0 |
+|      78 |         841 |                 841 |             841 |         841 |     0 |
+|      79 |         795 |                 795 |             795 |         795 |     0 |
+#+TBLFM: $6=$0;%0.3f
+
+
+
+Just the diverging queries : 
+#+begin_src R :results table :exports results :session :colnames yes
+
+wideTable %>%
+    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
+    as_tibble() %>%
+    print(n = nrow(.))
+
+#+end_src
+
+#+CAPTION: Queries that returned different result depending on the algorithm 
 #+RESULTS:
 | queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
 |---------+-------------+---------------------+-----------------+-------------+-------|
@@ -771,5 +798,56 @@ dfplot %>%
 |      41 |       51758 |               51758 |           51759 |       51759 | 0.333 |
 |      42 |       51959 |               51959 |           51960 |       51960 | 0.333 |
 |      56 |       12961 |               12961 |           12962 |       12962 | 0.333 |
-#+TBLFM: $6=$0;%0.3f
+
+
+*** Plot                                                           :export:
+
+There are some queries where the count differs for Rtree by a small amount of elements.
+
+Counts have some differences :
+#+begin_src R :results output :exports none :session 
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId, bench) %>% #group to see if every algo has same counts
+    summarize(c = mean(Count), s = sd(Count)  ) %>% 
+    filter ( s > 0) %>% 
+    select(queryId, bench) %>% 
+    left_join(dfplot) -> dfWrongCounts
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = c("queryId", "bench")
+
+
+These are the queries that for some misterious reason resulted in different counts.
+#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
+
+myplot <- function(data) {
+    data %>%
+   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
+# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
+        #geom_jitter( width=0.1, height=0) +
+        geom_point( ) +
+        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
+        theme(legend.position = "bottom",) + 
+#        labs(x = "Query width (degrees)") +
+        #scale_y_continuous(breaks=c(3440446,3440447) )
+        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
+    
+}
+
+#dfWrongCounts %>% myplot() 
+
+dfWrongCounts %>% myplot()
+
+#dfWrongCounts %>% 
+#group_by(queryId) %>% filter(queryId == 1 ) %>%
+#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/differing_counts.png]]
 
