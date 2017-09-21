@@ -538,10 +538,10 @@ echo "[[$expFolder/exp.org]]"
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170907145711/exp.org]]
   
-**** DONE [2017-09-15 Sex] =bench_queries_region= V.3    :exp20170915143003:
+**** DONE [2017-09-15 Sex] =bench_queries_region= V.3 :paper:exp20170915143003:
 
 - Fixed code of Rtree. 
-- More elements in the time window: 6h * batches of size 1000
+- More elements in the time window: 6h * batches of size 1000 ( total of 26.000.000 elements )
 
 ***** Setup                                                    :noexport:
 

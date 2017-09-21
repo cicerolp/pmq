@@ -33,7 +33,7 @@ Testing with twitter distribution of data
 
 `./data/cicero/exp20170907112116/exp.rst <./data/cicero/exp20170907112116/exp.rst>`_
 
-1.4 **DONE** [2017-09-15 Sex]  Experiment *bench_insert_and_scan* ``paper:exp20170919161448``
+1.4 **DONE** [2017-09-15 Sex]  Experiment *bench_insert_and_scan* ``paper``  ``exp20170919161448``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test insertions with larger inputs
@@ -74,12 +74,12 @@ Test with a larger ammount of data -> 10\*8
 
 `./data/cicero/exp20170907145711/exp.rst <./data/cicero/exp20170907145711/exp.rst>`_
 
-2.4 **DONE** [2017-09-15 Sex]  *bench_queries_region* V.3 ``exp20170915143003``
+2.4 **DONE** [2017-09-15 Sex]  *bench_queries_region* V.3 ``paper``  ``exp20170915143003``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Fixed code of Rtree.
 
-- More elements in the time window: 6h \* batches of size 1000
+- More elements in the time window: 6h \* batches of size 1000 ( total of 26.000.000 elements )
 
 `./data/cicero/exp20170915143003/exp.rst <./data/cicero/exp20170915143003/exp.rst>`_
 

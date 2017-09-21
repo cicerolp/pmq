@@ -7,7 +7,7 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4 toc:t tags:nil
+#+OPTIONS: ^:{} todo:nil H:4 toc:t tags:nil author:nil
 #+PROPERTY: header-args :cache no :eval never-export 
 
 
@@ -27,6 +27,7 @@ Elements:
 - Timewindow = 26000
 - Batch size = 1000
 
+- Total elements = 26.000.000 
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
@@ -394,7 +395,7 @@ Fast-forward
 #+end_example
 
 
-* TODO Analisys
+* DONE Analysis
 ** DONE Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -627,7 +628,7 @@ myplot <- function(data) {
     geom_point() +
     #labs(title= data$bench) +     
 #    scale_x_continuous(breaks=seq(0, 14, by=1)) +
-    facet_wrap(bench~`Query Width`,scale="free", labeller = "label_both") + 
+    facet_wrap(bench~`Query Width`,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
 #    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
 #    facet_grid(queryW~bench,scale="free") + 
     theme(legend.position = "bottom",)
@@ -643,13 +644,15 @@ dfplot %>%
 
 *** Conclusions                                                    :export:
 
-- PMQ shows its best benefits on large range queries
-- for very small queries we are similar to othe Btree an Rtree.
+- PMQ shows its best benefits on large range queries.
+- For small queries we are similar to othe Btree an Rtree.
 - Bulk loading on Rtree only work on static case. The partitionning is optimized when all the queries are loaded together.
 
 
-*NOTE* that the size (in degrees) of the query in this synthetic dataset is only proportional to the amount of elements because we have elements uniformly distributed. 
-In a scenario of a Twitter Distribution for Instance, small queries will possibly result in very large amount of elements. We should expect a very different performance behaviour in that cases.
+*NOTE* that in this synthetic dataset, the size of the query (in degrees) is proportional to the amount of elements returned because elements are uniformly distributed on the space. 
+In a scenario of a Twitter distribution for instance, small queries will possibly result in very large amount of elements. 
+We should expect a very different performance behavior in that cases.
+
 ** What is the actual count of elements per query ?
 
 
