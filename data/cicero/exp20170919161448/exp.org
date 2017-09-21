@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Experiment Diary
+#+TITLE: Benchmark Insertions
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -11,7 +11,7 @@
 #+PROPERTY: header-args :cache no :eval no-export 
 
 
-* Description 
+* Description                                                        :export:
 
 Benchnark insertion time
 - PMQ / GEOHASH
@@ -28,8 +28,8 @@ elements of size 32 bytes:
 
 +350 million elements = src_python{ return ( 32 * 350 * 10**6 / 2**30) } {{{results(=10.43081283569336=)}}} GB .+
 
-Will use a PMA of 16 GB 
-#+begin_src python :results output :exports both
++Will use a PMA of 16 GB+
+#+begin_src python :results output :exports none
 print( 536870912 * 32 / 2**30)
 #+end_src
 
@@ -43,6 +43,10 @@ We will re-run this experiment with 10 M elements. Batch of size 1000.
 To test with 350 we should disable the scans. 
 :END:
 
+With 10 M elemtents PMA has size src_python{return( 16777216 * 32 / 2**20) ;} {{{results(=512.0=)}}} Megabytes. 
+
+Test with larger Size will be done in the querying and scanning benchmark.
+
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
@@ -50,7 +54,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - plotResults.R : generate the plots 
   
 
-* INPROGRESS Experiment Script
+* DONE Experiment Script                                           :noexport:
 ** DONE Initial Setup
 
 #+begin_src sh :results value :exports both
@@ -249,7 +253,7 @@ tmux ls
 ps ux
 #+end_src
 
-** INPROGRESS Remote Execution                                      :remote:
+** DONE Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -370,7 +374,7 @@ julio     3509  0.0  0.2 125540 87696 pts/10   R+   15:57   0:00 /usr/lib/gcc/x8
 julio     3511  0.0  0.0  37368  3316 pts/9    R+   15:57   0:00 ps ux
 #+end_example
 
-**** TODO Pull local 
+**** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
 git commit -a -m "wip"
 git status
@@ -379,62 +383,78 @@ git pull --rebase origin $expId
 
 #+RESULTS:
 #+begin_example
-[exp20170907112116 b3f673f] wip
- 1 file changed, 8 insertions(+), 14 deletions(-)
-On branch exp20170907112116
+[exp20170919161448 932204f] wip
+ 1 file changed, 37 insertions(+), 30 deletions(-)
+On branch exp20170919161448
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
+	../../../LabBook.man
+	../../../LabBook.markdown_phpextra
+	../../../LabBook.md
 	../../../LabBook.org.orig
+	../../../LabBook.rst
+	../../../LabBook.rtf
+	../../../LabBook.txt
+	../../../LabBook_BACKUP_19287.md
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../README.html
 	../../../benchmarks/bench_insert_and_scan.cpp.orig
-	../../../build-Release/
+	../../../benchmarks/bench_queries_region.cpp.orig
+	../exp20170830124159/
 	../exp20170904153555/
 	../exp20170907105314/
 	../exp20170907105804/
-	.#exp.org
-	img/
-	nil.csv
-	teste.csv
+	../exp20170907112116/
+	../exp20170907145711/
+	../exp20170914091842/
+	../exp20170915143003/
 
 nothing added to commit but untracked files present (use "git add" to track)
 First, rewinding head to replay your work on top of it...
-Applying: wip experiment
 Applying: wip
 #+end_example
 
 
-* TODO Analisys
-** Generate csv files
+* DONE Analisys                                                      :export:
+** Generate csv files                                             :noexport:
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
 :END:      
 
 List logFiles
+#+NAME: fileList
 #+begin_src sh :results table :exports both
-ls -htl *tgz
+ls  *tgz
 #+end_src
 
-#+RESULTS:
-| -rw-rw-r-- 1 julio julio 1018K Set  7 12:35 log_1504795600.tgz |
+#+RESULTS: fileList
+| log_1505852677.tgz |
+| log_1505933858.tgz |
+
 
 #+NAME: logFile
-#+begin_src sh :results output :exports both 
-tar xvzf log_1504795600.tgz
+#+begin_src sh :results output :exports both :var f=fileList[-1]
+#echo $f
+tar xvzf $f
 #+end_src
 
 #+RESULTS: logFile
-: bench_insert_and_scan_1504795600.log
+: bench_insert_and_scan_1505933858.log
 
 Create CSV using logFile 
 #+begin_src sh :results output :exports both :var logFile=logFile[0]
 #echo $logFile
 echo $(basename -s .log $logFile ).csv
-grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree\|RTree\|ImplicitDenseVector ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
 #+end_src
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_insert_and_scan_1504795600.csv
+: bench_insert_and_scan_1505933858.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -448,164 +468,111 @@ mkdir img
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
 
-Load the CSV into R
+*** Load the CSV into R                                          :noexport:
 #+begin_src R :results output :exports both :var f=csvFile
 library(tidyverse)
 
 df <- f[[1]] %>%
-    read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:8),sep="") )
+    read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:8),sep=""),
+               col_types="cicdcdci", progress=FALSE ) # specify colum types to avoid parsing errors
 
-str(df)
+str(as.tibble(f))
+
+#+end_src
+
+#+RESULTS:
+: Warning: 200000 parsing failures.
+: row # A tibble: 5 x 5 col     row   col  expected    actual                                   file expected   <int> <chr>     <chr>     <chr>                                  <chr> actual 1     1  <NA> 8 columns 5 columns 'bench_insert_and_scan_1505933858.csv' file 2     2  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' row 3     3  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' col 4     4  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' expected 5     5  <NA> 8 columns 9 columns 'bench_insert_and_scan_1505933858.csv'
+: ... ................. ... ........................................................................ ........ ........................................................................ ...... ........................................................................ .... ........................................................................ ... ......................................................... [... truncated]
+: Warning message:
+: In rbind(names(probs), probs_f) :
+:   number of columns of result is not a multiple of vector length (arg 1)
+: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1 obs. of  1 variable:
+:  $ value: chr "bench_insert_and_scan_1505933858.csv"
+
+#+begin_src R :results output :exports both :session 
+
+options(dplyr.width = Inf)
+
+df %>% filter( V2 == 9999 )
 
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Parsed with column specification:
-cols(
-  V1 = col_character(),
-  V2 = col_integer(),
-  V3 = col_character(),
-  V4 = col_double(),
-  V5 = col_character(),
-  V6 = col_integer(),
-  V7 = col_character(),
-  V8 = col_integer()
-)
-Warning: 150000 parsing failures.
-row # A tibble: 5 x 5 col     row   col  expected    actual                                   file expected   <int> <chr>     <chr>     <chr>                                  <chr> actual 1     1  <NA> 8 columns 5 columns 'bench_insert_and_scan_1504795600.csv' file 2     2  <NA> 8 columns 7 columns 'bench_insert_and_scan_1504795600.csv' row 3     3  <NA> 8 columns 7 columns 'bench_insert_and_scan_1504795600.csv' col 4     4  <NA> 8 columns 7 columns 'bench_insert_and_scan_1504795600.csv' expected 5     5  <NA> 8 columns 9 columns 'bench_insert_and_scan_1504795600.csv'
-... ................. ... ........................................................................ ........ ........................................................................ ...... ........................................................................ .... ........................................................................ ... ......................................................... [... truncated]
-Warning message:
-In rbind(names(probs), probs_f) :
-  number of columns of result is not a multiple of vector length (arg 1)
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	150000 obs. of  8 variables:
- $ V1: chr  "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" ...
- $ V2: int  0 0 0 0 0 1 1 1 1 1 ...
- $ V3: chr  "insert" "scan_at_region" "scan_at_region" "scan_at_region" ...
- $ V4: num  0.018055 0.00046 0.000476 0.000448 0.00195 ...
- $ V5: chr  NA "scan_at_region_refinements" "scan_at_region_refinements" "scan_at_region_refinements" ...
- $ V6: int  NA 1 1 1 1 NA 1 1 1 1 ...
- $ V7: chr  NA NA NA NA ...
- $ V8: int  NA NA NA NA 100 NA NA NA NA 200 ...
- - attr(*, "problems")=Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	150000 obs. of  5 variables:
-  ..$ row     : int  1 2 3 4 5 6 7 8 9 10 ...
-  ..$ col     : chr  NA NA NA NA ...
-  ..$ expected: chr  "8 columns" "8 columns" "8 columns" "8 columns" ...
-  ..$ actual  : chr  "5 columns" "7 columns" "7 columns" "7 columns" ...
-  ..$ file    : chr  "'bench_insert_and_scan_1504795600.csv'" "'bench_insert_and_scan_1504795600.csv'" "'bench_insert_and_scan_1504795600.csv'" "'bench_insert_and_scan_1504795600.csv'" ...
- - attr(*, "spec")=List of 2
-  ..$ cols   :List of 8
-  .. ..$ V1: list()
-  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
-  .. ..$ V2: list()
-  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
-  .. ..$ V3: list()
-  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
-  .. ..$ V4: list()
-  .. .. ..- attr(*, "class")= chr  "collector_double" "collector"
-  .. ..$ V5: list()
-  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
-  .. ..$ V6: list()
-  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
-  .. ..$ V7: list()
-  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
-  .. ..$ V8: list()
-  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
-  ..$ default: list()
-  .. ..- attr(*, "class")= chr  "collector_guess" "collector"
-  ..- attr(*, "class")= chr "col_spec"
+# A tibble: 20 x 8
+                    V1    V2              V3         V4                          V5          V6    V7       V8
+                 <chr> <int>           <chr>      <dbl>                       <chr>       <dbl> <chr>    <int>
+ 1       GeoHashBinary  9999          insert   0.992535                        <NA>          NA  <NA>       NA
+ 2       GeoHashBinary  9999  scan_at_region  50.621800  scan_at_region_refinements 1.00000e+00  <NA>       NA
+ 3       GeoHashBinary  9999  scan_at_region  50.601900  scan_at_region_refinements 1.00000e+00  <NA>       NA
+ 4       GeoHashBinary  9999  scan_at_region  50.660600  scan_at_region_refinements 1.00000e+00  <NA>       NA
+ 5       GeoHashBinary  9999 apply_at_region   0.955854 apply_at_region_refinements 1.00000e+00 count 10000000
+ 6               BTree  9999          insert   0.473681                        <NA>          NA  <NA>       NA
+ 7               BTree  9999  scan_at_region 159.842000  scan_at_region_refinements 1.00000e+00  <NA>       NA
+ 8               BTree  9999  scan_at_region 159.871000  scan_at_region_refinements 1.00000e+00  <NA>       NA
+ 9               BTree  9999  scan_at_region 159.887000  scan_at_region_refinements 1.00000e+00  <NA>       NA
+10               BTree  9999 apply_at_region 117.432000 apply_at_region_refinements 1.00000e+00 count 10000000
+11               RTree  9999          insert   1.034710                        <NA>          NA  <NA>       NA
+12               RTree  9999  scan_at_region 230.055000                        <NA>          NA  <NA>       NA
+13               RTree  9999  scan_at_region 230.500000                        <NA>          NA  <NA>       NA
+14               RTree  9999  scan_at_region 230.171000                        <NA>          NA  <NA>       NA
+15               RTree  9999 apply_at_region  91.059700                       count 1.00000e+07  <NA>       NA
+16 ImplicitDenseVector  9999          insert   0.010825                     sorting 4.75606e+01  <NA>       NA
+17 ImplicitDenseVector  9999  scan_at_region  25.169200  scan_at_region_refinements 1.00000e+00  <NA>       NA
+18 ImplicitDenseVector  9999  scan_at_region  25.187700  scan_at_region_refinements 1.00000e+00  <NA>       NA
+19 ImplicitDenseVector  9999  scan_at_region  25.185200  scan_at_region_refinements 1.00000e+00  <NA>       NA
+20 ImplicitDenseVector  9999 apply_at_region   0.000865 apply_at_region_refinements 1.00000e+00 count 10000000
 #+end_example
 
 Remove useless columns
 #+begin_src R :results output :exports both :session 
 
-names(df) <- c("algo", "id", "bench" , "time" , "V5" , "V6"  , "V7" , "count")
+names(df) <- c("algo", "id", "bench" , "time" , "V5" , "Value"  , "V7" , "count")
 
-df <- select(df, -V5, -V6, -V7)
-df
+df %>% 
+    mutate( time = ifelse( bench == "insert" & !is.na(Value), time + Value, time)) %>%
+    select( -V5, -Value, -V7) -> df
+#+end_src
+
+#+RESULTS:
+
+
+#+begin_src R :results output :exports both :session 
+df[ df$id == 9999, ]
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 150,000 x 5
-            algo    id           bench     time count
-           <chr> <int>           <chr>    <dbl> <int>
- 1 GeoHashBinary     0          insert 0.018055    NA
- 2 GeoHashBinary     0  scan_at_region 0.000460    NA
- 3 GeoHashBinary     0  scan_at_region 0.000476    NA
- 4 GeoHashBinary     0  scan_at_region 0.000448    NA
- 5 GeoHashBinary     0 apply_at_region 0.001950   100
- 6 GeoHashBinary     1          insert 0.013157    NA
- 7 GeoHashBinary     1  scan_at_region 0.000809    NA
- 8 GeoHashBinary     1  scan_at_region 0.000797    NA
- 9 GeoHashBinary     1  scan_at_region 0.000769    NA
-10 GeoHashBinary     1 apply_at_region 0.000585   200
-# ... with 149,990 more rows
-#+end_example
-
-Summary of the data frame
-#+begin_src R :results output :session :exports both
-summary(df[df$algo=="GeoHashBinary",])
-summary(df[df$algo=="BTree",])
-summary(df[df$algo=="RTree",])
-#+end_src
-
-#+RESULTS:
-#+begin_example
-     algo                 id          bench                time         
- Length:50000       Min.   :   0   Length:50000       Min.   : 0.00024  
- Class :character   1st Qu.:2500   Class :character   1st Qu.: 0.08270  
- Mode  :character   Median :5000   Mode  :character   Median : 0.77856  
-                    Mean   :5000                      Mean   : 1.72410  
-                    3rd Qu.:7499                      3rd Qu.: 3.15301  
-                    Max.   :9999                      Max.   :14.36430  
-                                                                        
-     count        
- Min.   :    100  
- 1st Qu.: 250075  
- Median : 500050  
- Mean   : 500050  
- 3rd Qu.: 750025  
- Max.   :1000000  
- NA's   :40000
-     algo                 id          bench                time        
- Length:50000       Min.   :   0   Length:50000       Min.   : 0.0007  
- Class :character   1st Qu.:2500   Class :character   1st Qu.: 0.2962  
- Mode  :character   Median :5000   Mode  :character   Median : 4.5789  
-                    Mean   :5000                      Mean   : 5.6744  
-                    3rd Qu.:7499                      3rd Qu.: 9.7199  
-                    Max.   :9999                      Max.   :19.0842  
-                                                                       
-     count        
- Min.   :    100  
- 1st Qu.: 250075  
- Median : 500050  
- Mean   : 500050  
- 3rd Qu.: 750025  
- Max.   :1000000  
- NA's   :40000
-     algo                 id          bench                time          
- Length:50000       Min.   :   0   Length:50000       Min.   : 0.000969  
- Class :character   1st Qu.:2500   Class :character   1st Qu.: 0.797774  
- Mode  :character   Median :5000   Mode  :character   Median : 8.138380  
-                    Mean   :5000                      Mean   : 9.244019  
-                    3rd Qu.:7499                      3rd Qu.:17.638125  
-                    Max.   :9999                      Max.   :24.549800  
-                                                                         
-     count      
- Min.   : NA    
- 1st Qu.: NA    
- Median : NA    
- Mean   :NaN    
- 3rd Qu.: NA    
- Max.   : NA    
- NA's   :50000
+# A tibble: 20 x 5
+                  algo    id           bench       time    count
+                 <chr> <int>           <chr>      <dbl>    <int>
+ 1       GeoHashBinary  9999          insert   0.992535       NA
+ 2       GeoHashBinary  9999  scan_at_region  50.621800       NA
+ 3       GeoHashBinary  9999  scan_at_region  50.601900       NA
+ 4       GeoHashBinary  9999  scan_at_region  50.660600       NA
+ 5       GeoHashBinary  9999 apply_at_region   0.955854 10000000
+ 6               BTree  9999          insert   0.473681       NA
+ 7               BTree  9999  scan_at_region 159.842000       NA
+ 8               BTree  9999  scan_at_region 159.871000       NA
+ 9               BTree  9999  scan_at_region 159.887000       NA
+10               BTree  9999 apply_at_region 117.432000 10000000
+11               RTree  9999          insert   1.034710       NA
+12               RTree  9999  scan_at_region 230.055000       NA
+13               RTree  9999  scan_at_region 230.500000       NA
+14               RTree  9999  scan_at_region 230.171000       NA
+15               RTree  9999 apply_at_region  91.059700       NA
+16 ImplicitDenseVector  9999          insert  47.571425       NA
+17 ImplicitDenseVector  9999  scan_at_region  25.169200       NA
+18 ImplicitDenseVector  9999  scan_at_region  25.187700       NA
+19 ImplicitDenseVector  9999  scan_at_region  25.185200       NA
+20 ImplicitDenseVector  9999 apply_at_region   0.000865 10000000
 #+end_example
 
 *** Overview of results                                                :plot:
 
 Plot an overview of every benchmark , doing average of times. 
-#+begin_src R :results output :exports both
+#+begin_src R :results output :exports none
 df %>% group_by(algo,id,bench, count) %>%
     summarize(ms = mean(time), stdv = sd(time)) -> dfplot
 
@@ -614,27 +581,28 @@ dfplot
 
 #+RESULTS:
 #+begin_example
-# A tibble: 90,000 x 6
+# A tibble: 120,000 x 6
 # Groups:   algo, id, bench [?]
     algo    id           bench count          ms         stdv
    <chr> <int>           <chr> <int>       <dbl>        <dbl>
- 1 BTree     0 apply_at_region   100 0.000945000           NA
- 2 BTree     0          insert    NA 0.007075000           NA
- 3 BTree     0  scan_at_region    NA 0.000775000 7.238094e-05
- 4 BTree     1 apply_at_region   200 0.000700000           NA
- 5 BTree     1          insert    NA 0.007709000           NA
- 6 BTree     1  scan_at_region    NA 0.001430667 9.814955e-06
- 7 BTree     2 apply_at_region   300 0.000763000           NA
- 8 BTree     2          insert    NA 0.006893000           NA
- 9 BTree     2  scan_at_region    NA 0.002117000 5.196152e-06
-10 BTree     3 apply_at_region   400 0.000829000           NA
-# ... with 89,990 more rows
+ 1 BTree     0 apply_at_region  1000 0.002563000           NA
+ 2 BTree     0          insert    NA 0.075221000           NA
+ 3 BTree     0  scan_at_region    NA 0.007078333 7.456764e-05
+ 4 BTree     1 apply_at_region  2000 0.003981000           NA
+ 5 BTree     1          insert    NA 0.077459000           NA
+ 6 BTree     1  scan_at_region    NA 0.014009667 4.252450e-05
+ 7 BTree     2 apply_at_region  3000 0.005899000           NA
+ 8 BTree     2          insert    NA 0.079061000           NA
+ 9 BTree     2  scan_at_region    NA 0.020993000 2.095233e-05
+10 BTree     3 apply_at_region  4000 0.007885000           NA
+# ... with 119,990 more rows
 #+end_example
 
 #+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
 library(ggplot2)
 
 dfplot %>% 
+  #  filter( id < 100) %>%
 #    ungroup %>% 
  #   mutate(bench = revalue( bench, c("apply_at_region" = "count"))) %>% 
 ggplot(aes(x=id,y=ms, color=factor(algo))) + 
@@ -667,33 +635,29 @@ facet_wrap(~algo, scales="free", ncol=1)
 [[file:./img/overallInsertion.png]]
 
 Total insertion time:
-#+begin_src R :results append :session :exports both
+#+begin_src R :results table :session :exports both :colnames yes
 dfinsert %>% 
     group_by(algo) %>%
-    summarize(Avergae = mean(ms), Total = sum(ms))
-
+    summarize(Average = mean(ms), Total = sum(ms))
 #+end_src
 
 #+RESULTS:
-:            algo    Average      Total
-: 1         BTree 0.05150084   515.0084
-: 2 GeoHashBinary 0.10885076  1088.5076
-: 3         RTree 1.24829441 12482.9441
-| BTree         |   0.03546119 |   354.6119 |
-| GeoHashBinary | 0.0793330121 | 793.330121 |
-| RTree         |  0.586476944 | 5864.76944 |
-| BTree         |   0.03546119 |   354.6119 |
-| GeoHashBinary | 0.0793330121 | 793.330121 |
-| RTree         |  0.586476944 | 5864.76944 |
+| algo                |       Average |         Total |
+|---------------------+---------------+---------------|
+| BTree               |  0.4286722351 |   4286.722351 |
+| GeoHashBinary       |  0.9013018977 |   9013.018977 |
+| ImplicitDenseVector | 24.1291799959 | 241291.799959 |
+| RTree               |  0.9483918428 |   9483.918428 |
+
 
 **** Amortized time
 
-We compute tree time:
+We compute three times:
 - individual insertion time for each batch
 - accumulated time at batch #k
 - ammortized time : average of the past times at batch #k
 
-#+begin_src R :results output :exports both
+#+begin_src R :results output :exports results
 avgTime = cbind(dfinsert, 
                 sumTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)), recursive=T),
                 avgTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)/(x$id+1)), recursive=T)
@@ -701,14 +665,8 @@ avgTime = cbind(dfinsert,
 #+end_src
 
 #+RESULTS:
-: # A tibble: 3 x 3
-:            algo    Avergae     Total
-:           <chr>      <dbl>     <dbl>
-: 1         BTree 0.03546119  354.6119
-: 2 GeoHashBinary 0.07933301  793.3301
-: 3         RTree 0.58647694 5864.7694
 
-***** Melting the data (time / avgTime)
+***** Melting the data (time / avgTime)                        :noexport:
 We need to melt the time columns to be able to plot as a grid
 
 #+begin_src R :results output :exports both :session 
@@ -724,21 +682,21 @@ melted_times
 Warning message:
 attributes are not identical across measure variables;
 they will be dropped
-# A tibble: 90,000 x 5
-# Groups:   algo, id, bench [30,000]
+# A tibble: 120,000 x 5
+# Groups:   algo, id, bench [40,000]
     algo    id  bench  stat    value
    <chr> <int>  <chr> <chr>    <dbl>
- 1 BTree     0 insert    ms 0.007075
- 2 BTree     1 insert    ms 0.007709
- 3 BTree     2 insert    ms 0.006893
- 4 BTree     3 insert    ms 0.006529
- 5 BTree     4 insert    ms 0.006903
- 6 BTree     5 insert    ms 0.006266
- 7 BTree     6 insert    ms 0.006714
- 8 BTree     7 insert    ms 0.007016
- 9 BTree     8 insert    ms 0.006645
-10 BTree     9 insert    ms 0.007688
-# ... with 89,990 more rows
+ 1 BTree     0 insert    ms 0.075221
+ 2 BTree     1 insert    ms 0.077459
+ 3 BTree     2 insert    ms 0.079061
+ 4 BTree     3 insert    ms 0.080513
+ 5 BTree     4 insert    ms 0.084934
+ 6 BTree     5 insert    ms 0.087991
+ 7 BTree     6 insert    ms 0.089108
+ 8 BTree     7 insert    ms 0.088306
+ 9 BTree     8 insert    ms 0.090313
+10 BTree     9 insert    ms 0.093685
+# ... with 119,990 more rows
 #+end_example
 
 ***** Comparison Time X avgTime                                    :plot:
@@ -761,7 +719,7 @@ avgTime %>%
     labs(title="Insertions") +
     geom_point(aes(y=ms), alpha=1) +
 #    geom_line(aes(y=avgTime)) + 
-    ylim(0,1) 
+    ylim(0,1.5) 
 #+end_src
 
 #+RESULTS:

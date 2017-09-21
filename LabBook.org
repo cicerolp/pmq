@@ -6,7 +6,7 @@
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
 #+SEQ_TODO: TODO RUNNING ANALYSIS | FINISHED CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
-#+TAGS: ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+TAGS: IMPORTANT ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
 #+CATEGORY: TwitterVis
 #+OPTIONS: ^:{} H:3 author:nil
 #+PROPERTY: header-args :cache no :eval never-export
@@ -397,7 +397,7 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
  [[./data/cicero/exp20170907112116/exp.org]]
  
-**** TODO [2017-09-15 Sex] Experiment =bench_insert_and_scan=
+**** DONE [2017-09-15 Sex] Experiment =bench_insert_and_scan= :IMPORTANT:exp20170919161448:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
