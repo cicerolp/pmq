@@ -7,7 +7,7 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4 author:nil
+#+OPTIONS: ^:{} todo:nil H:4 author:nil tags:nil
 #+PROPERTY: header-args :cache no :eval no-export 
 
 
@@ -15,7 +15,7 @@
 
 Benchnark insertion time
 - PMQ / GEOHASH
-- BTREE -
+- BTREE 
 - RTREE -  Quadratic algorithm 
 - Dense vector
 

@@ -5,14 +5,14 @@ Benchmark Insertions
 
 .. contents::
 
-1 Description ``export``
+1 Description
 -------------
 
 Benchnark insertion time
 
 - PMQ / GEOHASH
 
-- BTREE -
+- BTREE
 
 - RTREE -  Quadratic algorithm
 
@@ -40,13 +40,13 @@ With 10 M elemtents PMA has size *512.0* Megabytes.
 
 Tests with larger Size will be done in the querying and scanning benchmark.
 
-2 Analisys ``export``
+2 Analisys
 ----------
 
 2.1 Results
 ~~~~~~~~~~~
 
-2.1.1 Overview of results ``plot``
+2.1.1 Overview of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Plot an overview of every benchmark , doing average of times. 
@@ -64,7 +64,7 @@ Plot an overview of every benchmark , doing average of times.
         #geom_errorbar(aes(ymin = ms - stdv, ymax = ms + stdv), width = 0.3 ) +
         facet_wrap(~bench, scales="free",ncol=1,labeller=labeller(bench=c(apply_at_region="Global Count", insert="Insertion", scan_at_region="Golbal scan")))
 
-..rst image:: ./img/overview.png
+.. image:: ./img/overview.png
 
 2.1.2 Insertion performance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -73,7 +73,7 @@ Plot an overview of every benchmark , doing average of times.
 
     dfplot %>% filter( bench == "insert") -> dfinsert
 
-2.1.2.1 Overall ``plot``
+2.1.2.1 Overall
 :::::::::::::::
 
 .. code:: R
@@ -84,7 +84,7 @@ Plot an overview of every benchmark , doing average of times.
     labs(title = "Insertions") + 
     facet_wrap(~algo, scales="free", ncol=1)
 
-..rst image:: ./img/overallInsertion.png
+.. image:: ./img/overallInsertion.png
 
 Total insertion time:
 
@@ -119,7 +119,7 @@ We compute three times:
 
 - ammortized time : average of the past times at batch #k
 
-2.1.2.2.1 Comparison Time X avgTime ``plot``
+2.1.2.2.1 Comparison Time X avgTime
 '''''''''''''''''''''''''''''''''''
 
 .. code:: R
@@ -130,9 +130,9 @@ We compute three times:
     facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
     #facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
 
-..rst image:: ./img/grid_times.png
+.. image:: ./img/grid_times.png
 
-2.1.2.3 Zoom View ``plot``
+2.1.2.3 Zoom View
 :::::::::::::::::
 
 .. code:: R
@@ -144,4 +144,4 @@ We compute three times:
     #    geom_line(aes(y=avgTime)) + 
         ylim(0,1.5) 
 
-..rst image:: ./img/Zoom.png
+.. image:: ./img/Zoom.png
