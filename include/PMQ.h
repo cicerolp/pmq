@@ -425,6 +425,8 @@ class PMQ : public GeoCtnIntf<T> {
   std::vector<value_type> transform(std::vector<T> batch) const {
     // convert T to value_type
     std::vector<value_type> converted_batch;
+    converted_batch.reserve(batch.size());
+
     std::transform(batch.begin(), batch.end(), std::back_inserter(converted_batch),
                    [](const auto &value) -> std::pair<uint64_t, T> {
                      uint32_t y = mercator_util::lat2tiley(value.getLatitude(), 25);
