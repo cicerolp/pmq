@@ -3,7 +3,7 @@
 #include "Server.h"
 
 #include "PMABatchCtn.h"
-#include "DenseVectorCtn.h"
+#include "ExplicitDenseVectorCtn.h"
 
 #include "QuadtreeIntf.h"
 
@@ -16,7 +16,7 @@
 #include "PMABatchCtn.h"
 #include "PostGisCtn.h"
 #include "SpatiaLiteCtn.h"
-#include "DenseVectorCtn.h"
+#include "ExplicitDenseVectorCtn.h"
 
 uint32_t g_Quadtree_Depth = 25;
 

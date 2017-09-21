@@ -9,17 +9,12 @@
 #include "stde.h"
 #include "types.h"
 #include "input_it.h"
-#include "InputIntf.h"
-#include "string_util.h"
 
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
 #include "GeoHash.h"
-#include "PMABatchCtn.h"
-#include "PostGisCtn.h"
-#include "SpatiaLiteCtn.h"
-#include "DenseVectorCtn.h"
+#include "ImplicitDenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\
@@ -174,6 +169,8 @@ int main(int argc, char *argv[]) {
   run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
 
   run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
+
+  run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }

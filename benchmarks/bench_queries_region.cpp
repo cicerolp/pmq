@@ -8,17 +8,11 @@
 #include "stde.h"
 #include "types.h"
 #include "InputIntf.h"
-#include "string_util.h"
 
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
 
 #include "GeoHash.h"
-#include "RTreeCtn.h"
-#include "PMABatchCtn.h"
-#include "PostGisCtn.h"
-#include "SpatiaLiteCtn.h"
-#include "DenseVectorCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "QueryBench " << container.name() << " ; ";\
