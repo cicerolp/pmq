@@ -1,5 +1,5 @@
-# -*- org-export-babel-evaluate: nil; -*-
-#+TITLE: Design of Experiment - Queries Dataset
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Design of Experiments - Queries Dataset
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -7,11 +7,10 @@
 #+TAGS: @JULIO(J) @CICERO(C)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
 #+CATEGORY: TwitterVis
-#+OPTIONS: ^:{} H:3 tags:nil todo:nil
+#+OPTIONS: ^:{} H:3 tags:nil todo:nil author:nil
 #+PROPERTY: header-args :cache no :eval no-export
 
 * Random Data
-
 ** Preliminary Tests                                              :noexport:
 
 *** Varying Radius only up to 400 km
@@ -177,8 +176,10 @@ geom_point(alpha=0.1)
 [[file:/tmp/babel-27753x0V/figure27753PxI.png]]
 
 
+** DONE Generate queries distributed on the whole coordinates grid
 
-** DONE Coordinates LHS To avoid out-of-bound queries + LAPPLY + RBIND
+- Use LHS design to choose centers of each query
+- Avoid out-of-bound queries
 
 #+begin_src R :results output :exports both :session 
 library(DoE.wrapper)
@@ -220,7 +221,6 @@ dfwuni
 
 Function: for a given width generates 10 position using LHS desing
 Note: we limit latitude between -85.051132f and +85.051132f
-
 #+begin_src R :results output :exports both :session :colnames yes
 
 latr = c(-85.051132,+85.051132)   # boundaries of latitude to generate the queries
@@ -249,95 +249,21 @@ set.seed(42);
 d8_llw = do.call( rbind, 
                  lapply(dfwuni$width,flhs) 
                  )
-d8_llw
+head(d8_llw)
 #+end_src
 
 #+RESULTS:
-|               lat |               lon |    width |   height |
-|-------------------+-------------------+----------+----------|
-| -14.3493546448834 |  106.191921438323 |       90 |       90 |
-|  15.4244144363771 | -88.1794538728427 |       90 |       90 |
-| -37.3820934128109 |  -13.093290094519 |       90 |       90 |
-| -2.05076308297226 |  16.7172994811553 |       90 |       90 |
-|   21.036225209632 |   32.863257852383 |       90 |       90 |
-|  1.73470416087192 | -43.4984842264094 |       90 |       90 |
-|  31.5790700927912 | -55.0095836282708 |       90 |       90 |
-| -18.1037592134904 |  73.7976394544821 |       90 |       90 |
-| -27.7485520671238 | -134.938629915705 |       90 |       90 |
-|  36.9175889949035 |   130.59364210465 |       90 |       90 |
-| -35.5549199437257 | -49.0667738767807 |       45 |       45 |
-| -12.9136518229265 | -142.235480222502 |       45 |       45 |
-|  15.6682550774119 |  39.6802343758755 |       45 |       45 |
-|  56.8206194204371 |  20.4710888847476 |       45 |       45 |
-|  4.20860334513941 |  96.4199170080246 |       45 |       45 |
-|  -6.8641012638202 | -99.5792164464947 |       45 |       45 |
-| -42.8512869475549 |  74.1305368883768 |       45 |       45 |
-|   44.378300238729 |  154.120635705418 |       45 |       45 |
-| -56.4202179620136 | -89.0935884352075 |       45 |       45 |
-|   31.813317735102 | -1.21376757952384 |       45 |       45 |
-|  19.1414529638831 |  55.8126480814814 |     22.5 |     22.5 |
-|  13.2998002539016 | -34.0707340200618 |     22.5 |     22.5 |
-|  35.8717183468491 |  148.333908895291 |     22.5 |     22.5 |
-| -42.1854247030523 | -91.8337259314209 |     22.5 |     22.5 |
-| -50.7032239948399 |  31.5703097031638 |     22.5 |     22.5 |
-| -9.47001385862008 | -5.33383757252245 |     22.5 |     22.5 |
-|  54.9427600039355 |  92.8648469989747 |     22.5 |     22.5 |
-| -60.1619304458052 | -168.719715113901 |     22.5 |     22.5 |
-|  61.4079455446266 | -121.560545164198 |     22.5 |     22.5 |
-| -19.5522830385435 |  117.497359270901 |     22.5 |     22.5 |
-|  26.8460469613345 | -86.7061908625066 |    11.25 |    11.25 |
-| -71.2499329740293 |  19.0275406681001 |    11.25 |    11.25 |
-| -24.6636928545306 |  72.6859032319486 |    11.25 |    11.25 |
-|  62.4341038272367 | -138.946287263781 |    11.25 |    11.25 |
-|  -9.3077281429288 |  42.7969261367619 |    11.25 |    11.25 |
-|  33.3548903705589 |  -157.55561523661 |    11.25 |    11.25 |
-|  -53.216055925603 | -2.74401732988656 |    11.25 |    11.25 |
-|   -41.89770769228 |  169.347108453512 |    11.25 |    11.25 |
-|  68.3241951232553 |   120.88230538927 |    11.25 |    11.25 |
-|  2.26741934303847 | -41.5867615021765 |    11.25 |    11.25 |
-|  44.6880988516361 |  34.0700163405389 |    5.625 |    5.625 |
-| -24.3715509693623 | -135.574726889804 |    5.625 |    5.625 |
-| -40.0913398614824 | -79.4118904665112 |    5.625 |    5.625 |
-| -54.8216554405391 |  114.289496399034 |    5.625 |    5.625 |
-|   55.032536892578 |  82.2148375709168 |    5.625 |    5.625 |
-|  80.6757688441277 | -28.3804094088077 |    5.625 |    5.625 |
-|  11.2004796967208 |  40.3136293663829 |    5.625 |    5.625 |
-|   -80.48015139018 | -67.5890630135685 |    5.625 |    5.625 |
-| -1.37424758501351 |  151.579021846596 |    5.625 |    5.625 |
-|  31.0175376938283 | -149.809676820375 |    5.625 |    5.625 |
-|  14.6201521000117 |  24.9091573784593 |   2.8125 |   2.8125 |
-|  25.3026688327231 |  88.6147659299243 |   2.8125 |   2.8125 |
-| -63.5362741584498 | -175.019807462888 |   2.8125 |   2.8125 |
-| -25.5505333051477 | -131.728942970419 |   2.8125 |   2.8125 |
-|  63.1046955762673 |  67.9063633276057 |   2.8125 |   2.8125 |
-| -78.0322845350727 | -42.0087115187198 |   2.8125 |   2.8125 |
-|  -13.047290320823 | -8.35406006532721 |   2.8125 |   2.8125 |
-|    76.29152093287 |  158.005831808876 |   2.8125 |   2.8125 |
-| -36.1564045819491 |   117.42309138733 |   2.8125 |   2.8125 |
-|  41.3302158810887 | -79.2682332687266 |   2.8125 |   2.8125 |
-|  45.3211797356443 |  60.2884843561007 |  1.40625 |  1.40625 |
-| -18.2615914124669 |  14.6459847413656 |  1.40625 |  1.40625 |
-| -43.4834474890982 | -88.3117018651078 |  1.40625 |  1.40625 |
-|  74.4582158320234 |  111.081537454757 |  1.40625 |  1.40625 |
-|  23.2851150925853 | -172.199699290446 |  1.40625 |  1.40625 |
-| -55.2488413014007 |  72.1147842097981 |  1.40625 |  1.40625 |
-| -1.36886958831223 | -111.157797594164 |  1.40625 |  1.40625 |
-|  12.7225756934099 |  177.575916287787 |  1.40625 |  1.40625 |
-|  61.1636542462045 | -12.3376143126749 |  1.40625 |  1.40625 |
-| -77.9161933314172 | -69.3673819185328 |  1.40625 |  1.40625 |
-|  2.01030733247753 | -54.7268377265893 | 0.703125 | 0.703125 |
-| -1.26474101402797 | -87.1117708466016 | 0.703125 | 0.703125 |
-|  49.3420117593929 |  98.9704451168887 | 0.703125 | 0.703125 |
-|  78.4491387150902 |  64.4555897645839 | 0.703125 | 0.703125 |
-| -18.2351229283027 |  5.90771964548156 | 0.703125 | 0.703125 |
-| -64.4925459823431 |  -176.09267545538 | 0.703125 | 0.703125 |
-| -70.6548868421186 | -6.97336663395167 | 0.703125 | 0.703125 |
-| -46.0891664317343 |  123.889142479841 | 0.703125 | 0.703125 |
-|  61.4223853012035 |  157.003497270197 | 0.703125 | 0.703125 |
-|  23.4164829858206 | -110.831846919339 | 0.703125 | 0.703125 |
+|               lat |               lon | width | height |
+|-------------------+-------------------+-------+--------|
+| -14.3493546448834 |  106.191921438323 |    90 |     90 |
+|  15.4244144363771 | -88.1794538728427 |    90 |     90 |
+| -37.3820934128109 |  -13.093290094519 |    90 |     90 |
+| -2.05076308297226 |  16.7172994811553 |    90 |     90 |
+|   21.036225209632 |   32.863257852383 |    90 |     90 |
+|  1.73470416087192 | -43.4984842264094 |    90 |     90 |
 
 *** Visualization of queries with 10**4 sample elements
-#+begin_src R :results output graphics :file "./img/randomLhsQueries.png" :exports both :width 600 :height 400 :session 
+#+begin_src R :results output graphics :file "./img/randomLhsQueries.png" :exports both :width 800 :height 600 :session 
 library(tidyverse)
 
 set.seed(42);
@@ -347,15 +273,18 @@ y <- runif(n,min=-89,max=89)
 
 data.frame(lon = x, lat = y) %>% 
 ggplot(aes(x=lon,y=lat)) + 
-geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
-geom_point(alpha=0.1)  
+#geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
+geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height, color=factor(width),fill=factor(width)), size=0.5, alpha=0.1)+
+geom_point(alpha=0.1)  +
+labs(color = "Query Width " ) + 
+theme(legend.position="bottom" ) +
+guides(color = guide_legend(nrow = 1), fill=FALSE)
 #+end_src
 
 #+RESULTS:
 [[file:./img/randomLhsQueries.png]]
 
-
-** DONE OUTPUT to CSV
+** DONE Output Bounding Boxes to CSV
 
 Convert to columns to bounding box coordinates
 
@@ -378,10 +307,12 @@ tail(bbox)
 : 80  23.76805 -111.183409  23.06492 -110.480284
 
 Write the csv file of bounding boxes
-#+begin_src R :results output :exports both :session 
+#+begin_src R :results output :exports none :session 
 write.table(bbox,"queriesLHS.csv",row.names=FALSE,col.names=FALSE,sep=",")
 #write.csv(bbox,"queries.csv",row.names=FALSE)
 #+end_src
+
+[[file:queriesLHS.csv]]
 
 ** CANCELED Convert the width in degrees to KM                    :noexport:
 
@@ -389,12 +320,216 @@ input benchmark receives lat lon and Radius ( Width in KM / 2 )
 
 Canceled: we will query degrees directly 
 
-
 * Twitter Data
 
 Description:
 - Get n random position from the dataset of tweets. 
   [[file:tweet10_6.dat]] or from geo-tweets.dat
 
-
 - generate queries with 10 different widths
+  
+** C++ : get random tweets from the dataset 
+
+Use the following twitter dataset: 
+#+name: dataset
+[[file:tweet10_4.dat]]
+
+
+#+begin_src C++ :exports code :flags -std=c++11 :var fname=dataset :includes '(<iostream> <vector>) :libs -I/home/julio/Projects/pmq/include -isystem /home/julio/Projects/hppsimulations/pma_cd/inc -isystem /home/julio/Projects/hppsimulations/build-release
+
+#include <GenericType.h>
+#include <input_it.h>
+
+#include <fstream>
+#include <unordered_set>
+
+using namespace std;
+
+int main(){
+  using el_t = TweetDatType;
+  using it_t = input_file_it<el_t>;
+
+  std::unordered_set<int> offsets;
+
+  std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+
+  auto begin = it_t::begin(file_ptr);
+  auto end = it_t::end(file_ptr); 
+
+  int itSize = end - begin;
+  
+  std::srand(42);
+
+  int n = 80; // number of queries
+  while(offsets.size() < n) 
+    offsets.insert( std::rand() % itSize);
+
+  
+  cout << "id Latitude Longitude" << endl;
+  for (auto& off : offsets){
+    auto it = begin+off;
+    printf("%d %.8f %.8f\n", off, (it)->getLatitude(), (it)->getLongitude()  );
+    ++it;
+  }
+
+  return 0;
+}
+#+end_src
+
+#+name: cppqueries
+#+RESULTS:
+|   id |    Latitude |     Longitude |
+| 5230 | 40.73379898 |  -74.24279785 |
+| 7278 | 39.90430069 |  -75.32160187 |
+| 3773 | 47.75630188 | -122.15399933 |
+| 8185 |  41.7521019 |  -87.65480042 |
+| 1969 |  40.1169014 |  -75.02999878 |
+|  320 | 40.91159821 |  -74.05319977 |
+| 8023 | 33.19829941 |  -87.58439636 |
+| 7520 | 33.92380142 | -118.17299652 |
+| 1360 | 35.92990112 |  -89.87049866 |
+| 2935 | 34.01779938 | -118.40699768 |
+| 6170 | 34.83950043 |  -92.38680267 |
+| 1269 | 35.84600067 |   -90.6785965 |
+| 6901 | 36.09049988 | -115.03199768 |
+| 8483 | 37.27080154 |  -79.94139862 |
+| 6725 | 39.95059967 |  -75.15930176 |
+| 3195 | 52.34379959 |   30.96960068 |
+| 7263 | 41.97669983 |  -87.84120178 |
+| 9454 |  36.3484993 |  -94.21640015 |
+| 6450 |  32.8742981 | -117.21700287 |
+| 1600 | 41.63779831 |  -87.43430328 |
+| 4121 | 47.67679977 | -122.11399841 |
+| 6352 | 37.48350143 | -122.22899628 |
+| 7809 | 44.97969818 | -123.00900269 |
+| 5127 | 34.08050156 | -117.73000336 |
+|  665 | 32.36320114 |  -86.29669952 |
+|  698 | 32.44200134 |  -93.76509857 |
+| 9995 | 42.26869965 |  -85.56790161 |
+| 5727 | 30.26880074 |   -97.7684021 |
+| 3696 | 40.74980164 |   -73.9878006 |
+| 3743 | 29.54640007 |  -98.61070251 |
+| 8960 | 33.23149872 | -117.22899628 |
+|  176 | 39.90660095 |  -83.81890106 |
+| 9762 | 39.77399826 |  -86.18470001 |
+| 8307 | 39.45510101 |  -74.73239899 |
+| 6433 | 30.42490005 |  -84.28540039 |
+| 1033 | 32.52349854 | -117.01300049 |
+| 1843 |  41.4632988 |  -81.48249817 |
+| 9021 | 33.83800125 |  -84.20559692 |
+| 1688 | 33.96360016 | -117.05400085 |
+| 1979 | 34.19200134 | -119.21700287 |
+| 3143 | 38.10710144 | -122.21099854 |
+| 9448 | 38.27769852 |  -121.3010025 |
+| 4940 | 33.35770035 |  -111.9469986 |
+| 3241 | 36.21659851 |  -81.68319702 |
+| 5874 | 43.16120148 |  -93.20999908 |
+| 8881 | 33.49380112 | -112.20500183 |
+| 9204 | 32.74060059 |  -96.70330048 |
+|  280 | 35.99959946 |   -95.7983017 |
+|  535 | 39.86949921 |  -75.38310242 |
+| 1169 |  33.7867012 |  -84.75730133 |
+| 6504 | 40.65539932 |  -73.74299622 |
+| 3867 | 44.01240158 | -123.09100342 |
+| 6734 | 40.69020081 |  -73.99210358 |
+| 2740 | 41.71849823 |  -87.60900116 |
+| 6758 | 40.11249924 |  -88.24629974 |
+| 6497 | 38.92129898 |  -77.04229736 |
+| 1259 | 41.51739883 |  -87.76940155 |
+| 9892 | 40.44620132 |  -74.31800079 |
+| 3547 | 41.61529922 |  -87.73880005 |
+| 6166 | 40.82929993 |  -73.35549927 |
+| 4504 | 43.52180099 |  -96.77210236 |
+| 1012 | 26.27420044 |  -80.27950287 |
+| 1819 | 42.38479996 |  -83.19400024 |
+| 9579 | 38.77149963 | -121.25499725 |
+| 2141 | 45.52700043 | -122.63600159 |
+| 9900 |  45.3893013 |  -75.69110107 |
+| 2916 | 42.37540054 |  -83.21900177 |
+| 1822 | 28.60230064 |    -81.479599 |
+| 4247 |  32.6053009 | -117.08899689 |
+| 5314 | 36.35070038 |   -79.6765976 |
+| 7900 | 34.06999969 | -118.35700226 |
+| 5221 | 37.96760178 |  -87.45829773 |
+| 8424 | 44.95669937 |  -93.38369751 |
+| 6921 | 33.80360031 | -117.91600037 |
+| 7447 | 33.03540039 | -116.87200165 |
+| 8455 | 41.76660156 |  -87.68119812 |
+| 1272 | 40.15710068 |  -89.35980225 |
+| 1951 |  41.4632988 |  -81.48249817 |
+| 9717 | 32.80179977 | -117.23100281 |
+| 2151 | 38.67969894 |  -90.46309662 |
+
+
+** Create bounding boxes for queries
+
+#+begin_src R :results table :colnames yes :exports both :session :var queries=cppqueries[0:-1]
+#queries
+queries$width = rep(dfwuni$width/2 , each=10)
+names(queries) = c("tweet", "Lat", "Lon","width")
+head(queries)
+#+end_src
+
+#+RESULTS:
+| tweet |         Lat |           Lon | width |
+|-------+-------------+---------------+-------|
+|  5230 | 40.73379898 |  -74.24279785 |    90 |
+|  7278 | 39.90430069 |  -75.32160187 |    90 |
+|  3773 | 47.75630188 | -122.15399933 |    90 |
+|  8185 |  41.7521019 |  -87.65480042 |    90 |
+|  1969 |  40.1169014 |  -75.02999878 |    90 |
+|   320 | 40.91159821 |  -74.05319977 |    90 |
+
+*** Visualization of queries for the Twitter Dataset 
+
+#+begin_src R :results output graphics :file "./img/twitterQueries.png" :exports both :width 800 :height 600 :session 
+library(tidyverse)
+library(maps) 
+
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+
+queries %>% filter( width <= 90 ) %>%
+ggplot(aes(x=Lon,y=Lat)) + 
+mapWorld + 
+#geom_tile(aes(width=width, height=width), color="black", fill=NA, alpha=0.1, size = 0.5) +
+geom_tile(aes(width=width, height=width, color=factor(width)),size=0.3,fill=NA) +
+xlim(-180,+180) + 
+ylim(-90,+90) +
+labs(color = "Query Width " ) + 
+theme(legend.position="bottom" ) +
+guides(color = guide_legend(nrow = 1))
+#+end_src
+
+#+RESULTS:
+[[file:./img/twitterQueries.png]]
+
+
+** Output Bounding Boxes to CSV
+Convert to columns to bounding box coordinates
+
+#+begin_src R :results output :exports both :session 
+d = queries
+queries_bbox = data.frame(lat0 = d$Lat + d$width/2 ,
+                          lon0 = d$Lon - d$width/2 ,
+                          lat1 = d$Lat - d$width/2 ,
+                          lon1 = d$Lon + d$width/2)
+tail(queries_bbox)
+#+end_src
+
+#+RESULTS:
+:        lat0       lon0     lat1       lon1
+: 75 33.38696 -117.22356 32.68384 -116.52044
+: 76 42.11816  -88.03276 41.41504  -87.32964
+: 77 40.50866  -89.71136 39.80554  -89.00824
+: 78 41.81486  -81.83406 41.11174  -81.13094
+: 79 33.15336 -117.58257 32.45024 -116.87944
+: 80 39.03126  -90.81466 38.32814  -90.11153
+
+Write the csv file of bounding boxes
+#+begin_src R :results output :exports both :session 
+write.table(bbox,"queriesTwitter.csv",row.names=FALSE,col.names=FALSE,sep=",")
+#+end_src
+
+#+RESULTS:
+
+[[file:queriesTwitter.csv]]
