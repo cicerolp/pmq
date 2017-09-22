@@ -70,15 +70,14 @@ class input_file_it : public input_it<T> {
       file_ptr->read((char *) &_it._curr_value, T::record_size);
 
       if (file_ptr->eof()) {
+         // points to first invalid element
+         _it._curr_elt++;
         break;
       }
 
       // update current element
       _it._curr_elt++;
     }
-
-    // points to first invalid element
-    _it._curr_elt++;
 
     // update current istream position
     _it._pos = file_ptr->tellg();
