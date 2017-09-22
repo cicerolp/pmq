@@ -225,3 +225,5 @@ This is the sequential implementation used for comparison in the Palm-Tree paper
 
 Detailed performance tests in: 
 http://panthema.net/2007/stx-btree/speedtest/
+
+Paper with removals http://ilpubs.stanford.edu:8090/85/1/1995-19.pdf
