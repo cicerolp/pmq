@@ -126,9 +126,9 @@ int main(int argc, char *argv[]) {
   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "", "File with tweets to load (.dat)"));
+  std::string fname(cimg_option("-f", "", "File with tweets to load (.dat): with metadata."));
 
-  std::string fname_dmp(cimg_option("-d", "", "File with tweets to load (.dmp)"));
+  std::string fname_dmp(cimg_option("-d", "", "File with tweets to load (.dmp): with tweet text."));
 
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
     auto begin = it_t::begin(file_ptr);
     auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
-    PRINTOUT("%d teewts loaded \n", end - begin);
+    PRINTOUT("%d tweets loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname_dmp, std::ios::binary);
     auto begin = it_t::begin(file_ptr);
     auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
-    PRINTOUT("%d teewts loaded \n", end - begin);
+    PRINTOUT("%d tweets loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
@@ -175,12 +175,12 @@ int main(int argc, char *argv[]) {
     PRINTOUT("Generate random keys...\n");
     auto begin = it_t::begin(seed, parameters.batch_size);
     auto end = it_t::end(seed, parameters.batch_size, nb_elements);
-    PRINTOUT("%d teewts generated \n", end - begin);
+    PRINTOUT("%d tweets generated \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
-    //run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
-    //run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
-    //run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
   }
 
   return EXIT_SUCCESS;
