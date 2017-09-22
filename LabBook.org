@@ -6,7 +6,7 @@
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
 #+SEQ_TODO: TODO RUNNING ANALYSIS | FINISHED CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
-#+TAGS: IMPORTANT ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e) paper(p)
+#+TAGS: IMPORTANT(I) ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e) paper(p)
 #+CATEGORY: TwitterVis
 #+OPTIONS: ^:{} H:3 author:nil
 #+PROPERTY: header-args :cache no :eval never-export
@@ -360,12 +360,12 @@ mkdir -p $expFolder
   #+RESULTS:
 
 ***** Description                                                :ignore:
-[[./data/cicero/exp20170825181747/exp.org]]
-  
+  [[./data/cicero/exp20170825181747/exp.org]]
+
 
 **** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
 
-- Old exeperiment used Rtree* algorithm, use the quadratic one now.
+- Old experiment used Rtree* algorithm, use the quadratic one now.
 - Count was not correct in the plots from [[#exp20170822165129]]
 
 ***** Setup                                                    :noexport:
@@ -394,7 +394,7 @@ mkdir -p $expFolder
   $ $ [[./data/cicero/exp20170907112116/exp.org]]
 
 ***** Description                                                :ignore:
-[[./data/cicero/exp20170907112116/exp.org]]
+ [[./data/cicero/exp20170907112116/exp.org]]
  
 **** DONE [2017-09-15 Sex] Experiment =bench_insert_and_scan= :paper:exp20170919161448:
 ***** Setup                                                    :noexport:
@@ -500,7 +500,7 @@ echo $expFolder
   #+RESULTS:
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
-  
+
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170904153555/exp.org]]
   
@@ -536,7 +536,7 @@ echo "[[$expFolder/exp.org]]"
   #+RESULTS:
 
 ***** Description                                                :ignore:
-[[./data/cicero/exp20170907145711/exp.org]]
+  [[./data/cicero/exp20170907145711/exp.org]]
   
 **** DONE [2017-09-15 Sex] =bench_queries_region= V.3 :paper:exp20170915143003:
 
@@ -567,7 +567,7 @@ mkdir -p $expFolder
   #+RESULTS:
   2a5b5d2 UPD: report in markdown
   $ $ [[./data/cicero/exp20170915143003/exp.org]]
-
+  
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170915143003/exp.org]]
@@ -601,7 +601,7 @@ mkdir -p $expFolder
   #+RESULTS:
   22e9c95 upd exp info
   $ $ [[./data/cicero/exp20170914091842/exp.org]]
-
+  
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]
