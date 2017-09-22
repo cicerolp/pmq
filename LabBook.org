@@ -331,7 +331,7 @@ mkdir -p $expFolder
   #+RESULTS:
 
 ***** Description                                                :ignore:
-  [[./data/inf-desktop/exp20170822165129/exp.org]]
+[[./data/cicero/exp20170822165129/exp.org]]
   
 **** ANALYSIS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
 
@@ -360,14 +360,13 @@ mkdir -p $expFolder
   #+RESULTS:
 
 ***** Description                                                :ignore:
-  [[./data/cicero/exp20170825181747/exp.org]]
+[[./data/cicero/exp20170825181747/exp.org]]
   
 
 **** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
 
 - Old exeperiment used Rtree* algorithm, use the quadratic one now.
-- Count was not correct in the plots
-[[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
+- Count was not correct in the plots from [[#exp20170822165129]]
 
 ***** Setup                                                    :noexport:
 
@@ -395,7 +394,7 @@ mkdir -p $expFolder
   $ $ [[./data/cicero/exp20170907112116/exp.org]]
 
 ***** Description                                                :ignore:
- [[./data/cicero/exp20170907112116/exp.org]]
+[[./data/cicero/exp20170907112116/exp.org]]
  
 **** DONE [2017-09-15 Sex] Experiment =bench_insert_and_scan= :paper:exp20170919161448:
 ***** Setup                                                    :noexport:
@@ -420,7 +419,6 @@ mkdir -p $expFolder
   #+RESULTS:
   b299a4e Merge branch 'master' into DATA
   $ [[./data/cicero/exp20170919161448/exp.org]]
-
 
 ***** Description                                                :ignore:
 

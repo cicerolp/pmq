@@ -7,18 +7,22 @@
 #+TAGS: @JULIO(J)
 #+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
 #+CATEGORY: exp
-#+OPTIONS: ^:{} todo:nil H:4
+#+OPTIONS: ^:{} todo:nil H:4 author:nil tags:nil 
 #+PROPERTY: header-args :cache no :eval no-export 
 
 
-* Description 
+* Description                                                        :export:
+
 Test the Twitter Data set 
 
 - PMQ / GEOHASH
 - BTREE 
 - RTREE
 
-** Standalone script 
+*NOTE:* version with bad Rtree algorithm.
+
+limited to 1 M insertions.
+** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
 
 - parse.sh : parse the results to CSV
@@ -340,136 +344,188 @@ git pull origin $expId
 #+end_src
 
 
-* TODO Analisys
-** TODO Generate csv files
+* DONE Analisys                                                      :export:
+** DONE Generate csv files                                        :noexport:
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
 :END:      
 
 List logFiles
+
+#+NAME: tgzFiles
 #+begin_src sh :results table :exports both
-ls -htl *tgz
+ls *tgz
+#+end_src
+
+#+RESULTS: tgzFiles
+| log_1503702288.tgz |
+
+#+NAME: logFile
+
+#+begin_src sh :results output :exports both :var f=tgzFiles[-1]
+echo $f
 #+end_src
 
 #+RESULTS:
-| -rw-rw-r-- 1 julio julio 2 | 5M Set 16 17:59 log_1503702288.tgz |
+: log_1503702288.tgz
 
-#+NAME: logFile
-#+begin_src sh :results output :exports both 
-tar xvzf log_1503497835.tgz
+#+name: logFile
+#+begin_src sh :results table :exports both :var f=tgzFiles[-1]
+tar xvzf $f
 #+end_src
 
 #+RESULTS: logFile
-: bench_insert_and_scan_1503497835.log
+| bench_insert_and_scan_Random_1503702288.log  |
+| bench_insert_and_scan_Twitter_1503702288.log |
 
 Create CSV using logFile 
-#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#+NAME: csvFile
+#+begin_src sh :results table :exports both :var logFile=logFile[-1]
 #echo $logFile
 echo $(basename -s .log $logFile ).csv
-grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree\|RTree" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
 #+end_src
 
-#+NAME: csvFile
-#+RESULTS:
-: bench_insert_and_scan_1503497835.csv
+#+RESULTS: csvFile
+| bench_insert_and_scan_Twitter_1503702288.csv |
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
 mkdir img
 #+end_src
 
-#+RESULTS:
+#+RESULTS
 
-** TODO Results
+** DONE Results
 :PROPERTIES: 
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
 
-Load the CSV into R
+*** Load the CSV into R                                          :noexport:
 #+begin_src R :results output :exports both :var f=csvFile
-library(plyr)
-df = read.csv(f,header=FALSE,strip.white=TRUE,sep=";")
-df[7] <- NULL
-df[5] <- NULL
-names(df) = c("algo","bench","k","time","count")
-head(df)
+library(tidyverse)
 
-#+end_src
+df <- f[[1]] %>%
+    read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:6),sep=""))
+#               col_types="cicdcdci", 
+#progress=FALSE ) # specify colum types to avoid parsing errors
 
-#+RESULTS:
-:            algo           bench k     time count
-: 1 GeoHashBinary          insert 0 0.029754    NA
-: 2 GeoHashBinary        ReadElts 0 0.001554    NA
-: 3 GeoHashBinary        ReadElts 0 0.001440    NA
-: 4 GeoHashBinary        ReadElts 0 0.001389    NA
-: 5 GeoHashBinary apply_at_region 0 0.001389   100
-: 6 GeoHashBinary          insert 1 0.022867    NA
+str(as.tibble(df))
 
-Summary of the data frame
-#+begin_src R :results output :session :exports both
-summary(df[df$algo=="GeoHashBinary",])
-summary(df[df$algo=="BTree",])
-summary(df[df$algo=="RTree",])
 #+end_src
 
 #+RESULTS:
 #+begin_example
-            algo                   bench             k       
- BTree        :    0   apply_at_region:10000   Min.   :   0  
- GeoHashBinary:50000   insert         :10000   1st Qu.:2500  
- RTree        :    0   ReadElts       :30000   Median :5000  
-                                               Mean   :5000  
-                                               3rd Qu.:7499  
-                                               Max.   :9999  
-                                                             
-      time              count        
- Min.   : 0.00139   Min.   :    100  
- 1st Qu.: 1.34083   1st Qu.: 250075  
- Median : 9.44647   Median : 500050  
- Mean   : 9.02828   Mean   : 500050  
- 3rd Qu.:12.87295   3rd Qu.: 750025  
- Max.   :32.73830   Max.   :1000000  
-                    NA's   :40000
-            algo                   bench             k       
- BTree        :50000   apply_at_region:10000   Min.   :   0  
- GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
- RTree        :    0   ReadElts       :30000   Median :5000  
-                                               Mean   :5000  
-                                               3rd Qu.:7499  
-                                               Max.   :9999  
-                                                             
-      time              count        
- Min.   : 0.00422   Min.   :    100  
- 1st Qu.: 3.59117   1st Qu.: 250075  
- Median :28.44325   Median : 500050  
- Mean   :28.26849   Mean   : 500050  
- 3rd Qu.:47.47653   3rd Qu.: 750025  
- Max.   :71.60770   Max.   :1000000  
-                    NA's   :40000
-            algo                   bench             k       
- BTree        :    0   apply_at_region:10000   Min.   :   0  
- GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
- RTree        :50000   ReadElts       :30000   Median :5000  
-                                               Mean   :5000  
-                                               3rd Qu.:7499  
-                                               Max.   :9999  
-                                                             
-      time              count        
- Min.   : 0.00464   Min.   :    100  
- 1st Qu.: 3.73900   1st Qu.: 250075  
- Median :32.37425   Median : 500050  
- Mean   :32.92621   Mean   : 500050  
- 3rd Qu.:57.50140   3rd Qu.: 750025  
- Max.   :72.46010   Max.   :1000000  
-                    NA's   :40000
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_double(),
+  V5 = col_character(),
+  V6 = col_integer()
+)
+Warning: 50000 parsing failures.
+row # A tibble: 5 x 5 col     row   col  expected    actual expected   <int> <chr>     <chr>     <chr> actual 1     8  <NA> 6 columns 7 columns file 2     9  <NA> 6 columns 7 columns row 3    17  <NA> 6 columns 7 columns col 4    18  <NA> 6 columns 7 columns expected 5    26  <NA> 6 columns 7 columns actual # ... with 1 more variables: file <chr>
+... ................. ... ................................. ........ ................................. ...... ................................. .... ................................. ... ................................. ... ................................. ........ ................................. ...... .......................................
+See problems(...) for more details.
+
+Warning message:
+In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	230000 obs. of  6 variables:
+ $ V1: chr  "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" ...
+ $ V2: chr  "insert" "scan_at_region" "scan_at_region_refinements" "scan_at_region" ...
+ $ V3: int  0 0 0 0 0 0 0 0 0 1 ...
+ $ V4: num  0.016753 0.000467 1 0.000466 1 ...
+ $ V5: chr  "ms" "ms" "ms" "ms" ...
+ $ V6: int  NA NA NA NA NA NA NA 100 100 NA ...
+ - attr(*, "problems")=Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	50000 obs. of  5 variables:
+  ..$ row     : int  8 9 17 18 26 27 35 36 44 45 ...
+  ..$ col     : chr  NA NA NA NA ...
+  ..$ expected: chr  "6 columns" "6 columns" "6 columns" "6 columns" ...
+  ..$ actual  : chr  "7 columns" "7 columns" "7 columns" "7 columns" ...
+  ..$ file    : chr  "'bench_insert_and_scan_Twitter_1503702288.csv'" "'bench_insert_and_scan_Twitter_1503702288.csv'" "'bench_insert_and_scan_Twitter_1503702288.csv'" "'bench_insert_and_scan_Twitter_1503702288.csv'" ...
+ - attr(*, "spec")=List of 2
+  ..$ cols   :List of 6
+  .. ..$ V1: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V2: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V3: list()
+  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
+  .. ..$ V4: list()
+  .. .. ..- attr(*, "class")= chr  "collector_double" "collector"
+  .. ..$ V5: list()
+  .. .. ..- attr(*, "class")= chr  "collector_character" "collector"
+  .. ..$ V6: list()
+  .. .. ..- attr(*, "class")= chr  "collector_integer" "collector"
+  ..$ default: list()
+  .. ..- attr(*, "class")= chr  "collector_guess" "collector"
+  ..- attr(*, "class")= chr "col_spec"
 #+end_example
 
-*** Overview of results                                                :plot:
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+
+names(df) <- c("algo", "bench" , "k" , "Value" , "V5" , "count")
+
+df %>% 
+    select( -V5) -> df
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output :exports both :session 
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 230,000 x 5
+            algo                       bench     k    Value count
+           <chr>                       <chr> <int>    <dbl> <int>
+ 1 GeoHashBinary                      insert     0 0.016753    NA
+ 2 GeoHashBinary              scan_at_region     0 0.000467    NA
+ 3 GeoHashBinary  scan_at_region_refinements     0 1.000000    NA
+ 4 GeoHashBinary              scan_at_region     0 0.000466    NA
+ 5 GeoHashBinary  scan_at_region_refinements     0 1.000000    NA
+ 6 GeoHashBinary              scan_at_region     0 0.000427    NA
+ 7 GeoHashBinary  scan_at_region_refinements     0 1.000000    NA
+ 8 GeoHashBinary             apply_at_region     0 0.001456   100
+ 9 GeoHashBinary apply_at_region_refinements     0 1.000000   100
+10 GeoHashBinary                      insert     1 0.012515    NA
+# ... with 229,990 more rows
+#+end_example
+
+*** Overview of results                                              :plot:
 
 Plot an overview of every benchmark , doing average of times. 
 #+begin_src R :results output :exports both
-summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+df %>% filter( bench %in% c("insert", "scan_at_region", "apply_at_region")) %>%
+group_by(algo,k,bench) %>%
+summarize(time = mean(Value)) -> summary_avg
+summary_avg
 #+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 90,000 x 4
+# Groups:   algo, k [?]
+    algo     k           bench         time
+   <chr> <int>           <chr>        <dbl>
+ 1 BTree     0 apply_at_region 0.0009160000
+ 2 BTree     0          insert 0.0082910000
+ 3 BTree     0  scan_at_region 0.0008063333
+ 4 BTree     1 apply_at_region 0.0006260000
+ 5 BTree     1          insert 0.0075460000
+ 6 BTree     1  scan_at_region 0.0014426667
+ 7 BTree     2 apply_at_region 0.0007610000
+ 8 BTree     2          insert 0.0068160000
+ 9 BTree     2  scan_at_region 0.0021073333
+10 BTree     3 apply_at_region 0.0008970000
+# ... with 89,990 more rows
+#+end_example
 
 #+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
 library(ggplot2)
@@ -480,7 +536,7 @@ facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
 #+RESULTS:
 [[file:./img/overview.png]]
 
-*** Insertion performance
+*** Insertion performance                                :noexport:ARCHIVE:
 
 
 #+begin_src R :results output :exports both
@@ -506,9 +562,9 @@ ddply(insTime,c("algo"),summarize, Average=mean(time), Total=sum(time))
 
 #+RESULTS:
 :            algo    Average      Total
-: 1         BTree 0.05150084   515.0084
-: 2 GeoHashBinary 0.10885076  1088.5076
-: 3         RTree 1.24829441 12482.9441
+: 1         BTree 0.03628609   362.8609
+: 2 GeoHashBinary 0.08825361   882.5361
+: 3         RTree 1.10106264 11010.6264
 
 **** Amortized time
 
@@ -535,6 +591,14 @@ melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","su
 #+end_src
 
 #+RESULTS:
+: 
+: Attaching package: ‘reshape2’
+: 
+: The following object is masked from ‘package:tidyr’:
+: 
+:     smiths
+: Warning message:
+: attributes are not identical across measure variables; they will be dropped
 
 ***** Comparison Time X avgTime                                    :plot:
 #+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
@@ -547,7 +611,7 @@ facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
 #+RESULTS:
 [[file:./img/grid_times.png]]
 
-**** Zoom View 
+**** Zoom View
 
 #+begin_src R :results output graphics :file "./img/Zoom_0.2.png" :exports both :width 600 :height 400
 ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 

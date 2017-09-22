@@ -585,7 +585,7 @@ Fast-forwarded exp20170914091842 to 1adced939ed1e68bf901e82bd40097309abecf9e.
 #+end_example
 
 
-* INPROGRESS Analisys
+* INPROGRESS Analysis
 ** Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
