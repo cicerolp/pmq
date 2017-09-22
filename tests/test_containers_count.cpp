@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
     auto begin = it_t::begin(file_ptr);
-    auto end = it_t::end(file_ptr);
+    auto end = n_elts == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, n_elts);
     PRINTOUT("%d teewts loaded \n", end - begin);
 
     test_count = run_test_bench<TEST_PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);

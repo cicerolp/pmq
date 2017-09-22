@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
     auto begin = it_t::begin(file_ptr);
-    auto end = it_t::end(file_ptr);
+    auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
     PRINTOUT("%d teewts loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
     PRINTOUT("Loading twitter dataset... %s \n", fname_dmp.c_str());
     std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname_dmp, std::ios::binary);
     auto begin = it_t::begin(file_ptr);
-    auto end = it_t::end(file_ptr);
+    auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
     PRINTOUT("%d teewts loaded \n", end - begin);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);

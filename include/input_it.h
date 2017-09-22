@@ -60,11 +60,12 @@ class input_file_it : public input_it<T> {
     return input_file_it(file_ptr);
   }
 
-  static input_file_it<T> end(const std::shared_ptr<std::ifstream> &file_ptr) {
+  static input_file_it<T> end(const std::shared_ptr<std::ifstream> &file_ptr,
+                              uint32_t size = std::numeric_limits<uint32_t>::max()) {
     auto _it = input_file_it(file_ptr);
 
     // seek to end
-    while (true) {
+    while (size-- != 0) {
       // must read BEFORE checking EOF
       file_ptr->read((char *) &_it._curr_value, T::record_size);
 
