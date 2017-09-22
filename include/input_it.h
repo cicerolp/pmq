@@ -149,9 +149,16 @@ class input_file_it : public input_it<T> {
   std::streampos _pos{0};
 };
 
-class input_random_it : public input_it<GenericType> {
+template<std::size_t N>
+class input_random_it : public input_it<GenericType<N>> {
  public:
   typedef size_t size_type;
+  // this type represents a pointer-to-value_type
+  using pointer = typename input_it<GenericType<N>>::pointer;
+  // this type represents a reference-to-value_type
+  using reference = typename input_it<GenericType<N>>::reference;
+  /// Distance between iterators is represented as this type.
+  using difference_type = typename input_it<GenericType<N>>::difference_type;
 
   static input_random_it begin(size_type seed, size_type timestamp) {
     return input_random_it(seed, timestamp);
@@ -167,7 +174,7 @@ class input_random_it : public input_it<GenericType> {
   }
 
   input_random_it(size_type seed, size_type timestamp) :
-      input_it(), _gen(seed), _timestamp(timestamp) {
+      input_it<GenericType<N>>(), _gen(seed), _timestamp(timestamp) {
     readCurrValue();
   }
 
@@ -191,10 +198,10 @@ class input_random_it : public input_it<GenericType> {
   void readCurrValue() {
     float longitude = lon(_gen);
     float latitude = lat(_gen);
-    uint64_t time = _curr_elt / _timestamp;
+    uint64_t time = this->_curr_elt / _timestamp;
 
-    _curr_value = GenericType(time, latitude, longitude);
-    _curr_elt++;
+    this->_curr_value = GenericType<N>(time, latitude, longitude);
+    this->_curr_elt++;
   }
 
   size_type _timestamp;

@@ -6,12 +6,13 @@
 
 #include "stde.h"
 
+template<std::size_t N>
 class GenericType {
  public:
   // this type represents a pointer-to-value_type.
-  using pointer = const GenericType *;
+  using pointer = const GenericType<N> *;
   // this type represents a reference-to-value_type.
-  using reference = const GenericType &;
+  using reference = const GenericType<N> &;
 
   GenericType() = default;
 
@@ -67,6 +68,8 @@ class GenericType {
  protected:
   uint64_t _time;
   float _lat, _lon;
+
+  char _extra[N];
 };
 
 class TweetDatType {

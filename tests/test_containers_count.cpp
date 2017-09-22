@@ -233,8 +233,10 @@ int main(int argc, char *argv[]) {
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
 
   } else {
-    using el_t = GenericType;
-    using it_t = input_random_it;
+    // 16 bytes + N
+    static const size_t N = 0;
+    using el_t = GenericType<N>;
+    using it_t = input_random_it<N>;
 
     PRINTOUT("Generate random keys...\n");
     auto begin = it_t::begin(seed, parameters.rate);
