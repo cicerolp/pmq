@@ -26,23 +26,6 @@ elements of size 32 bytes:
 
 - PMA batch size = 1000
 
-+350 million elements = src_python{ return ( 32 * 350 * 10**6 / 2**30) } {{{results(=10.43081283569336=)}}} GB .+
-
-+Will use a PMA of 16 GB+
-#+begin_src python :results output :exports none
-print( 536870912 * 32 / 2**30)
-#+end_src
-
-#+RESULTS:
-: 16.0
-
-:UPDATE:
-The 350 M elements benchmark takes to long, mainly due to to the global scan operations done after each insertion.
-
-We will re-run this experiment with 10 M elements. Batch of size 1000. 
-To test with 350 we should disable the scans. 
-:END:
-
 With 10 M elemtents PMA has size src_python{return( 16777216 * 32 / 2**20) ;} {{{results(=512.0=)}}} Megabytes. 
 
 Tests with larger Size will be done in the querying and scanning benchmark.
@@ -64,7 +47,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170919161448
+: exp20170923193058
 
 Set up git branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -74,10 +57,9 @@ git commit -m "LBK: add ${expId} entry" ../../../LabBook.org
 
 #+RESULTS:
 : M	LabBook.org
-: M	benchmarks/bench_insert_and_scan.cpp
 : Your branch is up-to-date with 'origin/master'.
-: [master 1c0a8df] LBK: add exp20170919161448 entry
-:  1 file changed, 19 insertions(+), 11 deletions(-)
+: [master cd3dea9] LBK: add exp20170923193058 entry
+:  1 file changed, 40 insertions(+)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -95,21 +77,17 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170919161448
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	modified:   exp.org
-
+On branch exp20170923193058
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	run.sh
+	.#exp.org
+	exp.org
 
-no changes added to commit (use "git add" and/or "git commit -a")
-[exp20170919161448 37950cc] Initial commit for exp20170919161448
- 1 file changed, 14 insertions(+), 11 deletions(-)
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170923193058 361affe] Initial commit for exp20170923193058
+ 1 file changed, 727 insertions(+)
+ create mode 100644 data/cicero/exp20170923193058/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -117,12 +95,12 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * ae8f92f (HEAD -> exp20170919161448) test dense vector at last
-: * 778294e Initial commit for exp20170919161448
-: * ce6f828 Initial commit for exp20170919161448
+: * 361affe (HEAD -> exp20170923193058) Initial commit for exp20170923193058
+: * cd3dea9 (master) LBK: add exp20170923193058 entry
+: * 615175f (origin/master, origin/HEAD) bugfix: latitude / longitude
 
 
-** DONE Export run script
+** TODO Export run script
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -176,7 +154,7 @@ set +e
 # Queries insert remove count
 n=$((10**7))
 b=1000
-stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -f ../data/geo-tweets.dat -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
 
 set -e
 
