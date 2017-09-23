@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(twitterVis)
+project(PMQ)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
