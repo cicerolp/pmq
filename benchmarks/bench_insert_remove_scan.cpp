@@ -6,11 +6,12 @@
 
 #include "stde.h"
 #include "types.h"
-#include "InputIntf.h"
+#include "input_it.h"
 
+#include "PMQ.h"
 #include "RTreeCtn.h"
-
-#include "GeoHash.h"
+#include "BTreeCtn.h"
+#include "DenseCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
@@ -24,104 +25,113 @@
    std::cout << std::endl ;\
 } while (0)
 
-/*#define PRINTBENCH( ... ) do { \
-} while (0)*/
-
 struct bench_t {
   // benchmark parameters
   uint32_t n_exp;
-  uint32_t batch_size;
-  uint64_t rm_time_limit;
-  uint32_t insert_ratio;
+  uint32_t rate;
+
+  uint64_t t_win, ctn_size, max_tree_size;
+
+  bool dryrun;
+
+  friend inline std::ostream &operator<<(std::ostream &out, const bench_t &p) {
+
+    out << "Benchmark Parmeters: \n";
+    out << " n_exp: " << p.n_exp << "\n";
+    out << " rate: " << p.rate << "\n";
+    out << " t_win: " << p.t_win << "\n";
+    out << " ctn_size: " << p.ctn_size << "\n";
+    out << " max_tree_size: " << p.max_tree_size << "\n";
+    return out;
+  }
 };
 
-uint32_t g_Quadtree_Depth = 25;
+using remove_function = std::function<int(const void *, uint64_t)>;
+using remove_apply_function = std::function<int(const void *)>;
 
-// reads the full element
-void inline read_element(const valuetype &el) {
-  valuetype volatile elemt = *(valuetype *) &el;
+template<typename _Key, typename _Value>
+int remove_elttype(const void *el, uint64_t oldest_time) {
+  return ((std::pair<_Key, _Value> *) el)->second.getTime() < oldest_time;
 }
 
-// counts the amount of elements
+template<typename T>
+int remove_valuetype(const void *el, uint64_t oldest_time) {
+  return ((T *) el)->getTime() < oldest_time;
+}
+
+// reads the full element
+template<typename T>
+void inline read_element(const T &el) {
+  T volatile elemt = *(T *) &el;
+}
+
+template<typename T>
 void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
   accum += count;
 }
 
-template<typename T>
-void inline run_queries(T &container, const region_t &region, uint64_t id, const bench_t &parameters) {
+template<typename T, typename _It, typename _T>
+void run_bench(int argc, char *argv[], _It it_begin, _It it_end,
+               const bench_t &parameters, remove_function is_removed) {
 
-  duration_t timer;
+  uint64_t temp_window = parameters.t_win;
 
-  // 1 - gets the minimum set of nodes that are inside the queried region
-  // QueryRegion will traverse the tree and return the intervals to query;
-  // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
+  // calculates the inital ize based on insertion rate and temporal window (rate * temporal_window)
+  uint64_t init_size = parameters.rate * parameters.t_win;
 
-#if 1
-  uint32_t count = 0;
-  applytype_function count_element_wrapper = std::bind(count_element, std::ref(count),
-                                                       std::placeholders::_1, std::placeholders::_2);
-  container.apply_at_region(region, count_element_wrapper);
-//  PRINTBENCH(id,"ElementsCount", count);
-#endif
-
-  // warm up
-  container.scan_at_region(region, read_element);
-
-  // access the container to count the number of elements inside the region
-  for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer = container.scan_at_region(region, read_element);
-
-    PRINTBENCH(id, timer,"count",count);
-  }
-
-
-
-}
-
-template<typename T>
-void run_bench(int argc, char *argv[], const std::vector<elttype> &input, const bench_t &parameters) {
-
-
-
-  //create container
+  // create container with the appropriate size
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-  container->create((uint32_t) input.size());
+  container->create((uint32_t) parameters.ctn_size);
 
-  std::vector<elttype>::const_iterator it_begin = input.begin();
-  std::vector<elttype>::const_iterator it_curr = input.begin();
+  // we insert all the elements of the dataset, the container should delete the oldest to keep place for everything
+  auto it_curr = it_begin;
 
   duration_t timer;
 
-  uint64_t t = 0;
+  //current time counter
+  uint64_t t_now = temp_window;
   uint64_t oldest_time = 0;
-  while (it_begin != input.end()) {
-    it_curr = std::min(it_begin + parameters.batch_size, input.end());
 
-    std::vector<elttype> batch(it_begin, it_curr);
+  remove_apply_function _apply = std::bind(is_removed, std::placeholders::_1, std::ref(oldest_time));
 
-    if (t > parameters.rm_time_limit) {
+  // INITIALIZE THE CONTAINER TO FILL IT UNTIL THE STEADY STATE
+  it_curr = std::min(it_begin + init_size, it_end);
+
+  // fills the time window
+  std::vector<_T> initBatch(it_begin, it_curr);
+  container->insert(initBatch);
+
+  DBG_PRINTOUT("INIT container with %d elements\n", init_size);
+
+  it_begin = it_curr;
+
+  // Continues inserting by batches.
+  while (it_begin != it_end) {
+    it_curr = std::min(it_begin + parameters.rate, it_end);
+
+    std::vector<_T> batch(it_begin, it_curr);
+
+    if (t_now >= temp_window) {
       oldest_time++;
     }
 
-    DBG_PRINTOUT("Removing with oldest time %u\n", oldest_time);
+    DBG_PRINTOUT("Removing elements with timestamp < %u and insert one batch\n", oldest_time);
 
-    timer = container->insert_rm(batch, [oldest_time](const void *el) {
-      return ((elttype *) el)->value.time < oldest_time;
-    });
+    if (!parameters.dryrun) {
+      timer = container->insert_rm(batch, _apply);
+      PRINTBENCH_PTR(temp_window, t_now, "count", container->size(), timer);
 
-    PRINTBENCH_PTR(t, timer );
+      // scan elements on the container
+      timer = container->scan_at_region(region_t(0, 0, 0, 0, 0), read_element<_T>);
+      PRINTBENCH_PTR(temp_window, t_now, timer);
+    } else {
+      PRINTBENCH_PTR("dryrun", temp_window, t_now, "count", container->size(), 0);
+    }
 
     // update iterator
     it_begin = it_curr;
 
-    // ========================================
-    // Performs global scan
-    // ========================================
-
-    //Run a scan on the whole array
-    run_queries((*container.get()), region_t(0, 0, 0, 0, 0), t, parameters);
-
-    ++t;
+    t_now++;
   }
 }
 
@@ -130,47 +140,61 @@ int main(int argc, char *argv[]) {
 
   cimg_usage("Queries Benchmark inserts elements in batches.");
 
-  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to generate randomly"));
+  const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to insert"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "./data/tweet100.dat", "file with tweets to load"));
+  std::string fname(cimg_option("-f", "", "file with tweets to load"));
 
-  parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
-  parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
-  parameters.rm_time_limit = (cimg_option("-rm", 10, "The 'time' difference used to delete tweets"));
-//   parameters.insert_ratio = (uint32_t) (cimg_option("-ir", (uint32_t) parameters.batch_size, "Number of tweets inserted by time unit."));
+  parameters.rate = (cimg_option("-rate", 1000, "Rate (elements per batch) for insertions"));
+  parameters.t_win = (cimg_option("-T", 10800, "Temporal window Size"));
+  parameters.max_tree_size = (cimg_option("-tSize", 10800000, "Max size for the Btree and Rtree"));
+
+  parameters.dryrun = (cimg_option("-dry", false, "Dry run"));
 
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
 
-  const uint32_t quadtree_depth = 25;
+  if (!fname.empty()) {
+    using el_t = TweetDatType;
+    using it_t = input_file_it<el_t>;
 
-  std::vector<elttype> input;
-
-  if (nb_elements == 0) {
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-    input = input::load(fname, quadtree_depth, parameters.batch_size);
-    PRINTOUT("%d teewts loaded \n", (uint32_t) input.size());
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+    auto begin = it_t::begin(file_ptr);
+    auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
+    PRINTOUT("%d teewts loaded \n", end - begin);
+
+    // parameters setup
+    parameters.ctn_size = parameters.rate * parameters.t_win;
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
+    // parameters setup
+    parameters.ctn_size = parameters.max_tree_size;
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
   } else {
+    // 16 bytes + N
+    static const size_t N = 0;
+    using el_t = GenericType<N>;
+    using it_t = input_random_it<N>;
+
     PRINTOUT("Generate random keys...\n");
-    //Use the batch id as timestamp
-    input = input::dist_random(nb_elements, seed, parameters.batch_size);
-    PRINTOUT("%d teewts generated \n", (uint32_t) input.size());
+    auto begin = it_t::begin(seed, parameters.rate);
+    auto end = it_t::end(seed, parameters.rate, nb_elements);
+    PRINTOUT("%d teewts generated \n", end - begin);
+
+    // parameters setup
+    parameters.ctn_size = parameters.rate * parameters.t_win;
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+
+    // parameters setup
+    parameters.ctn_size = parameters.max_tree_size;
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
   }
-#ifndef NDEBUG
-  for (elttype &e : input) {
-    std::cout << "[" << e.key << "," << e.value.time << "] \n";
-  }
-#endif
-
-
-
-//  run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, input, parameters);
-
-//  run_bench<BTreeCtn>(argc, argv, input, parameters);
-
-//  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, input, parameters);
 
   return EXIT_SUCCESS;
 }

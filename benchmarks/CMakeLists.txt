@@ -6,48 +6,23 @@ find_package(Boost 1.64.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(bench_topk_search
-        bench_topk_search.cpp
+file(GLOB HEADERS "*.h" "../include/*.h")
+source_group("Header Files" FILES ${HEADERS})
 
-        ../include/string_util.cpp
-        ../include/QuadtreeIntf.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
-
-        )
-
-target_link_libraries(bench_topk_search pma ${CMAKE_THREAD_LIBS_INIT})
-
-add_executable(bench_insert_remove_scan
+add_executable(bench_insert_remove_scan ${HEADERS}
         bench_insert_remove_scan.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_scan pma ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(bench_insert_remove_count
+add_executable(bench_insert_remove_count ${HEADERS}
         bench_insert_remove_count.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_remove_count pma ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(bench_queries_region
+add_executable(bench_queries_region ${HEADERS}
         bench_queries_region.cpp
-
-        ../include/string_util.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_queries_region
@@ -56,14 +31,8 @@ target_link_libraries(bench_queries_region
         ${Boost_LIBRARIES}
         )
 
-add_executable(bench_insert_and_scan
+add_executable(bench_insert_and_scan ${HEADERS}
         bench_insert_and_scan.cpp
-
-        ../include/QuadtreeIntf.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_insert_and_scan
@@ -72,14 +41,8 @@ target_link_libraries(bench_insert_and_scan
         ${Boost_LIBRARIES}
         )
 
-add_executable(bench_memory
+add_executable(bench_memory ${HEADERS}
         bench_memory.cpp
-
-        ../include/QuadtreeIntf.cpp
-
-        ../include/GeoHash.cpp
-        ../include/BTreeCtn.cpp
-        ../include/ImplicitDenseVectorCtn.cpp
         )
 
 target_link_libraries(bench_memory

@@ -65,14 +65,14 @@ struct region_t {
 
   // make a region given uper-left ( _lat0,_lon0) and bottom-right (_lat1,_lon1) corners
   region_t(float lat0, float lon0, float lat1, float lon1) {
-    if (lat0 < -85.051132f) lat0 = -85.051132f;
-    else if (lat0 > 85.051132f) lat0 = 85.051132f;
+    if (lat0 < -85.0511f) lat0 = -85.0511f;
+    else if (lat0 > 85.0511f) lat0 = 85.0511f;
 
     if (lon0 < -180.f) lon0 = -180.f;
     else if (lon0 > 180.f) lon0 = 180.f;
 
-    if (lat1 < -85.051132f) lat1 = -85.051132f;
-    else if (lat1 > 85.051132f) lat1 = 85.051132f;
+    if (lat1 < -85.0511f) lat1 = -85.0511f;
+    else if (lat1 > 85.0511f) lat1 = 85.0511f;
 
     if (lon1 < -180.f) lon1 = -180.f;
     else if (lon1 > 180.f) lon1 = 180.f;
@@ -197,40 +197,13 @@ struct region_t {
     }
   }
 
-  inline bool cover(const spatial_t &el) const {
-    uint32_t x, y;
-    mortonDecode_RAM(el.code, x, y);
-
-    if (z <= el.z) {
-      uint64_t n = (uint64_t) 1 << (el.z - z);
-
-      uint64_t x_min = x0 * n;
-      uint64_t x_max = x1 * n;
-
-      uint64_t y_min = y0 * n;
-      uint64_t y_max = y1 * n;
-
-      return x_min <= x && x_max >= x && y_min <= y && y_max >= y;
-    } else {
-      uint64_t n = (uint64_t) 1 << (z - el.z);
-
-      uint64_t x_min = x * n;
-      uint64_t x_max = x_min + n - 1;
-
-      uint64_t y_min = y * n;
-      uint64_t y_max = y_min + n - 1;
-
-      return x0 <= x_min && x1 >= x_max && y0 <= y_min && y1 >= y_max;
-    }
-  }
-
  public:
   float lat, lon;
   uint64_t code0, code1;
   uint32_t x0, y0, x1, y1, z;
 };
 
-struct tweet_all_t {
+struct tweet_t {
   float latitude;
   float longitude;
 
@@ -240,7 +213,7 @@ struct tweet_all_t {
   uint8_t device;
   uint8_t app;
 
-  static void write(const tweet_all_t &el, json_writer &writer) {
+  static void write(const tweet_t &el, json_writer &writer) {
     writer.StartArray();
     writer.Uint((unsigned int) el.time);
     writer.Uint(el.language);
@@ -249,165 +222,19 @@ struct tweet_all_t {
     writer.EndArray();
   }
 
-  bool operator==(const tweet_all_t &rhs) const {
+  bool operator==(const tweet_t &rhs) const {
     // simplified comparison
     return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
   };
 
-  friend inline std::ostream &operator<<(std::ostream &out, const tweet_all_t &e) {
+  friend inline std::ostream &operator<<(std::ostream &out, const tweet_t &e) {
     return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; "
                << (int) e.device << "; " << (int) e.app;
   }
 };
 
-struct tweet_text_t {
-  float latitude;
-  float longitude;
-  uint64_t time;
-  char text[140];
-
-  static void write(const tweet_text_t &el, json_writer &writer) {
-    writer.StartArray();
-    writer.Uint((unsigned int) el.time);
-    writer.String(el.text);
-    writer.EndArray();
-  }
-
-  bool operator==(const tweet_text_t &rhs) const {
-    // simplified comparison
-    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
-  };
-
-  friend inline std::ostream &operator<<(std::ostream &out, const tweet_text_t &e) {
-    return out << e.latitude << "; " << e.longitude << "; " << e.text;
-  }
-
-};
-
-//using tweet_t = tweet_text_t;
-using tweet_t = tweet_all_t;
-using valuetype = tweet_t;
-
-// JULIO : elttype conflict with definition on pma / test_utils.h
-// Check how to fix this later
-
-template<typename valuetype_>
-struct elttype_pmq {
-  uint64_t key;
-  valuetype_ value;
-
-  elttype_pmq() {
-  };
-
-  elttype_pmq(const valuetype_ &el, uint32_t depth) : value(el) {
-    uint32_t y = mercator_util::lat2tiley(value.latitude, depth);
-    uint32_t x = mercator_util::lon2tilex(value.longitude, depth);
-    key = mortonEncode_RAM(x, y);
-  }
-
-  friend inline bool operator<(const elttype_pmq &lhs, const elttype_pmq &rhs) {
-    return (lhs.key < rhs.key);
-  }
-
-  friend inline std::ostream &operator<<(std::ostream &out, const elttype_pmq &e) {
-    return out << e.key;
-  }
-};
-
-using elttype = elttype_pmq<tweet_t>;
-
 struct triggers_t {
   float frequency;
-};
-
-struct topk_t {
-  float alpha;
-  float radius;
-  uint32_t k;
-  uint64_t now;
-  uint64_t time;
-};
-
-struct topk_elt {
-  topk_elt(const valuetype &_elt, float _score) : elt(_elt), score(_score) {
-  }
-
-  operator valuetype() const {
-    return elt;
-  }
-
-  float score;
-  valuetype elt;
-};
-
-struct topk_cnt {
- private:
-  float worst_score{0.f};
-  std::vector<topk_elt> buffer1, buffer2;;
-
-  inline void shrink_buffers(const topk_t &topk) {
-    // insert buffer2 into buffer1
-    buffer1.insert(buffer1.end(), buffer2.begin(), buffer2.end());
-
-    // clear
-    buffer2.clear();
-
-    // sort buffer1
-    // sort elements by score
-    gfx::timsort(buffer1.begin(), buffer1.end(),
-                 [](const topk_elt &lhs, const topk_elt &rhs) {
-                   return lhs.score < rhs.score;
-                 });
-
-    // remove elements out of topk
-    buffer1.erase(buffer1.begin() + topk.k, buffer1.end());
-
-    // sets worst_score to biggest score
-    worst_score = buffer1.back().score;
-  }
-
- public:
-  topk_cnt(const topk_t &topk) {
-    buffer2.reserve(topk.k);
-    buffer1.reserve(topk.k * 2);
-  }
-
-  inline std::vector<valuetype> get_output(const topk_t &topk) {
-    if (buffer2.size() != 0)
-      shrink_buffers(topk);
-
-    std::vector<valuetype> output;
-    output.reserve(topk.k);
-
-    output.insert(output.begin(), buffer1.begin(), buffer1.end());
-
-    return output;
-  }
-
-  inline void insert(topk_t &topk, const valuetype &el, float score) {
-    if (buffer1.size() >= topk.k) {
-      if (score <= worst_score) {
-        buffer2.emplace_back(el, score);
-
-        if (buffer2.size() == topk.k) {
-          shrink_buffers(topk);
-
-          // spatial boundary tightening
-          if (worst_score < topk.alpha) {
-            topk.radius = (worst_score / topk.alpha) * topk.radius;
-          }
-
-          // temporal boundary tightening
-          if (worst_score < (1.f - topk.alpha)) {
-            topk.time = (uint64_t) ((worst_score / (1.f - topk.alpha)) * topk.time);
-          }
-        }
-      }
-    } else {
-      buffer1.emplace_back(el, score);
-      worst_score = std::max(worst_score, score);
-    }
-  }
 };
 
 struct elinfo_t {

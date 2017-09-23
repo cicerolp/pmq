@@ -2,21 +2,13 @@
 
 #include "Server.h"
 
-#include "PMABatchCtn.h"
-#include "ExplicitDenseVectorCtn.h"
-
-#include "QuadtreeIntf.h"
-
 #include "GeoRunner.h"
 #include "GeoCtnIntf.h"
 
+#include "PMQ.h"
+
 #include "BTreeCtn.h"
 #include "RTreeCtn.h"
-#include "GeoHash.h"
-#include "PMABatchCtn.h"
-#include "PostGisCtn.h"
-#include "SpatiaLiteCtn.h"
-#include "ExplicitDenseVectorCtn.h"
 
 uint32_t g_Quadtree_Depth = 25;
 
@@ -31,23 +23,7 @@ int main(int argc, char *argv[]) {
   GeoRunner &runner = GeoRunner::getInstance(argc, argv);
 
   // btree
-  std::shared_ptr<BTreeCtn> container = std::make_shared<BTreeCtn>(argc, argv);
-
-  // rtree
-  //typedef bgi::rstar<16> balacing_algorithm;
-  //std::shared_ptr<RTreeCtn<balacing_algorithm>> container = std::make_shared<RTreeCtn<balacing_algorithm> >(argc, argv);
-
-  // implicit quadtree
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashSequential>(argc, argv);
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<GeoHashBinary>(argc, argv);
-
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PMABatchCtn>(argc, argv);
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnStdSort>();
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<DenseCtnTimSort>();
-
-  // SQL
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<SpatiaLiteCtn>();
-  //std::shared_ptr<GeoCtnIntf> container = std::make_shared<PostGisCtn>();
+  std::shared_ptr < BTreeCtn > container = std::make_shared<BTreeCtn>(argc, argv);
 
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return 0;
@@ -64,7 +40,7 @@ int main(int argc, char *argv[]) {
   nds_opts.multithreading = true;
 
   // http server
-  std::unique_ptr<std::thread> server_ptr;
+  std::unique_ptr < std::thread > server_ptr;
   if (server) {
     Server::getInstance(nds_opts);
     server_ptr = std::make_unique<std::thread>(Server::run);

@@ -4,7 +4,7 @@
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
-#+SEQ_TODO: TODO RUNNING ANALYSIS | FINISHED CANCELED(@)
+#+SEQ_TODO: TODO RUNNING RERUN ANALYSIS | FINISHED CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
 #+TAGS: IMPORTANT(I) ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e) paper(p)
 #+CATEGORY: TwitterVis
@@ -361,7 +361,7 @@ mkdir -p $expFolder
 
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170825181747/exp.org]]
-
+  
 
 **** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
 
@@ -400,12 +400,12 @@ mkdir -p $expFolder
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
-set -e
-expId=$(date +%Y%m%d%H%M%S)
+  set -e
+  expId=$(date +%Y%m%d%H%M%S)
   machineDesc="cicero"
-expFolder=./data/$machineDesc/exp$expId
-mkdir -p $expFolder
-#+end_src
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
 
   #+RESULTS:
   
@@ -500,7 +500,7 @@ echo $expFolder
   #+RESULTS:
   cadbec3 wip exp
   $ $ [[./data/cicero/exp20170904153555/exp.org]]
-
+  
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170904153555/exp.org]]
   
@@ -567,10 +567,52 @@ mkdir -p $expFolder
   #+RESULTS:
   2a5b5d2 UPD: report in markdown
   $ $ [[./data/cicero/exp20170915143003/exp.org]]
-  
+
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170915143003/exp.org]]
+
+**** TODO [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset
+
+- Test queries on real datasets
+- Use a time window of 6h * batches of size 1000  = 26.000.000 elements
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170915143003/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  6c231da minor chgs
+  $ $ [[./data/cicero/exp20170923144931/exp.org]]
+
+
+***** Description                                                :ignore:
+
+Template to start an experiment:
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170923144931/exp.org]]
 
 *** Benchmark Insert and Remove
 **** ANALYSIS [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
@@ -601,7 +643,7 @@ mkdir -p $expFolder
   #+RESULTS:
   22e9c95 upd exp info
   $ $ [[./data/cicero/exp20170914091842/exp.org]]
-  
+
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]

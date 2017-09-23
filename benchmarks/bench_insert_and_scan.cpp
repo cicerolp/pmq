@@ -10,11 +10,10 @@
 #include "types.h"
 #include "input_it.h"
 
+#include "PMQ.h"
 #include "RTreeCtn.h"
 #include "BTreeCtn.h"
-
-#include "GeoHash.h"
-#include "ImplicitDenseVectorCtn.h"
+#include "DenseCtn.h"
 
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\
@@ -28,38 +27,36 @@
    std::cout << std::endl ;\
 } while (0)
 
-/*void printStats(duration_t timer){
-  for (auto &info : timer) {
-    std::cout << info ;
-  }
-}*/
-
-/*#define PRINTBENCH( ... ) do { \
-} while (0)*/
-
 struct bench_t {
   // benchmark parameters
   uint32_t n_exp;
   uint32_t batch_size;
 };
 
-uint32_t g_Quadtree_Depth = 25;
-
 // reads the full element
-void inline read_element(const valuetype &el) {
-  valuetype volatile elemt = *(valuetype *) &el;
+template<typename T>
+void inline read_element(const T &el) {
+  T volatile elemt = *(T *) &el;
 }
 
+template<typename T>
 void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
   accum += count;
 }
 
-template<typename T>
+template<typename T, typename Tp>
 void inline run_queries(T &container, const region_t &region, uint32_t id, const bench_t &parameters) {
 
   uint32_t count = 0;
-  applytype_function _apply = std::bind(count_element, std::ref(count),
-                                        std::placeholders::_1, std::placeholders::_2);
+  typename GeoCtnIntf<Tp>::scantype_function
+      _scan = std::bind([](uint32_t &accum, const Tp &el) {
+    accum++;
+  }, std::ref(count), std::placeholders::_1);
+
+  typename GeoCtnIntf<Tp>::applytype_function
+      _apply = std::bind([](uint32_t &accum, const spatial_t &, uint32_t count) {
+    accum += count;
+  }, std::ref(count), std::placeholders::_1, std::placeholders::_2);
 
   duration_t timer;
 
@@ -68,56 +65,51 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
   // NOTE: when comparing with the quadtree with pointer to elements the scan will be the traversall on the tree.
 
   // warm up
-  container.scan_at_region(region, read_element);
+  container.scan_at_region(region, _scan);
 
   // access the container to count the number of elements inside the region
   for (uint32_t i = 0; i < parameters.n_exp; i++) {
-    timer = container.scan_at_region(region, read_element);
+    count = 0;
+    timer = container.scan_at_region(region, _scan);
 
-    PRINTBENCH(id, timer);
+    PRINTBENCH(id, timer, "count", count);
   }
 
+  count = 0;
   timer = container.apply_at_region(region, _apply);
   PRINTBENCH(id, timer, "count", count);
 }
 
-template<typename T>
-void run_bench(int argc, char *argv[], input_it &begin, input_it &end, const bench_t &parameters) {
-  // reset iterator
-  begin.reset();
-
-  size_t size = begin.size();
-
+template<typename T, typename _It, typename _T>
+void run_bench(int argc, char *argv[], _It it_begin, _It it_end, const bench_t &parameters) {
   //create container
   std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-  container->create((uint32_t) size);
+  container->create(it_end - it_begin);
+
+  auto it_curr = it_begin;
 
   duration_t timer;
 
   int id = 0;
-  while (begin != end) {
+  while (it_begin != it_end) {
+    it_curr = std::min(it_begin + parameters.batch_size, it_end);
 
-    size_t n_elts = parameters.batch_size;
-    std::vector<elttype> batch;
-
-    while (begin != end && n_elts != 0) {
-      batch.emplace_back(*begin);
-      ++begin;
-
-      --n_elts;
-    }
+    std::vector<_T> batch(it_begin, it_curr);
 
     // insert batch
     timer = container->insert(batch);
 
     PRINTBENCH_PTR(id, timer);
 
+    // update iterator
+    it_begin = it_curr;
+
     // ========================================
     // Performs global scan
     // ========================================
 
     //Run a scan on the whole array
-    run_queries((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
+    run_queries<T, _T>((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
 
     ++id;
   }
@@ -134,7 +126,9 @@ int main(int argc, char *argv[]) {
   const unsigned int nb_elements(cimg_option("-n", 0, "Number of elements to read / generate randomly"));
   const long seed(cimg_option("-r", 0, "Random seed to generate elements"));
 
-  std::string fname(cimg_option("-f", "", "File with tweets to load"));
+  std::string fname(cimg_option("-f", "", "File with tweets to load (.dat): with metadata."));
+
+  std::string fname_dmp(cimg_option("-d", "", "File with tweets to load (.dmp): with tweet text."));
 
   parameters.batch_size = (cimg_option("-b", 100, "Batch size used in batched insertions"));
   parameters.n_exp = (cimg_option("-x", 1, "Number of repetitions of each experiment"));
@@ -142,35 +136,52 @@ int main(int argc, char *argv[]) {
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
 
-  const uint32_t quadtree_depth = 25;
-
-  std::unique_ptr<input_it> begin, end;
-
   if (!fname.empty()) {
+    using el_t = TweetDatType;
+    using it_t = input_file_it<el_t>;
+
     PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+    auto begin = it_t::begin(file_ptr);
+    auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
+    PRINTOUT("%d tweets loaded \n", end - begin);
 
-    begin = std::make_unique<input_tweet_it>(fname, false);
-    end = std::make_unique<input_tweet_it>(fname, true);
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
 
-    PRINTOUT("%d teewts loaded \n", (uint32_t) begin->size());
+  } else if (!fname_dmp.empty()) {
+    using el_t = TweetDmpType;
+    using it_t = input_file_it<el_t>;
+
+    PRINTOUT("Loading twitter dataset... %s \n", fname_dmp.c_str());
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname_dmp, std::ios::binary);
+    auto begin = it_t::begin(file_ptr);
+    auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
+    PRINTOUT("%d tweets loaded \n", end - begin);
+
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
 
   } else {
+    // 16 bytes + N
+    static const size_t N = 0;
+    using el_t = GenericType<N>;
+    using it_t = input_random_it<N>;
+
     PRINTOUT("Generate random keys...\n");
+    auto begin = it_t::begin(seed, parameters.batch_size);
+    auto end = it_t::end(seed, parameters.batch_size, nb_elements);
+    PRINTOUT("%d tweets generated \n", end - begin);
 
-    begin = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, false);
-    end = std::make_unique<input_random_it>(nb_elements, seed, parameters.batch_size, true);
-
-    PRINTOUT("%d teewts generated \n", (uint32_t) begin->size());
+    run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
   }
-
-  // run_bench<GeoHashSequential>(argc, argv, input, parameters);
-  run_bench<GeoHashBinary>(argc, argv, (*begin), (*end), parameters);
-
-  run_bench<BTreeCtn>(argc, argv, (*begin), (*end), parameters);
-
-  run_bench<RTreeCtn<bgi::quadratic < 16>> > (argc, argv, (*begin), (*end), parameters);
-
-  run_bench<ImplicitDenseVectorCtn>(argc, argv, (*begin), (*end), parameters);
 
   return EXIT_SUCCESS;
 }

@@ -4,31 +4,30 @@
 
 #include "stde.h"
 #include "types.h"
+#include "input_it.h"
 
-#include "GeoHash.h"
-#include "InputIntf.h"
-
-uint32_t g_Quadtree_Depth = 25;
+#include "PMQ.h"
 
 #define PRINT_TEST(...) do { \
    printcsv( __VA_ARGS__ ) ; \
    std::cout << std::endl ;\
 } while (0)
 
-class TEST_GeoHashBinary : public GeoHashBinary {
+template<typename T>
+class TEST_PMQBinary : public PMQBinary<T> {
  public:
-  TEST_GeoHashBinary(int argc, char **argv) : GeoHashBinary(argc, argv) {}
+  TEST_PMQBinary(int argc, char **argv) : PMQBinary<T>(argc, argv) {}
 
   uint32_t test_count(const region_t &region) {
-    if (_pma == nullptr) return 0;
+    if (this->_pma == nullptr) return 0;
 
     uint32_t count = 0;
 
-    auto pma_begin = pma_seg_it::begin(_pma);
-    auto pma_end = pma_seg_it::end(_pma);
+    auto pma_begin = pma_seg_it::begin(this->_pma);
+    auto pma_end = pma_seg_it::end(this->_pma);
 
     while (pma_begin++ != pma_end) {
-      count += std::count_if(pma_offset_it::begin(_pma, pma_begin), pma_offset_it::end(_pma, pma_begin),
+      count += std::count_if(pma_offset_it::begin(this->_pma, pma_begin), pma_offset_it::end(this->_pma, pma_begin),
                              [&region](void *elt) {
 
                                uint64_t code = PMA_ELT(elt);
@@ -56,29 +55,33 @@ struct bench_t {
   uint64_t rate;
 };
 
+// reads the full element
+template<typename T>
+void inline read_element(const T &el) {
+  T volatile elemt = *(T *) &el;
+}
+
+template<typename T>
 void inline count_element(uint32_t &accum, const spatial_t &, uint32_t count) {
   accum += count;
 }
 
-// reads the full element
-void inline read_element(uint32_t &accum, const valuetype &el) {
-  ++accum;
-}
-
-template<typename T>
-void inline run_queries(T &container, const region_t &region, uint32_t id, uint64_t t, const bench_t &parameters) {
-
-  duration_t timer;
-
+template<typename T, typename Tp>
+void inline run_queries(T &container, const region_t &region, uint32_t id) {
   uint32_t count_apply_at_region = 0;
-  applytype_function _apply_at_region = std::bind(count_element, std::ref(count_apply_at_region),
-                                                  std::placeholders::_1, std::placeholders::_2);
+  uint32_t count_scan_at_region = 0;
+
+  typename GeoCtnIntf<Tp>::scantype_function
+      _scan_at_region = std::bind([](uint32_t &accum, const Tp &el) {
+    accum++;
+  }, std::ref(count_scan_at_region), std::placeholders::_1);
+
+  typename GeoCtnIntf<Tp>::applytype_function
+      _apply_at_region = std::bind([](uint32_t &accum, const spatial_t &, uint32_t count) {
+    accum += count;
+  }, std::ref(count_apply_at_region), std::placeholders::_1, std::placeholders::_2);
 
   container.apply_at_region(region, _apply_at_region);
-
-  uint32_t count_scan_at_region = 0;
-  scantype_function _scan_at_region = std::bind(read_element, std::ref(count_scan_at_region),
-                                                std::placeholders::_1);
 
   container.scan_at_region(region, _scan_at_region);
 
@@ -97,27 +100,27 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
   }
 }
 
-template<typename T>
-void run_bench(int argc, char *argv[], const std::vector<elttype> &input,
+template<typename T, typename _It, typename _T>
+void run_bench(int argc, char *argv[], _It it_begin, _It it_end,
                const std::vector<region_t> &queries, const bench_t &parameters) {
 
   for (uint64_t t = parameters.min_t; t <= parameters.max_t; t += parameters.inc_t) {
 
     // calculates ctn size based on insertion rate and temporal window (rate * temporal_window)
-    uint64_t ctn_size = std::min((uint64_t) input.size(), parameters.rate * t);
+    size_t ctn_size = std::min((size_t) (it_end - it_begin), parameters.rate * t);
 
     //create container
     std::unique_ptr < T > container = std::make_unique<T>(argc, argv);
-    container->create((uint32_t) ctn_size);
+    container->create(ctn_size);
 
-    std::vector<elttype> batch(input.begin(), input.begin() + ctn_size);
+    std::vector<_T> batch(it_begin, it_begin + ctn_size);
 
     // insert all elements as a single batch
     container->insert(batch);
 
     // perform custom queries
     for (uint32_t id = 0; id < queries.size(); id++) {
-      run_queries((*container.get()), queries[id], id, t, parameters);
+      run_queries<T, _T>((*container.get()), queries[id], id);
     }
 
     // delete container
@@ -125,9 +128,7 @@ void run_bench(int argc, char *argv[], const std::vector<elttype> &input,
   }
 }
 
-/***
- * Reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
-***/
+// reads a csv file containing (lat0, lon0, lat1, lon1) of a bounding box
 void load_bench_file(const std::string &file, std::vector<region_t> &queries,
                      int32_t n_queries = std::numeric_limits<uint32_t>::max()) {
   PRINTOUT("Loading log file: %s \n", file.c_str());
@@ -184,25 +185,36 @@ int main(int argc, char *argv[]) {
   const char *is_help = cimg_option("-h", (char *) 0, 0);
   if (is_help) return false;
 
-  std::vector<elttype> input;
-
-  if (!fname.empty()) {
-    PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
-    input = input::load(fname, g_Quadtree_Depth, parameters.rate, n_elts);
-    PRINTOUT(" %d teewts loaded \n", (uint32_t) input.size());
-  } else {
-    PRINTOUT("Generate random keys..");
-    input = input::dist_random(n_elts, seed, parameters.rate);
-    PRINTOUT(" %d teewts generated \n", (uint32_t) input.size());
-  }
-
   std::vector<region_t> queries;
   load_bench_file(bench_file, queries, n_queries);
 
   PRINTOUT(" %d queries loaded \n", queries.size());
 
-  run_bench<TEST_GeoHashBinary>(argc, argv, input, queries, parameters);
-  //run_bench<GeoHashBinary>(argc, argv, input, queries, parameters);
+  if (!fname.empty()) {
+    using el_t = TweetDatType;
+    using it_t = input_file_it<el_t>;
+
+    PRINTOUT("Loading twitter dataset... %s \n", fname.c_str());
+    std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+    auto begin = it_t::begin(file_ptr);
+    auto end = n_elts == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, n_elts);
+    PRINTOUT("%d teewts loaded \n", end - begin);
+
+    run_bench<TEST_PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+
+  } else {
+    // 16 bytes + N
+    static const size_t N = 0;
+    using el_t = GenericType<N>;
+    using it_t = input_random_it<N>;
+
+    PRINTOUT("Generate random keys...\n");
+    auto begin = it_t::begin(seed, parameters.rate);
+    auto end = it_t::end(seed, parameters.rate, n_elts);
+    PRINTOUT("%d teewts generated \n", end - begin);
+
+    run_bench<TEST_PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+  }
 
   return EXIT_SUCCESS;
 }

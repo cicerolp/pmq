@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
-project(twitterVis)
+project(PMQ)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
 
-aux_source_directory(. SRC_LIST)
+#aux_source_directory(. SRC_LIST)
 
 file(GLOB HEADERS "include/*.h")
 source_group("Header Files" FILES ${HEADERS})
@@ -18,26 +18,16 @@ include("${PMA_BUILD_DIR}/inc/pma/pma-exports.cmake")
 
 get_target_property(PMA_INCLUDE_DIR pma PROJECT_SOURCE_DIR)
 
-add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADERS}
-        include/GeoRunner.cpp
-        include/QuadtreeIntf.cpp
+#add_executable(${PROJECT_NAME}
+        #${SRC_LIST}
+        #${HEADERS}
 
-        include/BTreeCtn.cpp
-        include/GeoHash.cpp
-        #include/PostGisCtn.cpp
-        #include/PMABatchCtn.cpp
-        #include/SpatiaLiteCtn.cpp
-        include/ExplicitDenseVectorCtn.cpp
-        include/ImplicitDenseVectorCtn.cpp
+        #include/mongoose/mongoose.c
 
-        include/string_util.cpp
-        include/nc_query_util.cpp
-
-        include/Query.cpp
-        include/Server.cpp
-
-        include/mongoose/mongoose.c
-        )
+        #include/Query.cpp
+        #include/Server.cpp
+        #include/GeoRunner.cpp
+        #)
 
 include_directories(
         "${PROJECT_SOURCE_DIR}"
@@ -54,24 +44,11 @@ find_package(Boost 1.64.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-FIND_LIBRARY(PQ_C_LIBRARY NAMES pq)
-#FIND_PACKAGE(PostgreSQL REQUIRED)
-FIND_LIBRARY(GEOS_C_LIBRARY NAMES geos_c)
-FIND_LIBRARY(SPATIALITE_LIBRARY NAMES spatialite)
-FIND_LIBRARY(SQLITE_LIBRARY NAMES sqlite3)
-
-include_directories(${PostgreSQL_INCLUDE_DIRS})
-
-target_link_libraries(${PROJECT_NAME}
-        pma
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${SPATIALITE_LIBRARY}
-        ${SQLITE_LIBRARY}
-        ${GEOS_C_LIBRARY}
-        #${PostgreSQL_LIBRARIES}
-        ${PQ_C_LIBRARY}
-        ${Boost_LIBRARIES}
-        )
+#target_link_libraries(${PROJECT_NAME}
+        #pma
+        #${CMAKE_THREAD_LIBS_INIT}
+        #${Boost_LIBRARIES}
+        #)
 
 ######## PMQ Tests
 enable_testing()
@@ -80,5 +57,5 @@ add_subdirectory(tests)
 ######## Benchmarks
 add_subdirectory(benchmarks)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "include/stde.h")
-cotire(${PROJECT_NAME})
+#set_target_properties(${PROJECT_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "include/stde.h")
+#cotire(${PROJECT_NAME})

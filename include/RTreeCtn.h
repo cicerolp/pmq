@@ -9,12 +9,15 @@
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 
-template<typename Balancing>
-class RTreeCtn : public GeoCtnIntf {
- public:
-  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf(_refLevel) {
+template<typename T, typename Balancing>
+class RTreeCtn : public GeoCtnIntf<T> {
+  // function that access a reference to the element in the container
+  using scantype_function = typename GeoCtnIntf<T>::scantype_function;
+  // function that counts elements in spatial areas
+  using applytype_function = typename GeoCtnIntf<T>::applytype_function;
 
-  }
+ public:
+  RTreeCtn(int argc, char *argv[], int _refLevel = 8) : GeoCtnIntf<T>(_refLevel) {}
   virtual ~RTreeCtn() {
     _rtree->clear();
   };
@@ -34,19 +37,19 @@ class RTreeCtn : public GeoCtnIntf {
   }
 
   // update container
-  virtual duration_t insert(std::vector<elttype> batch) override {
+  virtual duration_t insert(std::vector<T> batch) override {
     Timer timer;
     timer.start();
 
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
     }
 
     timer.stop();
     return {duration_info("insert", timer)};
   }
 
-  duration_t insert_rm(std::vector<elttype> batch, std::function<int(const void *)> is_removed) override {
+  duration_t insert_rm(std::vector<T> batch, std::function<int(const void *)> is_removed) override {
     duration_t duration;
 
     Timer timer;
@@ -54,7 +57,7 @@ class RTreeCtn : public GeoCtnIntf {
 
     // insertion
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
     }
 
     // insert end
@@ -63,26 +66,17 @@ class RTreeCtn : public GeoCtnIntf {
 
     if (_rtree->size() > _size) {
 
-       DBG_PRINTOUT("RTREE before remove %d\n", _rtree->size());
-       // remove start
-       timer.start();
+      // remove start
+      timer.start();
 
-       // temporary result
-       std::vector<value> result;
-       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
-             std::back_inserter(result));
+      // temporary result
+      std::vector<value> result;
+      _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
+                    std::back_inserter(result));
 
-       DBG_PRINTOUT("RTREE to be removed: %d \n",result.size());
-       for (const auto &elt : result) {
-          if (_rtree->remove(elt) == 0 ){
-              PRINTOUT("Elt not Removed: (%f, %f)\n",elt.second.latitude, elt.second.longitude);
-          }
-       }
-       DBG_PRINTOUT("RTREE after remove %d\n", _rtree->size());
-
-       // remove end
-       timer.stop();
-       duration.emplace_back("remove", timer);
+      // remove end
+      timer.stop();
+      duration.emplace_back("remove", timer);
     }
 
     return duration;
@@ -116,52 +110,6 @@ class RTreeCtn : public GeoCtnIntf {
     return {duration_info("scan_at_region", timer)};
   }
 
-  // apply function for every spatial area/region
-  duration_t apply_at_tile(const region_t &region, applytype_function __apply) override {
-    Timer timer;
-    timer.start();
-
-    uint32_t curr_z = std::min((uint32_t) 8, 25 - region.z);
-    uint32_t n = (uint64_t) 1 << curr_z;
-
-    uint32_t x_min = region.x0 * n;
-    uint32_t x_max = (region.x1 + 1) * n;
-
-    uint32_t y_min = region.y0 * n;
-    uint32_t y_max = (region.y1 + 1) * n;
-
-    curr_z += region.z;
-
-    // temporary result
-    RTreeCtnCounter<value> result;
-
-    for (uint32_t x = x_min; x < x_max; ++x) {
-      for (uint32_t y = y_min; y < y_max; ++y) {
-
-        // longitude
-        float xmin = mercator_util::tilex2lon(x, curr_z);
-        float xmax = mercator_util::tilex2lon(x + 1, curr_z);
-
-        // latitude
-        float ymin = mercator_util::tiley2lat(y + 1, curr_z);
-        float ymax = mercator_util::tiley2lat(y, curr_z);
-
-        // convert from region_t to boost:box
-        box query_box(point(ymin, xmin), point(ymax, xmax));
-
-        result.clear();
-        _rtree->query(bgi::intersects(query_box), std::back_inserter(result));
-
-        if (result.size() != 0) {
-          __apply(spatial_t(x, y, curr_z), result.size());
-        }
-      }
-    }
-
-    timer.stop();
-    return {duration_info("apply_at_tile", timer)};
-  }
-
   duration_t apply_at_region(const region_t &region, applytype_function __apply) override {
     Timer timer;
     timer.start();
@@ -187,12 +135,6 @@ class RTreeCtn : public GeoCtnIntf {
 
     timer.stop();
     return {duration_info("apply_at_region", timer)};
-  }
-
-  duration_t topk_search(const region_t &region, topk_t &topk, scantype_function __apply) override {
-    Timer timer;
-    timer.start();
-    return {duration_info("nullptr", timer)};
   }
 
   size_t size() const override {
@@ -234,17 +176,17 @@ class RTreeCtn : public GeoCtnIntf {
   //typedef bg::model::point<float, 2, bg::cs::geographic<bg::degree>> point;
   typedef bg::model::point<float, 2, bg::cs::cartesian> point;
   typedef bg::model::box<point> box;
-  typedef std::pair<point, valuetype> value;
+  typedef std::pair<point, T> value;
   typedef bgi::rtree<value, Balancing> rtree_t;
 
   std::unique_ptr<rtree_t> _rtree{nullptr};
   uint32_t _size;
 };
 
-template<typename Balancing>
-class RTreeBulkCtn : public RTreeCtn<Balancing> {
+template<typename T, typename Balancing>
+class RTreeBulkCtn : public RTreeCtn<T, Balancing> {
  public:
-  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<Balancing>(argc, argv, _refLevel) {}
+  RTreeBulkCtn(int argc, char **argv, int _refLevel = 8) : RTreeCtn<T, Balancing>(argc, argv, _refLevel) {}
   virtual ~RTreeBulkCtn() = default;
 
   // build container
@@ -259,7 +201,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
   // update container
-  duration_t insert(std::vector<elttype> batch) override {
+  duration_t insert(std::vector<T> batch) override {
     Timer timer;
     timer.start();
 
@@ -270,7 +212,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
       std::transform(
           batch.begin(), batch.end(), std::back_inserter(data),
           [&](const auto &elt) {
-            return std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value);
+            return std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt);
           }
       );
 
@@ -278,7 +220,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
 
     } else {
       for (const auto &elt: batch) {
-        this->_rtree->insert(std::make_pair(point(elt.value.latitude, elt.value.longitude), elt.value));
+        this->_rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
       }
     }
 
@@ -292,7 +234,7 @@ class RTreeBulkCtn : public RTreeCtn<Balancing> {
   }
 
  protected:
-  typedef typename RTreeCtn<Balancing>::point point;
-  typedef typename RTreeCtn<Balancing>::value value;
-  typedef typename RTreeCtn<Balancing>::rtree_t rtree_t;
+  typedef typename RTreeCtn<T, Balancing>::point point;
+  typedef typename RTreeCtn<T, Balancing>::value value;
+  typedef typename RTreeCtn<T, Balancing>::rtree_t rtree_t;
 };
