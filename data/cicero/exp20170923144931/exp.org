@@ -41,7 +41,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 
 * TODO Experiment Script
-** TODO Initial Setup 
+** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
 expId=$(basename $(pwd))
@@ -55,13 +55,15 @@ echo $expId
 Set up git branch
 #+begin_src sh :results output :exports both :var expId=expId
 git checkout master
-git commit LabBook.org -m "LBK: new entry for ${expId}"
+git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 #+end_src
 
 #+RESULTS:
 : M	LabBook.org
 : Your branch is ahead of 'origin/master' by 1 commit.
 :   (use "git push" to publish your local commits)
+: [master 7f23fb0] LBK: new entry for exp20170923144931
+:  1 file changed, 42 insertions(+)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -69,7 +71,6 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
-: M	LabBook.org
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -80,20 +81,17 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170915143003
+On branch exp20170923144931
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
 	exp.org
-	parse.sh
-	plotResults.R
-	run.sh
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170915143003 1cf746f] Initial commit for exp20170915143003
- 1 file changed, 775 insertions(+)
- create mode 100644 data/cicero/exp20170915143003/exp.org
+[exp20170923144931 84b3921] Initial commit for exp20170923144931
+ 1 file changed, 865 insertions(+)
+ create mode 100644 data/cicero/exp20170923144931/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -101,9 +99,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1cf746f (HEAD -> exp20170915143003) Initial commit for exp20170915143003
-: | * e4b0e35 (origin/exp20170914091842, exp20170914091842) Report exporte in .rst format (preview in bitbucket)
-: | * a4a4bba Analysis bench insertions and removals
+: * 84b3921 (HEAD -> exp20170923144931) Initial commit for exp20170923144931
+: * 7f23fb0 (master) LBK: new entry for exp20170923144931
+: * b309480 UPD : queries DoE
 
 ** DONE Export run script 
 
@@ -163,8 +161,7 @@ t=26000
 b=1000
 #n=$(($t*$b))
 ref=8
-stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
-
+stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
 set -e
 
 cd $TMPDIR
@@ -182,14 +179,19 @@ git push origin $expId
 #+end_src 
 
 
-** DONE Commit local changes
+** TODO Commit local changes
 #+begin_src sh :results output :exports both
 git status .
 #+end_src
 
 #+RESULTS:
 #+begin_example
-On branch exp20170915143003
+On branch exp20170923144931
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	modified:   exp.org
+
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git checkout -- <file>..." to discard changes in working directory)
@@ -200,11 +202,8 @@ Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
-	parse.sh
-	plotResults.R
 	run.sh
 
-no changes added to commit (use "git add" and/or "git commit -a")
 #+end_example
 
 #+begin_src sh :results output :exports both

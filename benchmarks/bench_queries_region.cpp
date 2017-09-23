@@ -201,6 +201,7 @@ int main(int argc, char *argv[]) {
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+    run_bench<RTreeBulkCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
 
   } else {
