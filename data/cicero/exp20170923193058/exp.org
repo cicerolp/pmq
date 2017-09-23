@@ -100,7 +100,7 @@ git la -3
 : * 615175f (origin/master, origin/HEAD) bugfix: latitude / longitude
 
 
-** TODO Export run script
+** DONE Export run script
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -180,7 +180,7 @@ git status .
 
 #+RESULTS:
 #+begin_example
-On branch exp20170919161448
+On branch exp20170923193058
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git checkout -- <file>..." to discard changes in working directory)
@@ -203,9 +203,9 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20170919161448 e4d3f76] UPD: run.sh script
-:  2 files changed, 71 insertions(+), 4 deletions(-)
-:  create mode 100755 data/cicero/exp20170919161448/run.sh
+: [exp20170923193058 8f9c61e] UPD: run.sh script
+:  2 files changed, 83 insertions(+), 37 deletions(-)
+:  create mode 100755 data/cicero/exp20170923193058/run.sh
 
 Push to remote
 #+begin_src sh :results output :exports both :var expId=expId
@@ -231,7 +231,7 @@ tmux ls
 ps ux
 #+end_src
 
-** DONE Remote Execution                                            :remote:
+** TODO Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -240,18 +240,17 @@ ssh -A cicero
 
 #+RESULTS:
 #+begin_example
-
 Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 
  ,* Documentation:  https://help.ubuntu.com
  ,* Management:     https://landscape.canonical.com
  ,* Support:        https://ubuntu.com/advantage
 
-44 packages can be updated.
+53 packages can be updated.
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Wed Sep 20 14:32:44 2017 from 143.54.11.6
+Last login: Sat Sep 23 17:49:29 2017 from 143.54.11.6
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -268,27 +267,17 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 18, done.
-(1/15)           remote: Compressing objects:  13% (2/15)           remote: Compressing objects:  20% (3/15)           remote: Compressing objects:  26% (4/15)           remote: Compressing objects:  33% (5/15)           remote: Compressing objects:  40% (6/15)           remote: Compressing objects:  46% (7/15)           remote: Compressing objects:  53% (8/15)           remote: Compressing objects:  60% (9/15)           remote: Compressing objects:  66% (10/15)           remote: Compressing objects:  73% (11/15)           remote: Compressing objects:  80% (12/15)           remote: Compressing objects:  86% (13/15)           remote: Compressing objects:  93% (14/15)           remote: Compressing objects: 100% (15/15)           remote: Compressing objects: 100% (15/15), done.        
-remote: Total 18 (delta 10), reused 0 (delta 0)
-(1/18)   Unpacking objects:  11% (2/18)   Unpacking objects:  16% (3/18)   Unpacking objects:  22% (4/18)   Unpacking objects:  27% (5/18)   Unpacking objects:  33% (6/18)   Unpacking objects:  38% (7/18)   Unpacking objects:  44% (8/18)   Unpacking objects:  50% (9/18)   Unpacking objects:  55% (10/18)   Unpacking objects:  61% (11/18)   Unpacking objects:  66% (12/18)   Unpacking objects:  72% (13/18)   Unpacking objects:  77% (14/18)   Unpacking objects:  83% (15/18)   Unpacking objects:  88% (16/18)   Unpacking objects:  94% (17/18)   Unpacking objects: 100% (18/18)   Unpacking objects: 100% (18/18), done.
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Branch exp20170923193058 set up to track remote branch exp20170923193058 from origin.
+Switched to a new branch 'exp20170923193058'
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-origin/exp20170919161448
-Already on 'exp20170919161448'
-Your branch is behind 'origin/exp20170919161448' by 3 commits, and can be fast-forwarded.
-  (use "git pull" to update your local branch)
-From bitbucket.org:jtoss/pmq
-FETCH_HEAD
-Updating ab0bee4..b9c4a96
-Fast-forward
- data/cicero/exp20170919161448/exp.org | 92 +++++++++++++++++++++--------------
- data/cicero/exp20170919161448/run.sh  |  4 +-
- 2 files changed, 58 insertions(+), 38 deletions(-)
-commit b9c4a967da9b70e14c827639a3f371078db6464f
-Date:   Wed Sep 20 15:10:23 2017 -0300
+Already up-to-date.
+commit 8f9c61ef884a42d6aa8c99242ef1c5c83b02caf4
+Date:   Sat Sep 23 19:38:01 2017 -0300
 
-    TODO: rerun with 10 M elements
+    UPD: run.sh script
 #+end_example
 
 Update PMA repository on exp machine
@@ -308,7 +297,7 @@ git log -1 | cat
 : 
 :     error ouput on pma initialization
 
-*** Execute Remotely                                               :remote:
+*** INPROGRESS Execute Remotely                                    :remote:
 
 Opens ssh connection and a tmux session
 
@@ -317,12 +306,12 @@ cd ~/Projects/pmq/data/cicero/$expId
 runid=$(date +%s)
 tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
 git add run_$runid
-echo $runid
+cho $runid
 #+end_src
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ julio@cicero:~/Projects/pmq/data/cicero/exp20170919161448$ 1505933858
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ 1506206431
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -332,24 +321,20 @@ ps ux
 
 #+RESULTS:
 #+begin_example
-runExp: 1 windows (created Wed Sep 20 15:57:38 2017) [80x23]
+runExp: 1 windows (created Sat Sep 23 19:40:31 2017) [80x23]
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-julio     3002  0.0  0.0  45248  4604 ?        Ss   14:32   0:00 /lib/systemd/sy
-julio     3004  0.0  0.0 145364  2112 ?        S    14:32   0:00 (sd-pam)
-julio     3054  0.0  0.0  97464  3472 ?        S    14:32   0:00 sshd: julio@pts
-julio     3055  0.0  0.0  23700  6496 pts/8    Ss+  14:32   0:00 -bash
-julio     3273  0.0  0.0  97464  3416 ?        S    15:57   0:00 sshd: julio@pts
-julio     3274  0.0  0.0  22688  5360 pts/9    Ss   15:57   0:00 -bash
-julio     3323  0.0  0.0  29420  2952 ?        Ss   15:57   0:00 tmux new -d -s 
-julio     3324  0.0  0.0  12532  3024 pts/10   Ss+  15:57   0:00 bash -c cd ~/Pr
-julio     3326  0.0  0.0  12536  3028 pts/10   S+   15:57   0:00 /bin/bash ./run
-julio     3335  0.0  0.0   9676  2324 pts/10   S+   15:57   0:00 make
-julio     3338  0.0  0.0   9676  2348 pts/10   S+   15:57   0:00 make -f CMakeFi
-julio     3504  0.0  0.0   9676  2364 pts/10   S+   15:57   0:00 make -f tests/C
-julio     3507  0.0  0.0   4508   760 pts/10   S+   15:57   0:00 /bin/sh -c cd /
-julio     3508  0.0  0.0   8352   700 pts/10   S+   15:57   0:00 /usr/bin/c++ -I
-julio     3509  0.0  0.2 125540 87696 pts/10   R+   15:57   0:00 /usr/lib/gcc/x8
-julio     3511  0.0  0.0  37368  3316 pts/9    R+   15:57   0:00 ps ux
+julio    13585  0.0  0.0  45248  4596 ?        Ss   17:49   0:00 /lib/systemd/sy
+julio    13586  0.0  0.0 145364  2112 ?        S    17:49   0:00 (sd-pam)
+julio    13615  0.0  0.0  97464  3376 ?        R    17:49   0:00 sshd: julio@pts
+julio    13616  0.0  0.0  22764  5292 pts/8    Ss   17:49   0:00 -bash
+julio    14024  0.0  0.0  44920  5380 pts/8    S+   19:38   0:00 ssh -A cicero
+julio    14074  0.0  0.0  97464  3308 ?        S    19:38   0:00 sshd: julio@pts
+julio    14075  0.0  0.0  22764  5320 pts/9    Ss   19:38   0:00 -bash
+julio    14239  0.0  0.0  29420  2972 ?        Ss   19:40   0:00 tmux new -d -s 
+julio    14240  0.0  0.0  12532  3028 pts/10   Ss+  19:40   0:00 bash -c cd ~/Pr
+julio    14242  0.0  0.0  12544  3016 pts/10   S+   19:40   0:00 /bin/bash ./run
+julio    14457 94.8  0.3 1115900 105260 pts/10 R+   19:40   0:08 ./benchmarks/be
+julio    14459  0.0  0.0  37368  3332 pts/9    R+   19:40   0:00 ps ux
 #+end_example
 
 **** DONE Pull local 
