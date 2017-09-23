@@ -472,7 +472,7 @@ int main(){
 
 #+begin_src R :results table :colnames yes :exports both :session :var queries=cppqueries[0:-1]
 #queries
-queries$width = rep(dfwuni$width/2 , each=10)
+queries$width = rep(dfwuni$width, each=10)
 names(queries) = c("tweet", "Lat", "Lon","width")
 head(queries)
 #+end_src
@@ -520,21 +520,21 @@ queries_bbox = data.frame(lat0 = d$Lat + d$width/2 ,
                           lon0 = d$Lon - d$width/2 ,
                           lat1 = d$Lat - d$width/2 ,
                           lon1 = d$Lon + d$width/2)
-tail(queries_bbox)
+head(queries_bbox)
 #+end_src
 
 #+RESULTS:
-:        lat0       lon0     lat1       lon1
-: 75 33.38696 -117.22356 32.68384 -116.52044
-: 76 42.11816  -88.03276 41.41504  -87.32964
-: 77 40.50866  -89.71136 39.80554  -89.00824
-: 78 41.81486  -81.83406 41.11174  -81.13094
-: 79 33.15336 -117.58257 32.45024 -116.87944
-: 80 39.03126  -90.81466 38.32814  -90.11153
+:      lat0      lon0      lat1     lon1
+: 1 85.7338 -119.2428 -4.266201 -29.2428
+: 2 84.9043 -120.3216 -5.095699 -30.3216
+: 3 92.7563 -167.1540  2.756302 -77.1540
+: 4 86.7521 -132.6548 -3.247898 -42.6548
+: 5 85.1169 -120.0300 -4.883099 -30.0300
+: 6 85.9116 -119.0532 -4.088402 -29.0532
 
 Write the csv file of bounding boxes
 #+begin_src R :results output :exports both :session 
-write.table(bbox,"queriesTwitter.csv",row.names=FALSE,col.names=FALSE,sep=",")
+write.table(queries_bbox,"queriesTwitter.csv",row.names=FALSE,col.names=FALSE,sep=",")
 #+end_src
 
 #+RESULTS:
