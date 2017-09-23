@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Experiment Diary
+#+TITLE: Removal benchmark
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -1022,18 +1022,18 @@ totalPlot
 #+begin_example
 # A tibble: 30 x 5
 # Groups:   algo [3]
-    algo      T    total       avg      std
-   <chr> <fctr>    <dbl>     <dbl>    <dbl>
- 1 BTree  11745  21690.6  0.615667  22.1411
- 2 BTree  17616  20841.2  0.709849  22.1483
- 3 BTree  20552  22388.3  0.847273  22.9039
- 4 BTree  22020  26699.4  1.069858  24.5679
- 5 BTree  22754  35025.7  1.446028  27.6358
- 6 BTree  23121  52178.5  2.187321  33.5847
- 7 BTree  23305  85858.1  3.627141  43.1796
- 8 BTree  23396 153332.4  6.502645  58.1178
- 9 BTree  23442 278274.5 11.824360  77.1621
-10 BTree  23465 525795.4 22.363805 105.0349
+    algo      T     total        avg       std
+   <chr> <fctr>     <dbl>      <dbl>     <dbl>
+ 1 BTree  11745  21690.56  0.6156669  22.14110
+ 2 BTree  17616  20841.16  0.7098489  22.14827
+ 3 BTree  20552  22388.34  0.8472730  22.90391
+ 4 BTree  22020  26699.39  1.0698584  24.56794
+ 5 BTree  22754  35025.69  1.4460280  27.63580
+ 6 BTree  23121  52178.54  2.1873207  33.58468
+ 7 BTree  23305  85858.06  3.6271412  43.17964
+ 8 BTree  23396 153332.38  6.5026455  58.11776
+ 9 BTree  23442 278274.48 11.8243597  77.16212
+10 BTree  23465 525795.42 22.3638052 105.03491
 # ... with 20 more rows
 #+end_example
 
@@ -1072,10 +1072,97 @@ totalPlot %>%
 [[file:./img/totalAvgRm.png]]
 
 
-**** TODO Conclusion
+**** TODO Conclusion                                              :export:
 
-- find the best trade off between the frequency of removals and time spend on each one.
+[[file:img/totalInsRm.png]] [[file:img/overview.png]]
 
+#+begin_src R :results table :exports both :session :colnames yes 
+dfplot %>% 
+group_by(algo) %>% 
+top_n(-1,RemoveTime)
+#+end_src
+
+#+RESULTS:
+| algo          |     T |       RemoveTime |             stdv |
+|---------------+-------+------------------+------------------|
+| BTree         | 23465 | 526.188971208376 | 8.05319645077189 |
+| GeoHashBinary | 23121 |    556.606703125 | 4.00547654331388 |
+| RTree         | 23465 | 442.277040627171 |  22.851264883645 |
+
+
+#+begin_src R :results table :exports both :session :colnames yes 
+totalPlot %>%
+group_by(algo) %>% 
+top_n(-1,total)
+#+end_src
+
+#+RESULTS:
+| algo          |     T |        total |               avg |              std |
+|---------------+-------+--------------+-------------------+------------------|
+| BTree         | 17616 | 20841.163281 | 0.709848885592643 | 22.1482656342618 |
+| GeoHashBinary | 20552 |  33280.17431 |  1.25946769262791 | 10.7189929835938 |
+| RTree         | 17616 | 53837.281758 |  1.83369488276567 | 70.1725111047083 |
+
+
+#+begin_src R :results output :exports both :session 
+inner_join(dfplot,totalPlot)
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Joining, by = c("algo", "T")
+# A tibble: 30 x 7
+# Groups:   algo [?]
+    algo      T RemoveTime      stdv     total        avg       std
+   <chr> <fctr>      <dbl>     <dbl>     <dbl>      <dbl>     <dbl>
+ 1 BTree  11745  2939.0430 31.976994  21690.56  0.6156669  22.14110
+ 2 BTree  17616  1898.0251 15.561384  20841.16  0.7098489  22.14827
+ 3 BTree  20552  1316.7902 21.896304  22388.34  0.8472730  22.90391
+ 4 BTree  22020   970.8734 17.255611  26699.39  1.0698584  24.56794
+ 5 BTree  22754   761.1887 10.410706  35025.69  1.4460280  27.63580
+ 6 BTree  23121   649.6426  8.713129  52178.54  2.1873207  33.58468
+ 7 BTree  23305   589.1553  8.752589  85858.06  3.6271412  43.17964
+ 8 BTree  23396   564.3692 14.193076 153332.38  6.5026455  58.11776
+ 9 BTree  23442   535.4773  8.123516 278274.48 11.8243597  77.16212
+10 BTree  23465   526.1890  8.053196 525795.42 22.3638052 105.03491
+# ... with 20 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+library(ggplot2)
+
+inner_join(dfplot,totalPlot) %>% 
+mutate ( ratio = RemoveTime / total) %>%
+    ggplot( aes(x=T,y=ratio, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-2656O6E/figure2656jdO.png]]
+
+
+
+Sum of removal times:
+How long we spent removing on each case. 
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+
+df %>% filter(remove > 0) %>% 
+    mutate(remove=as.numeric(remove)) %>%
+    mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
+    group_by(algo,T) %>%
+    summarize(RemoveTime = sum(as.numeric(remove)), stdv = sd(as.numeric(remove))) %>%
+    mutate(T = as.factor(T)) %>%
+
+    ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
+    geom_bar(stat="identity", position="dodge")+
+    geom_errorbar( position=position_dodge(0.9), 
+                   aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-2656O6E/figure2656kQt.png]]
 
 **** Amortized time :ARCHIVE:
 
