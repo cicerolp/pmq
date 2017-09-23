@@ -42,7 +42,7 @@ class RTreeCtn : public GeoCtnIntf<T> {
     timer.start();
 
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
     }
 
     timer.stop();
@@ -57,7 +57,7 @@ class RTreeCtn : public GeoCtnIntf<T> {
 
     // insertion
     for (const auto &elt: batch) {
-      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
+      _rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
     }
 
     // insert end
@@ -212,7 +212,7 @@ class RTreeBulkCtn : public RTreeCtn<T, Balancing> {
       std::transform(
           batch.begin(), batch.end(), std::back_inserter(data),
           [&](const auto &elt) {
-            return std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt);
+            return std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt);
           }
       );
 
@@ -220,7 +220,7 @@ class RTreeBulkCtn : public RTreeCtn<T, Balancing> {
 
     } else {
       for (const auto &elt: batch) {
-        this->_rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLatitude()), elt));
+        this->_rtree->insert(std::make_pair(point(elt.getLatitude(), elt.getLongitude()), elt));
       }
     }
 

@@ -37,7 +37,7 @@ class BTreeCtn : public GeoCtnIntf<T> {
 
     for (const auto &elt: batch) {
       uint32_t y = mercator_util::lat2tiley(elt.getLatitude(), 25);
-      uint32_t x = mercator_util::lon2tilex(elt.getLatitude(), 25);
+      uint32_t x = mercator_util::lon2tilex(elt.getLongitude(), 25);
       _btree->insert(mortonEncode_RAM(x, y), elt);
     }
 
