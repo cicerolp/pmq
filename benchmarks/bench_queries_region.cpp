@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
 
   cimg_usage("bench_queries_region");
 
-  std::string fname(cimg_option("-f", "", "File with tweets (if NULL, generates Rate X T elemets "));
+  std::string fname(cimg_option("-f", "", "File with tweets in the metadat format (.dat). If NULL, generates Rate X T elemets."));
   const long seed(cimg_option("-seed", 123, "Random seed to generate elements"));
 
   int32_t n_queries(cimg_option("-n_queries", -1, "Number of queries"));

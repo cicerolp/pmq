@@ -65,14 +65,14 @@ struct region_t {
 
   // make a region given uper-left ( _lat0,_lon0) and bottom-right (_lat1,_lon1) corners
   region_t(float lat0, float lon0, float lat1, float lon1) {
-    if (lat0 < -85.051132f) lat0 = -85.051132f;
-    else if (lat0 > 85.051132f) lat0 = 85.051132f;
+    if (lat0 < -85.0511f) lat0 = -85.0511f;
+    else if (lat0 > 85.0511f) lat0 = 85.0511f;
 
     if (lon0 < -180.f) lon0 = -180.f;
     else if (lon0 > 180.f) lon0 = 180.f;
 
-    if (lat1 < -85.051132f) lat1 = -85.051132f;
-    else if (lat1 > 85.051132f) lat1 = 85.051132f;
+    if (lat1 < -85.0511f) lat1 = -85.0511f;
+    else if (lat1 > 85.0511f) lat1 = 85.0511f;
 
     if (lon1 < -180.f) lon1 = -180.f;
     else if (lon1 > 180.f) lon1 = 180.f;
