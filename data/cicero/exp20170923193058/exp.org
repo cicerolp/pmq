@@ -551,16 +551,17 @@ Total insertion time:
 #+begin_src R :results table :session :exports both :colnames yes
 dfinsert %>% 
     group_by(algo) %>%
-    summarize(Average = mean(ms), Total = sum(ms))
+    summarize(Average = mean(ms), Total = sum(ms)) %>% arrange(Total)
 #+end_src
 
 #+RESULTS:
-| algo                |      Average |        Total |
-|---------------------+--------------+--------------|
-| BTree               |  0.697645465 |   6976.45465 |
-| GeoHashBinary       | 1.0154884089 | 10154.884089 |
-| ImplicitDenseVector | 24.924827109 | 249248.27109 |
-| RTree               | 0.9669934731 |  9669.934731 |
+| algo                | Average |      Total |
+|---------------------+---------+------------|
+| BTree               |   0.698 |   6976.455 |
+| RTree               |   0.967 |   9669.935 |
+| GeoHashBinary       |   1.015 |  10154.884 |
+| ImplicitDenseVector |  24.925 | 249248.270 |
+#+TBLFM: @2$2..@5$3=$0;%0.3f
 
 
 **** Amortized time
@@ -638,3 +639,7 @@ avgTime %>%
 #+RESULTS:
 [[file:./img/Zoom.png]]
 
+
+*** Final Notes
+
+Results are very similar to the insertion of the synthetic data set of uniform data ( [[file:../exp20170919161448/exp.org]] ) .

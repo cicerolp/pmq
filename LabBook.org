@@ -396,7 +396,7 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
  [[./data/cicero/exp20170907112116/exp.org]]
  
-**** DONE [2017-09-15 Sex] Experiment =bench_insert_and_scan= :paper:exp20170919161448:
+**** DONE [2017-09-15 Sex] Uniform Dataset =bench_insert_and_scan= :paper:exp20170919161448:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -436,7 +436,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170919161448/exp.org]]
 
 
-**** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :exp20170923193058:
+**** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :paper:exp20170923193058:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template

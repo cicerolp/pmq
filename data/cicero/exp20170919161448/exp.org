@@ -638,16 +638,17 @@ Total insertion time:
 #+begin_src R :results table :session :exports both :colnames yes
 dfinsert %>% 
     group_by(algo) %>%
-    summarize(Average = mean(ms), Total = sum(ms))
+    summarize(Average = mean(ms), Total = sum(ms)) %>% arrange (Total)
 #+end_src
 
 #+RESULTS:
-| algo                |       Average |         Total |
-|---------------------+---------------+---------------|
-| BTree               |  0.4286722351 |   4286.722351 |
-| GeoHashBinary       |  0.9013018977 |   9013.018977 |
-| ImplicitDenseVector | 24.1291799959 | 241291.799959 |
-| RTree               |  0.9483918428 |   9483.918428 |
+| algo                | Average |      Total |
+|---------------------+---------+------------|
+| BTree               |   0.698 |   6976.455 |
+| RTree               |   0.967 |   9669.935 |
+| GeoHashBinary       |   1.015 |  10154.884 |
+| ImplicitDenseVector |  24.925 | 249248.270 |
+#+TBLFM: @2$2..@5$3=$0;%0.3f
 
 
 **** Amortized time

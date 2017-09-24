@@ -13,7 +13,7 @@ Experiments with PMQ
 1.1 **DONE** [2017-08-22 Ter]  Experiment *bench_insert_and_scan* ``exp20170822165129``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`./data/inf-desktop/exp20170822165129/exp.rst <./data/inf-desktop/exp20170822165129/exp.rst>`_
+`./data/cicero/exp20170822165129/exp.rst <./data/cicero/exp20170822165129/exp.rst>`_
 
 1.2 **ANALYSIS** [2017-08-25 Sex]  Twitter dataset *bench_insert_and_scan* ``exp20170825181747``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,16 +25,14 @@ Testing with twitter distribution of data
 1.3 **DONE** [2017-08-22 Ter]  *bench_insert_and_scan* V.2 ``exp20170907112116``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Old exeperiment used Rtree\* algorithm, use the quadratic one now.
+- Old experiment used Rtree\* algorithm, use the quadratic one now.
 
-- Count was not correct in the plots
-
-`exp20170822165129`_
+- Count was not correct in the plots from `exp20170822165129`_
 
 `./data/cicero/exp20170907112116/exp.rst <./data/cicero/exp20170907112116/exp.rst>`_
 
-1.4 **DONE** [2017-09-15 Sex]  Experiment *bench_insert_and_scan* ``paper``  ``exp20170919161448``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.4 **DONE** [2017-09-15 Sex]  Uniform Dataset *bench_insert_and_scan* ``paper``  ``exp20170919161448``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test insertions with larger inputs
 
@@ -47,6 +45,21 @@ Test insertions with larger inputs
 - DenseVector
 
 `./data/cicero/exp20170919161448/exp.rst <./data/cicero/exp20170919161448/exp.rst>`_
+
+1.5 **DONE** [2017-09-15 Sex]  Twitter Dataset *bench_insert_and_scan* ``paper``  ``exp20170923193058``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test insertions with larger inputs
+
+- Rtree (quadratic)
+
+- Btree
+
+- PMQ
+
+- DenseVector
+
+`./data/cicero/exp20170923193058/exp.rst <./data/cicero/exp20170923193058/exp.rst>`_
 
 2 Benchmark Queries region
 --------------------------
@@ -84,6 +97,17 @@ Test with a larger ammount of data -> 10\*8
 - More elements in the time window: 6h \* batches of size 1000 ( total of 26.000.000 elements )
 
 `./data/cicero/exp20170915143003/exp.rst <./data/cicero/exp20170915143003/exp.rst>`_
+
+2.5 **TODO** [2017-09-23 Sáb]  *bench_queries_region* Twitter Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Test queries on real datasets
+
+- Use a time window of 6h \* batches of size 1000  = 26.000.000 elements
+
+Template to start an experiment:
+
+`./data/cicero/exp20170923144931/exp.rst <./data/cicero/exp20170923144931/exp.rst>`_
 
 3 Benchmark Insert and Remove
 -----------------------------

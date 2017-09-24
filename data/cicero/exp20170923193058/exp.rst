@@ -1,6 +1,6 @@
-====================
-Benchmark Insertions
-====================
+===================================
+Benchmark Insertions - Twitter Data
+===================================
 
 
 .. contents::
@@ -8,7 +8,7 @@ Benchmark Insertions
 1 Description
 -------------
 
-Benchnark insertion time
+Benchmark insertion time
 
 - PMQ / GEOHASH
 
@@ -27,20 +27,11 @@ elements of size 32 bytes:
 
 - PMA batch size = 1000
 
-350 million elements = *10.43081283569336* GB .
-
-Will use a PMA of 16 GB
-
-The 350 M elements benchmark takes to long, mainly due to to the global scan operations done after each insertion.
-
-We will re-run this experiment with 10 M elements. Batch of size 1000. 
-To test with 350 we should disable the scans. 
-
 With 10 M elemtents PMA has size *512.0* Megabytes. 
 
 Tests with larger Size will be done in the querying and scanning benchmark.
 
-2 Analisys
+2 Analysis
 ----------
 
 2.1 Results
@@ -92,7 +83,7 @@ Total insertion time:
 
     dfinsert %>% 
         group_by(algo) %>%
-        summarize(Average = mean(ms), Total = sum(ms)) %>% arrange (Total)
+        summarize(Average = mean(ms), Total = sum(ms)) %>% arrange(Total)
 
 .. table::
 
@@ -145,3 +136,8 @@ We compute three times:
         ylim(0,1.5) 
 
 .. image:: ./img/Zoom.png
+
+2.1.3 Final Notes
+^^^^^^^^^^^^^^^^^
+
+Results are very similar to the insertion of the synthetic data set of uniform data ( `../exp20170919161448/exp.rst <../exp20170919161448/exp.rst>`_ ) .
