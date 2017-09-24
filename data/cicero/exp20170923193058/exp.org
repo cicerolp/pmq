@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Benchmark Insertions
+#+TITLE: Benchmark Insertions - Twitter Data
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -13,7 +13,7 @@
 
 * Description                                                        :export:
 
-Benchnark insertion time
+Benchmark insertion time
 - PMQ / GEOHASH
 - BTREE 
 - RTREE -  Quadratic algorithm 
@@ -231,7 +231,7 @@ tmux ls
 ps ux
 #+end_src
 
-** TODO Remote Execution                                            :remote:
+** DONE Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -297,7 +297,7 @@ git log -1 | cat
 : 
 :     error ouput on pma initialization
 
-*** INPROGRESS Execute Remotely                                    :remote:
+*** DONE Execute Remotely                                          :remote:
 
 Opens ssh connection and a tmux session
 
@@ -339,19 +339,19 @@ julio    14459  0.0  0.0  37368  3332 pts/9    R+   19:40   0:00 ps ux
 
 **** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
-git commit -a -m "wip"
+#git commit -a -m "wip"
 git status
-git pull --rebase origin $expId
+#git pull --rebase origin $expId
+git pull origin $expId
 #+end_src
 
 #+RESULTS:
 #+begin_example
-[exp20170919161448 932204f] wip
- 1 file changed, 37 insertions(+), 30 deletions(-)
-On branch exp20170919161448
+On branch exp20170923193058
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
+	../../../.#LabBook.org
 	../../../LabBook.man
 	../../../LabBook.markdown_phpextra
 	../../../LabBook.md
@@ -367,6 +367,7 @@ Untracked files:
 	../../../README.html
 	../../../benchmarks/bench_insert_and_scan.cpp.orig
 	../../../benchmarks/bench_queries_region.cpp.orig
+	../exp20170825181747/
 	../exp20170830124159/
 	../exp20170904153555/
 	../exp20170907105314/
@@ -375,14 +376,29 @@ Untracked files:
 	../exp20170907145711/
 	../exp20170914091842/
 	../exp20170915143003/
+	../exp20170919161448/
+	../exp20170923144931/
+	.#exp.org
+	../../queriesLHS.html
+	../../queriesLHS_BACKUP_23848.org
+	../../queriesLHS_BASE_23848.org
+	../../queriesLHS_LOCAL_23848.org
+	../../queriesLHS_REMOTE_23848.org
+	../../randomLhsQueries.png
 
 nothing added to commit but untracked files present (use "git add" to track)
-First, rewinding head to replay your work on top of it...
-Applying: wip
+Merge made by the 'recursive' strategy.
+ data/cicero/exp20170923193058/info.org           | 692 +++++++++++++++++++++++
+ data/cicero/exp20170923193058/log_1506206431.tgz | Bin 0 -> 1442013 bytes
+ data/cicero/exp20170923193058/run_1506206431     |  41 ++
+ 3 files changed, 733 insertions(+)
+ create mode 100644 data/cicero/exp20170923193058/info.org
+ create mode 100644 data/cicero/exp20170923193058/log_1506206431.tgz
+ create mode 100644 data/cicero/exp20170923193058/run_1506206431
 #+end_example
 
 
-* DONE Analisys                                                      :export:
+* DONE Analysis                                                      :export:
 ** Generate csv files                                             :noexport:
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -395,8 +411,7 @@ ls  *tgz
 #+end_src
 
 #+RESULTS: fileList
-| log_1505852677.tgz |
-| log_1505933858.tgz |
+| log_1506206431.tgz |
 
 
 #+NAME: logFile
@@ -406,18 +421,18 @@ tar xvzf $f
 #+end_src
 
 #+RESULTS: logFile
-: bench_insert_and_scan_1505933858.log
+: bench_insert_and_scan_1506206431.log
 
 Create CSV using logFile 
 #+begin_src sh :results output :exports both :var logFile=logFile[0]
 #echo $logFile
 echo $(basename -s .log $logFile ).csv
-grep "GeoHashBinary\|BTree\|RTree\|ImplicitDenseVector ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+grep "InsertionBench " $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
 #+end_src
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_insert_and_scan_1505933858.csv
+: bench_insert_and_scan_1506206431.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -445,48 +460,14 @@ str(as.tibble(f))
 
 #+RESULTS:
 : Warning: 200000 parsing failures.
-: row # A tibble: 5 x 5 col     row   col  expected    actual                                   file expected   <int> <chr>     <chr>     <chr>                                  <chr> actual 1     1  <NA> 8 columns 5 columns 'bench_insert_and_scan_1505933858.csv' file 2     2  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' row 3     3  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' col 4     4  <NA> 8 columns 7 columns 'bench_insert_and_scan_1505933858.csv' expected 5     5  <NA> 8 columns 9 columns 'bench_insert_and_scan_1505933858.csv'
+: row # A tibble: 5 x 5 col     row   col  expected    actual                                   file expected   <int> <chr>     <chr>     <chr>                                  <chr> actual 1     1  <NA> 8 columns 5 columns 'bench_insert_and_scan_1506206431.csv' file 2     2  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' row 3     3  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' col 4     4  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' expected 5     5  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv'
 : ... ................. ... ........................................................................ ........ ........................................................................ ...... ........................................................................ .... ........................................................................ ... ......................................................... [... truncated]
 : Warning message:
 : In rbind(names(probs), probs_f) :
 :   number of columns of result is not a multiple of vector length (arg 1)
 : Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1 obs. of  1 variable:
-:  $ value: chr "bench_insert_and_scan_1505933858.csv"
+:  $ value: chr "bench_insert_and_scan_1506206431.csv"
 
-#+begin_src R :results output :exports both :session 
-
-options(dplyr.width = Inf)
-
-df %>% filter( V2 == 9999 )
-
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 20 x 8
-                    V1    V2              V3         V4                          V5          V6    V7       V8
-                 <chr> <int>           <chr>      <dbl>                       <chr>       <dbl> <chr>    <int>
- 1       GeoHashBinary  9999          insert   0.992535                        <NA>          NA  <NA>       NA
- 2       GeoHashBinary  9999  scan_at_region  50.621800  scan_at_region_refinements 1.00000e+00  <NA>       NA
- 3       GeoHashBinary  9999  scan_at_region  50.601900  scan_at_region_refinements 1.00000e+00  <NA>       NA
- 4       GeoHashBinary  9999  scan_at_region  50.660600  scan_at_region_refinements 1.00000e+00  <NA>       NA
- 5       GeoHashBinary  9999 apply_at_region   0.955854 apply_at_region_refinements 1.00000e+00 count 10000000
- 6               BTree  9999          insert   0.473681                        <NA>          NA  <NA>       NA
- 7               BTree  9999  scan_at_region 159.842000  scan_at_region_refinements 1.00000e+00  <NA>       NA
- 8               BTree  9999  scan_at_region 159.871000  scan_at_region_refinements 1.00000e+00  <NA>       NA
- 9               BTree  9999  scan_at_region 159.887000  scan_at_region_refinements 1.00000e+00  <NA>       NA
-10               BTree  9999 apply_at_region 117.432000 apply_at_region_refinements 1.00000e+00 count 10000000
-11               RTree  9999          insert   1.034710                        <NA>          NA  <NA>       NA
-12               RTree  9999  scan_at_region 230.055000                        <NA>          NA  <NA>       NA
-13               RTree  9999  scan_at_region 230.500000                        <NA>          NA  <NA>       NA
-14               RTree  9999  scan_at_region 230.171000                        <NA>          NA  <NA>       NA
-15               RTree  9999 apply_at_region  91.059700                       count 1.00000e+07  <NA>       NA
-16 ImplicitDenseVector  9999          insert   0.010825                     sorting 4.75606e+01  <NA>       NA
-17 ImplicitDenseVector  9999  scan_at_region  25.169200  scan_at_region_refinements 1.00000e+00  <NA>       NA
-18 ImplicitDenseVector  9999  scan_at_region  25.187700  scan_at_region_refinements 1.00000e+00  <NA>       NA
-19 ImplicitDenseVector  9999  scan_at_region  25.185200  scan_at_region_refinements 1.00000e+00  <NA>       NA
-20 ImplicitDenseVector  9999 apply_at_region   0.000865 apply_at_region_refinements 1.00000e+00 count 10000000
-#+end_example
 
 Remove useless columns
 #+begin_src R :results output :exports both :session 
@@ -500,37 +481,6 @@ df %>%
 
 #+RESULTS:
 
-
-#+begin_src R :results output :exports both :session 
-df[ df$id == 9999, ]
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 20 x 5
-                  algo    id           bench       time    count
-                 <chr> <int>           <chr>      <dbl>    <int>
- 1       GeoHashBinary  9999          insert   0.992535       NA
- 2       GeoHashBinary  9999  scan_at_region  50.621800       NA
- 3       GeoHashBinary  9999  scan_at_region  50.601900       NA
- 4       GeoHashBinary  9999  scan_at_region  50.660600       NA
- 5       GeoHashBinary  9999 apply_at_region   0.955854 10000000
- 6               BTree  9999          insert   0.473681       NA
- 7               BTree  9999  scan_at_region 159.842000       NA
- 8               BTree  9999  scan_at_region 159.871000       NA
- 9               BTree  9999  scan_at_region 159.887000       NA
-10               BTree  9999 apply_at_region 117.432000 10000000
-11               RTree  9999          insert   1.034710       NA
-12               RTree  9999  scan_at_region 230.055000       NA
-13               RTree  9999  scan_at_region 230.500000       NA
-14               RTree  9999  scan_at_region 230.171000       NA
-15               RTree  9999 apply_at_region  91.059700       NA
-16 ImplicitDenseVector  9999          insert  47.571425       NA
-17 ImplicitDenseVector  9999  scan_at_region  25.169200       NA
-18 ImplicitDenseVector  9999  scan_at_region  25.187700       NA
-19 ImplicitDenseVector  9999  scan_at_region  25.185200       NA
-20 ImplicitDenseVector  9999 apply_at_region   0.000865 10000000
-#+end_example
 
 *** Overview of results                                                :plot:
 
@@ -548,16 +498,16 @@ dfplot
 # Groups:   algo, id, bench [?]
     algo    id           bench count          ms         stdv
    <chr> <int>           <chr> <int>       <dbl>        <dbl>
- 1 BTree     0 apply_at_region  1000 0.002563000           NA
- 2 BTree     0          insert    NA 0.075221000           NA
- 3 BTree     0  scan_at_region    NA 0.007078333 7.456764e-05
- 4 BTree     1 apply_at_region  2000 0.003981000           NA
- 5 BTree     1          insert    NA 0.077459000           NA
- 6 BTree     1  scan_at_region    NA 0.014009667 4.252450e-05
- 7 BTree     2 apply_at_region  3000 0.005899000           NA
- 8 BTree     2          insert    NA 0.079061000           NA
- 9 BTree     2  scan_at_region    NA 0.020993000 2.095233e-05
-10 BTree     3 apply_at_region  4000 0.007885000           NA
+ 1 BTree     0 apply_at_region  1000 0.002275000           NA
+ 2 BTree     0          insert    NA 0.351185000           NA
+ 3 BTree     0  scan_at_region  1000 0.004493333 1.574622e-04
+ 4 BTree     1 apply_at_region  2000 0.003809000           NA
+ 5 BTree     1          insert    NA 0.365357000           NA
+ 6 BTree     1  scan_at_region  2000 0.009243000 2.121768e-04
+ 7 BTree     2 apply_at_region  3000 0.005789000           NA
+ 8 BTree     2          insert    NA 0.378500000           NA
+ 9 BTree     2  scan_at_region  3000 0.013940667 4.250098e-05
+10 BTree     3 apply_at_region  4000 0.007924000           NA
 # ... with 119,990 more rows
 #+end_example
 
@@ -605,12 +555,12 @@ dfinsert %>%
 #+end_src
 
 #+RESULTS:
-| algo                |       Average |         Total |
-|---------------------+---------------+---------------|
-| BTree               |  0.4286722351 |   4286.722351 |
-| GeoHashBinary       |  0.9013018977 |   9013.018977 |
-| ImplicitDenseVector | 24.1291799959 | 241291.799959 |
-| RTree               |  0.9483918428 |   9483.918428 |
+| algo                |      Average |        Total |
+|---------------------+--------------+--------------|
+| BTree               |  0.697645465 |   6976.45465 |
+| GeoHashBinary       | 1.0154884089 | 10154.884089 |
+| ImplicitDenseVector | 24.924827109 | 249248.27109 |
+| RTree               | 0.9669934731 |  9669.934731 |
 
 
 **** Amortized time
@@ -649,16 +599,16 @@ they will be dropped
 # Groups:   algo, id, bench [40,000]
     algo    id  bench  stat    value
    <chr> <int>  <chr> <chr>    <dbl>
- 1 BTree     0 insert    ms 0.075221
- 2 BTree     1 insert    ms 0.077459
- 3 BTree     2 insert    ms 0.079061
- 4 BTree     3 insert    ms 0.080513
- 5 BTree     4 insert    ms 0.084934
- 6 BTree     5 insert    ms 0.087991
- 7 BTree     6 insert    ms 0.089108
- 8 BTree     7 insert    ms 0.088306
- 9 BTree     8 insert    ms 0.090313
-10 BTree     9 insert    ms 0.093685
+ 1 BTree     0 insert    ms 0.351185
+ 2 BTree     1 insert    ms 0.365357
+ 3 BTree     2 insert    ms 0.378500
+ 4 BTree     3 insert    ms 0.379371
+ 5 BTree     4 insert    ms 0.383623
+ 6 BTree     5 insert    ms 0.385603
+ 7 BTree     6 insert    ms 0.384649
+ 8 BTree     7 insert    ms 0.390620
+ 9 BTree     8 insert    ms 0.394456
+10 BTree     9 insert    ms 0.391402
 # ... with 119,990 more rows
 #+end_example
 

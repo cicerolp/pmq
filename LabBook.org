@@ -438,7 +438,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170919161448/exp.org]]
 
 
-**** TODO [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :exp20170923193058:
+**** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :exp20170923193058:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
