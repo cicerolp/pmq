@@ -268,9 +268,8 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20170925155952 bd70644] UPD: run.sh script
-:  2 files changed, 102 insertions(+), 13 deletions(-)
-:  create mode 100755 data/cicero/exp20170925155952/run.sh
+: [exp20170925155952 2716a20] UPD: run.sh script
+:  2 files changed, 61 insertions(+), 59 deletions(-)
 
 Push to remote
 #+begin_src sh :results output :exports both :var expId=expId
@@ -316,7 +315,7 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Mon Sep 25 18:16:45 2017 from 143.54.13.218
+Last login: Tue Sep 26 09:11:04 2017 from 143.54.13.218
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -333,20 +332,25 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 38, done.
-(1/35)           remote: Compressing objects:   5% (2/35)           remote: Compressing objects:   8% (3/35)           remote: Compressing objects:  11% (4/35)           remote: Compressing objects:  14% (5/35)           remote: Compressing objects:  17% (6/35)           remote: Compressing objects:  20% (7/35)           remote: Compressing objects:  22% (8/35)           remote: Compressing objects:  25% (9/35)           remote: Compressing objects:  28% (10/35)           remote: Compressing objects:  31% (11/35)           remote: Compressing objects:  34% (12/35)           remote: Compressing objects:  37% (13/35)           remote: Compressing objects:  40% (14/35)           remote: Compressing objects:  42% (15/35)           remote: Compressing objects:  45% (16/35)           remote: Compressing objects:  48% (17/35)           remote: Compressing objects:  51% (18/35)           remote: Compressing objects:  54% (19/35)           remote: Compressing objects:  57% (20/35)           remote: Compressing objects:  60% (21/35)           remote: Compressing objects:  62% (22/35)           remote: Compressing objects:  65% (23/35)           remote: Compressing objects:  68% (24/35)           remote: Compressing objects:  71% (25/35)           remote: Compressing objects:  74% (26/35)           remote: Compressing objects:  77% (27/35)           remote: Compressing objects:  80% (28/35)           remote: Compressing objects:  82% (29/35)           remote: Compressing objects:  85% (30/35)           remote: Compressing objects:  88% (31/35)           remote: Compressing objects:  91% (32/35)           remote: Compressing objects:  94% (33/35)           remote: Compressing objects:  97% (34/35)           remote: Compressing objects: 100% (35/35)           remote: Compressing objects: 100% (35/35), done.
-(1/38)   Unpacking objects:   5% (2/38)   Unpacking objects:   7% (3/38)   Unpacking objects:  10% (4/38)   Unpacking objects:  13% (5/38)   Unpacking objects:  15% (6/38)   Unpacking objects:  18% (7/38)   Unpacking objects:  21% (8/38)   Unpacking objects:  23% (9/38)   Unpacking objects:  26% (10/38)   Unpacking objects:  28% (11/38)   Unpacking objects:  31% (12/38)   remote: Total 38 (delta 23), reused 0 (delta 0)
-(13/38)   Unpacking objects:  36% (14/38)   Unpacking objects:  39% (15/38)   Unpacking objects:  42% (16/38)   Unpacking objects:  44% (17/38)   Unpacking objects:  47% (18/38)   Unpacking objects:  50% (19/38)   Unpacking objects:  52% (20/38)   Unpacking objects:  55% (21/38)   Unpacking objects:  57% (22/38)   Unpacking objects:  60% (23/38)   Unpacking objects:  63% (24/38)   Unpacking objects:  65% (25/38)   Unpacking objects:  68% (26/38)   Unpacking objects:  71% (27/38)   Unpacking objects:  73% (28/38)   Unpacking objects:  76% (29/38)   Unpacking objects:  78% (30/38)   Unpacking objects:  81% (31/38)   Unpacking objects:  84% (32/38)   Unpacking objects:  86% (33/38)   Unpacking objects:  89% (34/38)   Unpacking objects:  92% (35/38)   Unpacking objects:  94% (36/38)   Unpacking objects:  97% (37/38)   Unpacking objects: 100% (38/38)   Unpacking objects: 100% (38/38), done.
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 7, done.
+(1/6)           remote: Compressing objects:  33% (2/6)           remote: Compressing objects:  50% (3/6)           remote: Compressing objects:  66% (4/6)           remote: Compressing objects:  83% (5/6)           remote: Compressing objects: 100% (6/6)           remote: Compressing objects: 100% (6/6), done.        
+remote: Total 7 (delta 4), reused 0 (delta 0)
+(1/7)   Unpacking objects:  28% (2/7)   Unpacking objects:  42% (3/7)   Unpacking objects:  57% (4/7)   Unpacking objects:  71% (5/7)   Unpacking objects:  85% (6/7)   Unpacking objects: 100% (7/7)   Unpacking objects: 100% (7/7), done.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 origin/exp20170925155952
-Branch exp20170925155952 set up to track remote branch exp20170925155952 from origin.
-Switched to a new branch 'exp20170925155952'
+Already on 'exp20170925155952'
+Your branch is behind 'origin/exp20170925155952' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-Already up-to-date.
-commit bd706445fe6e15a98a2f8f516e2571db868f5461
-Date:   Mon Sep 25 18:16:59 2017 -0300
+Updating bd70644..2716a20
+Fast-forward
+ data/cicero/exp20170925155952/exp.org | 115 +++++++++++++++++-----------------
+ data/cicero/exp20170925155952/run.sh  |   5 +-
+ 2 files changed, 61 insertions(+), 59 deletions(-)
+commit 2716a2031c22ba905b37a864f65d8ef340b76c02
+Date:   Mon Sep 25 18:22:27 2017 -0300
 
     UPD: run.sh script
 #+end_example
@@ -382,7 +386,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ 1506374304
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ 1506374628
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -392,26 +396,24 @@ ps ux
 
 #+RESULTS:
 #+begin_example
-runExp: 1 windows (created Mon Sep 25 18:18:24 2017) [80x23]
+runExp: 1 windows (created Mon Sep 25 18:23:48 2017) [80x23]
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-julio    19285  0.0  0.0  45248  4484 ?        Ss   18:16   0:00 /lib/systemd/sy
-julio    19287  0.0  0.0 145364  2112 ?        S    18:16   0:00 (sd-pam)
-julio    19434  0.0  0.0  97464  3316 ?        S    18:17   0:00 sshd: julio@pts
-julio    19435  0.0  0.0  22764  5316 pts/9    Ss   18:17   0:00 -bash
-julio    19488  0.0  0.0  29420  2860 ?        Ss   18:18   0:00 tmux new -d -s 
-julio    19489  0.0  0.0  12532  2956 pts/8    Ss+  18:18   0:00 bash -c cd ~/Pr
-julio    19491  0.0  0.0  12540  3092 pts/8    S+   18:18   0:00 /bin/bash ./run
-julio    19865  0.0  0.0   9676  2276 pts/8    S+   18:18   0:00 make
-julio    19868  0.0  0.0   9676  2372 pts/8    S+   18:18   0:00 make -f CMakeFi
-julio    19967  0.2  0.0  11816  4404 pts/8    S+   18:19   0:00 make -f benchma
-julio    19970  0.0  0.0   4508   708 pts/8    S+   18:19   0:00 /bin/sh -c cd /
-julio    19971  0.0  0.0   8352   752 pts/8    S+   18:19   0:00 /usr/bin/c++ -I
-julio    19972  100  2.3 864760 761880 pts/8   R+   18:19   0:07 /usr/lib/gcc/x8
-julio    19980  0.0  0.0  37368  3268 pts/9    R+   18:19   0:00 ps ux
+julio    19285  0.0  0.0  45248  4484 ?        Ss   Set25   0:00 /lib/systemd/sy
+julio    19287  0.0  0.0 145364  2112 ?        S    Set25   0:00 (sd-pam)
+julio    20161  0.0  0.0  29420  2856 ?        Ss   Set25   0:00 tmux new -d -s 
+julio    20162  0.0  0.0  12532  2940 pts/10   Ss+  Set25   0:00 bash -c cd ~/Pr
+julio    20164  0.0  0.0  12544  3032 pts/10   S+   Set25   0:00 /bin/bash ./run
+julio    21779  100  4.8 1645100 1609808 pts/10 R+  07:55  78:16 ./benchmarks/be
+julio    22014  0.0  0.0  97464  3220 ?        S    09:11   0:00 sshd: julio@pts
+julio    22015  0.0  0.0  23704  6352 pts/8    Ss+  09:11   0:00 -bash
+julio    22097  0.0  0.0  97464  3324 ?        S    09:13   0:00 sshd: julio@pts
+julio    22098  0.1  0.0  22688  5104 pts/9    Ss   09:13   0:00 -bash
+julio    22115  0.0  0.0  37368  3256 pts/9    R+   09:13   0:00 ps ux
 #+end_example
 
-**** DONE Pull local 
+**** TODO Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
+
 git commit -a -m "wip"
 git status
 git pull --rebase origin $expId
