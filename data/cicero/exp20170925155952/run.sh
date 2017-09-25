@@ -44,11 +44,12 @@ echo "" > $DATADIR/info.org
 ~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
 
 # EXECUTE BENCHMARK
-rm ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-touch ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
 
 #Continue execution even if one these fails
 set +e 
+rm ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+touch ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+
 # Queries insert remove count
 
 # PMQ
