@@ -612,7 +612,7 @@ mkdir -p $expFolder
 
 [[./data/cicero/exp20170915143003/exp.org]]
 
-**** DONE [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset
+**** DONE [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset :paper:exp20170923144931:
 
 - Test queries on real datasets
 - Use a time window of 6h * batches of size 1000  = 26.000.000 elements
@@ -644,8 +644,6 @@ mkdir -p $expFolder
 
 
 ***** Description                                                :ignore:
-
-Template to start an experiment:
 
 #+begin_src sh :results raw :exports results :session template
 echo "[[$expFolder/exp.org]]"

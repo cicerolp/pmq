@@ -98,14 +98,12 @@ Test with a larger ammount of data -> 10\*8
 
 `./data/cicero/exp20170915143003/exp.rst <./data/cicero/exp20170915143003/exp.rst>`_
 
-2.5 **DONE** [2017-09-23 Sáb]  *bench_queries_region* Twitter Dataset
+2.5 **DONE** [2017-09-23 Sáb]  *bench_queries_region* Twitter Dataset ``paper``  ``exp20170923144931``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Test queries on real datasets
 
 - Use a time window of 6h \* batches of size 1000  = 26.000.000 elements
-
-Template to start an experiment:
 
 `./data/cicero/exp20170923144931/exp.rst <./data/cicero/exp20170923144931/exp.rst>`_
 
