@@ -585,7 +585,7 @@ Fast-forwarded exp20170914091842 to 1adced939ed1e68bf901e82bd40097309abecf9e.
 #+end_example
 
 
-* INPROGRESS Analysis
+* DONE Analysis
 ** Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -763,9 +763,10 @@ df
 *** Summary Tables of Remove Times                                 :export:
 
 #+begin_src R :results table :exports both :session :colnames yes
-df %>% filter(remove > 0) %>%
+df %>% filter(!is.na(remove)) %>%
+    mutate(remove = as.numeric(remove)) %>%
     group_by(algo,T) %>%
-    summarize(RemoveTime = signif(mean(as.numeric(remove))), stdv = signif(sd(as.numeric(remove)))) %>%
+    summarize(RemoveTime = signif(mean(remove)), stdv = signif(sd(remove))) %>%
     arrange(T,algo)
 #+end_src
 
@@ -807,11 +808,11 @@ df %>% filter(remove > 0) %>%
 
 Plot an overview of every benchmark , doing average of times. 
 #+begin_src R :results output :exports code
-df %>% filter(remove > 0) %>% 
+df %>% filter(!is.na(remove)) %>% 
     mutate(remove=as.numeric(remove)) %>%
     mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
     group_by(algo,T) %>%
-    summarize(RemoveTime = mean(as.numeric(remove)), stdv = sd(as.numeric(remove))) %>%
+    summarize(RemoveTime = mean(remove), RemoveSum = sum(remove), stdv = sd(remove)) %>%
     mutate(T = as.factor(T))-> dfplot
 
 dfplot
@@ -819,20 +820,20 @@ dfplot
 
 #+RESULTS:
 #+begin_example
-# A tibble: 30 x 4
+# A tibble: 30 x 5
 # Groups:   algo [3]
-    algo      T RemoveTime      stdv
-   <chr> <fctr>      <dbl>     <dbl>
- 1 BTree  11745  2939.0430 31.976994
- 2 BTree  17616  1898.0251 15.561384
- 3 BTree  20552  1316.7902 21.896304
- 4 BTree  22020   970.8734 17.255611
- 5 BTree  22754   761.1887 10.410706
- 6 BTree  23121   649.6426  8.713129
- 7 BTree  23305   589.1553  8.752589
- 8 BTree  23396   564.3692 14.193076
- 9 BTree  23442   535.4773  8.123516
-10 BTree  23465   526.1890  8.053196
+    algo      T RemoveTime  RemoveSum      stdv
+   <chr> <fctr>      <dbl>      <dbl>     <dbl>
+ 1 BTree  11745  2939.0430   5878.086 31.976994
+ 2 BTree  17616  1898.0251   7592.100 15.561384
+ 3 BTree  20552  1316.7902  10534.321 21.896304
+ 4 BTree  22020   970.8734  15533.975 17.255611
+ 5 BTree  22754   761.1887  24358.037 10.410706
+ 6 BTree  23121   649.6426  41577.128  8.713129
+ 7 BTree  23305   589.1553  75411.882  8.752589
+ 8 BTree  23396   564.3692 142785.420 14.193076
+ 9 BTree  23442   535.4773 267738.659  8.123516
+10 BTree  23465   526.1890 515139.003  8.053196
 # ... with 20 more rows
 #+end_example
 
@@ -844,7 +845,8 @@ dfplot %>%
     ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
     geom_bar(stat="identity", position="dodge")+
     geom_errorbar( position=position_dodge(0.9), 
-                   aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)
+                   aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)+
+    labs(title = "Average time of removal operations") 
 #+end_src
 
 #+RESULTS:
@@ -853,7 +855,7 @@ dfplot %>%
 The average remove time decreases logarithmicly for BTree and Rtree. 
 However for the PMQ the time seems much more stable no matter the amount of removals. 
 
-*** INPROGRESS Insertion performance
+*** DONE Insertion performance
 
 #+begin_src R :results output :exports code :session 
 df %>% filter(is.na(remove)) %>%  # get only lines with no removes
@@ -1072,161 +1074,99 @@ totalPlot %>%
 [[file:./img/totalAvgRm.png]]
 
 
-**** TODO Conclusion                                              :export:
+*** DONE Conclusion                                                :export:
+
+We need to find a tradeoff between these two plots: 
 
 [[file:img/totalInsRm.png]] [[file:img/overview.png]]
 
-#+begin_src R :results table :exports both :session :colnames yes 
+Best T value for optimal Remove Time:
+#+begin_src R :results table :exports results :session :colnames yes 
 dfplot %>% 
 group_by(algo) %>% 
 top_n(-1,RemoveTime)
 #+end_src
 
 #+RESULTS:
-| algo          |     T |       RemoveTime |             stdv |
-|---------------+-------+------------------+------------------|
-| BTree         | 23465 | 526.188971208376 | 8.05319645077189 |
-| GeoHashBinary | 23121 |    556.606703125 | 4.00547654331388 |
-| RTree         | 23465 | 442.277040627171 |  22.851264883645 |
+| algo          |     T | RemoveTime avg (ms) |      stdv |
+|---------------+-------+---------------------+-----------|
+| BTree         | 23465 |          526.188970 |  8.053197 |
+| GeoHashBinary | 23121 |          556.606700 |  4.005477 |
+| RTree         | 23465 |          442.277040 | 22.851265 |
+#+TBLFM: @2$3..@4$4=$0;%03f
 
-
-#+begin_src R :results table :exports both :session :colnames yes 
+Best T value for optimal total execution time:
+#+begin_src R :results table :exports results :session :colnames yes 
 totalPlot %>%
 group_by(algo) %>% 
 top_n(-1,total)
 #+end_src
 
 #+RESULTS:
-| algo          |     T |        total |               avg |              std |
-|---------------+-------+--------------+-------------------+------------------|
-| BTree         | 17616 | 20841.163281 | 0.709848885592643 | 22.1482656342618 |
-| GeoHashBinary | 20552 |  33280.17431 |  1.25946769262791 | 10.7189929835938 |
-| RTree         | 17616 | 53837.281758 |  1.83369488276567 | 70.1725111047083 |
+| algo          |     T |     sum (ms) | avg (ms) |       std |
+|---------------+-------+--------------+----------+-----------|
+| BTree         | 17616 | 20841.163000 | 0.709849 | 22.148266 |
+| GeoHashBinary | 20552 | 33280.174000 | 1.259468 | 10.718993 |
+| RTree         | 17616 | 53837.282000 | 1.833695 | 70.172511 |
+#+TBLFM: @2$3..@4$5=$0;%03f
 
-
-#+begin_src R :results output :exports both :session 
-inner_join(dfplot,totalPlot)
-
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Joining, by = c("algo", "T")
-# A tibble: 30 x 7
-# Groups:   algo [?]
-    algo      T RemoveTime      stdv     total        avg       std
-   <chr> <fctr>      <dbl>     <dbl>     <dbl>      <dbl>     <dbl>
- 1 BTree  11745  2939.0430 31.976994  21690.56  0.6156669  22.14110
- 2 BTree  17616  1898.0251 15.561384  20841.16  0.7098489  22.14827
- 3 BTree  20552  1316.7902 21.896304  22388.34  0.8472730  22.90391
- 4 BTree  22020   970.8734 17.255611  26699.39  1.0698584  24.56794
- 5 BTree  22754   761.1887 10.410706  35025.69  1.4460280  27.63580
- 6 BTree  23121   649.6426  8.713129  52178.54  2.1873207  33.58468
- 7 BTree  23305   589.1553  8.752589  85858.06  3.6271412  43.17964
- 8 BTree  23396   564.3692 14.193076 153332.38  6.5026455  58.11776
- 9 BTree  23442   535.4773  8.123516 278274.48 11.8243597  77.16212
-10 BTree  23465   526.1890  8.053196 525795.42 22.3638052 105.03491
-# ... with 20 more rows
-#+end_example
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+Compute a tradeoff between total running time and time spent on removals. 
+#+begin_src R :results output graphics :file "./img/removalTradeoff.png" :exports both :width 600 :height 400 :session 
 library(ggplot2)
+require(grid)
 
 inner_join(dfplot,totalPlot) %>% 
-mutate ( ratio = RemoveTime / total) %>%
+#mutate ( ratio = (sqrt(RemoveTime * total))) %>%
+#mutate ( ratio = sqrt(RemoveSum * total)) %>%
+mutate ( ratio = (sqrt(RemoveTime * avg))) %>%
     ggplot( aes(x=T,y=ratio, fill=factor(algo))) + 
-    geom_bar(stat="identity", position="dodge")
+    geom_bar(stat="identity", position="dodge") + 
+    annotate(geom = "text",x = unique(dfplot$T), y = 132,
+             #label = (23488 - unique(as.numeric(as.character(dfplot$T)))), size = 4) + # size of the removal 
+             label = paste( round((23488 - unique(as.numeric(as.character(dfplot$T))))/23488 * 100,2), "%"), size = 4) + # percentage remove from the max allowed. 
+    annotate(geom = "text",x = unique(dfplot$T), y = 140,
+             label = paste( round((23488 - unique(as.numeric(as.character(dfplot$T))))/ unique(as.numeric(as.character(dfplot$T))) * 100,2), "%"), size = 4) + # perecentage of overflow relative to the min elements required.
+    labs(x = "T", 
+         y = "sqrt(Avg Remove Time X Avg total running time)  ms",
+         title="% of overflow allowed relative to T \n% of removed elements relative to the max (23.488.000 elements)"
+         )-> p
+
+p
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-2656O6E/figure2656jdO.png]]
+[[file:./img/removalTradeoff.png]]
 
 
-
-Sum of removal times:
-How long we spent removing on each case. 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
-
-df %>% filter(remove > 0) %>% 
-    mutate(remove=as.numeric(remove)) %>%
-    mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
-    group_by(algo,T) %>%
-    summarize(RemoveTime = sum(as.numeric(remove)), stdv = sd(as.numeric(remove))) %>%
-    mutate(T = as.factor(T)) %>%
-
-    ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
-    geom_bar(stat="identity", position="dodge")+
-    geom_errorbar( position=position_dodge(0.9), 
-                   aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)
-
+Best T Values based on relation ( Avg Remove time \times Avg running time): 
+#+begin_src R :results table :exports both :session :colnames yes
+inner_join(dfplot,totalPlot) %>% 
+mutate ( ratio = sqrt(RemoveTime * avg)) %>%
+group_by(algo) %>% 
+top_n(-1,ratio) -> tmp
+names(tmp) = c("algo","T","Rm Time Avg","Rm Time Sum","Rm  stdv","Total Time sum","Total Time Avg","Total stdv","ratio")
+    
+tmp
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-2656O6E/figure2656kQt.png]]
+| algo          |     T | Rm Time Avg | Rm Time Sum | Rm  stdv | Total Time sum | Total Time Avg | Total stdv |  ratio |
+|---------------+-------+-------------+-------------+----------+----------------+----------------+------------+--------|
+| BTree         | 22020 |     970.873 |   15533.975 |   17.256 |      26699.386 |          1.070 |     24.568 | 32.229 |
+| GeoHashBinary | 17616 |     633.379 |    2533.517 |   12.922 |      34272.027 |          1.167 |      7.381 | 27.191 |
+| RTree         | 23305 |     691.369 |   88495.277 |   18.703 |     112545.550 |          4.755 |     50.647 | 57.334 |
+#+TBLFM: @2$3..@4$9=$0;%0.3f
 
-**** Amortized time :ARCHIVE:
 
-We compute tree time:
-- individual insertion time for each batch
-- accumulated time at batch #k
-- ammortized time : average of the past times at batch #k
+*** Next tests                                                     :export:
+We will have to run this benchmar again using the optimal T parameter for the PMQ (17616) and configuring the optimal removing performance for the Rtree and the Btree.
 
-#+begin_src R :results output :exports both
-avgTime = cbind(dfinsert, 
-                sumTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)), recursive=T),
-                avgTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)/(x$id+1)), recursive=T)
-                )
-#+end_src
 
-#+RESULTS:
-: Error in data.frame(..., check.names = FALSE) : 
-:   arguments imply differing number of rows: 769074, 0
-: In addition: Warning messages:
-: 1: Unknown or uninitialised column: 'ms'. 
-: 2: Unknown or uninitialised column: 'ms'. 
-: 3: Unknown or uninitialised column: 'ms'. 
-: 4: Unknown or uninitialised column: 'ms'. 
-: 5: Unknown or uninitialised column: 'ms'. 
-: 6: Unknown or uninitialised column: 'ms'.
+|       | optimal % of overflow |
+|-------+-----------------------|
+| BTree |                 6.67% |
+| RTree |                 0.79% |
+| PMQ   |                33.33% |
 
-***** Melting the data (time / avgTime)
-We need to melt the time columns to be able to plot as a grid
 
-#+begin_src R :results output :exports both :session 
-avgTime %>% 
-    select(-count,-stdv) %>%
-    gather(stat, value, ms, sumTime, avgTime) -> melted_times
-
-melted_times
-#+end_src
-
-#+RESULTS:
-: Error in eval(lhs, parent, parent) : object 'avgTime' not found
-: Error: object 'melted_times' not found
-
-***** Comparison Time X avgTime                                    :plot:
-#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
-melted_times %>%
-    ggplot(aes(x=id,y=value,color=factor(algo))) +
-geom_line() + 
-facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
-#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
-#+end_src
-
-#+RESULTS:
-[[file:./img/grid_times.png]]
-
-**** Zoom View                                                      :plot:ARCHIVE:
-
-#+begin_src R :results output graphics :file "./img/Zoom.png" :exports both :width 600 :height 400
-avgTime %>% 
-    ggplot(aes(x=id, color=factor(algo))) + 
-    labs(title="Insertions") +
-    geom_point(aes(y=ms), alpha=1) +
-#    geom_line(aes(y=avgTime)) + 
-    ylim(0,1) 
-#+end_src
-
-#+RESULTS:
-[[file:./img/Zoom.png]]
 

@@ -1,6 +1,6 @@
-================
-Experiment Diary
-================
+=================
+Removal benchmark
+=================
 
 
 .. contents::
@@ -243,7 +243,7 @@ The measured times are reported in terms of % of Removals:
     |        0.001 | \                 | \                      |
     +--------------+-------------------+------------------------+
 
-2 Analisys
+2 Analysis
 ----------
 
 2.1 Results
@@ -254,9 +254,10 @@ The measured times are reported in terms of % of Removals:
 
 .. code:: R
 
-    df %>% filter(remove > 0) %>%
+    df %>% filter(!is.na(remove)) %>%
+        mutate(remove = as.numeric(remove)) %>%
         group_by(algo,T) %>%
-        summarize(RemoveTime = signif(mean(as.numeric(remove))), stdv = signif(sd(as.numeric(remove)))) %>%
+        summarize(RemoveTime = signif(mean(remove)), stdv = signif(sd(remove))) %>%
         arrange(T,algo)
 
 .. table::
@@ -332,11 +333,11 @@ Plot an overview of every benchmark , doing average of times.
 
 .. code:: R
 
-    df %>% filter(remove > 0) %>% 
+    df %>% filter(!is.na(remove)) %>% 
         mutate(remove=as.numeric(remove)) %>%
         mutate(remove=ifelse(algo != "GeoHashBinary", remove + insert, remove)) %>% # Remove actually accounts for remove + a small insertion 
         group_by(algo,T) %>%
-        summarize(RemoveTime = mean(as.numeric(remove)), stdv = sd(as.numeric(remove))) %>%
+        summarize(RemoveTime = mean(remove), RemoveSum = sum(remove), stdv = sd(remove)) %>%
         mutate(T = as.factor(T))-> dfplot
 
     dfplot
@@ -350,7 +351,8 @@ Plot an overview of every benchmark , doing average of times.
         ggplot( aes(x=T,y=RemoveTime, fill=factor(algo))) + 
         geom_bar(stat="identity", position="dodge")+
         geom_errorbar( position=position_dodge(0.9), 
-                       aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)
+                       aes(ymin = RemoveTime - stdv, ymax = RemoveTime + stdv), width=0.5)+
+        labs(title = "Average time of removal operations") 
 
 .. image:: ./img/overview.png
 
@@ -603,3 +605,109 @@ Bimodal behaviour, it doesn't make sense to do an average of removals together w
         labs(title = "Average Insertions and Removals") 
 
 .. image:: ./img/totalAvgRm.png
+
+2.1.4 Conclusion
+^^^^^^^^^^^^^^^^
+
+We need to find a tradeoff between these two plots: 
+
+.. image:: img/totalInsRm.png
+ .. image:: img/overview.png
+
+Best T value for optimal Remove Time:
+
+.. table::
+
+    +---------------+-------+---------------------+-----------+
+    | algo          |     T | RemoveTime avg (ms) |      stdv |
+    +===============+=======+=====================+===========+
+    | BTree         | 23465 |          526.188970 |  8.053197 |
+    +---------------+-------+---------------------+-----------+
+    | GeoHashBinary | 23121 |          556.606700 |  4.005477 |
+    +---------------+-------+---------------------+-----------+
+    | RTree         | 23465 |          442.277040 | 22.851265 |
+    +---------------+-------+---------------------+-----------+
+
+Best T value for optimal total execution time:
+
+.. table::
+
+    +---------------+-------+--------------+----------+-----------+
+    | algo          |     T |     sum (ms) | avg (ms) |       std |
+    +===============+=======+==============+==========+===========+
+    | BTree         | 17616 | 20841.163000 | 0.709849 | 22.148266 |
+    +---------------+-------+--------------+----------+-----------+
+    | GeoHashBinary | 20552 | 33280.174000 | 1.259468 | 10.718993 |
+    +---------------+-------+--------------+----------+-----------+
+    | RTree         | 17616 | 53837.282000 | 1.833695 | 70.172511 |
+    +---------------+-------+--------------+----------+-----------+
+
+Compute a tradeoff between total running time and time spent on removals. 
+
+.. code:: R
+
+    library(ggplot2)
+    require(grid)
+
+    inner_join(dfplot,totalPlot) %>% 
+    #mutate ( ratio = (sqrt(RemoveTime * total))) %>%
+    #mutate ( ratio = sqrt(RemoveSum * total)) %>%
+    mutate ( ratio = (sqrt(RemoveTime * avg))) %>%
+        ggplot( aes(x=T,y=ratio, fill=factor(algo))) + 
+        geom_bar(stat="identity", position="dodge") + 
+        annotate(geom = "text",x = unique(dfplot$T), y = 132,
+                 #label = (23488 - unique(as.numeric(as.character(dfplot$T)))), size = 4) + # size of the removal 
+                 label = paste( round((23488 - unique(as.numeric(as.character(dfplot$T))))/23488 * 100,2), "%"), size = 4) + # percentage remove from the max allowed. 
+        annotate(geom = "text",x = unique(dfplot$T), y = 140,
+                 label = paste( round((23488 - unique(as.numeric(as.character(dfplot$T))))/ unique(as.numeric(as.character(dfplot$T))) * 100,2), "%"), size = 4) + # perecentage of overflow relative to the min elements required.
+        labs(x = "T", 
+             y = "sqrt(Avg Remove Time X Avg total running time)  ms",
+             title="% of overflow allowed relative to T \n% of removed elements relative to the max (23.488.000 elements)"
+             )-> p
+
+    p
+
+.. image:: ./img/removalTradeoff.png
+
+
+Best T Values based on relation ( Avg Remove time × Avg running time): 
+
+.. code:: R
+
+    inner_join(dfplot,totalPlot) %>% 
+    mutate ( ratio = sqrt(RemoveTime * avg)) %>%
+    group_by(algo) %>% 
+    top_n(-1,ratio) -> tmp
+    names(tmp) = c("algo","T","Rm Time Avg","Rm Time Sum","Rm  stdv","Total Time sum","Total Time Avg","Total stdv","ratio")
+    
+    tmp
+
+.. table::
+
+    +---------------+-------+-------------+-------------+----------+----------------+----------------+------------+--------+
+    | algo          |     T | Rm Time Avg | Rm Time Sum | Rm  stdv | Total Time sum | Total Time Avg | Total stdv |  ratio |
+    +===============+=======+=============+=============+==========+================+================+============+========+
+    | BTree         | 22020 |     970.873 |   15533.975 |   17.256 |      26699.386 |          1.070 |     24.568 | 32.229 |
+    +---------------+-------+-------------+-------------+----------+----------------+----------------+------------+--------+
+    | GeoHashBinary | 17616 |     633.379 |    2533.517 |   12.922 |      34272.027 |          1.167 |      7.381 | 27.191 |
+    +---------------+-------+-------------+-------------+----------+----------------+----------------+------------+--------+
+    | RTree         | 23305 |     691.369 |   88495.277 |   18.703 |     112545.550 |          4.755 |     50.647 | 57.334 |
+    +---------------+-------+-------------+-------------+----------+----------------+----------------+------------+--------+
+
+2.1.5 Next tests
+^^^^^^^^^^^^^^^^
+
+We will have to run this benchmar again using the optimal T parameter for the PMQ (17616) and configuring the optimal removing performance for the Rtree and the Btree.
+
+
+.. table::
+
+    +-------+-----------------------+
+    | \     | optimal % of overflow |
+    +=======+=======================+
+    | BTree |                 6.67% |
+    +-------+-----------------------+
+    | RTree |                 0.79% |
+    +-------+-----------------------+
+    | PMQ   |                33.33% |
+    +-------+-----------------------+

@@ -110,8 +110,8 @@ Test with a larger ammount of data -> 10\*8
 3 Benchmark Insert and Remove
 -----------------------------
 
-3.1 **ANALYSIS** [2017-09-14 Qui]  *bench_insert_remove_count* ``paper``  ``exp20170914091842``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.1 **DONE** [2017-09-14 Qui]  *bench_insert_remove_count* ``paper``  ``exp20170914091842``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test performance of removals in the PMQ. 
 

@@ -653,7 +653,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170923144931/exp.org]]
 
 *** Benchmark Insert and Remove
-**** ANALYSIS [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
+**** DONE [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
 
 Test performance of removals in the PMQ. 
 

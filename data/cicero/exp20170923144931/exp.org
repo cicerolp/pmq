@@ -30,6 +30,7 @@ Elements:
 - Total elements = 26.000.000 
   
 Use the syntehic queries gerenerate by the DoE in [[file:../../queriesLHS.org::#queries20170923145357][Twitter Data]].
+
 queries Dataset : [[file:../../queriesTwitter.csv]].
 
 ** Standalone script                                              :noexport:
