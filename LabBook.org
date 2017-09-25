@@ -1,4 +1,4 @@
-# -*- org-export-babel-evaluate: t; -*-
+# -*- org-export-babel-evaluate: t; org-link-file-path-type: relative;-*-
 #+TITLE: Lab Book for PMQ Experiments 
 #+LANGUAGE: en 
 #+STARTUP: indent

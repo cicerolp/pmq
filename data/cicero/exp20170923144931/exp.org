@@ -29,9 +29,8 @@ Elements:
 
 - Total elements = 26.000.000 
   
-Use the syntehic queries gerenerate by the DoE in [[file:~/Projects/pmq/data/queriesLHS.org::#queries20170923145357][Twitter Data]].
-
-queries Dataset : [[file:~/Projects/pmq/data/queriesTwitter.csv]]
+Use the syntehic queries gerenerate by the DoE in [[file:../../queriesLHS.org::#queries20170923145357][Twitter Data]].
+queries Dataset : [[file:../../queriesTwitter.csv]].
 
 ** Standalone script                                              :noexport:
 To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file

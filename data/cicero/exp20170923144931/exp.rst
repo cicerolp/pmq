@@ -29,9 +29,8 @@ Elements:
 
 - Total elements = 26.000.000
 
-Use the syntehic queries gerenerate by the DoE in `Twitter Data <~/Projects/pmq/data/queriesLHS.rst>`_.
-
-queries Dataset : `~/Projects/pmq/data/queriesTwitter.csv <~/Projects/pmq/data/queriesTwitter.csv>`_
+Use the syntehic queries gerenerate by the DoE in `Twitter Data <../../queriesLHS.rst>`_.
+queries Dataset : `../../queriesTwitter.csv <../../queriesTwitter.csv>`_.
 
 2 Analysis
 ----------
