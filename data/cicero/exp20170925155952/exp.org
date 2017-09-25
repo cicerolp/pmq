@@ -69,14 +69,19 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170914091842
+: exp20170925155952
 
 Set up git branch
-#+begin_src sh :results output :exports both
+#+begin_src sh :results output :exports both :var expId=expId
 git checkout master
+git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 #+end_src
 
 #+RESULTS:
+: M	LabBook.org
+: M	benchmarks/bench_insert_remove_scan.cpp
+: [master dad1c47] LBK: new entry for exp20170925155952
+:  1 file changed, 49 insertions(+), 15 deletions(-)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -84,6 +89,7 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
+: M	benchmarks/bench_insert_remove_scan.cpp
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -94,21 +100,20 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170914091842
+On branch exp20170925155952
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
-	exp.html
 	exp.org
-	exp.pdf
-	exp.rst
-	exp.tex
+	parse.sh
+	plotResults.R
+	run.sh
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170914091842 87d4f4c] Initial commit for exp20170914091842
- 1 file changed, 884 insertions(+)
- create mode 100644 data/cicero/exp20170914091842/exp.org
+[exp20170925155952 5cf867d] Initial commit for exp20170925155952
+ 1 file changed, 1043 insertions(+)
+ create mode 100644 data/cicero/exp20170925155952/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -116,9 +121,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 87d4f4c (HEAD -> exp20170914091842) Initial commit for exp20170914091842
-: * dd21b9e (master) exp insert remove count
-: * 1b319c5 wip: labbook
+: * 5cf867d (HEAD -> exp20170925155952) Initial commit for exp20170925155952
+: * dad1c47 (master) LBK: new entry for exp20170925155952
+: * 2e6e2ce (origin/master) upd: config file for benchmarks
 
 ** DONE Export run script 
 
