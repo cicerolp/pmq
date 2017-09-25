@@ -1,4 +1,4 @@
-# -*- org-export-babel-evaluate: t; -*-
+# -*- org-export-babel-evaluate: t; org-link-file-path-type: relative;-*-
 #+TITLE: Lab Book for PMQ Experiments 
 #+LANGUAGE: en 
 #+STARTUP: indent
@@ -6,7 +6,7 @@
 #+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
 #+SEQ_TODO: TODO RUNNING RERUN ANALYSIS | FINISHED CANCELED(@)
 #+TAGS: @JULIO(J) @CICERO(C)
-#+TAGS: ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+TAGS: IMPORTANT(I) ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e) paper(p)
 #+CATEGORY: TwitterVis
 #+OPTIONS: ^:{} H:3 author:nil
 #+PROPERTY: header-args :cache no :eval never-export
@@ -331,7 +331,7 @@ mkdir -p $expFolder
   #+RESULTS:
 
 ***** Description                                                :ignore:
-  [[./data/inf-desktop/exp20170822165129/exp.org]]
+[[./data/cicero/exp20170822165129/exp.org]]
   
 **** ANALYSIS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
 
@@ -365,9 +365,8 @@ mkdir -p $expFolder
 
 **** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
 
-- Old exeperiment used Rtree* algorithm, use the quadratic one now.
-- Count was not correct in the plots
-[[#exp20170822165129][{2017-08-22 Ter} Experiment =bench_insert_and_scan=]]
+- Old experiment used Rtree* algorithm, use the quadratic one now.
+- Count was not correct in the plots from [[#exp20170822165129]]
 
 ***** Setup                                                    :noexport:
 
@@ -397,7 +396,7 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
  [[./data/cicero/exp20170907112116/exp.org]]
  
-**** RERUN [2017-09-15 Sex] Experiment =bench_insert_and_scan= :exp20170919161448:
+**** DONE [2017-09-15 Sex] Uniform Dataset =bench_insert_and_scan= :paper:exp20170919161448:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -438,7 +437,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170919161448/exp.org]]
 
 
-**** TODO [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :exp20170923193058:
+**** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :paper:exp20170923193058:
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
   #+begin_src sh :results output :exports both :session template
@@ -547,11 +546,12 @@ echo $expFolder
   [[./data/cicero/exp20170904153555/exp.org]]
   
 
-**** ANALYSIS [2017-09-07 Qui] =bench_queries_region= V.2 :exp20170907145711:
+**** DONE [2017-09-07 Qui] =bench_queries_region= V.2    :exp20170907145711:
 
 Test with a larger ammount of data -> 10*8
 
 - added bulk RTREE loading to the experiments
+*NOTE*: Rtree used ineficient boost geogarphic coordinates.
 
 ***** Setup                                                    :noexport:
 - [X] Create a direcorty for this experiment 
@@ -578,10 +578,10 @@ echo "[[$expFolder/exp.org]]"
 ***** Description                                                :ignore:
   [[./data/cicero/exp20170907145711/exp.org]]
   
-**** DONE [2017-09-15 Sex] =bench_queries_region= V.3    :exp20170915143003:
+**** DONE [2017-09-15 Sex] =bench_queries_region= V.3 :paper:exp20170915143003:
 
-- Fixed code of Rtree. 
-- More elements in the time window: 6h * batches of size 1000
+- Fixed code of Rtree (efficient Cartesian coordinates) . 
+- More elements in the time window: 6h * batches of size 1000 ( total of 26.000.000 elements )
 
 ***** Setup                                                    :noexport:
 
@@ -612,7 +612,7 @@ mkdir -p $expFolder
 
 [[./data/cicero/exp20170915143003/exp.org]]
 
-**** TODO [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset
+**** DONE [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset :paper:exp20170923144931:
 
 - Test queries on real datasets
 - Use a time window of 6h * batches of size 1000  = 26.000.000 elements
@@ -645,7 +645,6 @@ mkdir -p $expFolder
 
 ***** Description                                                :ignore:
 
-Template to start an experiment:
 
 #+begin_src sh :results raw :exports results :session template
 echo "[[$expFolder/exp.org]]"
@@ -655,7 +654,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170923144931/exp.org]]
 
 *** Benchmark Insert and Remove
-**** ANALYSIS [2017-09-14 Qui] =bench_insert_remove_count= :exp20170914091842:
+**** DONE [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
 
 Test performance of removals in the PMQ. 
 
@@ -687,3 +686,38 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]
+
+**** INPROGRESS [2017-09-25 Seg] =bench_insert_remove_count=
+
+Test performance of removals in the PMQ. 
+
+Use the same window size for every algorithm and set a best remove frequency for BTree and Trees
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170914091842/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  dfa5355 typos
+  $ $ [[./data/cicero/exp20170925155952/exp.org]]
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170925155952/exp.org]]
