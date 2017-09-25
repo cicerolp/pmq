@@ -697,7 +697,7 @@ Best T Values based on relation ( Avg Remove time × Avg running time):
 2.1.5 Next tests
 ^^^^^^^^^^^^^^^^
 
-We will have to run this benchmar again using the optimal T parameter for the PMQ (17616) and configuring the optimal removing performance for the Rtree and the Btree.
+We will have to run this benchmark again using the optimal T parameter for the PMQ (17616) and configuring the optimal removal frequency / size for the Rtree and the Btree.
 
 
 .. table::
