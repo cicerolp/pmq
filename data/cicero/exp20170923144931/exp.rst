@@ -44,15 +44,23 @@ queries Dataset : `~/Projects/pmq/data/queriesTwitter.csv <~/Projects/pmq/data/q
 
 .. image:: ./img/overview_query_region.png
 
-2.1.2 Comments
+2.1.2 Plot ordered by query return size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Count queries
+
+.. image:: ./img/count_queries_by_size.png
+
+Scan queries: 
+
+.. image:: ./img/scan_queries_by_size.png
+
+2.1.3 Comments
 ^^^^^^^^^^^^^^
 
-- PMQ seems to be the best when the amount of elements returned by the query is large.
+- PMQ seems to be the best algorithmn when the amount of elements returned by the query is large.
 
 See table in `tab20170923185752`_.
-
-2.1.3 **TODO** Plot ordered by query return size
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _tab20170923185752:
 
@@ -62,9 +70,8 @@ See table in `tab20170923185752`_.
 2.2.1 Table
 ^^^^^^^^^^^
 
-(all the algorithms had the same counts for every query)
-
 Variance shows if some counts differ between algorithms:
+(all the algorithms had the same counts for every query)
 
 .. table::
 
@@ -231,12 +238,3 @@ Variance shows if some counts differ between algorithms:
     +---------+--------------+----------------------+----------------------------+------------------+--------------+-----+
     |      79 |       173799 |               173799 |                     173799 |           173799 |       173799 |   0 |
     +---------+--------------+----------------------+----------------------------+------------------+--------------+-----+
-
-
-
-Just the diverging queries : 
-
-.. table:: Queries that returned different result depending on the algorithm
-
-2.2.2 Plot
-^^^^^^^^^^

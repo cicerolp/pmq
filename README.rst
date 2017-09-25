@@ -98,7 +98,7 @@ Test with a larger ammount of data -> 10\*8
 
 `./data/cicero/exp20170915143003/exp.rst <./data/cicero/exp20170915143003/exp.rst>`_
 
-2.5 **TODO** [2017-09-23 Sáb]  *bench_queries_region* Twitter Dataset
+2.5 **DONE** [2017-09-23 Sáb]  *bench_queries_region* Twitter Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Test queries on real datasets

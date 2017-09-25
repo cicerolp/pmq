@@ -11,7 +11,7 @@
 #+PROPERTY: header-args :cache no :eval never-export 
 
 
-* TODO Description                                                   :export:
+* DONE Description                                                   :export:
 
 Test the queries on Twitter Dataset. 
 And compare the following performances.
@@ -40,7 +40,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - plotResults.R : generate the plots 
   
 
-* TODO Experiment Script
+* DONE Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -612,12 +612,57 @@ dfplot %>%
 #+RESULTS:
 [[file:./img/overview_query_region.png]]
 
+*** DONE Plot ordered by query return size                         :export:
+
+Count queries
+
+#+begin_src R :results output graphics :file "./img/count_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+        mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+      #  group_by(algo,bench,queryId) %>% 
+      #  summarize(max_ms = max(avg_ms)) %>%
+    ggplot(aes(x = as.factor(Count), y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_point() +
+    #geom_text(aes(label=queryId), vjust=-0.25) +
+    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    facet_wrap(bench~`Query Width`,scale="free", nrow = 2 , 
+               labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+        
+        
+        
+}
+#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
+dfplot %>% filter(bench == "apply_at_region") %>% myplot()
+#dfplot %>% 
+#    myplot() 
+#+end_src
+
+#+RESULTS:
+[[file:./img/count_queries_by_size.png]]
+
+Scan queries: 
+
+#+begin_src R :results output graphics :file "./img/scan_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
+dfplot %>% 
+    filter(bench == "apply_at_region") %>%
+    select(queryId,algo,Count) %>%
+    left_join( 
+        filter(dfplot, bench == "scan_at_region") %>% select(-Count)
+    ) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/scan_queries_by_size.png]]
+
 *** TODO Comments                                                  :export:
 
-- PMQ seems to be the best when the amount of elements returned by the query is large. 
+- PMQ seems to be the best algorithmn when the amount of elements returned by the query is large. 
 See table in [[#tab20170923185752]].
-
-*** TODO *TODO* Plot ordered by query return size                  :export:
 
 ** What is the actual count of elements per query ?
 :PROPERTIES:
@@ -625,9 +670,9 @@ See table in [[#tab20170923185752]].
 :END:
 
 *** Table                                                          :export:
-(all the algorithms had the same counts for every query)
 
 Variance shows if some counts differ between algorithms:
+(all the algorithms had the same counts for every query)
 #+begin_src R :results output :exports none :session :colnames yes
 
 dfplot %>% 
@@ -749,7 +794,7 @@ wideTable %>%
 
 
 
-Just the diverging queries : 
+**** Just the diverging queries :                       :noexport:ARCHIVE:
 #+begin_src R :results table :exports results :session :colnames yes
 
 wideTable %>%
@@ -765,7 +810,7 @@ wideTable %>%
 |---------+-------------+---------------------+---------------------------+-----------------+-------------+-----|
 
 
-*** Plot                                                           :export:ARCHIVE:
+*** Plot                                                 :noexport:ARCHIVE:
 
 There are some queries where the count differs for Rtree by a small amount of elements.
 

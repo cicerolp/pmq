@@ -612,7 +612,7 @@ mkdir -p $expFolder
 
 [[./data/cicero/exp20170915143003/exp.org]]
 
-**** TODO [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset
+**** DONE [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset
 
 - Test queries on real datasets
 - Use a time window of 6h * batches of size 1000  = 26.000.000 elements
