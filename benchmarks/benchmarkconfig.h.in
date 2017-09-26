@@ -1,0 +1,9 @@
+#ifndef BENCHMARKCONFIG_H_IN
+#define BENCHMARKCONFIG_H_IN
+
+#cmakedefine BENCH_PMQ
+#cmakedefine BENCH_BTREE
+#cmakedefine BENCH_RTREE
+#cmakedefine BENCH_DENSE
+
+#endif // BENCHMARKCONFIG_H_IN
