@@ -132,22 +132,22 @@ rate=1000
 T=17616
 n=T*rate*2
 for ts in tSize:
-    print("stdbuf -oL ./benchmarks/bench_insert_remove_count -rate ",rate," -n ",n," -T ",T," -tSize ",ts," >> ${TMPDIR}/bench_ins_rm_",T,"_${EXECID}.log",sep="")
+    print("stdbuf -oL ./benchmarks/bench_insert_remove_count -rate ",rate," -n ",n," -T ",T," -tSize ",ts," > ${TMPDIR}/bench_ins_rm_",T,"_",ts,"_${EXECID}.log",sep="")
 #+end_src
 
 #+RESULTS:
 #+begin_example
 
 >>> >>> ... ... 
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 26424000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 22020000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 19818000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18717000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18166500 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17891250 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17753625 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17684812 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17650406 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 26424000 > ${TMPDIR}/bench_ins_rm_17616_26424000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 22020000 > ${TMPDIR}/bench_ins_rm_17616_22020000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 19818000 > ${TMPDIR}/bench_ins_rm_17616_19818000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18717000 > ${TMPDIR}/bench_ins_rm_17616_18717000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18166500 > ${TMPDIR}/bench_ins_rm_17616_18166500_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17891250 > ${TMPDIR}/bench_ins_rm_17616_17891250_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17753625 > ${TMPDIR}/bench_ins_rm_17616_17753625_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17684812 > ${TMPDIR}/bench_ins_rm_17616_17684812_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17650406 > ${TMPDIR}/bench_ins_rm_17616_17650406_${EXECID}.log
 #+end_example
 
 Use C-u C-c C-v t to tangle this script 
@@ -199,27 +199,28 @@ echo "" > $DATADIR/info.org
 
 #Continue execution even if one these fails
 set +e 
-rm ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-touch ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+#rm ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+#touch ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
 
 # Queries insert remove count
 
 # PMQ
 cmake -DBENCH_PMQ=ON -DBENCH_BTREE=OFF -DBENCH_RTREE=OFF -DBENCH_DENSE=OFF . ; make
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 26424000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 > ${TMPDIR}/bench_ins_rm_17616_23488000_${EXECID}.log
 
 # BTREE and RTREE
 cmake -DBENCH_PMQ=OFF -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=OFF . ; make
 
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 26424000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 22020000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 19818000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18717000 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18166500 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17891250 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17753625 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17684812 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17650406 >> ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 26424000 > ${TMPDIR}/bench_ins_rm_17616_26424000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 22020000 > ${TMPDIR}/bench_ins_rm_17616_22020000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 19818000 > ${TMPDIR}/bench_ins_rm_17616_19818000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18717000 > ${TMPDIR}/bench_ins_rm_17616_18717000_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 18166500 > ${TMPDIR}/bench_ins_rm_17616_18166500_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17891250 > ${TMPDIR}/bench_ins_rm_17616_17891250_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17753625 > ${TMPDIR}/bench_ins_rm_17616_17753625_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17684812 > ${TMPDIR}/bench_ins_rm_17616_17684812_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 35232000 -T 17616 -tSize 17650406 > ${TMPDIR}/bench_ins_rm_17616_17650406_${EXECID}.log
 
 set -e
 
