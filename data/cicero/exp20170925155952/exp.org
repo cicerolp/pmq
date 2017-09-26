@@ -305,7 +305,6 @@ ssh -A cicero
 
 #+RESULTS:
 #+begin_example
-
 Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 
  ,* Documentation:  https://help.ubuntu.com
@@ -316,14 +315,15 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Tue Sep 26 09:11:04 2017 from 143.54.13.218
+Last login: Tue Sep 26 10:26:38 2017 from 143.54.13.218
 #+end_example
 
 Get the last script on the remote machine (require entering a password
 for bitbucket)
 #+begin_src sh :session remote :results output :exports both :var expId=expId
 cd ~/Projects/pmq/
-git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+#git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git remote set-branches origin $expId
 git fetch origin $expId
 git checkout $expId
 git pull origin $expId
@@ -333,27 +333,19 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 7, done.
-(1/6)           remote: Compressing objects:  33% (2/6)           remote: Compressing objects:  50% (3/6)           remote: Compressing objects:  66% (4/6)           remote: Compressing objects:  83% (5/6)           remote: Compressing objects: 100% (6/6)           remote: Compressing objects: 100% (6/6), done.        
-remote: Total 7 (delta 4), reused 0 (delta 0)
-(1/7)   Unpacking objects:  28% (2/7)   Unpacking objects:  42% (3/7)   Unpacking objects:  57% (4/7)   Unpacking objects:  71% (5/7)   Unpacking objects:  85% (6/7)   Unpacking objects: 100% (7/7)   Unpacking objects: 100% (7/7), done.
-From bitbucket.org:jtoss/pmq
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-origin/exp20170925155952
 Already on 'exp20170925155952'
-Your branch is behind 'origin/exp20170925155952' by 1 commit, and can be fast-forwarded.
-  (use "git pull" to update your local branch)
+Your branch is up-to-date with 'origin/exp20170925155952'.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-Updating bd70644..2716a20
-Fast-forward
- data/cicero/exp20170925155952/exp.org | 115 +++++++++++++++++-----------------
- data/cicero/exp20170925155952/run.sh  |   5 +-
- 2 files changed, 61 insertions(+), 59 deletions(-)
-commit 2716a2031c22ba905b37a864f65d8ef340b76c02
-Date:   Mon Sep 25 18:22:27 2017 -0300
+Already up-to-date.
+commit 7be65523d300599ef68797fe386b2d693fd64549
+Date:   Tue Sep 26 10:09:24 2017 -0300
 
-    UPD: run.sh script
+    fix rtree remove
+    
+    (cherry picked from commit 386eaf81e1fed6e44c4081e42f6e7df2f0407a0d)
 #+end_example
 
 Update PMA repository on exp machine
@@ -373,7 +365,7 @@ git log -1 | cat
 : 
 :     error ouput on pma initialization
 
-*** Execute Remotely                                               :remote:
+*** INPROGRESS Execute Remotely                                    :remote:
 
 Opens ssh connection and a tmux session
 
@@ -387,7 +379,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ 1506374628
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ julio@cicero:~/Projects/pmq/data/cicero/exp20170925155952$ 1506432955
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -397,24 +389,29 @@ ps ux
 
 #+RESULTS:
 #+begin_example
-runExp: 1 windows (created Mon Sep 25 18:23:48 2017) [80x23]
+runExp: 1 windows (created Tue Sep 26 10:35:55 2017) [80x23]
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 julio    19285  0.0  0.0  45248  4484 ?        Ss   Set25   0:00 /lib/systemd/sy
 julio    19287  0.0  0.0 145364  2112 ?        S    Set25   0:00 (sd-pam)
-julio    20161  0.0  0.0  29420  2856 ?        Ss   Set25   0:00 tmux new -d -s 
-julio    20162  0.0  0.0  12532  2940 pts/10   Ss+  Set25   0:00 bash -c cd ~/Pr
-julio    20164  0.0  0.0  12544  3032 pts/10   S+   Set25   0:00 /bin/bash ./run
-julio    21779  100  4.8 1645100 1609808 pts/10 R+  07:55  78:16 ./benchmarks/be
-julio    22014  0.0  0.0  97464  3220 ?        S    09:11   0:00 sshd: julio@pts
-julio    22015  0.0  0.0  23704  6352 pts/8    Ss+  09:11   0:00 -bash
 julio    22097  0.0  0.0  97464  3324 ?        S    09:13   0:00 sshd: julio@pts
-julio    22098  0.1  0.0  22688  5104 pts/9    Ss   09:13   0:00 -bash
-julio    22115  0.0  0.0  37368  3256 pts/9    R+   09:13   0:00 ps ux
+julio    22098  0.0  0.0  22688  5104 pts/9    Ss   09:13   0:00 -bash
+julio    22474  0.0  0.0  44920  5256 pts/9    S+   10:29   0:00 ssh -A cicero
+julio    22502  0.0  0.0  97464  3332 ?        S    10:29   0:00 sshd: julio@pts
+julio    22503  0.0  0.0  22756  5240 pts/8    Ss   10:29   0:00 -bash
+julio    22701  0.0  0.0  29420  3020 ?        Ss   10:35   0:00 tmux new -d -s 
+julio    22702  0.0  0.0  12532  3020 pts/10   Ss+  10:35   0:00 bash -c cd ~/Pr
+julio    22704  0.0  0.0  12540  3104 pts/10   S+   10:35   0:00 /bin/bash ./run
+julio    22826  0.0  0.0   9676  2292 pts/10   S+   10:35   0:00 make
+julio    22829  0.0  0.0   9676  2360 pts/10   S+   10:35   0:00 make -f CMakeFi
+julio    22861  0.6  0.0  11848  4444 pts/10   S+   10:36   0:00 make -f benchma
+julio    22864  0.0  0.0   4508   704 pts/10   S+   10:36   0:00 /bin/sh -c cd /
+julio    22865  0.0  0.0   8352   696 pts/10   S+   10:36   0:00 /usr/bin/c++ -I
+julio    22866 98.3  1.8 700444 592120 pts/10  R+   10:36   0:02 /usr/lib/gcc/x8
+julio    22868  0.0  0.0  37368  3316 pts/8    R+   10:36   0:00 ps ux
 #+end_example
 
 **** TODO Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
-
 git commit -a -m "wip"
 git status
 git pull --rebase origin $expId
