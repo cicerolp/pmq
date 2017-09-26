@@ -109,3 +109,13 @@ CTestTestfile.cmake
 build*
 CMakeLists.txt.user
 \#*\#
+
+# any csv and log file in the exp directories
+data/cicero/exp*/*.log
+data/cicero/exp*/*.csv
+
+# R history files
+*.Rhistory
+
+# merge conflict files
+*.orig
