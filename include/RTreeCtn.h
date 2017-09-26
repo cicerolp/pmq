@@ -74,6 +74,10 @@ class RTreeCtn : public GeoCtnIntf<T> {
       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
                     std::back_inserter(result));
 
+      for (const auto &elt : result) {
+        _rtree->remove(elt);
+      }
+
       // remove end
       timer.stop();
       duration.emplace_back("remove", timer);
