@@ -611,8 +611,8 @@ Bimodal behaviour, it doesn't make sense to do an average of removals together w
 
 We need to find a tradeoff between these two plots: 
 
-.. image:: img/totalInsRm.png
- .. image:: img/overview.png
+.. image:: ./img/totalInsRm.png
+ .. image:: ./img/overview.png
 
 Best T value for optimal Remove Time:
 

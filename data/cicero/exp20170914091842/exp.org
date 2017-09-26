@@ -1078,7 +1078,7 @@ totalPlot %>%
 
 We need to find a tradeoff between these two plots: 
 
-[[file:img/totalInsRm.png]] [[file:img/overview.png]]
+[[file:./img/totalInsRm.png]] [[file:./img/overview.png]]
 
 Best T value for optimal Remove Time:
 #+begin_src R :results table :exports results :session :colnames yes 
