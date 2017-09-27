@@ -122,7 +122,7 @@ void run_bench(int argc, char *argv[], _It it_begin, _It it_end,
       PRINTBENCH_PTR(temp_window, t_now, "count", container->size(), timer);
 
       // scan elements on the container
-      timer = container->scan_at_region(region_t(0, 0, 0, 0, 0), read_element<_T>);
+      timer = container->scan_at_region(region_t(+90.f, -180.f, -90.f, +180.f), read_element<_T>);
       PRINTBENCH_PTR(temp_window, t_now, timer);
     } else {
       PRINTBENCH_PTR("dryrun", temp_window, t_now, "count", container->size(), 0);

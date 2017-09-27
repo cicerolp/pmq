@@ -13,6 +13,8 @@
 #include "BTreeCtn.h"
 #include "DenseCtn.h"
 
+#include "benchmarkconfig.h"
+
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionRemoveBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
@@ -165,15 +167,23 @@ int main(int argc, char *argv[]) {
     auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
     PRINTOUT("%d teewts loaded \n", end - begin);
 
+#ifdef BENCH_PMQ
     // parameters setup
     parameters.ctn_size = parameters.rate * parameters.t_win;
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+#endif
 
     // parameters setup
     parameters.ctn_size = parameters.max_tree_size;
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+#endif
 
   } else {
     // 16 bytes + N
@@ -186,15 +196,23 @@ int main(int argc, char *argv[]) {
     auto end = it_t::end(seed, parameters.rate, nb_elements);
     PRINTOUT("%d teewts generated \n", end - begin);
 
+#ifdef BENCH_PMQ
     // parameters setup
     parameters.ctn_size = parameters.rate * parameters.t_win;
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+#endif
 
     // parameters setup
     parameters.ctn_size = parameters.max_tree_size;
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t>(argc, argv, begin, end, parameters, remove_valuetype<el_t>);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters, remove_elttype<uint64_t, el_t>);
+#endif
   }
 
   return EXIT_SUCCESS;

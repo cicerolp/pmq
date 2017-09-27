@@ -29,7 +29,7 @@ class TEST_PMQBinary : public PMQBinary<T> {
     auto pma_begin = pma_seg_it::begin(this->_pma);
     auto pma_end = pma_seg_it::end(this->_pma);
 
-    while (pma_begin++ != pma_end) {
+    while (pma_begin != pma_end) {
       count += std::count_if(pma_offset_it::begin(this->_pma, pma_begin), pma_offset_it::end(this->_pma, pma_begin),
                              [&region](void *elt) {
 
@@ -41,6 +41,7 @@ class TEST_PMQBinary : public PMQBinary<T> {
                                return (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y);
                              }
       );
+      pma_begin++;
     }
 
     return count;
@@ -117,7 +118,8 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, const
 
   container.scan_at_region(region, _scan_at_region);
 
-  PRINT_TEST(id,
+  PRINT_TEST(container.name(),
+             id,
              "count",
              test_count[id],
              "apply_at_region",
@@ -231,6 +233,10 @@ int main(int argc, char *argv[]) {
     test_count = run_test_bench<TEST_PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
+    /*run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t
+        > (argc, argv, begin, end, queries, parameters, test_count);
+    run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);*/
 
   } else {
     // 16 bytes + N
@@ -247,7 +253,8 @@ int main(int argc, char *argv[]) {
 
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
-    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
+    run_bench<RTreeCtn<el_t, bgi::quadratic < 16>>, it_t, el_t
+        > (argc, argv, begin, end, queries, parameters, test_count);
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters, test_count);
   }
 

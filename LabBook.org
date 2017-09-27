@@ -420,6 +420,7 @@ mkdir -p $expFolder
   b299a4e Merge branch 'master' into DATA
   $ [[./data/cicero/exp20170919161448/exp.org]]
 
+
 ***** Description                                                :ignore:
 
 Test insertions with larger inputs
@@ -434,7 +435,6 @@ echo "[[$expFolder/exp.org]]"
 
 #+RESULTS:
 [[./data/cicero/exp20170919161448/exp.org]]
-
 
 **** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :paper:exp20170923193058:
 ***** Setup                                                    :noexport:
@@ -474,7 +474,6 @@ echo "[[$expFolder/exp.org]]"
 
 #+RESULTS:
 [[./data/cicero/exp20170923193058/exp.org]]
-
 *** Benchmark Queries region 
   
 **** DONE [2017-08-30 Qua] =bench_queries_region=        :exp20170830124159:
@@ -550,7 +549,6 @@ echo $expFolder
 Test with a larger ammount of data -> 10*8
 
 - added bulk RTREE loading to the experiments
-
 *NOTE*: Rtree used ineficient boost geogarphic coordinates.
 
 ***** Setup                                                    :noexport:
@@ -645,6 +643,7 @@ mkdir -p $expFolder
 
 ***** Description                                                :ignore:
 
+
 #+begin_src sh :results raw :exports results :session template
 echo "[[$expFolder/exp.org]]"
 #+end_src
@@ -685,3 +684,37 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]
+**** INPROGRESS [2017-09-25 Seg] =bench_insert_remove_count=
+
+Test performance of removals in the PMQ. 
+
+Use the same window size for every algorithm and set a best remove frequency for BTree and Trees
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170914091842/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  dfa5355 typos
+  $ $ [[./data/cicero/exp20170925155952/exp.org]]
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170925155952/exp.org]]

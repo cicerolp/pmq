@@ -109,7 +109,7 @@ void run_bench(int argc, char *argv[], _It it_begin, _It it_end, const bench_t &
     // ========================================
 
     //Run a scan on the whole array
-    run_queries<T, _T>((*container.get()), region_t(0, 0, 0, 0, 0), id, parameters);
+    run_queries<T, _T>((*container.get()), region_t(+90.f, -180.f, -90.f, +180.f), id, parameters);
 
     ++id;
   }

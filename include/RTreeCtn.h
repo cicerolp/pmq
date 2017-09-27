@@ -74,6 +74,10 @@ class RTreeCtn : public GeoCtnIntf<T> {
       _rtree->query(bgi::satisfies([&is_removed](value const &elt) { return is_removed(&elt.second); }),
                     std::back_inserter(result));
 
+      for (const auto &elt : result) {
+        _rtree->remove(elt);
+      }
+
       // remove end
       timer.stop();
       duration.emplace_back("remove", timer);
@@ -87,16 +91,8 @@ class RTreeCtn : public GeoCtnIntf<T> {
     Timer timer;
     timer.start();
 
-    // longitude
-    float xmin = mercator_util::tilex2lon(region.x0, region.z);
-    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);
-
-    // latitude
-    float ymin = mercator_util::tiley2lat(region.y1 + 1, region.z);
-    float ymax = mercator_util::tiley2lat(region.y0, region.z);
-
     // convert from region_t to boost:box
-    box query_box(point(ymin, xmin), point(ymax, xmax));
+    box query_box(point(region.lat1, region.lon0), point(region.lat0, region.lon1));
 
     // temporary result
     std::vector<value> result;
@@ -114,16 +110,8 @@ class RTreeCtn : public GeoCtnIntf<T> {
     Timer timer;
     timer.start();
 
-    // longitude
-    float xmin = mercator_util::tilex2lon(region.x0, region.z);
-    float xmax = mercator_util::tilex2lon(region.x1 + 1, region.z);  // JULIO : why + 1 ??
-
-    // latitude
-    float ymin = mercator_util::tiley2lat(region.y1 + 1, region.z);
-    float ymax = mercator_util::tiley2lat(region.y0, region.z);
-
     // convert from region_t to boost:box
-    box query_box(point(ymin, xmin), point(ymax, xmax));
+    box query_box(point(region.lat1, region.lon0), point(region.lat0, region.lon1));
 
     // temporary result
     RTreeCtnCounter<value> result;

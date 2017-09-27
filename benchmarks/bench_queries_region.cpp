@@ -61,7 +61,7 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
 
   if (!parameters.dryrun) {
     // run a count on the whole array
-    timer = container.apply_at_region(region_t(0, 0, 0, 0, 0), _apply);
+    timer = container.apply_at_region(region_t(+90.f, -180.f, -90.f, +180.f), _apply);
     PRINTBENCH("init", timer, "count", count);
 
     // scan_at_region

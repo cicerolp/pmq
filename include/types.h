@@ -64,7 +64,12 @@ struct region_t {
   region_t() = default;
 
   // make a region given uper-left ( _lat0,_lon0) and bottom-right (_lat1,_lon1) corners
-  region_t(float lat0, float lon0, float lat1, float lon1) {
+  region_t(float _lat0, float _lon0, float _lat1, float _lon1) {
+    lat0 = _lat0;
+    lon0 = _lon0;
+    lat1 = _lat1;
+    lon1 = _lon1;
+
     if (lat0 < -85.0511f) lat0 = -85.0511f;
     else if (lat0 > 85.0511f) lat0 = 85.0511f;
 
@@ -87,71 +92,13 @@ struct region_t {
 
     code0 = mortonEncode_RAM(x0, y0);
     code1 = mortonEncode_RAM(x1, y1);
-
-    // final bb center
-    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
-    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
-  }
-
-  region_t(float _lat, float _lon, float radius) {
-    static const float PI_180_INV = 180.f / (float) M_PI;
-    static const float PI_180 = (float) M_PI / 180.f;
-    static const float r_earth = 6378.f;
-
-    lon = _lon;
-    lat = _lat;
-
-    float lat0 = lat + (radius / r_earth) * (PI_180_INV);
-
-    if (lat0 < -85.051132f) lat0 = -85.051132f;
-    else if (lat0 > 85.051132f) lat0 = 85.051132f;
-
-    float lon0 = lon - (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
-
-    if (lon0 < -180.f) lon0 = -180.f;
-    else if (lon0 > 180.f) lon0 = 180.f;
-
-    float lat1 = lat - (radius / r_earth) * (PI_180_INV);
-
-    if (lat1 < -85.051132f) lat1 = -85.051132f;
-    else if (lat1 > 85.051132f) lat1 = 85.051132f;
-
-    float lon1 = lon + (radius / r_earth) * (PI_180_INV) / cos(lat * PI_180);
-
-    if (lon1 < -180.f) lon1 = -180.f;
-    else if (lon1 > 180.f) lon1 = 180.f;
-
-    z = 8;
-
-    x0 = mercator_util::lon2tilex(lon0, z);
-    y0 = mercator_util::lat2tiley(lat0, z);
-    x1 = mercator_util::lon2tilex(lon1, z);
-    y1 = mercator_util::lat2tiley(lat1, z);
-
-    code0 = mortonEncode_RAM(x0, y0);
-    code1 = mortonEncode_RAM(x1, y1);
-  }
-
-  region_t(uint32_t _x0, uint32_t _y0, uint32_t _x1, uint32_t _y1, uint8_t _z) {
-    z = _z;
-
-    x0 = _x0;
-    y0 = _y0;
-    x1 = _x1;
-    y1 = _y1;
-
-    code0 = mortonEncode_RAM(x0, y0);
-    code1 = mortonEncode_RAM(x1, y1);
-
-    lon = mercator_util::tilex2lon((((x1 - x0) / 2.f) + x0) + 0.5f, z);
-    lat = mercator_util::tiley2lat((((y1 - y0) / 2.f) + y0) + 0.5f, z);
   }
 
   friend inline std::ostream &operator<<(std::ostream &out, const region_t &e) {
-    out << "[y0: " << e.y0 << " lat0: " << mercator_util::tiley2lat(e.y0, e.z) << "], "
-        << "[x0: " << e.x0 << " lon0: " << mercator_util::tilex2lon(e.x0, e.z) << "], "
-        << "[y1:" << e.y1 << " lat1: " << mercator_util::tiley2lat(e.y1, e.z) << "], "
-        << "[x1: " << e.x1 << " lon1: " << mercator_util::tilex2lon(e.x1, e.z) << "], "
+    out << "[y0: " << e.y0 << " lat0: " << e.lat0 << "], "
+        << "[x0: " << e.x0 << " lon0: " << e.lon0 << "], "
+        << "[y1: " << e.y1 << " lat1: " << e.lat1 << "], "
+        << "[x1: " << e.x1 << " lon1: " << e.lon1 << "], "
         << "z: " << e.z;
 
     return out;
@@ -198,72 +145,10 @@ struct region_t {
   }
 
  public:
-  float lat, lon;
   uint64_t code0, code1;
   uint32_t x0, y0, x1, y1, z;
+  float lat0, lon0, lat1, lon1;
 };
-
-struct tweet_t {
-  float latitude;
-  float longitude;
-
-  uint64_t time;
-
-  uint8_t language;
-  uint8_t device;
-  uint8_t app;
-
-  static void write(const tweet_t &el, json_writer &writer) {
-    writer.StartArray();
-    writer.Uint((unsigned int) el.time);
-    writer.Uint(el.language);
-    writer.Uint(el.device);
-    writer.Uint(el.app);
-    writer.EndArray();
-  }
-
-  bool operator==(const tweet_t &rhs) const {
-    // simplified comparison
-    return (time == rhs.time) && (latitude == rhs.latitude) && (longitude == rhs.longitude);
-  };
-
-  friend inline std::ostream &operator<<(std::ostream &out, const tweet_t &e) {
-    return out << e.latitude << "; " << e.longitude << "; " << e.time << "; " << (int) e.language << "; "
-               << (int) e.device << "; " << (int) e.app;
-  }
-};
-
-struct triggers_t {
-  float frequency;
-};
-
-struct elinfo_t {
-  elinfo_t() = default;
-
-  elinfo_t(uint64_t value, uint32_t _begin, uint32_t _end) {
-    // morton code
-    key = value;
-
-    // segments interval
-    begin = _begin;
-    end = _end;
-  }
-
-  /**
-   * @brief get_index returns the quadrant id of this node
-   * @param z_diff_2 is the depth from this node to the bottom of the tree X 2;
-   * @return
-   */
-  inline uint32_t get_index(uint32_t z_diff_2) const {
-    return (key >> z_diff_2) & 3;
-  }
-
-  uint64_t key;
-  uint32_t begin, end;
-};
-
-using diff_cnt = std::vector<elinfo_t>;
-using diff_it = std::vector<elinfo_t>::iterator;
 
 #ifdef _POSIX_TIMERS
 using Timer = unixTimer<CLOCK_MONOTONIC>; //POSIX Timers
