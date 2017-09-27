@@ -116,3 +116,12 @@ Test with a larger ammount of data -> 10\*8
 Test performance of removals in the PMQ. 
 
 `./data/cicero/exp20170914091842/exp.rst <./data/cicero/exp20170914091842/exp.rst>`_
+
+3.2 **DONE** [2017-09-25 Seg]  *bench_insert_remove_count* ``paper``  ``exp20170925155952``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test performance of removals in the PMQ. 
+
+Use the same window size for every algorithm and set a best remove frequency for BTree and Trees
+
+`./data/cicero/exp20170925155952/exp.rst <./data/cicero/exp20170925155952/exp.rst>`_

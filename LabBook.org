@@ -684,7 +684,7 @@ mkdir -p $expFolder
 ***** Description                                                :ignore:
 
 [[./data/cicero/exp20170914091842/exp.org]]
-**** DONE [2017-09-25 Seg] =bench_insert_remove_count=
+**** DONE [2017-09-25 Seg] =bench_insert_remove_count= :paper:exp20170925155952:
 
 Test performance of removals in the PMQ. 
 
