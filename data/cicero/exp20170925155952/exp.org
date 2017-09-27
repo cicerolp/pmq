@@ -1,4 +1,4 @@
-# -*- org-export-babel-evaluate: t; -*-
+# -*- org-export-babel-evaluate: t; org-link-file-path-type: relative;-*
 #+TITLE: Removal benchmark
 #+LANGUAGE: en 
 #+STARTUP: indent
@@ -38,9 +38,10 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 
 PMA cannot be parameterized by the remove frequency, this is set "automatically" by the size of the time window T. 
 
-For same time window size, we want to find the best frequency to trigger removals on the Btree and Rtree.
+For a same time window size, we want to find the best frequency to trigger removals on the Btree and Rtree.
  
-The previous experiment showed that PMA is "optimal" at T 17616, case where it triggers the removal when the T has overflowed by 33.33 %.
+The previous experiment ([[file:../exp20170914091842/exp.org]]) showed that PMA of size 33554432 is "optimal" at T 17616, case where it triggers the removal when the T has overflowed by 33.33 %.
+
 
 For Btree and Rtree, test the overflow limit (tSize parameter) ranging from:
 #+begin_src python :results output :exports both :session execParam
@@ -59,7 +60,7 @@ print(tSize)
 : >>> >>> >>> [26424000, 22020000, 19818000, 18717000, 18166500, 17891250, 17753625, 17684812, 17650406]
 
 
-* TODO Experiment Script
+* DONE Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -296,7 +297,7 @@ tmux ls
 ps ux
 #+end_src
 
-** INPROGRESS Remote Execution                                      :remote:
+** DONE Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -770,7 +771,7 @@ df
 # ... with 334,694 more rows
 #+end_example
 
-*** Summary Tables of Remove Times                                 :export:
+*** Summary Table of Removal Times                                 :export:
 
 #+begin_src R :results table :exports both :session :colnames yes
 df %>% filter(!is.na(remove)) %>% # get only the removal operations 
@@ -782,10 +783,6 @@ df %>% filter(!is.na(remove)) %>% # get only the removal operations
               pct = mean( 
                    (as.numeric(as.character(tSize)) - T*1000) * 100 / (T*1000)   ) 
               ) %>%
-  #  mutate(ratio = sqrt(TotRmTime * AvgRmTime)) %>%
-    #arrange(tSize,algo)
-#    arrange(AvgRmTime,algo)
-    #arrange(algo,TotRmTime)
     arrange(algo,AvgRmTime)
 #+end_src
 
@@ -813,7 +810,7 @@ df %>% filter(!is.na(remove)) %>% # get only the removal operations
 | RTree         | 26424000 |   8895.700 |  8895.700 |   0.000 |   1.000 | 50.000 |
 #+TBLFM: @2$3..@20$7=$0;%0.3f
 
-*** DONE Overview of results                                  :export:plot:
+*** DONE Removal Performance                         :export:plot:
 
 Plot an overview of every benchmark , doing average of times. 
 #+begin_src R :results output :exports code
@@ -835,27 +832,27 @@ dfplot
 #+begin_example
 # A tibble: 19 x 7
 # Groups:   algo [?]
-            algo    tSize AvgRmTime  TotRmTime       stdv     n        pct
-           <chr>   <fctr>     <dbl>      <dbl>      <dbl> <int>      <dbl>
- 1         BTree 17650406  338.3078 170168.831   5.655152   503  0.1953111
- 2         BTree 17684812  344.7618  87914.269   4.811764   255  0.3906222
- 3         BTree 17753625  374.4697  47557.646  13.113806   127  0.7812500
- 4         BTree 17891250  421.1399  26531.815  10.837911    63  1.5625000
- 5         BTree 18166500  502.9711  15592.106  14.130532    31  3.1250000
- 6         BTree 18717000  647.4228   9711.342  10.638927    15  6.2500000
- 7         BTree 19818000  923.5264   6464.685  27.419115     7 12.5000000
- 8         BTree 22020000 1384.2974   4152.892  16.218422     3 25.0000000
- 9         BTree 26424000 2292.9730   2292.973         NA     1 50.0000000
-10 GeoHashBinary 23488000  600.1700   1200.340  13.867778     2 33.3333333
-11         RTree 17650406  318.9310 160422.280  10.244332   503  0.1953111
-12         RTree 17684812  403.4570 102881.527  14.482202   255  0.3906222
-13         RTree 17753625  473.1742  60093.124  11.894644   127  0.7812500
-14         RTree 17891250  658.8778  41509.304  22.676885    63  1.5625000
-15         RTree 18166500 1015.7034  31486.807  35.351499    31  3.1250000
-16         RTree 18717000 1650.6253  24759.379  65.432810    15  6.2500000
-17         RTree 19818000 2768.2130  19377.491 106.754526     7 12.5000000
-18         RTree 22020000 4912.4529  14737.359  94.177799     3 25.0000000
-19         RTree 26424000 8896.7667   8896.767         NA     1 50.0000000
+            algo    tSize AvgRmTime TotRmTime      stdv     n       pct
+           <chr>   <fctr>     <dbl>     <dbl>     <dbl> <int>     <dbl>
+ 1         BTree 17650406   338.308 170168.83   5.65515   503  0.195311
+ 2         BTree 17684812   344.762  87914.27   4.81176   255  0.390622
+ 3         BTree 17753625   374.470  47557.65  13.11381   127  0.781250
+ 4         BTree 17891250   421.140  26531.81  10.83791    63  1.562500
+ 5         BTree 18166500   502.971  15592.11  14.13053    31  3.125000
+ 6         BTree 18717000   647.423   9711.34  10.63893    15  6.250000
+ 7         BTree 19818000   923.526   6464.68  27.41912     7 12.500000
+ 8         BTree 22020000  1384.297   4152.89  16.21842     3 25.000000
+ 9         BTree 26424000  2292.973   2292.97        NA     1 50.000000
+10 GeoHashBinary 23488000   600.170   1200.34  13.86778     2 33.333333
+11         RTree 17650406   318.931 160422.28  10.24433   503  0.195311
+12         RTree 17684812   403.457 102881.53  14.48220   255  0.390622
+13         RTree 17753625   473.174  60093.12  11.89464   127  0.781250
+14         RTree 17891250   658.878  41509.30  22.67689    63  1.562500
+15         RTree 18166500  1015.703  31486.81  35.35150    31  3.125000
+16         RTree 18717000  1650.625  24759.38  65.43281    15  6.250000
+17         RTree 19818000  2768.213  19377.49 106.75453     7 12.500000
+18         RTree 22020000  4912.453  14737.36  94.17780     3 25.000000
+19         RTree 26424000  8896.767   8896.77        NA     1 50.000000
 #+end_example
 
 #+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 600 :height 400
@@ -877,115 +874,7 @@ dfplot %>%
 # The average remove time decreases logarithmicly for BTree and Rtree. 
 # However for the PMQ the time seems much more stable no matter the amount of removals.
 
-*** TODO Insertion performance
-
-#+begin_src R :results output :exports code :session 
-df %>% filter(is.na(remove)) %>%  # get only lines with no removes
-       mutate(remove=as.numeric(remove)) %>%
-       mutate(T = as.factor(T))-> dfinsert
-
-dfinsert
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 769,074 x 6
-            algo      T    id    count  insert remove
-           <chr> <fctr> <int>    <int>   <dbl>  <dbl>
- 1 GeoHashBinary  11745 11745 11746000 1.06247     NA
- 2 GeoHashBinary  11745 11746 11747000 1.05632     NA
- 3 GeoHashBinary  11745 11747 11748000 1.05376     NA
- 4 GeoHashBinary  11745 11748 11749000 1.06071     NA
- 5 GeoHashBinary  11745 11749 11750000 1.05004     NA
- 6 GeoHashBinary  11745 11750 11751000 1.04954     NA
- 7 GeoHashBinary  11745 11751 11752000 1.12759     NA
- 8 GeoHashBinary  11745 11752 11753000 1.06108     NA
- 9 GeoHashBinary  11745 11753 11754000 1.05192     NA
-10 GeoHashBinary  11745 11754 11755000 1.04592     NA
-# ... with 769,064 more rows
-#+end_example
-
-**** Overall                                                 :export:plot:
-
-#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 800 :height 600
-dfinsert %>%
-ggplot(aes(x=id,y=insert, color=factor(algo))) + 
-geom_line() +
-labs(title = "Insertions") + 
-facet_wrap(~T, scales="free")
-#+end_src
-
-#+RESULTS:
-[[file:./img/overallInsertion.png]]
-
-***** TODO Total insertion time (without the removals) : :ARCHIVE:
-#+begin_src R :results table :session :exports both :colnames yes
-dfinsert %>% 
-    group_by(algo, T) %>%
-    summarize(Average = signif(mean(insert)), Stdv = signif(sd(insert)), Total = signif(sum(insert))) %>%
-arrange(T,algo)
-
-#+end_src
-
-#+RESULTS:
-| algo          |     T |  Average |       Stdv |   Total |
-|---------------+-------+----------+------------+---------|
-| BTree         | 11745 | 0.448848 |  0.0293204 | 15812.5 |
-| GeoHashBinary | 11745 |  1.09319 |  0.0628743 | 38512.1 |
-| RTree         | 11745 |  1.01856 |  0.0746711 | 35882.8 |
-| BTree         | 17616 | 0.451324 |  0.0268541 | 13249.1 |
-| GeoHashBinary | 17616 |  1.08116 |  0.0407717 | 31738.5 |
-| RTree         | 17616 |  1.01504 |  0.0658717 | 29797.5 |
-| BTree         | 20552 | 0.448744 |  0.0240568 |   11854 |
-| GeoHashBinary | 20552 |  1.07296 |  0.0117558 | 28343.3 |
-| RTree         | 20552 |  1.00105 |  0.0582154 | 26443.7 |
-| BTree         | 22020 | 0.447691 |  0.0193614 | 11165.4 |
-| GeoHashBinary | 22020 |  1.07911 | 0.00986746 | 26913.1 |
-| RTree         | 22020 |  1.00231 |  0.0462575 | 24997.5 |
-| BTree         | 22754 | 0.440994 |  0.0164774 | 10667.7 |
-| GeoHashBinary | 22754 |  1.07052 |  0.0297494 | 25895.8 |
-| RTree         | 22754 |  1.00679 |  0.0544763 | 24354.3 |
-| BTree         | 23121 | 0.445606 |  0.0155989 | 10601.4 |
-| GeoHashBinary | 23121 |  1.06871 | 0.00692898 | 25425.7 |
-| RTree         | 23121 |  1.02198 |  0.0449252 | 24313.9 |
-| BTree         | 23305 | 0.443706 |  0.0145924 | 10446.2 |
-| GeoHashBinary | 23305 |  1.06769 | 0.00791834 | 25136.6 |
-| RTree         | 23305 |  1.02155 |  0.0360618 | 24050.3 |
-| BTree         | 23396 | 0.452135 |  0.0186625 |   10547 |
-| GeoHashBinary | 23396 |  1.08239 |  0.0299922 |   25249 |
-| RTree         | 23396 |  1.06218 |  0.0817903 | 24777.4 |
-| BTree         | 23442 | 0.457403 |  0.0168122 | 10535.8 |
-| GeoHashBinary | 23442 |  1.07103 |  0.0219033 |   24670 |
-| RTree         | 23442 |  1.03593 |  0.0410284 | 23861.6 |
-| BTree         | 23465 | 0.472946 |  0.0166012 | 10656.4 |
-| GeoHashBinary | 23465 |  1.07213 |  0.0241641 | 24157.3 |
-| RTree         | 23465 |  1.05569 |  0.0745693 | 23786.8 |
-
-#+begin_src R :results output graphics :file "./img/averageInsOnly.png" :exports both :width 600 :height 400
-library(ggplot2)
-
-dfinsert %>% 
-    group_by(algo, T) %>%
-    summarize(avg = mean(insert), stdv = sd(insert)) %>%
-    ggplot( aes(x=T,y=avg, fill=factor(algo))) + 
-    geom_bar(stat="identity", position="dodge")+
-    geom_errorbar( position=position_dodge(0.9), 
-                   aes(ymin = avg - stdv, ymax = avg + stdv), width=0.5) +
-    #facet_wrap(~T, scale="free_x")+ 
-    labs(title = "Average Insertions (without removals)") 
-#+end_src
-
-#+RESULTS:
-[[file:./img/averageInsOnly.png]]
-
-
-In average the insertions are 2X faster with standard Btrees. 
-PMQ and Rtree are not statistically different in general (except maybe on T=20552). 
-
-This means that the insertion time doesn't change with T.
-No matter the parameter T choosed, the insertions take the same time.
-
-***** DONE Total benchmark time with the removals:
+*** DONE Total benchmark time (Insert + remove)                    :export:
 #+begin_src R :results table :session :exports none :colnames yes
 options(digits=6)
 df %>% 
@@ -1022,7 +911,6 @@ dfTotals %>% arrange(tSize,algo)
 | BTree         | 26424000 | 0.775352202940509 | 17.2715207572442 |  13658.604407 |                50 |
 | RTree         | 26424000 |  1.56818694221163 | 67.0234653268476 |  27625.181174 |                50 |
 
-
 #+begin_src R :results output graphics :file "./img/totalInsRm.png" :exports both :width 600 :height 400
 library(ggplot2)
 
@@ -1040,30 +928,11 @@ dfTotals %>%
 # Because with a lager T (closer to the limit 23488) as show in [[tbl:ExpVariables]], the frequency of expensive remotions increases. 
 # The best value of T is lower than 22754 for every algorithm. 
 
-***** TODO Average benchmark time with the removals: :ARCHIVE:
-
-Bimodal behaviour, it doesn't make sense to do an average of removals together with insertions. 
-
-#+begin_src R :results output graphics :file "./img/totalAvgRm.png" :exports both :width 600 :height 400
-library(ggplot2)
-
-totalPlot %>%
-    ggplot( aes(x=T,y=avg, fill=factor(algo))) + 
-    geom_bar(stat="identity", position="dodge")+
-    geom_errorbar( position=position_dodge(0.9), 
-                   aes(ymin = avg - std, ymax = avg + std), width=0.5) +
-    labs(title = "Average Insertions and Removals") 
-#+end_src
-
-#+RESULTS:
-[[file:./img/totalAvgRm.png]]
-
-
-*** DONE Conclusion                                                :export:
+*** DONE Finding the optimal tradeoff                              :export:
 
 We need to find a tradeoff between these two plots: 
 
-[[file:img/totalInsRm.png]] [[file:img/overview.png]]
+[[file:img/totalInsRm.png]][[file:img/overview.png]]
 
 
 Compute a tradeoff between total running time and time spent on removals. 
@@ -1107,15 +976,203 @@ tmp %>% select(algo, tSize, pct, AvgRmTime, TotRmTime, AvgRunTime=AvgTime, TotRu
 #+TBLFM: @2$3..@4$8=$0;%0.3f
 
 
-*** Next tests                                            :export:
+- NOTE :: I think it doesn't make sense to test the 33% overflow for RTree or Btree because it can only be worst that the optimal found above. 
 
-I think it doesn't make sense to test the 33% overflow for RTree or Btree because it can only be worst that the optimals found bellow. 
+*** DONE Insertion performance (optimal parameters)                :export:
 
-|       | optimal % of overflow |
-|-------+-----------------------|
-| BTree |                 6.25% |
-| RTree |                0.781% |
-| PMQ   |                33.33% |
+Comparison of insertion with optimal parameters for each alogrithm. (omitted the removal operations)
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+df %>% 
+filter( is.na(remove)) %>% # Get only Lines where no remotion had happened
+filter( (algo=="GeoHashBinary") | 
+        (algo=="BTree" & tSize == 18717000) |
+        (algo=="RTree" & tSize == 17753625)) %>%
+ggplot(aes(x=id,y=insert, color=factor(algo))) + 
+geom_line() +
+#ylim(0,1.5) + 
+labs(title = "Insertions")
+#facet_wrap(~tSize, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+
+
+#+begin_src R :results output graphics :file "./img/overallInsRM.png" :exports both :width 600 :height 400
+df %>% 
+    filter( (algo=="GeoHashBinary") | 
+            (algo=="BTree" & tSize == 18717000) |
+            (algo=="RTree" & tSize == 17753625)) %>%
+    mutate(remove = if_else(is.na(remove), 0 , remove)) %>%
+    mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, remove + insert)) %>% 
+    ggplot(aes(x=id,y=ins_rm, color=factor(algo))) + 
+    geom_line() +
+    labs(title = "Insertions and Removals")
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsRM.png]]
+
+
+
+*** DONE Amortized time                                            :export:
+
+**** Selected parameters with optimal insertion time
+#+begin_src R :results output :exports both :session 
+df %>% 
+    filter( (algo=="GeoHashBinary") | 
+            (algo=="BTree" & tSize == 18717000) |
+            (algo=="RTree" & tSize == 17753625)) %>%
+    mutate(remove = if_else(is.na(remove), 0 , remove)) %>%
+    mutate(ins_rm=if_else(algo == "GeoHashBinary", insert, remove + insert)) -> dfOptimal 
+
+dfOptimal %>% group_by(algo) %>% filter(remove > 0 ) %>% summarize(numberOfRemovals = length(remove)) 
+#+end_src
+
+#+RESULTS:
+: # A tibble: 3 x 2
+:            algo numberOfRemovals
+:           <chr>            <int>
+: 1         BTree               15
+: 2 GeoHashBinary                2
+: 3         RTree              127
+
+We compute three times:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both :session 
+options(tibble.width = Inf)
+dfOptimal %>%
+    group_by(algo) %>%
+    mutate(accTime = cumsum(ins_rm) , 
+           amorTime = cumsum(ins_rm)/row_number()) %>%
+    arrange(algo) -> avgTime
+
+avgTime
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 52,848 x 10
+# Groups:   algo [3]
+    algo     T    id    count   insert remove    tSize   ins_rm  accTime amorTime
+   <chr> <int> <int>    <int>    <dbl>  <dbl>   <fctr>    <dbl>    <dbl>    <dbl>
+ 1 BTree 17616 17616 17617000 0.732565      0 18717000 0.732565 0.732565 0.732565
+ 2 BTree 17616 17617 17618000 0.730783      0 18717000 0.730783 1.463348 0.731674
+ 3 BTree 17616 17618 17619000 0.721599      0 18717000 0.721599 2.184947 0.728316
+ 4 BTree 17616 17619 17620000 0.731386      0 18717000 0.731386 2.916333 0.729083
+ 5 BTree 17616 17620 17621000 0.732198      0 18717000 0.732198 3.648531 0.729706
+ 6 BTree 17616 17621 17622000 0.722543      0 18717000 0.722543 4.371074 0.728512
+ 7 BTree 17616 17622 17623000 0.726246      0 18717000 0.726246 5.097320 0.728189
+ 8 BTree 17616 17623 17624000 0.725742      0 18717000 0.725742 5.823062 0.727883
+ 9 BTree 17616 17624 17625000 0.723844      0 18717000 0.723844 6.546906 0.727434
+10 BTree 17616 17625 17626000 0.734492      0 18717000 0.734492 7.281398 0.728140
+# ... with 52,838 more rows
+#+end_example
+
+**** Melting the data (time / avgTime)                          :noexport:
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :exports both :session 
+avgTime %>% 
+    select(-count,-insert,-remove) %>%
+    gather(stat, value, ins_rm, accTime, amorTime) -> melted_times
+
+melted_times
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 158,544 x 6
+# Groups:   algo [3]
+    algo     T    id    tSize   stat    value
+   <chr> <int> <int>   <fctr>  <chr>    <dbl>
+ 1 BTree 17616 17616 18717000 ins_rm 0.732565
+ 2 BTree 17616 17617 18717000 ins_rm 0.730783
+ 3 BTree 17616 17618 18717000 ins_rm 0.721599
+ 4 BTree 17616 17619 18717000 ins_rm 0.731386
+ 5 BTree 17616 17620 18717000 ins_rm 0.732198
+ 6 BTree 17616 17621 18717000 ins_rm 0.722543
+ 7 BTree 17616 17622 18717000 ins_rm 0.726246
+ 8 BTree 17616 17623 18717000 ins_rm 0.725742
+ 9 BTree 17616 17624 18717000 ins_rm 0.723844
+10 BTree 17616 17625 18717000 ins_rm 0.734492
+# ... with 158,534 more rows
+#+end_example
+
+**** Comparison Time X avgTime                                      :plot:
+
+# https://stackoverflow.com/questions/43784425/change-the-overlaying-order-of-lines-in-ggplot#43784645
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports results :width 600 :height 400 
+
+ggplotColours <- function(n = 6, h = c(0, 360) + 15) {
+  if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
+  hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
+}
+pal <- setNames(ggplotColours(3), c("BTree", "GeoHashBinary", "RTree"))
+
+melted_times %>%
+    ggplot(aes(x=id, y=value, color= factor(algo, c("RTree", "BTree", "GeoHashBinary") ))) +
+    geom_line() + 
+    facet_wrap(~stat,scales="free", labeller=labeller(variable=label_value)) +
+    scale_color_manual(values = pal,  breaks = c("RTree", "GeoHashBinary", "BTree")) +
+    #scale_color_manual(values = c(BTree="red", RTree="blue", GeoHashBinary="green"))+
+    labs(color="Algorithm: ", x = "# Batch", y = "Milliseconds" ) + 
+    theme(legend.position = "bottom")
+
+#facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
+#facet_grid(~stat,scales="free", labeller=labeller(stat=label_value))
+#facet_wrap(stat~algo,scales="free", labeller=labeller(variable=label_value))
+    
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+
+
+**** Average time of the period
+
+Find the length of the periods between removals
+#+begin_src R :results output :exports both :session 
+dfOptimal %>% 
+    group_by(algo)  %>% mutate( nb = row_number()) %>% 
+    filter(remove > 0 ) %>%
+    filter(nb == min(nb)) -> firstRM
+
+firstRM
+#+end_src
+
+#+RESULTS:
+: # A tibble: 3 x 9
+: # Groups:   algo [3]
+:            algo     T    id    count     insert  remove    tSize  ins_rm    nb
+:           <chr> <int> <int>    <int>      <dbl>   <dbl>   <fctr>   <dbl> <int>
+: 1         RTree 17616 17753 17616000   1.068350 440.804 17753625 441.872   138
+: 2         BTree 17616 18717 17616000   0.720974 617.035 18717000 617.756  1102
+: 3 GeoHashBinary 17616 23488 17616000 609.976000 609.976 23488000 609.976  5873
+
+Compute the average time of the period until the first deletion (deletion included).
+#+begin_src R :results table :exports both :session :colnames yes
+
+dfOptimal %>% 
+    select( algo, id, ins_rm) %>%
+    left_join( firstRM , by=c("algo")) %>% # Get the column with first removal id.
+    filter(id.x <= id.y) %>%  # get all iterations before first removal
+    group_by(algo) %>% 
+    summarize(periodSize = min(nb), periodMean = mean(ins_rm.x))
+
+#+end_src
+
+#+RESULTS:
+| algo          | periodSize | periodMean |
+|---------------+------------+------------|
+| BTree         |       1102 |      1.290 |
+| GeoHashBinary |       5873 |      1.426 |
+| RTree         |        138 |      4.287 |
+#+TBLFM: $3=$0;%0.3f
 
 
 
