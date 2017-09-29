@@ -73,14 +73,14 @@ struct region_t {
     if (lat0 < -85.0511f) lat0 = -85.0511f;
     else if (lat0 > 85.0511f) lat0 = 85.0511f;
 
-    if (lon0 < -180.f) lon0 = -180.f;
-    else if (lon0 > 180.f) lon0 = 180.f;
+    if (lon0 < -179.9f) lon0 = -179.9f;
+    else if (lon0 > 179.9f) lon0 = 179.9f;
 
     if (lat1 < -85.0511f) lat1 = -85.0511f;
     else if (lat1 > 85.0511f) lat1 = 85.0511f;
 
-    if (lon1 < -180.f) lon1 = -180.f;
-    else if (lon1 > 180.f) lon1 = 180.f;
+    if (lon1 < -179.9f) lon1 = -179.9f;
+    else if (lon1 > 179.9f) lon1 = 179.9f;
 
     // computes the corners of the bounding box aligned to the morton codes of a quadtree at level Z
     z = 25;
