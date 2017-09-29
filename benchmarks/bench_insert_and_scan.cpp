@@ -15,6 +15,8 @@
 #include "BTreeCtn.h"
 #include "DenseCtn.h"
 
+#include "benchmarkconfig.h"
+
 #define PRINTBENCH(...) do { \
    std::cout << "InsertionBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
@@ -146,10 +148,18 @@ int main(int argc, char *argv[]) {
     auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
     PRINTOUT("%d tweets loaded \n", end - begin);
 
+#ifdef BENCH_PMQ
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
 
   } else if (!fname_dmp.empty()) {
     using el_t = TweetDmpType;
@@ -161,10 +171,18 @@ int main(int argc, char *argv[]) {
     auto end = nb_elements == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, nb_elements);
     PRINTOUT("%d tweets loaded \n", end - begin);
 
+#ifdef BENCH_PMQ
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
 
   } else {
     // 16 bytes + N
@@ -177,10 +195,18 @@ int main(int argc, char *argv[]) {
     auto end = it_t::end(seed, parameters.batch_size, nb_elements);
     PRINTOUT("%d tweets generated \n", end - begin);
 
+#ifdef BENCH_PMQ
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, parameters);
+#endif
   }
 
   return EXIT_SUCCESS;
