@@ -653,19 +653,72 @@ dfinsert %>%
 
 **** Amortized time
 
+
 We compute three times:
 - individual insertion time for each batch
 - accumulated time at batch #k
-- ammortized time : average of the past times at batch #k
+- ammortized time : average of the past times at batch #k (AKA running mean) 
 
 #+begin_src R :results output :exports results
 avgTime = cbind(dfinsert, 
                 sumTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)), recursive=T),
                 avgTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)/(x$id+1)), recursive=T)
                 )
+avgTime
 #+end_src
 
 #+RESULTS:
+#+begin_example
+# A tibble: 40,000 x 8
+# Groups:   algo, id, bench [40,000]
+    algo    id  bench count       ms  stdv  sumTime    avgTime
+   <chr> <int>  <chr> <int>    <dbl> <dbl>    <dbl>      <dbl>
+ 1 BTree     0 insert    NA 0.075221    NA 0.075221 0.07522100
+ 2 BTree     1 insert    NA 0.077459    NA 0.152680 0.07634000
+ 3 BTree     2 insert    NA 0.079061    NA 0.231741 0.07724700
+ 4 BTree     3 insert    NA 0.080513    NA 0.312254 0.07806350
+ 5 BTree     4 insert    NA 0.084934    NA 0.397188 0.07943760
+ 6 BTree     5 insert    NA 0.087991    NA 0.485179 0.08086317
+ 7 BTree     6 insert    NA 0.089108    NA 0.574287 0.08204100
+ 8 BTree     7 insert    NA 0.088306    NA 0.662593 0.08282412
+ 9 BTree     8 insert    NA 0.090313    NA 0.752906 0.08365622
+10 BTree     9 insert    NA 0.093685    NA 0.846591 0.08465910
+# ... with 39,990 more rows
+#+end_example
+
+https://stackoverflow.com/questions/12370771/r-running-standard-deviations#12374287
+#+begin_src R :results output :exports both :session 
+options(tibble.width = Inf)
+dfinsert %>%
+   group_by(algo) %>%
+    mutate(sumTime = cumsum(ms) , 
+           avgTime = cummean(ms),   # the running mean
+           runSd =  sqrt( (1/(row_number()-1)*cumsum(ms^2) 
+               - row_number()/(row_number()-1)*avgTime^2)),   #running stdev. 
+           runSe = runSd/sqrt(row_number())
+           ) -> avgTime
+avgTime
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 40,000 x 10
+# Groups:   algo [4]
+    algo    id  bench count       ms  stdv  sumTime    avgTime       runSd       runSe
+   <chr> <int>  <chr> <int>    <dbl> <dbl>    <dbl>      <dbl>       <dbl>       <dbl>
+ 1 BTree     0 insert    NA 0.075221    NA 0.075221 0.07522100         NaN         NaN
+ 2 BTree     1 insert    NA 0.077459    NA 0.152680 0.07634000 0.001582505 0.001119000
+ 3 BTree     2 insert    NA 0.079061    NA 0.231741 0.07724700 0.001928758 0.001113569
+ 4 BTree     3 insert    NA 0.080513    NA 0.312254 0.07806350 0.002268647 0.001134324
+ 5 BTree     4 insert    NA 0.084934    NA 0.397188 0.07943760 0.003647030 0.001631001
+ 6 BTree     5 insert    NA 0.087991    NA 0.485179 0.08086317 0.004778504 0.001950816
+ 7 BTree     6 insert    NA 0.089108    NA 0.574287 0.08204100 0.005360919 0.002026237
+ 8 BTree     7 insert    NA 0.088306    NA 0.662593 0.08282412 0.005435080 0.001921591
+ 9 BTree     8 insert    NA 0.090313    NA 0.752906 0.08365622 0.005663838 0.001887946
+10 BTree     9 insert    NA 0.093685    NA 0.846591 0.08465910 0.006210665 0.001963985
+# ... with 39,990 more rows
+#+end_example
+
 
 ***** Melting the data (time / avgTime)                        :noexport:
 We need to melt the time columns to be able to plot as a grid
@@ -673,18 +726,15 @@ We need to melt the time columns to be able to plot as a grid
 #+begin_src R :results output :exports both :session 
 avgTime %>% 
     select(-count,-stdv) %>%
-    gather(stat, value, ms, sumTime, avgTime) -> melted_times
+    gather(stat, value, ms, sumTime, avgTime,runSd) -> melted_times
 
 melted_times
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Warning message:
-attributes are not identical across measure variables;
-they will be dropped
-# A tibble: 120,000 x 5
-# Groups:   algo, id, bench [40,000]
+# A tibble: 160,000 x 5
+# Groups:   algo [4]
     algo    id  bench  stat    value
    <chr> <int>  <chr> <chr>    <dbl>
  1 BTree     0 insert    ms 0.075221
@@ -697,12 +747,12 @@ they will be dropped
  8 BTree     7 insert    ms 0.088306
  9 BTree     8 insert    ms 0.090313
 10 BTree     9 insert    ms 0.093685
-# ... with 119,990 more rows
+# ... with 159,990 more rows
 #+end_example
 
 ***** Comparison Time X avgTime                                    :plot:
 #+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
-melted_times %>%
+melted_times %>% filter(algo != "ImplicitDenseVector") %>%
     ggplot(aes(x=id,y=value,color=factor(algo))) +
 geom_line() + 
 facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
@@ -712,17 +762,84 @@ facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
 #+RESULTS:
 [[file:./img/grid_times.png]]
 
+***** Running average and confidence intervals.                    :plot:
+#+begin_src R :results output graphics :file "./img/running_average.png" :exports both :width 600 :height 400 :session 
+
+avgTime %>% # filter(algo=="GeoHashBinary") %>% 
+    ggplot(aes(x=id,y=avgTime, colour=factor(algo),fill=factor(algo))) +  
+    geom_ribbon(aes(ymin=avgTime - runSe, ymax = avgTime + runSe), alpha=0.5)+
+    geom_line()  + 
+    ylim(0,1.5) + 
+    theme_bw()
+
+#+end_src
+
+#+RESULTS:
+[[file:./img/running_average.png]]
+
+
+note: I'm not sure that showing the Standard Error is meaningful here. 
+The SE in the PMA curve increases after the rebalance operations but ends up converging. 
+
+Just to check if our running stats are correct
+#+begin_src R :results output :exports both :session 
+avgTime %>% filter(id>=9999)
+avgTime %>% summarise(m = mean(ms) , s = sd(ms), se= s/sqrt(length(ms)) )
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 4 x 10
+# Groups:   algo [4]
+                 algo    id  bench count        ms  stdv    sumTime    avgTime       runSd        runSe
+                <chr> <int>  <chr> <int>     <dbl> <dbl>      <dbl>      <dbl>       <dbl>        <dbl>
+1               BTree  9999 insert    NA  0.473681    NA   4286.722  0.4286722  0.06513365 0.0006513365
+2       GeoHashBinary  9999 insert    NA  0.992535    NA   9013.019  0.9013019  1.28632916 0.0128632916
+3 ImplicitDenseVector  9999 insert    NA 47.571425    NA 241291.800 24.1291800 13.57100308 0.1357100308
+4               RTree  9999 insert    NA  1.034710    NA   9483.918  0.9483918  0.08144564 0.0008144564
+# A tibble: 4 x 4
+                 algo          m           s           se
+                <chr>      <dbl>       <dbl>        <dbl>
+1               BTree  0.4286722  0.06513365 0.0006513365
+2       GeoHashBinary  0.9013019  1.28632916 0.0128632916
+3 ImplicitDenseVector 24.1291800 13.57100308 0.1357100308
+4               RTree  0.9483918  0.08144564 0.0008144564
+#+end_example
+
 **** Zoom View                                                      :plot:
 
+Zoom-in omits the peaks of rebalance. 
+
 #+begin_src R :results output graphics :file "./img/Zoom.png" :exports both :width 600 :height 400
-avgTime %>% 
-    ggplot(aes(x=id, color=factor(algo))) + 
-    labs(title="Insertions") +
-    geom_point(aes(y=ms), alpha=1) +
+avgTime %>% #filter(algo=="RTree") %>%
+    ggplot(aes(x=id, y = ms, colour=factor(algo))) + 
+    theme_bw() + 
+    geom_point(alpha=0.01) +
+#    geom_smooth(aes(colour=factor(algo)),method="loess") +   
+    geom_smooth(aes(fill=factor(algo)),method="gam", formula= y ~ s(x, bs = "cs"), level=0.99) +   # same as method = auto
+#    geom_smooth(method="lm",formula = y ~ poly(x,10), level=0.99) +   
 #    geom_line(aes(y=avgTime)) + 
-    ylim(0,1.5) 
+    ylim(0,1.5) + 
+    labs( fill="", color="", x = "# Batch", y = "Insertion Time (ms)") +
+    theme(legend.position = "bottom")
+
+    
 #+end_src
 
 #+RESULTS:
 [[file:./img/Zoom.png]]
+
+
+
+:NOTE: 
+geom_smooth formula
+
+https://www.rdocumentation.org/packages/mgcv/versions/1.8-20/topics/s
+
+GAM : generalized adapitve model
+
+bs = "cs" --> cubic regression spline with shrinkage version. 
+
+:END:
+
 
