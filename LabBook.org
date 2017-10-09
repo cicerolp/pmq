@@ -509,7 +509,7 @@ mkdir -p $expFolder
 
 - PMQ best on queries with large amount of elements
   
-**** DONE [2017-09-04 Seg] Test the refinments levels  :exp20170904153555:
+**** DONE [2017-09-04 Seg] Test the refinements levels :paper:exp20170904153555:
 
 Test the best refinement level to use in Geohash programs. 
 
@@ -653,6 +653,43 @@ echo "[[$expFolder/exp.org]]"
 #+RESULTS:
 [[./data/cicero/exp20170923144931/exp.org]]
 
+
+**** DONE [2017-10-09 Seg] Queries Variating Elt Size 
+
+- Fixed query width on the map
+- Uniform dataset (to get the same amount of elements on the average)
+- Timewindow of size 26.000.000
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170915143003/exp.org > ${expFolder}/exp.org
+  #+end_src
+
+
+***** Description                                                :ignore:
+
+#+begin_src sh :results output raw :exports both :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20171009155025/exp.org]]
+
+
 *** Benchmark Insert and Remove
 **** DONE [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
 
@@ -687,7 +724,7 @@ mkdir -p $expFolder
 
 [[./data/cicero/exp20170914091842/exp.org]]
 
-**** INPROGRESS [2017-09-25 Seg] =bench_insert_remove_count=
+**** DONE [2017-09-25 Seg] =bench_insert_remove_count= :paper:exp20170925155952:
 
 Test performance of removals in the PMQ. 
 
