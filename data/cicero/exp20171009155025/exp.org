@@ -82,20 +82,16 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170915143003
+On branch exp20171009155025
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	.#exp.org
 	exp.org
-	parse.sh
-	plotResults.R
-	run.sh
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170915143003 1cf746f] Initial commit for exp20170915143003
- 1 file changed, 775 insertions(+)
- create mode 100644 data/cicero/exp20170915143003/exp.org
+[exp20171009155025 85b4e29] Initial commit for exp20171009155025
+ 1 file changed, 867 insertions(+)
+ create mode 100644 data/cicero/exp20171009155025/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -103,11 +99,26 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 1cf746f (HEAD -> exp20170915143003) Initial commit for exp20170915143003
-: | * e4b0e35 (origin/exp20170914091842, exp20170914091842) Report exporte in .rst format (preview in bitbucket)
-: | * a4a4bba Analysis bench insertions and removals
+: * 85b4e29 (HEAD -> exp20171009155025) Initial commit for exp20171009155025
+: * 678a50e (master) LBK: new entry for exp20171009155025
+: * 706cb9a upd: ELT_SIZE on CMAKE variables
 
 ** DONE Export run script 
+
+#+begin_src sh :results output :exports both
+
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    echo "cmake -DELT_SIZE=$ELTSIZE . ; make"
+done
+#+end_src
+
+#+RESULTS:
+: cmake -DELT_SIZE=0 . ; make
+: cmake -DELT_SIZE=16 . ; make
+: cmake -DELT_SIZE=48 . ; make
+: cmake -DELT_SIZE=112 . ; make
+: cmake -DELT_SIZE=240 . ; make
 
 Use C-u C-c C-v t to tangle this script 
 #+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
@@ -141,13 +152,13 @@ mkdir -p $TMPDIR
 # make pma
 mkdir -p $PMABUILD_DIR
 cd $PMABUILD_DIR
-cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF  ../pma_cd
 make 
 
 # make twitterVis
 mkdir -p $BUILDIR
 cd $BUILDIR 
-cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=ON -DBENCH_RTREE_BULK=ON ..
 make
 
 #get machine configuration
@@ -159,14 +170,20 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 
-#Run queries
-#t=$((10**6))
-t=26000
-b=1000
-#n=$(($t*$b))
-ref=8
-stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${EXECID}.log
 
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    cmake -DELT_SIZE=$ELTSIZE . ; make
+
+    #Run queries
+    #t=$((10**6))
+    t=26000
+    b=1000
+    #n=$(($t*$b))
+    ref=8
+    stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+
+done
 set -e
 
 cd $TMPDIR
