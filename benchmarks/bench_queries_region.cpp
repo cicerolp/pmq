@@ -14,6 +14,8 @@
 #include "BTreeCtn.h"
 #include "DenseCtn.h"
 
+#include "benchmarkconfig.h"
+
 #define PRINTBENCH(...) do { \
    std::cout << "QueryBench " << container.name() << " ; ";\
    printcsv( __VA_ARGS__ ) ; \
@@ -197,15 +199,23 @@ int main(int argc, char *argv[]) {
     auto begin = it_t::begin(file_ptr);
     auto end = n_elts == 0 ? it_t::end(file_ptr) : it_t::end(file_ptr, n_elts);
     PRINTOUT("%d teewts loaded \n", end - begin);
-
+#ifdef BENCH_PMQ
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+
 
   } else {
     // 16 bytes + N
-    static const size_t N = 0;
+    static const size_t N = ELT_SIZE;
     using el_t = GenericType<N>;
     using it_t = input_random_it<N>;
 
@@ -213,12 +223,22 @@ int main(int argc, char *argv[]) {
     auto begin = it_t::begin(seed, parameters.rate);
     auto end = it_t::end(seed, parameters.rate, n_elts);
     PRINTOUT("%d teewts generated \n", end - begin);
-
+#ifdef BENCH_PMQ
     run_bench<PMQBinary<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_BTREE
     run_bench<BTreeCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_RTREE_BULK
     run_bench<RTreeBulkCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+#ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
+
   }
 
   return EXIT_SUCCESS;
