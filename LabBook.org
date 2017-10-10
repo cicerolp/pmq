@@ -654,7 +654,7 @@ echo "[[$expFolder/exp.org]]"
 [[./data/cicero/exp20170923144931/exp.org]]
 
 
-**** DONE [2017-10-09 Seg] Queries Variating Elt Size 
+**** TODO [2017-10-09 Seg] Queries Variating Elt Size  :exp20171009155025:
 
 - Fixed query width on the map
 - Uniform dataset (to get the same amount of elements on the average)
