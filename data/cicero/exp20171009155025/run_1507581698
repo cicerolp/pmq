@@ -807,3 +807,14 @@ bench_queries_region_random_26000_1000_8_48_1507581698.log
 Already on 'exp20171009155025'
 A	data/cicero/exp20171009155025/run_1507581698
 Your branch is up-to-date with 'origin/exp20171009155025'.
+[exp20171009155025 7460cea] Finish execution 1507581698
+ 3 files changed, 1500 insertions(+)
+ create mode 100644 data/cicero/exp20171009155025/info.org
+ create mode 100644 data/cicero/exp20171009155025/log_1507581698.tgz
+ create mode 100644 data/cicero/exp20171009155025/run_1507581698
+remote: 
+remote: Create pull request for exp20171009155025:        
+remote:   https://bitbucket.org/jtoss/pmq/pull-requests/new?source=exp20171009155025&t=1        
+remote: 
+To git@bitbucket.org:jtoss/pmq.git
+   202321f..7460cea  exp20171009155025 -> exp20171009155025
