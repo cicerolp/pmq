@@ -36,7 +36,7 @@ make
 # make twitterVis
 mkdir -p $BUILDIR
 cd $BUILDIR 
-cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=OFF -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=OFF -DBENCH_RTREE_BULK=OFF ..
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=ON -DBENCH_RTREE_BULK=ON ..
 make
 
 #get machine configuration
@@ -59,7 +59,7 @@ for EL in 16 32 64 128 256 ; do
     b=1000
     #n=$(($t*$b))
     ref=8
-    stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 20 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS_30_50.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+    stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 33 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
 
 done
 set -e

@@ -66,15 +66,6 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
     timer = container.apply_at_region(region_t(+90.f, -180.f, -90.f, +180.f), _apply);
     PRINTBENCH("init", timer, "count", count);
 
-    // scan_at_region
-    // warm up
-    container.scan_at_region(region, read_element<Tp>);
-
-    for (uint32_t i = 0; i < parameters.n_exp; i++) {
-      timer = container.scan_at_region(region, read_element<Tp>);
-      PRINTBENCH("query", id, "T", t, timer);
-    }
-
     // apply_at_region
     // warm up
     container.apply_at_region(region, _apply);
@@ -84,6 +75,16 @@ void inline run_queries(T &container, const region_t &region, uint32_t id, uint6
       timer = container.apply_at_region(region, _apply);
       PRINTBENCH("query", id, "T", t, timer, "count", count);
     }
+
+    // scan_at_region
+    // warm up
+    container.scan_at_region(region, read_element<Tp>);
+
+    for (uint32_t i = 0; i < parameters.n_exp; i++) {
+      timer = container.scan_at_region(region, read_element<Tp>);
+      PRINTBENCH("query", id, "T", t, timer);
+    }
+
   }
 }
 
