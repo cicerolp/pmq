@@ -151,23 +151,14 @@ Scanning dependencies of target bench_insert_and_scan
 [ 92%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/bench_insert_and_scan.cpp.o
 [100%] Linking CXX executable bench_insert_and_scan
 [100%] Built target bench_insert_and_scan
-bench_queries_region_random_26000_1000_8_0_1507669861.log
-bench_queries_region_random_26000_1000_8_112_1507669861.log
-bench_queries_region_random_26000_1000_8_16_1507669861.log
-bench_queries_region_random_26000_1000_8_240_1507669861.log
-bench_queries_region_random_26000_1000_8_48_1507669861.log
+./run.sh: line 52:  8393 Killed                  stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 33 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv > ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+bench_queries_region_random_26000_1000_8_0_1507691669.log
+bench_queries_region_random_26000_1000_8_112_1507691669.log
+bench_queries_region_random_26000_1000_8_16_1507691669.log
+bench_queries_region_random_26000_1000_8_240_1507691669.log
+bench_queries_region_random_26000_1000_8_48_1507691669.log
 Already on 'exp20171009155025'
 M	data/cicero/exp20171009155025/info.org
-M	data/cicero/exp20171009155025/run_1507581698
-A	data/cicero/exp20171009155025/run_1507669861
+M	data/cicero/exp20171009155025/run_1507669861
+A	data/cicero/exp20171009155025/run_1507691669
 Your branch is up-to-date with 'origin/exp20171009155025'.
-[exp20171009155025 e81c641] Finish execution 1507669861
- 4 files changed, 215 insertions(+), 41 deletions(-)
- create mode 100644 data/cicero/exp20171009155025/log_1507669861.tgz
- create mode 100644 data/cicero/exp20171009155025/run_1507669861
-remote: 
-remote: Create pull request for exp20171009155025:        
-remote:   https://bitbucket.org/jtoss/pmq/pull-requests/new?source=exp20171009155025&t=1        
-remote: 
-To git@bitbucket.org:jtoss/pmq.git
-   9401471..e81c641  exp20171009155025 -> exp20171009155025
