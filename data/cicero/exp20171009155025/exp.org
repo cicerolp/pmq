@@ -207,23 +207,15 @@ git status .
 #+end_src
 
 #+RESULTS:
-#+begin_example
-On branch exp20171009155025
-Your branch is ahead of 'origin/exp20171009155025' by 1 commit.
-  (use "git push" to publish your local commits)
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	modified:   exp.org
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	img/
-
-no changes added to commit (use "git add" and/or "git commit -a")
-#+end_example
+: On branch exp20171009155025
+: Your branch is ahead of 'origin/exp20171009155025' by 1 commit.
+:   (use "git push" to publish your local commits)
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 
+: 	img/
+: 
+: nothing added to commit but untracked files present (use "git add" to track)
 
 #+begin_src sh :results output :exports both
 git add run.sh exp.org
@@ -283,7 +275,7 @@ Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Mon Oct  9 19:36:37 2017 from 143.54.13.218
+Last login: Tue Oct 10 22:57:33 2017 from 143.54.11.6
 #+end_example
 
 Get the last script on the remote machine (require entering a password
@@ -300,31 +292,29 @@ git log -1 | cat
 #+RESULTS:
 #+begin_example
 
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 1           remote: Counting objects: 14, done.
-(1/12)           remote: Compressing objects:  16% (2/12)           remote: Compressing objects:  25% (3/12)           remote: Compressing objects:  33% (4/12)           remote: Compressing objects:  41% (5/12)           remote: Compressing objects:  50% (6/12)           remote: Compressing objects:  58% (7/12)           remote: Compressing objects:  66% (8/12)           remote: Compressing objects:  75% (9/12)           remote: Compressing objects:  83% (10/12)           remote: Compressing objects:  91% (11/12)           remote: Compressing objects: 100% (12/12)           remote: Compressing objects: 100% (12/12), done.        
-remote: Total 14 (delta 8), reused 0 (delta 0)
-(1/14)   Unpacking objects:  14% (2/14)   Unpacking objects:  21% (3/14)   Unpacking objects:  28% (4/14)   Unpacking objects:  35% (5/14)   Unpacking objects:  42% (6/14)   Unpacking objects:  50% (7/14)   Unpacking objects:  57% (8/14)   Unpacking objects:  64% (9/14)   Unpacking objects:  71% (10/14)   Unpacking objects:  78% (11/14)   Unpacking objects:  85% (12/14)   Unpacking objects:  92% (13/14)   Unpacking objects: 100% (14/14)   Unpacking objects: 100% (14/14), done.
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 9, done.
+(1/8)           remote: Compressing objects:  25% (2/8)           remote: Compressing objects:  37% (3/8)           remote: Compressing objects:  50% (4/8)           remote: Compressing objects:  62% (5/8)           remote: Compressing objects:  75% (6/8)           remote: Compressing objects:  87% (7/8)           remote: Compressing objects: 100% (8/8)           remote: Compressing objects: 100% (8/8), done.
+(1/9)   Unpacking objects:  22% (2/9)   Unpacking objects:  33% (3/9)   Unpacking objects:  44% (4/9)   Unpacking objects:  55% (5/9)   Unpacking objects:  66% (6/9)   Unpacking objects:  77% (7/9)   remote: Total 9 (delta 6), reused 0 (delta 0)
+(8/9)   Unpacking objects: 100% (9/9)   Unpacking objects: 100% (9/9), done.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 origin/exp20171009155025
-M	data/cicero/exp20171009155025/run_1507581698
+M	data/cicero/exp20171009155025/run_1507669861
 Already on 'exp20171009155025'
-Your branch is behind 'origin/exp20171009155025' by 2 commits, and can be fast-forwarded.
+Your branch is behind 'origin/exp20171009155025' by 1 commit, and can be fast-forwarded.
   (use "git pull" to update your local branch)
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
-Updating 7460cea..9401471
+Updating e81c641..972deb8
 Fast-forward
- LabBook.org                           |   2 +-
- data/cicero/exp20171009155025/exp.org | 529 +++++++++++++++++++++-------------
- data/cicero/exp20171009155025/run.sh  |   4 +-
- data/queriesLHS_30_50.csv             |  20 ++
- 4 files changed, 350 insertions(+), 205 deletions(-)
- create mode 100644 data/queriesLHS_30_50.csv
-commit 9401471fc00da177cf4f253d842e6c34ee2ae374
-Date:   Tue Oct 10 18:08:04 2017 -0300
+ benchmarks/bench_queries_region.cpp   |   19 +-
+ data/cicero/exp20171009155025/exp.org | 1378 +++++++++++++++++++++++++++++++--
+ data/cicero/exp20171009155025/run.sh  |    4 +-
+ 3 files changed, 1304 insertions(+), 97 deletions(-)
+commit 972deb8a8f8d0dcdd0ceb8dc8b3310067f28cd55
+Date:   Wed Oct 11 00:12:03 2017 -0300
 
-    rerun BTree tests
+    rerun: 33 repetitions , invert order
 #+end_example
 
 Update PMA repository on exp machine
@@ -339,12 +329,12 @@ git log -1 | cat
 : julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
 : FETCH_HEAD
 : Already up-to-date.
-: commit 011775f5fdeaeeff330da7df39751d9c5323b570
-: Date:   Mon Feb 13 12:20:46 2017 -0200
+: commit 6931408d8b9c109f3f2a9543374cfd712791b1e7
+: Date:   Tue Sep 19 16:58:38 2017 -0300
 : 
-:     Bugfix: corrected pointer casts
+:     error ouput on pma initialization
 
-*** DONE Execute Remotely                                          :remote:
+*** INPROGRESS Execute Remotely                                    :remote:
 
 Opens ssh connection and a tmux session
 
@@ -358,7 +348,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ 1507669861
+: julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ 1507691669
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -367,13 +357,24 @@ ps ux
 #+end_src
 
 #+RESULTS:
-: no server running on /tmp/tmux-1001/default
-: USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-: julio     5567  0.0  0.0  45248  4536 ?        Ss   18:09   0:00 /lib/systemd/sy
-: julio     5570  0.0  0.0 145364  2112 ?        S    18:09   0:00 (sd-pam)
-: julio     5621  0.0  0.0  97464  3304 ?        R    18:09   0:00 sshd: julio@pts
-: julio     5623  0.0  0.0  22688  5172 pts/8    Ss   18:09   0:00 -bash
-: julio     6496  0.0  0.0  37368  3224 pts/8    R+   19:54   0:00 ps ux
+#+begin_example
+runExp: 1 windows (created Wed Oct 11 00:14:29 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio     7556  0.0  0.0  45248  4548 ?        Ss   00:13   0:00 /lib/systemd/sy
+julio     7558  0.0  0.0 145364  2112 ?        S    00:13   0:00 (sd-pam)
+julio     7608  0.0  0.0  97464  3308 ?        R    00:13   0:00 sshd: julio@pts
+julio     7609  0.0  0.0  22684  5164 pts/8    Ss   00:13   0:00 -bash
+julio     7655  0.0  0.0  29420  2844 ?        Ss   00:14   0:00 tmux new -d -s 
+julio     7656  0.0  0.0  12532  2976 pts/9    Ss+  00:14   0:00 bash -c cd ~/Pr
+julio     7658  0.0  0.0  12540  3088 pts/9    S+   00:14   0:00 /bin/bash ./run
+julio     7780  0.0  0.0   9676  2308 pts/9    S+   00:14   0:00 make
+julio     7783  0.0  0.0   9676  2364 pts/9    S+   00:14   0:00 make -f CMakeFi
+julio     7803  0.3  0.0  11848  4332 pts/9    S+   00:14   0:00 make -f benchma
+julio     7806  0.0  0.0   4508   712 pts/9    S+   00:14   0:00 /bin/sh -c cd /
+julio     7807  0.0  0.0   8352   724 pts/9    S+   00:14   0:00 /usr/bin/c++ -I
+julio     7808 99.3  2.2 842768 737136 pts/9   R+   00:14   0:05 /usr/lib/gcc/x8
+julio     7810  0.0  0.0  37368  3236 pts/8    R+   00:14   0:00 ps ux
+#+end_example
 
 **** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
