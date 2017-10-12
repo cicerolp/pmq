@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Benchmark Queries 
+#+TITLE: Benchmark Queries - Uniform Dataset
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -675,34 +675,34 @@ dfAvg
 #+RESULTS:
 #+begin_example
 # A tibble: 105,600 x 8
-            algo queryId           bench      ms Refine   Count EltSize queryWidth
-           <chr>   <int>           <chr>   <dbl>  <int>   <int>   <dbl>      <dbl>
- 1 GeoHashBinary       0 apply_at_region 3.08509    482 3440580      16         90
- 2 GeoHashBinary       0 apply_at_region 2.88730    482 3440580      16         90
- 3 GeoHashBinary       0 apply_at_region 2.79058    482 3440580      16         90
- 4 GeoHashBinary       0 apply_at_region 2.80968    482 3440580      16         90
- 5 GeoHashBinary       0 apply_at_region 2.80729    482 3440580      16         90
- 6 GeoHashBinary       0 apply_at_region 2.82159    482 3440580      16         90
- 7 GeoHashBinary       0 apply_at_region 2.81033    482 3440580      16         90
- 8 GeoHashBinary       0 apply_at_region 2.82575    482 3440580      16         90
- 9 GeoHashBinary       0 apply_at_region 2.81096    482 3440580      16         90
-10 GeoHashBinary       0 apply_at_region 2.81783    482 3440580      16         90
-# ... with 105,590 more rows
+            algo queryId           bench      ms Refine   Count EltSize
+           <chr>   <int>           <chr>   <dbl>  <int>   <int>   <dbl>
+ 1 GeoHashBinary       0 apply_at_region 3.08509    482 3440580      16
+ 2 GeoHashBinary       0 apply_at_region 2.88730    482 3440580      16
+ 3 GeoHashBinary       0 apply_at_region 2.79058    482 3440580      16
+ 4 GeoHashBinary       0 apply_at_region 2.80968    482 3440580      16
+ 5 GeoHashBinary       0 apply_at_region 2.80729    482 3440580      16
+ 6 GeoHashBinary       0 apply_at_region 2.82159    482 3440580      16
+ 7 GeoHashBinary       0 apply_at_region 2.81033    482 3440580      16
+ 8 GeoHashBinary       0 apply_at_region 2.82575    482 3440580      16
+ 9 GeoHashBinary       0 apply_at_region 2.81096    482 3440580      16
+10 GeoHashBinary       0 apply_at_region 2.81783    482 3440580      16
+# ... with 105,590 more rows, and 1 more variables: queryWidth <dbl>
 # A tibble: 3,200 x 9
 # Groups:   algo, queryId, bench, Refine, Count, EltSize [?]
-    algo queryId           bench Refine   Count EltSize queryWidth    avg_ms       stdv
-   <chr>   <int>           <chr>  <int>   <int>   <dbl>      <dbl>     <dbl>      <dbl>
- 1 BTree       0 apply_at_region    482 3440580      16         90  41.03886 0.04404940
- 2 BTree       0 apply_at_region    482 3440580      32         90  52.17745 0.05745869
- 3 BTree       0 apply_at_region    482 3440580      64         90  56.91351 0.15904363
- 4 BTree       0 apply_at_region    482 3440580     128         90  69.15047 0.41461984
- 5 BTree       0  scan_at_region    482      NA      16         90  61.30736 0.03998940
- 6 BTree       0  scan_at_region    482      NA      32         90  76.90666 0.10484246
- 7 BTree       0  scan_at_region    482      NA      64         90 113.96748 0.12851438
- 8 BTree       0  scan_at_region    482      NA     128         90 165.12442 0.04778796
- 9 BTree       1 apply_at_region    519 3440446      16         90  41.67429 0.03785674
-10 BTree       1 apply_at_region    519 3440446      32         90  53.01065 0.05516692
-# ... with 3,190 more rows
+    algo queryId           bench Refine   Count EltSize queryWidth    avg_ms
+   <chr>   <int>           <chr>  <int>   <int>   <dbl>      <dbl>     <dbl>
+ 1 BTree       0 apply_at_region    482 3440580      16         90  41.03886
+ 2 BTree       0 apply_at_region    482 3440580      32         90  52.17745
+ 3 BTree       0 apply_at_region    482 3440580      64         90  56.91351
+ 4 BTree       0 apply_at_region    482 3440580     128         90  69.15047
+ 5 BTree       0  scan_at_region    482      NA      16         90  61.30736
+ 6 BTree       0  scan_at_region    482      NA      32         90  76.90666
+ 7 BTree       0  scan_at_region    482      NA      64         90 113.96748
+ 8 BTree       0  scan_at_region    482      NA     128         90 165.12442
+ 9 BTree       1 apply_at_region    519 3440446      16         90  41.67429
+10 BTree       1 apply_at_region    519 3440446      32         90  53.01065
+# ... with 3,190 more rows, and 1 more variables: stdv <dbl>
 #+end_example
 
 *** Scan queries by queryId                                        :export:
@@ -727,14 +727,14 @@ p
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/overview_query_region3146y5l.png]]
+[[file:/tmp/babel-3175QU7/overview_query_region3175RXZ.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "overview_query_region" ".pdf") :exports both :width 14 :height 10 :session 
 p
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/overview_query_region3146_Ds.pdf]]
+[[file:/tmp/babel-3175QU7/overview_query_region3175ehf.pdf]]
 
 *** Scan Queries by count
 #+begin_src R :results output :exports both :session 
@@ -752,19 +752,19 @@ dfCount
 #+begin_example
 Joining, by = c("queryId", "algo", "EltSize")
 # A tibble: 1,600 x 9
-   queryId  algo   Count EltSize          bench Refine queryWidth    avg_ms       stdv
-     <int> <chr>   <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>      <dbl>
- 1       0 BTree 3440580      16 scan_at_region    482         90  61.30736 0.03998940
- 2       0 BTree 3440580      32 scan_at_region    482         90  76.90666 0.10484246
- 3       0 BTree 3440580      64 scan_at_region    482         90 113.96748 0.12851438
- 4       0 BTree 3440580     128 scan_at_region    482         90 165.12442 0.04778796
- 5       1 BTree 3440446      16 scan_at_region    519         90  61.83986 0.03936288
- 6       1 BTree 3440446      32 scan_at_region    519         90  77.56185 0.08775762
- 7       1 BTree 3440446      64 scan_at_region    519         90 115.41552 0.18201462
- 8       1 BTree 3440446     128 scan_at_region    519         90 166.27091 0.06163571
- 9       2 BTree 3438884      16 scan_at_region    708         90  61.40488 0.04220763
-10       2 BTree 3438884      32 scan_at_region    708         90  77.18631 0.24806512
-# ... with 1,590 more rows
+   queryId  algo   Count EltSize          bench Refine queryWidth    avg_ms
+     <int> <chr>   <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>
+ 1       0 BTree 3440580      16 scan_at_region    482         90  61.30736
+ 2       0 BTree 3440580      32 scan_at_region    482         90  76.90666
+ 3       0 BTree 3440580      64 scan_at_region    482         90 113.96748
+ 4       0 BTree 3440580     128 scan_at_region    482         90 165.12442
+ 5       1 BTree 3440446      16 scan_at_region    519         90  61.83986
+ 6       1 BTree 3440446      32 scan_at_region    519         90  77.56185
+ 7       1 BTree 3440446      64 scan_at_region    519         90 115.41552
+ 8       1 BTree 3440446     128 scan_at_region    519         90 166.27091
+ 9       2 BTree 3438884      16 scan_at_region    708         90  61.40488
+10       2 BTree 3438884      32 scan_at_region    708         90  77.18631
+# ... with 1,590 more rows, and 1 more variables: stdv <dbl>
 #+end_example
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "scan_queries_by_size" ".png") :exports both :width 800 :height 600 :session 
@@ -790,17 +790,16 @@ p1
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/scan_queries_by_size3146MOy.png]]
+[[file:/tmp/babel-3175QU7/scan_queries_by_size3175rrl.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "scan_querie_by_size" ".pdf") :exports both :width 14 :height 10 :session 
 p1
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/scan_querie_by_size3146yyx.pdf]]
+[[file:/tmp/babel-3175QU7/scan_querie_by_size317541r.pdf]]
 
 *** Scan Queries Boxplots by queryId
-
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
@@ -823,19 +822,19 @@ p3
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/figure3146Zfs.png]]
+[[file:/tmp/babel-3175QU7/figure3175FAy.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "scan_queries_box_plot" ".pdf") :exports both :width 14 :height 10 :session 
 p3
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/scan_queries_box_plot3146mpy.pdf]]
+[[file:/tmp/babel-3175QU7/scan_queries_box_plot31753JB.pdf]]
 
 - Outliers seem to be ok these plots, we don't need to remove them in this case
 
 
-*** Throughput of scan Queries ordered by count
+*** Throughput of scan Queries ordered by queryId
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
@@ -862,14 +861,14 @@ p4
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/figure3146_RU.png]]
+[[file:/tmp/babel-3175QU7/figure3175EUH.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "tgp_scan_queries_by_count" ".pdf") :exports both :width 14 :height 10 :session 
 p4
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/tgp_scan_queries_by_count3146Mca.pdf]]
+[[file:/tmp/babel-3175QU7/tgp_scan_queries_by_count3175ReN.pdf]]
 
 *** Throughput MB / S
 
@@ -900,14 +899,14 @@ p5
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/figure314607z.png]]
+[[file:/tmp/babel-3175QU7/figure3175eoT.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "mbps_scan_queries" ".pdf") :exports both :width 14 :height 10 :session 
 p5
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/mbps_scan_queries3146zPJ.pdf]]
+[[file:/tmp/babel-3175QU7/mbps_scan_queries3175ryZ.pdf]]
 
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
@@ -933,7 +932,7 @@ p6 +  facet_grid( queryWidth~EltSize,               scale="free",               
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/figure3146o5o.png]]
+[[file:/tmp/babel-3175QU7/figure317548f.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "mbps_scan_queries" ".pdf") :exports both :width 14 :height 10 :session 
 
@@ -943,8 +942,7 @@ p6 +  facet_wrap( queryWidth~EltSize,               scale="free",               
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/mbps_scan_queries31460XE.pdf]]
-
+[[file:/tmp/babel-3175QU7/mbps_scan_queries3175FHm.pdf]]
 
 *** Throughput MB / S - Aggregate queries by width
 #+begin_src R :results output :exports both :session 
@@ -1025,7 +1023,7 @@ p7 +  facet_wrap( ~queryWidth,                  scale="free",                  n
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/figure3146cFG.png]]
+[[file:/tmp/babel-3175QU7/figure3175SRs.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "AggregatedTgpScanQueries" ".pdf") :exports both :width 14 :height 10 :session 
 
@@ -1033,7 +1031,7 @@ p7 +  facet_wrap( ~queryWidth,                  scale="free",                  n
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3146t5f/AggregatedTgpScanQueries3146pPM.pdf]]
+[[file:/tmp/babel-3175QU7/AggregatedTgpScanQueries3175fby.pdf]]
 
 #+begin_src R :results output :exports both :session 
 dfTgp %>% group_by(queryWidth) %>% summarize(minCount = min(minCount), maxCount = max(maxCount))
@@ -1375,7 +1373,7 @@ git push origin $expId
 #+end_src 
 
 
-* TODO Analysis (log_1507669861.tgz)
+* DONE Analysis (log_1507669861.tgz)
 ** Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
@@ -2285,6 +2283,12 @@ dfWrongCounts %>% myplot()
 [[file:./img/differing_counts.png]]
 
 
-* INPROGRESS Rerun 
+* DONE Rerun 
 - use 33 repetitions
-- change the order, first count then scan 
+- change the order, first count then scan
+
+* TODO Experiment to Variating the return size of the queries
+
+
+
+
