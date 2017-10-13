@@ -283,7 +283,7 @@ tmux ls
 ps ux
 #+end_src
 
-** TODO Remote Execution                                            :remote:
+** DONE Remote Execution                                            :remote:
 
 *** Get new changes on remote                                      :remote:
 #+begin_src sh :session remote :results output :exports both 
@@ -484,7 +484,7 @@ ls *tgz
 #+end_src
 
 #+RESULTS: tarFile
-| log_1506199809.tgz |
+| log_1507849705.tgz |
 
 #+NAME: logFile
 #+begin_src sh :results output :exports both :var f=tarFile
@@ -492,18 +492,35 @@ tar xvzf $f
 #+end_src
 
 #+RESULTS: logFile
-: bench_queries_region_twitter_26000_1000_8_1506199809.log
+: bench_queries_region_twitter_1000_1000_8_1507849705.log
+: bench_queries_region_twitter_128000_1000_8_1507849705.log
+: bench_queries_region_twitter_16000_1000_8_1507849705.log
+: bench_queries_region_twitter_2000_1000_8_1507849705.log
+: bench_queries_region_twitter_32000_1000_8_1507849705.log
+: bench_queries_region_twitter_4000_1000_8_1507849705.log
+: bench_queries_region_twitter_64000_1000_8_1507849705.log
+: bench_queries_region_twitter_8000_1000_8_1507849705.log
 
 Create CSV using logFile 
-#+begin_src sh :results output :exports both :var logFile=logFile[0]
-#echo Lile
-echo $(basename -s .log $logFile ).csv
-grep "; query ;" $logFile | sed "s/QueryBench//g" >  $(basename -s .log $logFile ).csv
+#+begin_src sh :results output :exports both :var logFileList=logFile
+for logFile in $logFileList ; 
+do
+output=$( basename -s .log $logFile).csv
+echo $output 
+grep "; query ;" $logFile | sed "s/QueryBench//g" >  $output
+done
 #+end_src
 
 #+NAME: csvFile
 #+RESULTS:
-: bench_queries_region_twitter_26000_1000_8_1506199809.csv
+: bench_queries_region_twitter_1000_1000_8_1507849705.csv
+: bench_queries_region_twitter_128000_1000_8_1507849705.csv
+: bench_queries_region_twitter_16000_1000_8_1507849705.csv
+: bench_queries_region_twitter_2000_1000_8_1507849705.csv
+: bench_queries_region_twitter_32000_1000_8_1507849705.csv
+: bench_queries_region_twitter_4000_1000_8_1507849705.csv
+: bench_queries_region_twitter_64000_1000_8_1507849705.csv
+: bench_queries_region_twitter_8000_1000_8_1507849705.csv
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -516,17 +533,44 @@ mkdir img
 :PROPERTIES: 
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
-*** Prepare
-Load the CSV into R
-#+begin_src R :results output :exports both :var f=csvFile
-library(tidyverse)
 
-df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") )
-df
+#+LATEX_HEADER:  \usepackage[a4paper,includeheadfoot,margin=2cm]{geometry}
+ 
+*** Prepare
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile path=(print default-directory)
+library(tidyverse)
+options(tibble.width = Inf)
+setwd(path)
+
+readAdd <- function(input){  # Reads a csv file and add a column identifying the csv by parsing its name
+
+return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") ))# %>%
+        # mutate (
+         #    tSize = as.factor(
+          #       gsub("bench_queries_region_twitter_([[:digit:]]+)_.*","\\1",input))))
+} 
+
+
+files = strsplit(f,"\n")[[1]]
+files
+df <- files %>%
+    map(readAdd) %>%   # use my custom read function
+    reduce(rbind)   # used rbind to combine into one dataframe
+
 #+end_src
 
 #+RESULTS:
 #+begin_example
+[1] "bench_queries_region_twitter_1000_1000_8_1507849705.csv"  
+[2] "bench_queries_region_twitter_128000_1000_8_1507849705.csv"
+[3] "bench_queries_region_twitter_16000_1000_8_1507849705.csv" 
+[4] "bench_queries_region_twitter_2000_1000_8_1507849705.csv"  
+[5] "bench_queries_region_twitter_32000_1000_8_1507849705.csv" 
+[6] "bench_queries_region_twitter_4000_1000_8_1507849705.csv"  
+[7] "bench_queries_region_twitter_64000_1000_8_1507849705.csv" 
+[8] "bench_queries_region_twitter_8000_1000_8_1507849705.csv"
 Parsed with column specification:
 cols(
   V1 = col_character(),
@@ -541,363 +585,342 @@ cols(
   V10 = col_character(),
   V11 = col_integer()
 )
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual expected   <int> <chr>      <chr>      <chr> actual 1     1  <NA> 11 columns 10 columns file 2     2  <NA> 11 columns 10 columns row 3     3  <NA> 11 columns 10 columns col 4     4  <NA> 11 columns 10 columns expected 5     5  <NA> 11 columns 10 columns actual # ... with 1 more variables: file <chr>
-... ................. ... ................................... ........ ................................... ...... ................................... .... ................................... ... ................................... ... ................................... ........ ................................... ...... .......................................
-See problems(...) for more details.
-
-Warning message:
-In rbind(names(probs), probs_f) :
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1507849705.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_1507849705.csv'
+... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_1507849705.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1507849705.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_1507849705.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_1507849705.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_1507849705.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 6400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_1507849705.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_1507849705.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_1507849705.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_1507849705.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_1507849705.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Warning messages:
+1: In rbind(names(probs), probs_f) :
   number of columns of result is not a multiple of vector length (arg 1)
-# A tibble: 8,000 x 11
-              V1    V2    V3    V4    V5             V6      V7
-           <chr> <chr> <int> <lgl> <int>          <chr>   <dbl>
- 1 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.638
- 2 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.571
- 3 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.608
- 4 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.615
- 5 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.685
- 6 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.680
- 7 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.616
- 8 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.609
- 9 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.524
-10 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.647
-# ... with 7,990 more rows, and 4 more variables: V8 <chr>, V9 <int>,
-#   V10 <chr>, V11 <int>
+2: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+3: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+4: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+5: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+6: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+7: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+8: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
 #+end_example
+
 
 Remove useless columns
 #+begin_src R :results output :exports both :session 
-names(df) <- c("algo" , "V2" , "queryId", "V4", "V5", "bench" , "ms" , "V8", "Refine","V10","Count")
+names(df) <- c("algo" , "V2" , "queryId", "V4", "T", "bench" , "ms" , "V8", "Refine","V10","Count")
 
-df <- select(df, -V2, -V4, -V5, -V8, -V10)
+df <- select(df, -V2, -V4, -V8, -V10)
 df
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 8,000 x 6
-            algo queryId          bench      ms Refine Count
-           <chr>   <int>          <chr>   <dbl>  <int> <int>
- 1 GeoHashBinary       0 scan_at_region 122.638     58    NA
- 2 GeoHashBinary       0 scan_at_region 122.571     58    NA
- 3 GeoHashBinary       0 scan_at_region 122.608     58    NA
- 4 GeoHashBinary       0 scan_at_region 122.615     58    NA
- 5 GeoHashBinary       0 scan_at_region 122.685     58    NA
- 6 GeoHashBinary       0 scan_at_region 122.680     58    NA
- 7 GeoHashBinary       0 scan_at_region 122.616     58    NA
- 8 GeoHashBinary       0 scan_at_region 122.609     58    NA
- 9 GeoHashBinary       0 scan_at_region 122.524     58    NA
-10 GeoHashBinary       0 scan_at_region 122.647     58    NA
-# ... with 7,990 more rows
+# A tibble: 51,200 x 7
+            algo queryId     T           bench       ms Refine  Count
+           <chr>   <int> <int>           <chr>    <dbl>  <int>  <int>
+ 1 GeoHashBinary       0  1000 apply_at_region 0.414447     29 924827
+ 2 GeoHashBinary       0  1000 apply_at_region 0.412729     29 924827
+ 3 GeoHashBinary       0  1000 apply_at_region 0.410752     29 924827
+ 4 GeoHashBinary       0  1000 apply_at_region 0.417607     29 924827
+ 5 GeoHashBinary       0  1000 apply_at_region 0.409624     29 924827
+ 6 GeoHashBinary       0  1000 apply_at_region 0.409441     29 924827
+ 7 GeoHashBinary       0  1000 apply_at_region 0.408944     29 924827
+ 8 GeoHashBinary       0  1000 apply_at_region 0.409712     29 924827
+ 9 GeoHashBinary       0  1000 apply_at_region 0.409174     29 924827
+10 GeoHashBinary       0  1000 apply_at_region 0.408876     29 924827
+# ... with 51,190 more rows
 #+end_example
+
+Fix the count for Rtrees
+#+begin_src R :results output :exports both :session 
+df <- 
+    df %>%  
+    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
+           Refine = ifelse(grepl("RTree",algo), NA, Refine)) %>%
+    mutate(queryWidth = 90 / 2**(queryId %/% 10))  #%>%   # comput info about query width
+    #mutate(EltSize = as.numeric(as.character(EltSize)) + 16 ) -> df # adjust the actual size of the elements
+#+end_src
+
+#+RESULTS:
 
 Summarize the averages
 #+begin_src R :results output :session :exports both
-dfplot <- 
+df 
+
+dfAvg <- 
     df %>% 
     group_by_at(vars(-ms)) %>%   #group_by all expect ms
-    summarize(avg_ms = mean(ms), stdv = sd(ms)) %>%
-    ungroup %>% 
-    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
-           Refine = ifelse(grepl("RTree",algo), NA, Refine))
+    summarize(avg_ms = mean(ms), stdv = sd(ms))
 
-dfplot %>% filter(queryId == 20)
+dfAvg
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 10 x 7
-                  algo queryId           bench Refine   Count    avg_ms
-                 <chr>   <int>           <chr>  <int>   <int>     <dbl>
- 1               BTree      20 apply_at_region     45 1720216 33.650190
- 2               BTree      20  scan_at_region     52      NA 42.927060
- 3       GeoHashBinary      20 apply_at_region     52 1720216  2.613443
- 4       GeoHashBinary      20  scan_at_region     52      NA 10.549540
- 5 ImplicitDenseVector      20 apply_at_region    130 1720216  1.543726
- 6 ImplicitDenseVector      20  scan_at_region    130      NA  5.418057
- 7               RTree      20 apply_at_region     NA 1720216 23.789190
- 8               RTree      20  scan_at_region     NA      NA 46.998710
- 9           RTreeBulk      20 apply_at_region     NA 1720216  3.797760
-10           RTreeBulk      20  scan_at_region     NA      NA 23.959600
-# ... with 1 more variables: stdv <dbl>
+# A tibble: 51,200 x 8
+            algo queryId     T           bench       ms Refine  Count queryWidth
+           <chr>   <int> <int>           <chr>    <dbl>  <int>  <int>      <dbl>
+ 1 GeoHashBinary       0  1000 apply_at_region 0.414447     29 924827         90
+ 2 GeoHashBinary       0  1000 apply_at_region 0.412729     29 924827         90
+ 3 GeoHashBinary       0  1000 apply_at_region 0.410752     29 924827         90
+ 4 GeoHashBinary       0  1000 apply_at_region 0.417607     29 924827         90
+ 5 GeoHashBinary       0  1000 apply_at_region 0.409624     29 924827         90
+ 6 GeoHashBinary       0  1000 apply_at_region 0.409441     29 924827         90
+ 7 GeoHashBinary       0  1000 apply_at_region 0.408944     29 924827         90
+ 8 GeoHashBinary       0  1000 apply_at_region 0.409712     29 924827         90
+ 9 GeoHashBinary       0  1000 apply_at_region 0.409174     29 924827         90
+10 GeoHashBinary       0  1000 apply_at_region 0.408876     29 924827         90
+# ... with 51,190 more rows
+# A tibble: 5,120 x 9
+# Groups:   algo, queryId, T, bench, Refine, Count [?]
+    algo queryId     T           bench Refine    Count queryWidth    avg_ms       stdv
+   <chr>   <int> <int>           <chr>  <int>    <int>      <dbl>     <dbl>      <dbl>
+ 1 BTree       0  1000 apply_at_region     27   924827         90  10.64469 0.04540806
+ 2 BTree       0  1000  scan_at_region     29       NA         90  17.44709 0.03102001
+ 3 BTree       0  2000 apply_at_region     28  1855890         90  25.77742 0.67939316
+ 4 BTree       0  2000  scan_at_region     29       NA         90  36.30205 0.03723738
+ 5 BTree       0  4000 apply_at_region     32  3706387         90  56.49481 0.66904755
+ 6 BTree       0  4000  scan_at_region     33       NA         90  74.14725 0.02328167
+ 7 BTree       0  8000 apply_at_region     44  7417949         90 116.41330 0.11938737
+ 8 BTree       0  8000  scan_at_region     45       NA         90 151.37550 0.03572192
+ 9 BTree       0 16000 apply_at_region     50 14876686         90 238.53760 0.06671865
+10 BTree       0 16000  scan_at_region     52       NA         90 307.56140 0.09391154
+# ... with 5,110 more rows
 #+end_example
 
+*** Plot: change of query count with size of T.                    :export:
 
-*** Plot overview                                                  :export:
-#+begin_src R :results output graphics :file "./img/overview_query_region.png" :exports results :width 800 :height 600 :session 
+#+begin_src R :results output graphics :file "./img/count_by_T.pdf" :exports both :width 14 :height 10 :session 
 
-myplot <- function(data) {
-    data %>%
-#    filter( algo == "GeoHashBinary" ) %>%    
-    #mutate(queryW = queryId %/% 10) %>%
-    mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-#    arrange(desc(queryW)) %>%
-    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) +  
-    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
-    geom_point() +
-    #labs(title= data$bench) +     
-#    scale_x_continuous(breaks=seq(0, 14, by=1)) +
-    facet_wrap(bench~`Query Width`,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
-#    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
-#    facet_grid(queryW~bench,scale="free") + 
-    theme(legend.position = "bottom",)
-}
-#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
-#dfplot %>% filter(bench == "apply_at_region") %>% myplot()
-dfplot %>% 
-    myplot() 
-#+end_src
-
-#+RESULTS:
-[[file:./img/overview_query_region.png]]
-
-*** DONE Plot ordered by query return size                         :export:
-
-Count queries
-
-#+begin_src R :results output graphics :file "./img/count_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
-
-myplot <- function(data) {
-    data %>%
-        mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-      #  group_by(algo,bench,queryId) %>% 
-      #  summarize(max_ms = max(avg_ms)) %>%
-    ggplot(aes(x = as.factor(Count), y = avg_ms, color = algo)) +  
-    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
-    geom_point() +
-    #geom_text(aes(label=queryId), vjust=-0.25) +
-    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
-    facet_wrap(bench~`Query Width`,scale="free", nrow = 2 , 
-               labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
-    theme(legend.position = "bottom",
+dfAvg %>% 
+    filter(algo == "BTree" & bench == "apply_at_region") %>%
+    ggplot(aes(x = factor(T), y = Count, color = factor(queryId%%10))) +
+    geom_line(aes(group=queryId))+
+    facet_wrap(~queryWidth, scale = "free_y") + 
+    theme(legend.position = "bottom", 
           axis.text.x = element_text(angle = 45, hjust = 0.75))
-        
-        
-        
-}
-#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
-dfplot %>% filter(bench == "apply_at_region") %>% myplot()
-#dfplot %>% 
-#    myplot() 
 #+end_src
 
 #+RESULTS:
-[[file:./img/count_queries_by_size.png]]
+[[file:./img/count_by_T.pdf]]
 
-Scan queries: 
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
-#+begin_src R :results output graphics :file "./img/scan_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
-dfplot %>% 
+dfAvg %>% 
+    filter(algo == "BTree" & bench == "apply_at_region" & queryWidth < 1) %>%
+    ggplot(aes(x = factor(T), y = Count, color = factor(queryId))) +
+    geom_line(aes(group=queryId))+
+    facet_wrap(~queryId, scale = "free_y") + 
+    theme(legend.position = "bottom", 
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3289gSP/figure3289z5y.pdf]]
+
+*** Plot: Scan Query Time by T facet by queryId                    :export:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
+
+dfAvg %>% 
+    filter(bench == "scan_at_region" & queryWidth < 1) %>%
+    ggplot(aes(x = factor(T), y = avg_ms, color = algo)) +
+    geom_line(aes(group=algo))+
+    geom_errorbar(aes(ymin = avg_ms - stdv , ymax = avg_ms + stdv)) + 
+    facet_wrap(~queryId, scale = "free_y") + 
+    theme(legend.position = "bottom", 
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3289gSP/figure3289XqM.pdf]]
+
+*** Plot: Scan query time by Query Count faceted by QueryId        :export:
+
+#+begin_src R :results output :exports both :session 
+dfAvg %>% 
+    ungroup() %>%
     filter(bench == "apply_at_region") %>%
-    select(queryId,algo,Count) %>%
+    select(queryId,algo,Count,T) %>%
     left_join( 
-        filter(dfplot, bench == "scan_at_region") %>% select(-Count)
-    ) %>% myplot()
+        filter(ungroup(dfAvg), bench == "scan_at_region") %>% select(-Count)
+   ) -> dfCount
+dfCount
 #+end_src
 
 #+RESULTS:
-[[file:./img/scan_queries_by_size.png]]
+#+begin_example
+Joining, by = c("queryId", "algo", "T")
+# A tibble: 2,560 x 9
+   queryId  algo     Count      T          bench Refine queryWidth     avg_ms        stdv
+     <int> <chr>     <int>  <int>          <chr>  <int>      <dbl>      <dbl>       <dbl>
+ 1       0 BTree    924827   1000 scan_at_region     29         90   17.44709  0.03102001
+ 2       0 BTree   1855890   2000 scan_at_region     29         90   36.30205  0.03723738
+ 3       0 BTree   3706387   4000 scan_at_region     33         90   74.14725  0.02328167
+ 4       0 BTree   7417949   8000 scan_at_region     45         90  151.37550  0.03572192
+ 5       0 BTree  14876686  16000 scan_at_region     52         90  307.56140  0.09391154
+ 6       0 BTree  29764961  32000 scan_at_region     64         90  691.87770  0.59023687
+ 7       0 BTree  59715461  64000 scan_at_region     89         90 1679.86400  1.45107010
+ 8       0 BTree 119931295 128000 scan_at_region    118         90 3746.40000 14.13264542
+ 9       1 BTree    929918   1000 scan_at_region     46         90   17.40384  0.03499172
+10       1 BTree   1866101   2000 scan_at_region     46         90   36.21215  0.03681069
+# ... with 2,550 more rows
+#+end_example
 
-*** TODO Comments                                                  :export:
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
-- PMQ seems to be the best algorithmn when the amount of elements returned by the query is large. 
-See table in [[#tab20170923185752]].
-
-** What is the actual count of elements per query ?
-:PROPERTIES:
-:CUSTOM_ID: tab20170923185752
-:END:
-
-*** Table                                                          :export:
-
-Variance shows if some counts differ between algorithms:
-(all the algorithms had the same counts for every query)
-#+begin_src R :results output :exports none :session :colnames yes
-
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    group_by(queryId) %>%                     #group to see if every algo has same coubts
-    summarize(Var = round(var(Count),3)  ) -> 
-    countVariation
-
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench == "apply_at_region") %>%
-    ungroup( bench) %>% # must ungroup to drop the column
-    select( -bench, -stdv, -Refine) %>%
-    gather(measure, value, Count, avg_ms) %>%
-    unite(temp, algo, measure) %>%
-    spread( temp, value) %>% 
-    #select(queryId,ends_with("Count") , ends_with("ms")) %>%
-    select(queryId,ends_with("Count") ) %>%
- #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
-    inner_join(countVariation) -> wideTable
+dfCount %>% 
+    filter(queryWidth < 1) %>%
+    ggplot(aes(x = factor(Count), y = avg_ms, color = algo)) +
+    geom_line(aes(group=algo))+
+    geom_errorbar(aes(ymin = avg_ms - stdv , ymax = avg_ms + stdv)) + 
+    facet_wrap(~queryId, scale = "free") + 
+    theme(legend.position = "bottom", 
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
 
 #+end_src
 
 #+RESULTS:
-: Joining, by = "queryId"
+[[file:/tmp/babel-3289gSP/figure3289lnx.pdf]]
 
-#+CAPTION: Number of elements returned in each query
-#+NAME: tab:elCount
-#+begin_src R :results table :exports results :session :colnames yes
-wideTable %>%
-    as_tibble() %>%
-    print(n = nrow(.))
-#+end_src
-
-#+RESULTS:
-| queryId | BTree_Count | GeoHashBinary_Count | ImplicitDenseVector_Count | RTreeBulk_Count | RTree_Count | Var |
-|---------+-------------+---------------------+---------------------------+-----------------+-------------+-----|
-|       0 |    24178715 |            24178715 |                  24178715 |        24178715 |    24178715 |   0 |
-|       1 |    24320314 |            24320314 |                  24320314 |        24320314 |    24320314 |   0 |
-|       2 |    19754592 |            19754592 |                  19754592 |        19754592 |    19754592 |   0 |
-|       3 |    25763943 |            25763943 |                  25763943 |        25763943 |    25763943 |   0 |
-|       4 |    24307788 |            24307788 |                  24307788 |        24307788 |    24307788 |   0 |
-|       5 |    24131410 |            24131410 |                  24131410 |        24131410 |    24131410 |   0 |
-|       6 |    25763888 |            25763888 |                  25763888 |        25763888 |    25763888 |   0 |
-|       7 |    24648489 |            24648489 |                  24648489 |        24648489 |    24648489 |   0 |
-|       8 |    25763951 |            25763951 |                  25763951 |        25763951 |    25763951 |   0 |
-|       9 |    24556041 |            24556041 |                  24556041 |        24556041 |    24556041 |   0 |
-|      10 |    22266461 |            22266461 |                  22266461 |        22266461 |    22266461 |   0 |
-|      11 |    22255409 |            22255409 |                  22255409 |        22255409 |    22255409 |   0 |
-|      12 |     7561928 |             7561928 |                   7561928 |         7561928 |     7561928 |   0 |
-|      13 |    21465987 |            21465987 |                  21465987 |        21465987 |    21465987 |   0 |
-|      14 |    20823150 |            20823150 |                  20823150 |        20823150 |    20823150 |   0 |
-|      15 |      172485 |              172485 |                    172485 |          172485 |      172485 |   0 |
-|      16 |    21867218 |            21867218 |                  21867218 |        21867218 |    21867218 |   0 |
-|      17 |    21899103 |            21899103 |                  21899103 |        21899103 |    21899103 |   0 |
-|      18 |     6746852 |             6746852 |                   6746852 |         6746852 |     6746852 |   0 |
-|      19 |    21863148 |            21863148 |                  21863148 |        21863148 |    21863148 |   0 |
-|      20 |     1720216 |             1720216 |                   1720216 |         1720216 |     1720216 |   0 |
-|      21 |     3656734 |             3656734 |                   3656734 |         3656734 |     3656734 |   0 |
-|      22 |     3239932 |             3239932 |                   3239932 |         3239932 |     3239932 |   0 |
-|      23 |     3359208 |             3359208 |                   3359208 |         3359208 |     3359208 |   0 |
-|      24 |    16754579 |            16754579 |                  16754579 |        16754579 |    16754579 |   0 |
-|      25 |    10500916 |            10500916 |                  10500916 |        10500916 |    10500916 |   0 |
-|      26 |    14436603 |            14436603 |                  14436603 |        14436603 |    14436603 |   0 |
-|      27 |     5949544 |             5949544 |                   5949544 |         5949544 |     5949544 |   0 |
-|      28 |    12512448 |            12512448 |                  12512448 |        12512448 |    12512448 |   0 |
-|      29 |     5363962 |             5363962 |                   5363962 |         5363962 |     5363962 |   0 |
-|      30 |     2933887 |             2933887 |                   2933887 |         2933887 |     2933887 |   0 |
-|      31 |     6357856 |             6357856 |                   6357856 |         6357856 |     6357856 |   0 |
-|      32 |     5622730 |             5622730 |                   5622730 |         5622730 |     5622730 |   0 |
-|      33 |     7882904 |             7882904 |                   7882904 |         7882904 |     7882904 |   0 |
-|      34 |     4453847 |             4453847 |                   4453847 |         4453847 |     4453847 |   0 |
-|      35 |     2771423 |             2771423 |                   2771423 |         2771423 |     2771423 |   0 |
-|      36 |     6580851 |             6580851 |                   6580851 |         6580851 |     6580851 |   0 |
-|      37 |     4879016 |             4879016 |                   4879016 |         4879016 |     4879016 |   0 |
-|      38 |     2969182 |             2969182 |                   2969182 |         2969182 |     2969182 |   0 |
-|      39 |     2779782 |             2779782 |                   2779782 |         2779782 |     2779782 |   0 |
-|      40 |      923319 |              923319 |                    923319 |          923319 |      923319 |   0 |
-|      41 |      932176 |              932176 |                    932176 |          932176 |      932176 |   0 |
-|      42 |      284653 |              284653 |                    284653 |          284653 |      284653 |   0 |
-|      43 |     1944583 |             1944583 |                   1944583 |         1944583 |     1944583 |   0 |
-|      44 |      428643 |              428643 |                    428643 |          428643 |      428643 |   0 |
-|      45 |      290775 |              290775 |                    290775 |          290775 |      290775 |   0 |
-|      46 |     1192366 |             1192366 |                   1192366 |         1192366 |     1192366 |   0 |
-|      47 |      448450 |              448450 |                    448450 |          448450 |      448450 |   0 |
-|      48 |     5230730 |             5230730 |                   5230730 |         5230730 |     5230730 |   0 |
-|      49 |     2018612 |             2018612 |                   2018612 |         2018612 |     2018612 |   0 |
-|      50 |     2443223 |             2443223 |                   2443223 |         2443223 |     2443223 |   0 |
-|      51 |       61318 |               61318 |                     61318 |           61318 |       61318 |   0 |
-|      52 |     2853477 |             2853477 |                   2853477 |         2853477 |     2853477 |   0 |
-|      53 |     1024119 |             1024119 |                   1024119 |         1024119 |     1024119 |   0 |
-|      54 |      173015 |              173015 |                    173015 |          173015 |      173015 |   0 |
-|      55 |     1838813 |             1838813 |                   1838813 |         1838813 |     1838813 |   0 |
-|      56 |      897456 |              897456 |                    897456 |          897456 |      897456 |   0 |
-|      57 |     2936650 |             2936650 |                   2936650 |         2936650 |     2936650 |   0 |
-|      58 |      912272 |              912272 |                    912272 |          912272 |      912272 |   0 |
-|      59 |     2171693 |             2171693 |                   2171693 |         2171693 |     2171693 |   0 |
-|      60 |        9615 |                9615 |                      9615 |            9615 |        9615 |   0 |
-|      61 |      447052 |              447052 |                    447052 |          447052 |      447052 |   0 |
-|      62 |      559470 |              559470 |                    559470 |          559470 |      559470 |   0 |
-|      63 |      144198 |              144198 |                    144198 |          144198 |      144198 |   0 |
-|      64 |      146267 |              146267 |                    146267 |          146267 |      146267 |   0 |
-|      65 |       38191 |               38191 |                     38191 |           38191 |       38191 |   0 |
-|      66 |      561318 |              561318 |                    561318 |          561318 |      561318 |   0 |
-|      67 |      327875 |              327875 |                    327875 |          327875 |      327875 |   0 |
-|      68 |      204817 |              204817 |                    204817 |          204817 |      204817 |   0 |
-|      69 |      186626 |              186626 |                    186626 |          186626 |      186626 |   0 |
-|      70 |      777466 |              777466 |                    777466 |          777466 |      777466 |   0 |
-|      71 |       41667 |               41667 |                     41667 |           41667 |       41667 |   0 |
-|      72 |      180284 |              180284 |                    180284 |          180284 |      180284 |   0 |
-|      73 |      558507 |              558507 |                    558507 |          558507 |      558507 |   0 |
-|      74 |      125097 |              125097 |                    125097 |          125097 |      125097 |   0 |
-|      75 |      594165 |              594165 |                    594165 |          594165 |      594165 |   0 |
-|      76 |        6091 |                6091 |                      6091 |            6091 |        6091 |   0 |
-|      77 |      302551 |              302551 |                    302551 |          302551 |      302551 |   0 |
-|      78 |      184109 |              184109 |                    184109 |          184109 |      184109 |   0 |
-|      79 |      173799 |              173799 |                    173799 |          173799 |      173799 |   0 |
-#+TBLFM: $6=$0;%0.3f
+*** Plot: Scan query throughput by Query Count faceted by QueryId  :export:
 
 
-
-**** Just the diverging queries :                       :noexport:ARCHIVE:
-#+begin_src R :results table :exports results :session :colnames yes
-
-wideTable %>%
-    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
-    as_tibble() %>%
-    print(n = nrow(.))
-
-#+end_src
-
-#+CAPTION: Queries that returned different result depending on the algorithm 
-#+RESULTS:
-| queryId | BTree_Count | GeoHashBinary_Count | ImplicitDenseVector_Count | RTreeBulk_Count | RTree_Count | Var |
-|---------+-------------+---------------------+---------------------------+-----------------+-------------+-----|
-
-
-*** Plot                                                 :noexport:ARCHIVE:
-
-There are some queries where the count differs for Rtree by a small amount of elements.
-
-Counts have some differences :
-#+begin_src R :results output :exports none :session 
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    group_by(queryId, bench) %>% #group to see if every algo has same counts
-    summarize(c = mean(Count), s = sd(Count)  ) %>% 
-    filter ( s > 0) %>% 
-    select(queryId, bench) %>% 
-    left_join(dfplot) -> dfWrongCounts
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
+dfCount %>% 
+    filter(queryWidth < 1) %>%
+    ggplot(aes(x = factor(Count), group=algo, y = Count / avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = Count / (avg_ms - stdv) , ymax = Count / (avg_ms + stdv)) ) +
+    geom_line() +
+    facet_wrap(~queryId,scale="free") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, vjust = 0.75))
 
 #+end_src
 
 #+RESULTS:
-: Joining, by = c("queryId", "bench")
-
-
-These are the queries that for some misterious reason resulted in different counts.
-#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
-
-myplot <- function(data) {
-    data %>%
-   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
-# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
-        #geom_jitter( width=0.1, height=0) +
-        geom_point( ) +
-        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
-        theme(legend.position = "bottom",) + 
-#        labs(x = "Query width (degrees)") +
-        #scale_y_continuous(breaks=c(3440446,3440447) )
-        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
-    
-}
-
-#dfWrongCounts %>% myplot() 
-
-dfWrongCounts %>% myplot()
-
-#dfWrongCounts %>% 
-#group_by(queryId) %>% filter(queryId == 1 ) %>%
-#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
-#+end_src
-
-#+RESULTS:
-[[file:./img/differing_counts.png]]
+[[file:/tmp/babel-3289gSP/figure3289l1Z.pdf]]
 
