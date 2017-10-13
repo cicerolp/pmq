@@ -209,6 +209,9 @@ int main(int argc, char *argv[]) {
 #ifdef BENCH_RTREE
     run_bench<RTreeCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
 #endif
+#ifdef BENCH_RTREE_BULK
+    run_bench<RTreeBulkCtn<el_t, bgi::quadratic < 16>> , it_t, el_t>(argc, argv, begin, end, queries, parameters);
+#endif
 #ifdef BENCH_DENSE
     run_bench<DenseCtn<el_t>, it_t, el_t>(argc, argv, begin, end, queries, parameters);
 #endif
