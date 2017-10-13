@@ -27,6 +27,9 @@ cicero
 -- Build files have been written to: /home/julio/Projects/pmq/build-release
 [ 14%] Built target test_pmq_count
 [ 28%] Built target test_containers_count
+Scanning dependencies of target bench_insert_remove_count
+[ 35%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/bench_insert_remove_count.cpp.o
+[ 42%] Linking CXX executable bench_insert_remove_count
 [ 42%] Built target bench_insert_remove_count
 Scanning dependencies of target bench_queries_region
 [ 50%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/bench_queries_region.cpp.o
@@ -34,28 +37,20 @@ Scanning dependencies of target bench_queries_region
 [ 57%] Built target bench_queries_region
 [ 71%] Built target bench_memory
 [ 85%] Built target bench_insert_remove_scan
+Scanning dependencies of target bench_insert_and_scan
+[ 92%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/bench_insert_and_scan.cpp.o
+[100%] Linking CXX executable bench_insert_and_scan
 [100%] Built target bench_insert_and_scan
-bench_queries_region_twitter_1000_1000_8_1507849705.log
-bench_queries_region_twitter_128000_1000_8_1507849705.log
-bench_queries_region_twitter_16000_1000_8_1507849705.log
-bench_queries_region_twitter_2000_1000_8_1507849705.log
-bench_queries_region_twitter_32000_1000_8_1507849705.log
-bench_queries_region_twitter_4000_1000_8_1507849705.log
-bench_queries_region_twitter_64000_1000_8_1507849705.log
-bench_queries_region_twitter_8000_1000_8_1507849705.log
+bench_queries_region_twitter_1000_1000_8_1507923856.log
+bench_queries_region_twitter_128000_1000_8_1507923856.log
+bench_queries_region_twitter_16000_1000_8_1507923856.log
+bench_queries_region_twitter_2000_1000_8_1507923856.log
+bench_queries_region_twitter_32000_1000_8_1507923856.log
+bench_queries_region_twitter_4000_1000_8_1507923856.log
+bench_queries_region_twitter_64000_1000_8_1507923856.log
+bench_queries_region_twitter_8000_1000_8_1507923856.log
 Already on 'exp20171012184842'
-A	data/cicero/exp20171012184842/run_1507848678
-A	data/cicero/exp20171012184842/run_1507849705
+M	data/cicero/exp20171012184842/info.org
+M	data/cicero/exp20171012184842/run_1507849705
+A	data/cicero/exp20171012184842/run_1507923856
 Your branch is up-to-date with 'origin/exp20171012184842'.
-[exp20171012184842 6c842e8] Finish execution 1507849705
- 4 files changed, 777 insertions(+)
- create mode 100644 data/cicero/exp20171012184842/info.org
- create mode 100644 data/cicero/exp20171012184842/log_1507849705.tgz
- create mode 100644 data/cicero/exp20171012184842/run_1507848678
- create mode 100644 data/cicero/exp20171012184842/run_1507849705
-remote: 
-remote: Create pull request for exp20171012184842:        
-remote:   https://bitbucket.org/jtoss/pmq/pull-requests/new?source=exp20171012184842&t=1        
-remote: 
-To git@bitbucket.org:jtoss/pmq.git
-   fa246c7..6c842e8  exp20171012184842 -> exp20171012184842
