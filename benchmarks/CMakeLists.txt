@@ -6,7 +6,10 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 option(BENCH_PMQ "Enable PMQ in the benchmarks" ON)
 option(BENCH_BTREE "Enable BTREE in the benchmarks" ON)
 option(BENCH_RTREE "Enable RTREE in the benchmarks" ON)
+option(BENCH_RTREE_BULK "Enable RTREE (bulk init) in the benchmarks" ON)
 option(BENCH_DENSE "Enable Dense vectors in the benchmarks" ON)
+
+set(ELT_SIZE "0" CACHE STRING "Extra size (+16) of the elements stored in the data structures")
 
 configure_file (benchmarkconfig.h.in benchmarkconfig.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}") # To find the .h
