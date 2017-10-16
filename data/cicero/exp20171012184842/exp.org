@@ -322,9 +322,52 @@ git log -1 | cat
 #+begin_example
 
 julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 23, done.
-(1/20)           remote: Compressing objects:  10% (2/20)           remote: Compressing objects:  15% (3/20)           remote: Compressing objects:  20% (4/20)           remote: Compressing objects:  25% (5/20)           remote: Compressing objects:  30% (6/20)           remote: Compressing objects:  35% (7/20)           remote: Compressing objects:  40% (8/20)           remote: Compressing objects:  45% (9/20)           remote: Compressing objects:  50% (10/20)           remote: Compressing objects:  55% (11/20)           remote: Compressing objects:  60% (12/20)           remote: Compressing objects:  65% (13/20)           remote: Compressing objects:  70% (14/20)           remote: Compressing objects:  75% (15/20)           remote: Compressing objects:  80% (16/20)           remote: Compressing objects:  85% (17/20)           remote: Compressing objects:  90% (18/20)           remote: Compressing objects:  95% (19/20)           remote: Compressing objects: 100% (20/20)           remote: Compressing objects: 100% (20/20), done.        
+(1/20)           
+remote: Compressing objects:  10% (2/20)           
+remote: Compressing objects:  15% (3/20)           
+remote: Compressing objects:  20% (4/20)           
+remote: Compressing objects:  25% (5/20)           
+remote: Compressing objects:  30% (6/20)           
+remote: Compressing objects:  35% (7/20)           
+remote: Compressing objects:  40% (8/20)           
+remote: Compressing objects:  45% (9/20)           
+remote: Compressing objects:  50% (10/20)           
+remote: Compressing objects:  55% (11/20)           
+remote: Compressing objects:  60% (12/20)           
+remote: Compressing objects:  65% (13/20)           
+remote: Compressing objects:  70% (14/20)           
+remote: Compressing objects:  75% (15/20)           
+remote: Compressing objects:  80% (16/20)           
+remote: Compressing objects:  85% (17/20)           
+remote: Compressing objects:  90% (18/20)           
+remote: Compressing objects:  95% (19/20)           
+remote: Compressing objects: 100% (20/20)           
+remote: Compressing objects: 100% (20/20), done.        
 remote: Total 23 (delta 16), reused 0 (delta 0)
-(1/23)   Unpacking objects:   8% (2/23)   Unpacking objects:  13% (3/23)   Unpacking objects:  17% (4/23)   Unpacking objects:  21% (5/23)   Unpacking objects:  26% (6/23)   Unpacking objects:  30% (7/23)   Unpacking objects:  34% (8/23)   Unpacking objects:  39% (9/23)   Unpacking objects:  43% (10/23)   Unpacking objects:  47% (11/23)   Unpacking objects:  52% (12/23)   Unpacking objects:  56% (13/23)   Unpacking objects:  60% (14/23)   Unpacking objects:  65% (15/23)   Unpacking objects:  69% (16/23)   Unpacking objects:  73% (17/23)   Unpacking objects:  78% (18/23)   Unpacking objects:  82% (19/23)   Unpacking objects:  86% (20/23)   Unpacking objects:  91% (21/23)   Unpacking objects:  95% (22/23)   Unpacking objects: 100% (23/23)   Unpacking objects: 100% (23/23), done.
+(1/23)   
+Unpacking objects:   8% (2/23)   
+Unpacking objects:  13% (3/23)   
+Unpacking objects:  17% (4/23)   
+Unpacking objects:  21% (5/23)   
+Unpacking objects:  26% (6/23)   
+Unpacking objects:  30% (7/23)   
+Unpacking objects:  34% (8/23)   
+Unpacking objects:  39% (9/23)   
+Unpacking objects:  43% (10/23)   
+Unpacking objects:  47% (11/23)   
+Unpacking objects:  52% (12/23)   
+Unpacking objects:  56% (13/23)   
+Unpacking objects:  60% (14/23)   
+Unpacking objects:  65% (15/23)   
+Unpacking objects:  69% (16/23)   
+Unpacking objects:  73% (17/23)   
+Unpacking objects:  78% (18/23)   
+Unpacking objects:  82% (19/23)   
+Unpacking objects:  86% (20/23)   
+Unpacking objects:  91% (21/23)   
+Unpacking objects:  95% (22/23)   
+Unpacking objects: 100% (23/23)   
+Unpacking objects: 100% (23/23), done.
 From bitbucket.org:jtoss/pmq
 FETCH_HEAD
 origin/exp20171012184842
@@ -732,8 +775,6 @@ dfAvg %>%
 #+RESULTS:
 [[file:./img/count_by_T.pdf]]
 
-
-
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
 dfAvg %>% 
@@ -747,7 +788,7 @@ dfAvg %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3289gSP/figure3289XXa.pdf]]
+[[file:/tmp/babel-19237zwJ/figure19237AuT.pdf]]
 
 *** Plot: Scan Query Time by T facet by queryId                    :export:
 
@@ -764,7 +805,7 @@ dfAvg %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3289gSP/figure3289khg.pdf]]
+[[file:/tmp/babel-19237zwJ/figure19237N4Z.pdf]]
 
 *** Plot: Scan query time by Query Count faceted by QueryId        :export:
 
@@ -812,23 +853,25 @@ dfCount %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3289gSP/figure3289xrm.pdf]]
+[[file:/tmp/babel-19237zwJ/figure19237aCg.pdf]]
 
 *** Plot: Scan query throughput by Query Count faceted by QueryId  :export:
-
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 dfCount %>% 
     filter(queryWidth < 1) %>%
-    ggplot(aes(x = factor(Count), group=algo, y = Count / avg_ms, color = algo)) +  
+    arrange(Count,T) %>%
+    mutate(lbls = paste(Count," (",T/1000,")",sep="")) %>%
+    ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
     geom_errorbar(aes(ymin = Count / (avg_ms - stdv) , ymax = Count / (avg_ms + stdv)) ) +
     geom_line() +
     facet_wrap(~queryId,scale="free") +
     theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, vjust = 0.75))
+          axis.text.x = element_text(angle = 45, hjust = 1))+
+    labs(x = "Query Count ( Dataset size x 10^{6} )")
 
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3289gSP/figure3289-1s.pdf]]
+[[file:/tmp/babel-19237zwJ/figure192374vk.pdf]]
 
