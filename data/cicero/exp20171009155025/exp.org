@@ -726,7 +726,7 @@ p
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19237zwJ/overview_query_region19237OAV.pdf]]
+[[file:/tmp/babel-19237zwJ/overview_query_region1923753f.pdf]]
 
 *** Scan Queries by count
 #+begin_src R :results output :exports both :session 
@@ -825,18 +825,21 @@ p3
 
 - Outliers seem to be ok these plots, we don't need to remove them in this case
 
+  
+*** Throughput of scan Queries ordered by queryId                  :export:
 
-*** Throughput of scan Queries ordered by queryId
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+#+begin_src R :results output graphics :file "./img/tgp_scan_queries.pdf" :exports both :width 14 :height 10 :session 
 
 myplot <- function(data) {
     data %>%
-    ggplot(aes(x = as.factor(queryId), group=algo, y = Count / avg_ms, color = algo)) +  
+    arrange(Count,queryId) %>%
+    mutate(lbls = paste(Count," (",queryId,")",sep="")) %>%
+    ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
     geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
     geom_line() +
-    # geom_text(aes(label=queryId),color="black") +
-    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    labs( title="Queries ordered by size of the result", 
+          x = "Element count of the query",
+         y = "queries / ms") +     
     facet_wrap( EltSize~queryWidth,
                scale="free", 
                nrow = 4 , 
@@ -847,61 +850,43 @@ myplot <- function(data) {
 }
 
 dfCount %>% mutate(AvgTgp = (Count/avg_ms)) %>%
-myplot() -> p4 
-
-p4
+myplot()
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19237zwJ/figure19237Pzz.png]]
+[[file:./img/tgp_scan_queries.pdf]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "tgp_scan_queries_by_count" ".pdf") :exports both :width 14 :height 10 :session 
-p4
-#+end_src
 
-#+RESULTS:
-[[file:/tmp/babel-19237zwJ/tgp_scan_queries_by_count19237B9C.pdf]]
+*** Throughput MB / S                                              :export:
 
-*** Throughput MB / S
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+#+begin_src R :results output graphics :file "./img/mbps_scan_queries.pdf" :exports both :width 14 :height 10 :session 
 
-myplot <- function(data) {
-    data %>%
-    ggplot(aes(x = as.factor(queryId), group=algo, y = Count / avg_ms, color = algo)) +  
+dfCount %>% 
+    arrange(Count,queryId) %>%
+    mutate(lbls = paste(Count," (",queryId,")",sep="")) %>%
+    mutate(Count = Count * EltSize / 2**20) %>% 
+    ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
     geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
     geom_line() +
     # geom_text(aes(label=queryId),color="black") +
-    #labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    labs( title="Queries ordered by size of the result", 
+          x = "Element count of the query",
+         y = "MB / ms") +     
     facet_wrap( EltSize~queryWidth,
                scale="free", 
                ncol=8 , 
                labeller = label_both)+
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 90, vjust = 0.5))
-        
-}
 
-dfCount %>% 
-    #filter(EltSize == 16, queryWidth == 90) %>%
-    mutate(Count = Count * EltSize / 2**20) %>% 
-    myplot() -> p5 
-
-p5
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3175QU7/figure3175eoT.png]]
+[[file:./img/mbps_scan_queries.pdf]]
+
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "mbps_scan_queries" ".pdf") :exports both :width 14 :height 10 :session 
-p5
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-3175QU7/mbps_scan_queries3175ryZ.pdf]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
 myplot <- function(data) {
     data %>%
@@ -924,19 +909,10 @@ p6 +  facet_grid( queryWidth~EltSize,               scale="free",               
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3175QU7/figure317548f.png]]
+[[file:/tmp/babel-19237zwJ/mbps_scan_queries19237ThI.pdf]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "mbps_scan_queries" ".pdf") :exports both :width 14 :height 10 :session 
 
-# NOTE: facet wrap better comparison between algorithms
-p6 +  facet_wrap( queryWidth~EltSize,               scale="free",                ncol=4 ,                labeller = label_both)
-#p6 +  facet_grid( queryWidth~EltSize,               scale="free",                                labeller = label_both)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-3175QU7/mbps_scan_queries3175FHm.pdf]]
-
-*** Throughput MB / S - Aggregate queries by width
+*** Throughput MB / S - Aggregate queries by width                 :export:
 #+begin_src R :results output :exports both :session 
 dfTgp <-
 dfCount %>% 
@@ -999,35 +975,25 @@ dfCount %>%
 # ... with 150 more rows
 #+end_example
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
-p7 <-
-    dfTgp %>% 
+#+begin_src R :results output graphics :file "./img/AggregatedTgpScanQueries.pdf" :exports both :width 14 :height 10 :session 
+dfTgp %>% 
     ggplot(aes(x = as.factor(EltSize), group=algo, y = avgTgp, color = algo)) +  
     geom_bar(stat="identity", position = position_dodge(), aes(fill=algo)) + 
     geom_errorbar(aes(ymin = avgTgp - stdv, ymax = avgTgp + stdv), position= position_dodge(), color = "black")  +
-   # geom_line() +
     theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 90, vjust = 0.5))
-
-
-p7 +  facet_wrap( ~queryWidth,                  scale="free",                  ncol=4 ,                  labeller = label_both)
-#p6 +  facet_grid( queryWidth~EltSize,               scale="free",                                labeller = label_both)
+          axis.text.x = element_text(angle = 90, vjust = 0.5))+
+    facet_wrap( ~queryWidth, scale="free", ncol=4 , labeller = label_both)+
+    labs(x = "Elements Size (Bytes)", y = "Average Throughput")
+                                        # +  facet_grid( queryWidth~EltSize,               scale="free",                                labeller = label_both)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3175QU7/figure3175SRs.png]]
+[[file:./img/AggregatedTgpScanQueries.pdf]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "AggregatedTgpScanQueries" ".pdf") :exports both :width 14 :height 10 :session 
 
-p7 +  facet_wrap( ~queryWidth,                  scale="free",                  ncol=4 ,                  labeller = label_both)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-3175QU7/AggregatedTgpScanQueries3175fby.pdf]]
 
 #+begin_src R :results output :exports both :session 
 dfTgp %>% group_by(queryWidth) %>% summarize(minCount = min(minCount), maxCount = max(maxCount))
-
 #+end_src
 
 #+RESULTS:
@@ -1044,208 +1010,6 @@ dfTgp %>% group_by(queryWidth) %>% summarize(minCount = min(minCount), maxCount 
 7  45.000000   859189   862262
 8  90.000000  3438884  3443858
 #+end_example
-
-** What is the actual count of elements per query ? :ARCHIVE:
-
-
-*** Table                                                          :export:
-
-Variance shows that some counts differ between algorithms:
-#+begin_src R :results output :exports none :session :colnames yes
-
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    group_by(queryId) %>%                     #group to see if every algo has same coubts
-    summarize(Var = round(var(Count),3)  ) -> 
-    countVariation
-
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench == "apply_at_region") %>%
-    ungroup( bench) %>% # must ungroup to drop the column
-    select( -bench, -stdv, -Refine) %>%
-    gather(measure, value, Count, avg_ms) %>%
-    unite(temp, algo, measure) %>%
-    spread( temp, value) %>% 
-    #select(queryId,ends_with("Count") , ends_with("ms")) %>%
-    select(queryId,ends_with("Count") ) %>%
- #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
-    inner_join(countVariation) -> wideTable
-
-#+end_src
-
-#+RESULTS:
-: Joining, by = "queryId"
-
-#+CAPTION: Number of elements returned in each query
-#+begin_src R :results table :exports results :session :colnames yes
-wideTable %>%
-    as_tibble() %>%
-    print(n = nrow(.))
-#+end_src
-
-#+RESULTS:
-| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
-|---------+-------------+---------------------+-----------------+-------------+-------|
-|       0 |     3440580 |             3440580 |         3440580 |     3440580 |     0 |
-|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
-|       2 |     3438884 |             3438884 |         3438884 |     3438884 |     0 |
-|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
-|       4 |     3442356 |             3442356 |         3442356 |     3442356 |     0 |
-|       5 |     3439224 |             3439224 |         3439224 |     3439224 |     0 |
-|       6 |     3438953 |             3438953 |         3438953 |     3438953 |     0 |
-|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
-|       8 |     3441859 |             3441859 |         3441859 |     3441859 |     0 |
-|       9 |     3443858 |             3443858 |         3443858 |     3443858 |     0 |
-|      10 |      859819 |              859819 |          859819 |      859819 |     0 |
-|      11 |      860304 |              860304 |          860304 |      860304 |     0 |
-|      12 |      862004 |              862004 |          862004 |      862004 |     0 |
-|      13 |      859895 |              859895 |          859895 |      859895 |     0 |
-|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
-|      15 |      859189 |              859189 |          859189 |      859189 |     0 |
-|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
-|      17 |      861935 |              861935 |          861935 |      861935 |     0 |
-|      18 |      861341 |              861341 |          861341 |      861341 |     0 |
-|      19 |      859799 |              859799 |          859799 |      859799 |     0 |
-|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
-|      21 |      214220 |              214220 |          214220 |      214220 |     0 |
-|      22 |      215543 |              215543 |          215543 |      215543 |     0 |
-|      23 |      214932 |              214932 |          214932 |      214932 |     0 |
-|      24 |      215726 |              215726 |          215726 |      215726 |     0 |
-|      25 |      214526 |              214526 |          214526 |      214526 |     0 |
-|      26 |      215502 |              215502 |          215502 |      215502 |     0 |
-|      27 |      214199 |              214199 |          214199 |      214199 |     0 |
-|      28 |      215471 |              215471 |          215471 |      215471 |     0 |
-|      29 |      214738 |              214738 |          214738 |      214738 |     0 |
-|      30 |       53488 |               53488 |           53488 |       53488 |     0 |
-|      31 |       54129 |               54129 |           54129 |       54129 |     0 |
-|      32 |       53212 |               53212 |           53212 |       53212 |     0 |
-|      33 |       53584 |               53584 |           53584 |       53584 |     0 |
-|      34 |       53724 |               53724 |           53724 |       53724 |     0 |
-|      35 |       53825 |               53825 |           53825 |       53825 |     0 |
-|      36 |       53856 |               53856 |           53856 |       53856 |     0 |
-|      37 |       53236 |               53236 |           53236 |       53236 |     0 |
-|      38 |       53837 |               53837 |           53837 |       53837 |     0 |
-|      39 |       53767 |               53767 |           53767 |       53767 |     0 |
-|      40 |       13230 |               13230 |           13230 |       13230 |     0 |
-|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
-|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
-|      43 |       13251 |               13251 |           13251 |       13251 |     0 |
-|      44 |       13524 |               13524 |           13524 |       13524 |     0 |
-|      45 |       13356 |               13356 |           13356 |       13356 |     0 |
-|      46 |       13401 |               13401 |           13401 |       13401 |     0 |
-|      47 |       13530 |               13530 |           13530 |       13530 |     0 |
-|      48 |       13417 |               13417 |           13417 |       13417 |     0 |
-|      49 |       13298 |               13298 |           13298 |       13298 |     0 |
-|      50 |        3358 |                3358 |            3358 |        3358 |     0 |
-|      51 |        3304 |                3304 |            3304 |        3304 |     0 |
-|      52 |        3517 |                3517 |            3517 |        3517 |     0 |
-|      53 |        3338 |                3338 |            3338 |        3338 |     0 |
-|      54 |        3394 |                3394 |            3394 |        3394 |     0 |
-|      55 |        3353 |                3353 |            3353 |        3353 |     0 |
-|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
-|      57 |        3440 |                3440 |            3440 |        3440 |     0 |
-|      58 |        3455 |                3455 |            3455 |        3455 |     0 |
-|      59 |        3461 |                3461 |            3461 |        3461 |     0 |
-|      60 |         842 |                 842 |             842 |         842 |     0 |
-|      61 |         808 |                 808 |             808 |         808 |     0 |
-|      62 |         840 |                 840 |             840 |         840 |     0 |
-|      63 |         834 |                 834 |             834 |         834 |     0 |
-|      64 |         839 |                 839 |             839 |         839 |     0 |
-|      65 |         852 |                 852 |             852 |         852 |     0 |
-|      66 |         797 |                 797 |             797 |         797 |     0 |
-|      67 |         843 |                 843 |             843 |         843 |     0 |
-|      68 |         813 |                 813 |             813 |         813 |     0 |
-|      69 |         895 |                 895 |             895 |         895 |     0 |
-|      70 |         225 |                 225 |             225 |         225 |     0 |
-|      71 |         184 |                 184 |             184 |         184 |     0 |
-|      72 |         209 |                 209 |             209 |         209 |     0 |
-|      73 |         199 |                 199 |             199 |         199 |     0 |
-|      74 |         212 |                 212 |             212 |         212 |     0 |
-|      75 |         222 |                 222 |             222 |         222 |     0 |
-|      76 |         213 |                 213 |             213 |         213 |     0 |
-|      77 |         192 |                 192 |             192 |         192 |     0 |
-|      78 |         196 |                 196 |             196 |         196 |     0 |
-|      79 |         188 |                 188 |             188 |         188 |     0 |
-#+TBLFM: $6=$0;%0.3f
-
-
-
-Just the diverging queries : 
-#+begin_src R :results table :exports results :session :colnames yes
-
-wideTable %>%
-    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
-    as_tibble() %>%
-    print(n = nrow(.))
-
-#+end_src
-
-#+CAPTION: Queries that returned different result depending on the algorithm 
-#+RESULTS:
-| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
-|---------+-------------+---------------------+-----------------+-------------+-------|
-|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
-|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
-|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
-|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
-|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
-|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
-|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
-|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
-|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
-
-
-*** Plot                                                           :export:
-
-There are some queries where the count differs for Rtree by a small amount of elements.
-
-Counts have some differences :
-#+begin_src R :results output :exports none :session 
-options(dplyr.width = Inf)
-dfplot %>% 
-    filter( bench== "apply_at_region") %>% 
-    group_by(queryId, bench) %>% #group to see if every algo has same counts
-    summarize(c = mean(Count), s = sd(Count)  ) %>% 
-    filter ( s > 0) %>% 
-    select(queryId, bench) %>% 
-    left_join(dfplot) -> dfWrongCounts
-
-#+end_src
-
-#+RESULTS:
-: Joining, by = c("queryId", "bench")
-
-
-These are the queries that for some misterious reason resulted in different counts.
-#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
-
-myplot <- function(data) {
-    data %>%
-   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
-        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
-# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
-        #geom_jitter( width=0.1, height=0) +
-        geom_point( ) +
-        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
-        theme(legend.position = "bottom",) + 
-#        labs(x = "Query width (degrees)") +
-        #scale_y_continuous(breaks=c(3440446,3440447) )
-        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
-    
-}
-
-#dfWrongCounts %>% myplot() 
-
-dfWrongCounts %>% myplot()
-
-#dfWrongCounts %>% 
-#group_by(queryId) %>% filter(queryId == 1 ) %>%
-#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
-#+end_src
-
-#+RESULTS:
-[[file:./img/differing_counts.png]]
 
 
 * DONE Rerun Experiment for BTree
@@ -2278,7 +2042,6 @@ dfWrongCounts %>% myplot()
 - use 33 repetitions
 - change the order, first count then scan
 
-* TODO Experiment to Variating the return size of the queries
 
 
 
