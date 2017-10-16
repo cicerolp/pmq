@@ -72,7 +72,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20171012184842
+: exp20171016155353
 
 Set up git branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -82,9 +82,8 @@ git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 
 #+RESULTS:
 : M	LabBook.org
-: Your branch is up-to-date with 'origin/master'.
-: [master eb6f25a] LBK: new entry for exp20171012184842
-:  1 file changed, 43 insertions(+)
+: [master 79c39e9] LBK: new entry for exp20171016155353
+:  1 file changed, 45 insertions(+), 1 deletion(-)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -102,7 +101,7 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20171012184842
+On branch exp20171016155353
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
@@ -110,9 +109,9 @@ Untracked files:
 	exp.org
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20171012184842 d820aca] Initial commit for exp20171012184842
- 1 file changed, 885 insertions(+)
- create mode 100644 data/cicero/exp20171012184842/exp.org
+[exp20171016155353 08e6c64] Initial commit for exp20171016155353
+ 1 file changed, 835 insertions(+)
+ create mode 100644 data/cicero/exp20171016155353/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -120,9 +119,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * d820aca (HEAD -> exp20171012184842) Initial commit for exp20171012184842
-: * eb6f25a (master) LBK: new entry for exp20171012184842
-: | * cf1ae77 (exp20171009155025) wip
+: * 08e6c64 (HEAD -> exp20171016155353) Initial commit for exp20171016155353
+: * 79c39e9 (master) LBK: new entry for exp20171016155353
+: * d0189bf workaround - performance bugs ?
 
 ** DONE Export run script 
 
@@ -182,7 +181,7 @@ make
 # make twitterVis
 mkdir -p $BUILDIR
 cd $BUILDIR 
-cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DELT_SIZE=0 -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=OFF -DBENCH_BTREE=OFF -DBENCH_RTREE=OFF -DBENCH_DENSE=OFF -DBENCH_RTREE_BULK=ON ..
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DELT_SIZE=0 -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=ON -DBENCH_RTREE_BULK=ON ..
 make
 
 #get machine configuration
@@ -195,15 +194,18 @@ echo "" > $DATADIR/info.org
 set +e 
 
 #Run queries
-#t=$((10**6))
-#t=26000
 b=1000
 #n=$(($t*$b))
 ref=8
 
-for i in 1 2 4 8 16 32 64 128 ; do
-    t=$(($i * 1000))
-    stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    cmake -DELT_SIZE=$ELTSIZE . ; make
+    
+    for i in 1 2 4 8 16 32 64 128 ; do
+        t=$(($i * 1000))
+        stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+    done
 done
 
 set -e
