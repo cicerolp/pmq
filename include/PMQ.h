@@ -109,7 +109,7 @@ class PMQ : public GeoCtnIntf<T> {
     duration.emplace_back("scan_at_region", timer);
 
     duration.emplace_back("scan_at_region_refinements", refinements);
-    duration.emplace_back("scan_at_region_false_positives", refinements);
+    duration.emplace_back("scan_at_region_false_positives", false_positives);
 
     return duration;
   }
