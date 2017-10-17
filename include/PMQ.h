@@ -102,14 +102,18 @@ class PMQ : public GeoCtnIntf<T> {
 
     // recursive search on the pma
     auto curr_seg = pma_seg_it::begin(_pma);
-    uint32_t false_positives = 0;
-    uint32_t refinements = scan_pma_at_region(get_parent_quadrant(region), curr_seg, region, __apply, false_positives);
+    uint32_t false_positives = 0, true_positives = 0;
+    uint32_t refinements = scan_pma_at_region(get_parent_quadrant(region), curr_seg,
+                                              region, __apply, false_positives, true_positives);
 
     timer.stop();
     duration.emplace_back("scan_at_region", timer);
 
     duration.emplace_back("scan_at_region_refinements", refinements);
+
+    duration.emplace_back("scan_at_region_true_positives", true_positives);
     duration.emplace_back("scan_at_region_false_positives", false_positives);
+    duration.emplace_back("scan_at_region_true_and_false", true_positives + false_positives);
 
     return duration;
   }
@@ -176,7 +180,7 @@ class PMQ : public GeoCtnIntf<T> {
 
   // apply function for every el<valuetype>
   uint32_t scan_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region,
-                              scantype_function __apply, uint32_t &false_positives) {
+                              scantype_function __apply, uint32_t &false_positives, uint32_t &true_positives) {
     if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0;
 
     if (el.z > region.z) return 0;
@@ -201,13 +205,25 @@ class PMQ : public GeoCtnIntf<T> {
         uint64_t code = el.code << 2;
 
         refinements +=
-            scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)), seg, region, __apply, false_positives);
+            scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)),
+                               seg, region, __apply,
+                               false_positives,
+                               true_positives);
         refinements +=
-            scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)), seg, region, __apply, false_positives);
+            scan_pma_at_region(code_t(code | 1, (uint32_t) (el.z + 1)),
+                               seg, region, __apply,
+                               false_positives,
+                               true_positives);
         refinements +=
-            scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)), seg, region, __apply, false_positives);
+            scan_pma_at_region(code_t(code | 2, (uint32_t) (el.z + 1)),
+                               seg, region, __apply,
+                               false_positives,
+                               true_positives);
         refinements +=
-            scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)), seg, region, __apply, false_positives);
+            scan_pma_at_region(code_t(code | 3, (uint32_t) (el.z + 1)),
+                               seg, region, __apply,
+                               false_positives,
+                               true_positives);
 
         return refinements;
 
@@ -216,7 +232,7 @@ class PMQ : public GeoCtnIntf<T> {
           return 0;
         } else {
           // scans a tile checking longitude an latitude.
-          scan_if_pma(el, seg, region, __apply, false_positives);
+          scan_if_pma(el, seg, region, __apply, false_positives, true_positives);
           return 1;
         }
       }
@@ -406,7 +422,7 @@ class PMQ : public GeoCtnIntf<T> {
   }
 
   void scan_if_pma(const code_t &el, pma_seg_it &seg, const region_t &region,
-                   scantype_function _apply, uint32_t &false_positives) const {
+                   scantype_function _apply, uint32_t &false_positives, uint32_t &true_positives) const {
     while (seg < pma_seg_it::end(_pma)) {
       auto it = pma_offset_it::begin(_pma, seg);
 
@@ -422,6 +438,7 @@ class PMQ : public GeoCtnIntf<T> {
 
           if (region.x0 <= x && region.x1 >= x && region.y0 <= y && region.y1 >= y) {
             _apply(*(T *) ELT_TO_CONTENT(*it));
+            ++true_positives;
           } else {
             ++false_positives;
           }
