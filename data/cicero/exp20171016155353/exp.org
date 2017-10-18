@@ -1399,7 +1399,8 @@ dfRatios
 Join with dataframe with real performance measurements to get the false-positives
 #+begin_src R :results output :exports both :session 
 dfCount %>% 
-    left_join( dfRatios ) -> dfCR
+    left_join( dfRatios ) %>%
+    mutate(TotScans = ALLPOS + (Count - TPOS)) -> dfCR  # to compute the ratio based on all the elements scanned. 
 
 dfCR
 #+end_src
@@ -1407,19 +1408,19 @@ dfCR
 #+RESULTS:
 #+begin_example
 Joining, by = c("queryId", "T")
-# A tibble: 16,000 x 13
-   queryId  algo   Count     T EltSize          bench Refine queryWidth   avg_ms        stdv  TPOS  FPOS ALLPOS
-     <int> <chr>   <int> <int>   <dbl>          <chr>  <int>      <dbl>    <dbl>       <dbl> <dbl> <dbl>  <dbl>
- 1       0 BTree  924827  1000      16 scan_at_region     29         90 17.43356 0.010635078 30329   798  31127
- 2       0 BTree  924827  1000      32 scan_at_region     29         90 17.48158 0.022587843 30329   798  31127
- 3       0 BTree  924827  1000      64 scan_at_region     29         90 17.50776 0.017892407 30329   798  31127
- 4       0 BTree  924827  1000     128 scan_at_region     29         90 17.48583 0.008840569 30329   798  31127
- 5       0 BTree  924827  1000     256 scan_at_region     29         90 17.61844 0.032610912 30329   798  31127
- 6       0 BTree 1855890  2000      16 scan_at_region     29         90 36.57063 0.040832532 60741  1727  62468
- 7       0 BTree 1855890  2000      32 scan_at_region     29         90 36.25142 0.015255221 60741  1727  62468
- 8       0 BTree 1855890  2000      64 scan_at_region     29         90 36.48388 0.014496421 60741  1727  62468
- 9       0 BTree 1855890  2000     128 scan_at_region     29         90 36.87419 0.016553445 60741  1727  62468
-10       0 BTree 1855890  2000     256 scan_at_region     29         90 36.47536 0.031228164 60741  1727  62468
+# A tibble: 16,000 x 14
+   queryId  algo   Count     T EltSize          bench Refine queryWidth   avg_ms        stdv  TPOS  FPOS ALLPOS TotScans
+     <int> <chr>   <int> <int>   <dbl>          <chr>  <int>      <dbl>    <dbl>       <dbl> <dbl> <dbl>  <dbl>    <dbl>
+ 1       0 BTree  924827  1000      16 scan_at_region     29         90 17.43356 0.010635078 30329   798  31127   925625
+ 2       0 BTree  924827  1000      32 scan_at_region     29         90 17.48158 0.022587843 30329   798  31127   925625
+ 3       0 BTree  924827  1000      64 scan_at_region     29         90 17.50776 0.017892407 30329   798  31127   925625
+ 4       0 BTree  924827  1000     128 scan_at_region     29         90 17.48583 0.008840569 30329   798  31127   925625
+ 5       0 BTree  924827  1000     256 scan_at_region     29         90 17.61844 0.032610912 30329   798  31127   925625
+ 6       0 BTree 1855890  2000      16 scan_at_region     29         90 36.57063 0.040832532 60741  1727  62468  1857617
+ 7       0 BTree 1855890  2000      32 scan_at_region     29         90 36.25142 0.015255221 60741  1727  62468  1857617
+ 8       0 BTree 1855890  2000      64 scan_at_region     29         90 36.48388 0.014496421 60741  1727  62468  1857617
+ 9       0 BTree 1855890  2000     128 scan_at_region     29         90 36.87419 0.016553445 60741  1727  62468  1857617
+10       0 BTree 1855890  2000     256 scan_at_region     29         90 36.47536 0.031228164 60741  1727  62468  1857617
 # ... with 15,990 more rows
 #+end_example
 
@@ -1428,31 +1429,33 @@ Joining, by = c("queryId", "T")
 #+begin_src R :results output :exports both :session 
 dfCR %>% 
     filter(EltSize == 16) %>%
-    mutate(Ratio = FPOS / ALLPOS) %>%
+    mutate(Ratio = FPOS / TotScans) %>%
+    mutate(Ratio2 = FPOS / ALLPOS) %>%
     mutate(tgp = Count / avg_ms) %>%
     #filter(queryWidth < 1) %>%
     filter(algo == "BTree") %>%
-#    filter(Count != TPOS) %>%
+    filter(Count != TPOS) %>%
     arrange(Count)
 
 #+end_src
 
+*** Plot : ratios
 #+RESULTS:
 #+begin_example
-# A tibble: 640 x 15
-   queryId  algo Count     T EltSize          bench Refine queryWidth    avg_ms         stdv  TPOS  FPOS ALLPOS     Ratio       tgp
-     <int> <chr> <int> <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>        <dbl> <dbl> <dbl>  <dbl>     <dbl>     <dbl>
- 1      76 BTree   287  1000      16 scan_at_region      2   0.703125 0.0164722 0.0004290982   287  1520   1807 0.8411732 17423.295
- 2      76 BTree   466  2000      16 scan_at_region      2   0.703125 0.0368753 0.0004591236   466  3202   3668 0.8729553 12637.185
- 3      60 BTree   484  1000      16 scan_at_region      6   1.406250 0.0145924 0.0005184081   484   938   1422 0.6596343 33167.950
- 4      76 BTree   777  4000      16 scan_at_region      2   0.703125 0.1060996 0.0048194847   777  7193   7970 0.9025094  7323.308
- 5      60 BTree   862  2000      16 scan_at_region      6   1.406250 0.0300995 0.0011121609   862  1841   2703 0.6810951 28638.349
- 6      65 BTree  1346  1000      16 scan_at_region      6   1.406250 0.0241004 0.0007809278  1346   573   1919 0.2985930 55849.695
- 7      76 BTree  1677  8000      16 scan_at_region      2   0.703125 0.2450226 0.0146036835  1677 14409  16086 0.8957479  6844.267
- 8      71 BTree  1782  1000      16 scan_at_region      4   0.703125 0.0618625 0.0002080087  1782  3538   5320 0.6650376 28805.819
- 9      60 BTree  1803  4000      16 scan_at_region      6   1.406250 0.0767196 0.0026601992  1803  3921   5724 0.6850105 23501.165
-10      51 BTree  2377  1000      16 scan_at_region     12   2.812500 0.0935207 0.0050950426   800  5221   6021 0.8671317 25416.833
-# ... with 630 more rows
+# A tibble: 493 x 17
+   queryId  algo Count     T EltSize          bench Refine queryWidth    avg_ms         stdv  TPOS  FPOS ALLPOS TotScans        Ratio    Ratio2       tgp
+     <int> <chr> <int> <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>        <dbl> <dbl> <dbl>  <dbl>    <dbl>        <dbl>     <dbl>     <dbl>
+ 1      51 BTree  2377  1000      16 scan_at_region     12     2.8125 0.0935207 0.0050950426   800  5221   6021     7598 0.6871545143 0.8671317 25416.833
+ 2      51 BTree  4537  2000      16 scan_at_region     12     2.8125 0.2101530 0.0128721513  1503 10271  11774    14808 0.6936115613 0.8723458 21589.033
+ 3      54 BTree  6164  1000      16 scan_at_region     12     2.8125 0.4925632 0.0012249881  4031 39312  43343    45476 0.8644559768 0.9069977 12514.130
+ 4      15 BTree  8096  1000      16 scan_at_region      6    45.0000 0.1224318 0.0069989957     0     0      0     8096 0.0000000000       NaN 66126.611
+ 5      51 BTree  9398  4000      16 scan_at_region     12     2.8125 0.4072375 0.0935481622  3507 21023  24530    30421 0.6910686697 0.8570322 23077.443
+ 6      42 BTree 11446  1000      16 scan_at_region     23     5.6250 0.2468979 0.0145591697   525  7715   8240    19161 0.4026407808 0.9362864 46359.244
+ 7      45 BTree 11619  1000      16 scan_at_region     23     5.6250 0.1860315 0.0009233704   698  7542   8240    19161 0.3936120244 0.9152913 62457.165
+ 8      54 BTree 12970  2000      16 scan_at_region     12     2.8125 1.4501400 0.0451758183  8517 82252  90769    95222 0.8637919808 0.9061684  8943.964
+ 9      15 BTree 13292  2000      16 scan_at_region      9    45.0000 0.2019838 0.0146983636     0     2      2    13294 0.0001504438 1.0000000 65807.258
+10      44 BTree 16350  1000      16 scan_at_region     24     5.6250 0.2060321 0.0008137880  4390  3232   7622    19582 0.1650495353 0.4240357 79356.566
+# ... with 483 more rows
 #+end_example
 
 #+begin_src R :results output :exports both :session 
@@ -1466,28 +1469,294 @@ levelsWidth
 : [1] "0.703125" "1.40625"  "2.8125"   "5.625"    "11.25"    "22.5"     "45"      
 : [8] "90"
 
-#+begin_src R :results output graphics :file "./img/tgp-false-positves.pdf" :exports both :width 14 :height 10 :session 
-
-levelsWidth = levels(as.factor(dfCR$queryWidth) )
-
-for (w in levelsWidth ){
-p <-
+#+begin_src R :results output :exports both :session 
+plotRatios <- function(dfCR,w){
     dfCR %>% 
     filter(EltSize == 16) %>%
     filter(queryWidth == w) %>%
-    ggplot(aes(x = factor(Count), y = Count / avg_ms, fill=(FPOS/ALLPOS)) ) +
-    scale_fill_continuous(limits=c(0,1)) +
+    ggplot(aes(x = factor(Count), y = Count / avg_ms, fill=(FPOS / TotScans)) ) +
+    scale_fill_distiller(limits=c(0,1),type="div") +
     geom_bar(stat="identity",position="dodge",color="black", size =0.2) +
-    facet_wrap(algo~queryWidth, scale="free", ncol = 1) + 
+    facet_wrap(~algo, scale="free", ncol = 1) + 
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1)) +
    labs(title = paste("Query width = ", w))
-print(p)
 }
 #+end_src
 
 #+RESULTS:
-[[file:./img/tgp-false-positves.pdf]]
+
+Facet free 
+#+begin_src R :results output graphics :file "./img/tgp-false-positves2.pdf" :exports both :width 14 :height 10 :session 
+
+levelsWidth = levels(as.factor(dfCR$queryWidth) )
+
+for (w in levelsWidth ){
+    p <- plotRatios(dfCR, w)
+    print(p)
+}
+#+end_src
+
+#+RESULTS:
+[[file:./img/tgp-false-positves2.pdf]]
+
+Facet free_x
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
+
+levelsWidth = levels(as.factor(dfCR$queryWidth) )
+
+for (w in levelsWidth ){
+    p <- plotRatios(dfCR, w) + 
+    facet_wrap(~algo, scale="free_x", ncol = 1)
+    print(p)
+}
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281pOU.pdf]]
+
+*** Speed-Ups of Throughputs                                       :export:
+
+#+begin_src R :results output :exports both :session 
+dfCR
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 16,000 x 14
+   queryId  algo   Count     T EltSize          bench Refine queryWidth   avg_ms        stdv  TPOS  FPOS ALLPOS TotScans
+     <int> <chr>   <int> <int>   <dbl>          <chr>  <int>      <dbl>    <dbl>       <dbl> <dbl> <dbl>  <dbl>    <dbl>
+ 1       0 BTree  924827  1000      16 scan_at_region     29         90 17.43356 0.010635078 30329   798  31127   925625
+ 2       0 BTree  924827  1000      32 scan_at_region     29         90 17.48158 0.022587843 30329   798  31127   925625
+ 3       0 BTree  924827  1000      64 scan_at_region     29         90 17.50776 0.017892407 30329   798  31127   925625
+ 4       0 BTree  924827  1000     128 scan_at_region     29         90 17.48583 0.008840569 30329   798  31127   925625
+ 5       0 BTree  924827  1000     256 scan_at_region     29         90 17.61844 0.032610912 30329   798  31127   925625
+ 6       0 BTree 1855890  2000      16 scan_at_region     29         90 36.57063 0.040832532 60741  1727  62468  1857617
+ 7       0 BTree 1855890  2000      32 scan_at_region     29         90 36.25142 0.015255221 60741  1727  62468  1857617
+ 8       0 BTree 1855890  2000      64 scan_at_region     29         90 36.48388 0.014496421 60741  1727  62468  1857617
+ 9       0 BTree 1855890  2000     128 scan_at_region     29         90 36.87419 0.016553445 60741  1727  62468  1857617
+10       0 BTree 1855890  2000     256 scan_at_region     29         90 36.47536 0.031228164 60741  1727  62468  1857617
+# ... with 15,990 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
+
+    dfCR %>% 
+    filter(algo %in% c("GeoHashBinary","RTree")) %>%
+    filter(EltSize == 16) %>%
+#    filter(queryWidth == w) %>%
+    ggplot(aes(x = factor(queryId%%10), y = Count / avg_ms, fill=(FPOS / TotScans), group=T) ) +
+    scale_fill_distiller(limits=c(0,1),type="div") +
+    geom_bar(stat="identity",position=position_dodge(),color="black", size =0.2) +
+    geom_errorbar(aes(ymin = Count / (avg_ms-stdv), ymax = Count / (avg_ms + stdv)), position=position_dodge())+ 
+    facet_grid(queryWidth~algo, scale="free") + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+ #  labs(title = paste("Query width = ", w))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281Erb.pdf]]
+
+
+#+begin_src R :results output :exports both :session :eval never
+dfCR %>% 
+    filter(algo %in% c("GeoHashBinary","RTree")) %>%
+    filter(EltSize == 16) %>%
+    select(queryId, algo, T, queryWidth, avg_ms, stdv,  FPOS, ALLPOS) %>% #print() %>%
+    gather(variable, value, avg_ms, stdv) %>% #print() %>%
+    unite(temp, algo, variable) %>% #print() %>%
+    spread(temp,value) %>%
+    mutate(speed_up  = RTree_avg_ms / GeoHashBinary_avg_ms ) -> dfSpeedUp 
+
+dfSpeedUp %>% mutate( ord = order(speed_up)) %>% arrange(ord)
+
+#+end_src
+
+Compute Speedups
+#+begin_src R :results output :exports both :session 
+dfCR %>% 
+    filter(algo %in% c("GeoHashBinary","RTree")) %>%
+    filter(EltSize == 16) %>%
+#Because the Count diverges for Rtree and PMQ , gathering with count 
+    #select(queryId, algo, T, queryWidth, avg_ms, stdv, Count, FPOS, ALLPOS, TotScans ) %>% #print() %>%
+    #gather(variable, value, Count, avg_ms, stdv) %>% #print() %>%
+    select(queryId, algo, T, queryWidth, avg_ms, stdv,  FPOS, ALLPOS) %>% #print() %>%
+    gather(variable, value, avg_ms, stdv) %>% #print() %>%
+    unite(temp, algo, variable) %>% #print() %>%
+    spread(temp,value) %>%
+    mutate(speed_up  = RTree_avg_ms / GeoHashBinary_avg_ms ) %>% print() %>%
+    inner_join( dfCR %>% 
+                filter(algo == "GeoHashBinary", EltSize == 16) %>% 
+                select(queryId, T, Count, TotScans)) ->  dfSpeedUp 
+
+dfSpeedUp %>% mutate( ord = order(speed_up)) %>% arrange(ord)
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 640 x 10
+   queryId      T queryWidth   FPOS  ALLPOS GeoHashBinary_avg_ms GeoHashBinary_stdv RTree_avg_ms RTree_stdv speed_up
+     <int>  <int>      <dbl>  <dbl>   <dbl>                <dbl>              <dbl>        <dbl>      <dbl>    <dbl>
+ 1       0   1000         90    798   31127             4.594044        0.008478713     20.79137 0.05379544 4.525723
+ 2       0   2000         90   1727   62468             8.516582        0.005368902     42.39427 0.05708750 4.977850
+ 3       0   4000         90   3543  130106            17.061550        0.031491913     87.24963 0.06580046 5.113816
+ 4       0   8000         90   7505  264277            34.077500        0.025706981    181.07150 0.12255634 5.313521
+ 5       0  16000         90  16719  513521            68.352870        0.085200614    375.67220 0.22341083 5.496071
+ 6       0  32000         90  36281 1021940           136.258300        0.046745291    764.90430 0.29928249 5.613635
+ 7       0  64000         90  72424 1998820           272.577800        0.035209847   1555.83700 0.46595303 5.707864
+ 8       0 128000         90 149232 3888110           547.478200        0.084006349   3184.72200 1.43768950 5.817075
+ 9       1   1000         90   2357    6650             4.461463        0.005444802     20.85763 0.02949689 4.675065
+10       1   2000         90   4148   12632             8.269311        0.023519216     42.53854 0.05618333 5.144146
+# ... with 630 more rows
+Joining, by = c("queryId", "T")
+# A tibble: 640 x 13
+   queryId      T queryWidth    FPOS  ALLPOS GeoHashBinary_avg_ms GeoHashBinary_stdv RTree_avg_ms  RTree_stdv  speed_up    Count TotScans   ord
+     <int>  <int>      <dbl>   <dbl>   <dbl>                <dbl>              <dbl>        <dbl>       <dbl>     <dbl>    <int>    <dbl> <int>
+ 1      48   1000   5.625000   16362   46123            1.1788610       0.0390889221    5.3986460 0.006832459 4.5795442   206590   222952     1
+ 2      56  32000   2.812500  290637  547328            8.6813870       0.0071792433   32.8720300 0.050283221 3.7864952  1106318  1396955     2
+ 3      58 128000   2.812500 1101600 2262700           35.2006700       0.0260767265  127.5946000 0.154166721 3.6247776  4464643  5566243     3
+ 4      63   8000   1.406250   68160  111526            0.8815208       0.0024004233    0.6506137 0.004968984 0.7380583    43366   111526     4
+ 5      66  32000   1.406250  384932 1083070           10.3894700       0.0180665467   19.7171200 0.017889339 1.8977984   698138  1083070     5
+ 6      68  32000   1.406250  700733  949309            7.9824440       0.0041230065    6.8237150 0.013180009 0.8548403   248576   949309     6
+ 7      70  32000   0.703125  720294 1675500           15.5850500       0.0102136347   25.8663600 0.027881384 1.6596905   955205  1675500     7
+ 8      72   1000   0.703125    1454    7951            0.0775408       0.0005726049    0.0870682 0.001104221 1.1228695     6497     7951     8
+ 9      50  64000   2.812500 2383320 4139970           54.8944000       0.0131379011  158.1154000 0.197790686 2.8803557  5990017  8373337     9
+10      59 128000   2.812500 6010120 8158380          103.6845000       0.0313696598  279.3784000 0.292132466 2.6945050 10349418 16359548    10
+# ... with 630 more rows
+#+end_example
+
+*** Speedup - correlations                                         :export:
+:PROPERTIES:
+:HEADER-ARGS:R: :exports result
+:END:
+
+
+- Order the results by speedup
+
+- try several mapping to a continuos color map
+
+Count
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+    dfSpeedUp %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    geom_bar(aes(fill=(Count)), stat="identity",position="dodge") + #  scale_fill_distiller(type="div") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure32817kx.pdf]]
+
+QueryWidth
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+    dfSpeedUp %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    geom_bar(aes(fill=factor(queryWidth)), stat="identity",position="dodge") + #  scale_fill_distiller(type="div") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure32816c2.pdf]]
+
+Ratio : FPOS / ALLPOS
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+    dfSpeedUp %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    geom_bar(aes(fill=(FPOS / ALLPOS)), stat="identity",position="dodge") + #  scale_fill_distiller(type="div") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281smF.pdf]]
+
+Ratio : FPOS / TotScans
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+    dfSpeedUp %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    geom_bar(aes(fill=(FPOS / TotScans)), stat="identity",position="dodge",width=1) + #  scale_fill_distiller(type="div") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281tgY.pdf]]
+
+
+The color scale show that the speed-up increases according to ratio of False positives.
+
+Mapping to divergent scale:
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+    dfSpeedUp %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    geom_bar(aes(fill=(FPOS / TotScans)), stat="identity",position="dodge",width=1) +scale_fill_distiller(limit=c(0,1),type="div") +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure32816qe.pdf]]
+
+
+The divergent scale show that GeoHash is better that the RTree index when the amount of false positives is lower 50% in general.
+
+But when do we have small FPOS Ratio ? 
+
+By grouping queries by queryWidth we can see that FPositive ratio is only a problem on small queries. 
+Nevertheless, even on the smallest queries we are able to perform better that the RTree on more than 50% of the cases.
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+dfSpeedUp %>% group_by(queryWidth) %>% arrange( speed_up) %>% mutate(ord = row_number()) %>% 
+    ggplot(aes(x = ord, y = speed_up) ) +
+    #geom_bar(aes(fill=(FPOS / TotScans)), color="black", stat="identity",width=1) +
+    geom_bar(aes(fill=(FPOS / TotScans)), stat="identity") +
+    scale_fill_distiller(limit=c(0,1),type="div") +
+    facet_wrap(~queryWidth)+ 
+    geom_hline(yintercept = 1) + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1)) -> plt
+plt
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281VcC.pdf]]
+
+Compute the percentage where PMQ is better than RTree
+#+begin_src R :results output  :session 
+dfSpeedUp %>% 
+    group_by(queryWidth) %>% 
+    summarize(tot = length(speed_up), PmqBest = length(speed_up[speed_up>1]), `%` = PmqBest / tot * 100) ->
+dfPct 
+
+dfPct
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 8 x 4
+  queryWidth   tot PmqBest    `%`
+       <dbl> <int>   <int>  <dbl>
+1   0.703125    80      37  46.25
+2   1.406250    80      44  55.00
+3   2.812500    80      67  83.75
+4   5.625000    80      80 100.00
+5  11.250000    80      80 100.00
+6  22.500000    80      80 100.00
+7  45.000000    80      80 100.00
+8  90.000000    80      80 100.00
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
+plt +
+    geom_vline(data=dfPct, aes(xintercept = 80-PmqBest)) +  
+    geom_text(data=dfPct, aes(x=80-PmqBest + 6, y=2, label = paste(`%`,"%")))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3281Prz/figure3281imI.pdf]]
 
 * Final notes 
 - The element size doesn't seems to affect the throughput  (in elements / ms). 
