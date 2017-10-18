@@ -1219,7 +1219,7 @@ dfCount %>%
 dfH2 %>% 
     filter(queryWidth < 1) %>%
     ggplot(aes(x = factor(EltsBin) , y = avgCount / ms, fill=factor(T)) ) +
-    geom_bar(stat="identity",position="dodge") +
+    geom_bar(stat="identity",position="dodge",color="black",size=0.2) +
     #geom_errorbar(aes(ymin = ms - std , ymax = ms + std) ) +
     facet_wrap(algo~queryWidth, scale="free", nrow = 5) + 
     theme(legend.position = "bottom",
@@ -1227,9 +1227,9 @@ dfH2 %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3281Prz/figure32810Ik.pdf]]
+[[file:/tmp/babel-3281Prz/figure3281oNN.pdf]]
 
-
+**** Plot: Througput barchart by T for a small query 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
 dfCount %>% 
@@ -1423,66 +1423,71 @@ Joining, by = c("queryId", "T")
 # ... with 15,990 more rows
 #+end_example
 
-** Debug
-
-#+begin_src R :results output :exports both :session 
-df2 %>% filter(queryId == 55, T == 16000) 
-#-> dbg
-#dbg
-#dbg[10,]
-#+end_src
-
-#+RESULTS:
-: # A tibble: 2 x 7
-:            algo queryId     T           bench    TPOS   FPOS ALLPOS
-:           <chr>   <int> <int>           <chr>   <dbl>  <dbl>  <dbl>
-: 1 GeoHashBinary      55 16000 apply_at_region 1135669     NA     NA
-: 2 GeoHashBinary      55 16000  scan_at_region  282251 857853 1.1401
-
-** TODO Plot 
+** DONE Plot                                                        :export:
 
 #+begin_src R :results output :exports both :session 
 dfCR %>% 
     filter(EltSize == 16) %>%
     mutate(Ratio = FPOS / ALLPOS) %>%
     mutate(tgp = Count / avg_ms) %>%
-    filter(queryWidth < 1, algo == "BTree") %>%
+    #filter(queryWidth < 1) %>%
+    filter(algo == "BTree") %>%
+#    filter(Count != TPOS) %>%
     arrange(Count)
 
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 80 x 15
+# A tibble: 640 x 15
    queryId  algo Count     T EltSize          bench Refine queryWidth    avg_ms         stdv  TPOS  FPOS ALLPOS     Ratio       tgp
      <int> <chr> <int> <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>        <dbl> <dbl> <dbl>  <dbl>     <dbl>     <dbl>
  1      76 BTree   287  1000      16 scan_at_region      2   0.703125 0.0164722 0.0004290982   287  1520   1807 0.8411732 17423.295
  2      76 BTree   466  2000      16 scan_at_region      2   0.703125 0.0368753 0.0004591236   466  3202   3668 0.8729553 12637.185
- 3      76 BTree   777  4000      16 scan_at_region      2   0.703125 0.1060996 0.0048194847   777  7193   7970 0.9025094  7323.308
- 4      76 BTree  1677  8000      16 scan_at_region      2   0.703125 0.2450226 0.0146036835  1677 14409  16086 0.8957479  6844.267
- 5      71 BTree  1782  1000      16 scan_at_region      4   0.703125 0.0618625 0.0002080087  1782  3538   5320 0.6650376 28805.819
- 6      76 BTree  3248 16000      16 scan_at_region      2   0.703125 0.3594563 0.0012287055  3248 27147  30395 0.8931403  9035.869
- 7      71 BTree  3501  2000      16 scan_at_region      4   0.703125 0.1383348 0.0296398775  3501  6893  10394 0.6631711 25308.165
- 8      74 BTree  5115  1000      16 scan_at_region      4   0.703125 0.3299340 0.0003758534  5115 24525  29640 0.8274291 15503.101
- 9      79 BTree  6409  1000      16 scan_at_region      2   0.703125 0.1028311 0.0006994343  6409   785   7194 0.1091187 62325.503
-10      71 BTree  6485  4000      16 scan_at_region      4   0.703125 0.2811821 0.0458888999  6485 13338  19823 0.6728548 23063.346
-# ... with 70 more rows
+ 3      60 BTree   484  1000      16 scan_at_region      6   1.406250 0.0145924 0.0005184081   484   938   1422 0.6596343 33167.950
+ 4      76 BTree   777  4000      16 scan_at_region      2   0.703125 0.1060996 0.0048194847   777  7193   7970 0.9025094  7323.308
+ 5      60 BTree   862  2000      16 scan_at_region      6   1.406250 0.0300995 0.0011121609   862  1841   2703 0.6810951 28638.349
+ 6      65 BTree  1346  1000      16 scan_at_region      6   1.406250 0.0241004 0.0007809278  1346   573   1919 0.2985930 55849.695
+ 7      76 BTree  1677  8000      16 scan_at_region      2   0.703125 0.2450226 0.0146036835  1677 14409  16086 0.8957479  6844.267
+ 8      71 BTree  1782  1000      16 scan_at_region      4   0.703125 0.0618625 0.0002080087  1782  3538   5320 0.6650376 28805.819
+ 9      60 BTree  1803  4000      16 scan_at_region      6   1.406250 0.0767196 0.0026601992  1803  3921   5724 0.6850105 23501.165
+10      51 BTree  2377  1000      16 scan_at_region     12   2.812500 0.0935207 0.0050950426   800  5221   6021 0.8671317 25416.833
+# ... with 630 more rows
 #+end_example
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
+#+begin_src R :results output :exports both :session 
+levelsWidth = levels(as.factor(dfCount$queryWidth) )
+#w = levelsWidth[[1]]
+levelsWidth
 
-dfCR %>% 
-    filter(EltSize == 16) %>%
-    filter(queryWidth < 1) %>%
-    ggplot(aes(x = factor(Count), y = Count / avg_ms, fill=(FPOS/ALLPOS)) ) +
-    geom_bar(stat="identity",position="dodge",color="black", size =0.2) +
-    facet_wrap(algo~queryWidth, scale="free", nrow = 5) + 
-    theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, hjust = 1)) 
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3281Prz/figure3281cvx.pdf]]
+: [1] "0.703125" "1.40625"  "2.8125"   "5.625"    "11.25"    "22.5"     "45"      
+: [8] "90"
+
+#+begin_src R :results output graphics :file "./img/tgp-false-positves.pdf" :exports both :width 14 :height 10 :session 
+
+levelsWidth = levels(as.factor(dfCR$queryWidth) )
+
+for (w in levelsWidth ){
+p <-
+    dfCR %>% 
+    filter(EltSize == 16) %>%
+    filter(queryWidth == w) %>%
+    ggplot(aes(x = factor(Count), y = Count / avg_ms, fill=(FPOS/ALLPOS)) ) +
+    scale_fill_continuous(limits=c(0,1)) +
+    geom_bar(stat="identity",position="dodge",color="black", size =0.2) +
+    facet_wrap(algo~queryWidth, scale="free", ncol = 1) + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1)) +
+   labs(title = paste("Query width = ", w))
+print(p)
+}
+#+end_src
+
+#+RESULTS:
+[[file:./img/tgp-false-positves.pdf]]
 
 * Final notes 
 - The element size doesn't seems to affect the throughput  (in elements / ms). 
