@@ -677,7 +677,6 @@ row # A tibble: 5 x 5 col     row   col   expected     actual                   
 Warning: 8000 parsing failures.
 row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv'
 ... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-|=========                                                               |  13%|===================                                                     |  26%|============================                                            |  38%|====================================                                    |  50%|===========================================                             |  60%|===================================================                     |  70%|=============================================================           |  83%|======================================================================= |  97%|=========================================================================| 100%
 Warning: 8000 parsing failures.
 row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv'
 ... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
@@ -1505,7 +1504,7 @@ Joining, by = c("queryId", "T")
 # ... with 630 more rows
 #+end_example
 
-** DONE Plot                                                        :export:
+** DONE Analysis                                                    :export:
 
 #+begin_src R :results output :exports both :session 
 dfCR %>% 
@@ -1637,8 +1636,9 @@ dfCR %>%
                                         #  labs(title = paste("Query width = ", w))
 #+end_src
 
+#+ATTR_SRC: :width 600
 #+RESULTS:
-[[file:/tmp/babel-15175dlJ/figure15175axI.pdf]]
+[[file:/tmp/babel-23558m-M/figure23558WAG.pdf]]
 
 
 *** Speedup - correlations                                         :export:
@@ -1803,7 +1803,6 @@ dfSpeedUp %>%
 # ... with 1,270 more rows
 #+end_example
 
-
 All the results were sorted by increasing speedUp value. 
 The colors show the ratio between amount of false positive elements over the total amount of elements scanned by the query. 
 #+begin_src R :results output graphics :file "./img/speedup_BTREE_RTREE.svg"  :width 14 :height 10 :session 
@@ -1819,6 +1818,7 @@ dfSpeedUp %>%
           axis.text.x = element_text(angle = 45, hjust = 1))
 #+end_src
 
+#+ATTR_SRC: :width 600
 #+RESULTS:
 [[file:./img/speedup_BTREE_RTREE.svg]]
 
@@ -1882,21 +1882,69 @@ We can see a correlation between the amount false positives and the Speedup over
 This is due to the discontinuities caused by the Z-ordering scheme, used in the GeoHash algorithm. 
 We can see that this correlation doesn't appear in the *BTree* speedups.
 #+begin_src R :results output graphics :file "./img/speedup_BTREE_RTREE_facet.svg"  :width 14 :height 10 :session 
+
 dfSpeedUp2 %>%
     ggplot(aes(x = ord, y = val_speedup) ) +
     geom_bar(aes(fill=(FPOS / TotScans)), stat="identity",position="dodge",width=1) + 
     scale_fill_distiller(limits=c(0,1),type="div") +
-    geom_hline(yintercept = 1) + 
     facet_grid(queryWidth~algo_speedup) +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1)) +
-    geom_vline(data=dfPct2, aes(xintercept = 80-PmqBest)) +  
-    geom_text(data=dfPct2, aes(x=80-PmqBest + 4, y=4, label = paste(`%`,"%")))
+    geom_hline(yintercept = 1, size = 0.5, linetype="dashed") +
+    geom_vline(data=dfPct2, aes(xintercept = 80-PmqBest+0.5), size = 0.5 , linetype="dashed") +
+    geom_text(data=dfPct2, aes(x=80-PmqBest + 4.5, y=4, label = paste(`%`,"%")))
 
 #+end_src
 
+#+ATTR_SRC: :width 600
 #+RESULTS:
 [[file:./img/speedup_BTREE_RTREE_facet.svg]]
+
+
+We normalized the element count within each querySize to check it the BTree's Speedup increases with the number os elements queried.
+However, there is not a clear correlation to explain increase of speedup for the BTree case.
+#+begin_src R :results output :exports none :session 
+dfSpeedUp2 %>% mutate(max = max(Count)) %>%
+    mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count)))  %>% arrange(algo_speedup,queryWidth,-ord)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,280 x 18
+# Groups:   algo_speedup, queryWidth [16]
+   queryId      T queryWidth    FPOS  ALLPOS BTree_avg_ms BTree_stdv GeoHashBinary_avg_ms GeoHashBinary_stdv RTree_avg_ms RTree_stdv   Count TotScans   algo_speedup val_speedup   ord     max  normCount
+     <int>  <int>      <dbl>   <dbl>   <dbl>        <dbl>      <dbl>                <dbl>              <dbl>        <dbl>      <dbl>   <int>    <dbl>          <chr>       <dbl> <int>   <dbl>      <dbl>
+ 1      74 128000   0.703125 3212550 3810030    108.06000 0.18138970            30.478030        0.017599814    18.065090 0.03650612  597480  3810030 speed_up_BTree    3.545505    80 3682101 0.16220075
+ 2      78 128000   0.703125 2697510 3565820    103.05640 1.36977786            29.559790        0.020411514    23.361700 0.02374316  868311  3565820 speed_up_BTree    3.486371    79 3682101 0.23575987
+ 3      73 128000   0.703125 3330990 6079850    183.66040 0.10845706            54.026540        0.028831472    78.458460 0.07448939 2748860  6079850 speed_up_BTree    3.399448    78 3682101 0.74652685
+ 4      70 128000   0.703125 2888540 6570640    202.28340 0.12448936            60.869830        0.015346230    97.171030 0.09411546 3682101  6570641 speed_up_BTree    3.323213    77 3682101 1.00000000
+ 5      75 128000   0.703125 1436760 4270330    131.85610 0.20509589            40.597530        0.041563580    76.066900 0.08953893 2833578  4270328 speed_up_BTree    3.247885    76 3682101 0.76953670
+ 6      74  64000   0.703125 1610240 1918290     49.79501 0.24653883            15.379660        0.007778203     9.592362 0.01510888  308049  1918290 speed_up_BTree    3.237719    75 3682101 0.08358977
+ 7      77 128000   0.703125 1110560 2632100     79.14142 0.22104596            24.627350        0.017682776    41.078850 0.04656957 1521534  2632104 speed_up_BTree    3.213558    74 3682101 0.41317867
+ 8      71 128000   0.703125  502071  663138     17.84301 0.03295001             5.598997        0.014980574     4.340049 0.01827141  161067   663138 speed_up_BTree    3.186823    73 3682101 0.04366869
+ 9      78  64000   0.703125 1348500 1792150     47.20611 0.22410900            14.905460        0.007824917    12.096510 0.01356904  443642  1792150 speed_up_BTree    3.167035    72 3682101 0.12041754
+10      73  64000   0.703125 1708650 3087000     86.64781 0.19097865            27.365440        0.021003926    39.678410 0.06132791 1378343  3087003 speed_up_BTree    3.166323    71 3682101 0.37428724
+# ... with 1,270 more rows
+#+end_example
+
+The color scale is normalized between the min and max count of the elements count in each facet.
+#+begin_src R :results output graphics :file "./img/speedup_color_count.svg" :exports both :width 14 :height 10 :session 
+dfSpeedUp2 %>%
+    mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count))) %>%
+    ggplot(aes(x = ord, y = val_speedup) ) +
+    geom_bar(aes(fill=normCount), stat="identity",position="dodge",width=1) + 
+    scale_fill_distiller(type="seq") +
+    facet_grid(queryWidth~algo_speedup) +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1)) +
+    geom_hline(yintercept = 1, size = 0.5, linetype="dashed") +
+    geom_vline(data=dfPct2, aes(xintercept = 80-PmqBest+0.5), size = 0.5 , linetype="dashed") +
+    geom_text(data=dfPct2, aes(x=80-PmqBest + 4.5, y=4, label = paste(`%`,"%")))
+#+end_src
+
+#+ATTR_SRC: :width 600
+#+RESULTS:
+[[file:./img/speedup_color_count.svg]]
 
 * Final notes 
 - The element size doesn't seems to affect the throughput  (in elements / ms). 
