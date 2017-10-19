@@ -20,17 +20,20 @@ We can see that this correlation doesn't appear in the **BTree** speedups.
 
 
 We normalized the element count within each querySize to check it the BTree's Speedup increases with the number os elements queried.
-However, there is not a clear correlation to explain increase of speedup for the BTree case.
+
 The color scale is normalized between the min and max count of the elements count in each facet.
+Note that Count increases as power of 2 . Therefore we take the logarithm to map it to linear color scale. (see Extra sections on org file)
 
 .. code:: R
 
     dfSpeedUp2 %>%
+        mutate(Count = log2(Count)) %>%
         mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count))) %>%
         ggplot(aes(x = ord, y = val_speedup) ) +
         geom_bar(aes(fill=normCount), stat="identity",position="dodge",width=1) + 
         scale_fill_distiller(type="seq") +
         facet_grid(queryWidth~algo_speedup) +
+        labs(fill="Normalized log2(Count)") + 
         theme(legend.position = "bottom",
               axis.text.x = element_text(angle = 45, hjust = 1)) +
         geom_hline(yintercept = 1, size = 0.5, linetype="dashed") +

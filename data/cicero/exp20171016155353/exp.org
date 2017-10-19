@@ -1902,7 +1902,7 @@ dfSpeedUp2 %>%
 
 
 We normalized the element count within each querySize to check it the BTree's Speedup increases with the number os elements queried.
-However, there is not a clear correlation to explain increase of speedup for the BTree case.
+# +However, there is not a clear correlation to explain increase of speedup for the BTree case.+
 #+begin_src R :results output :exports none :session 
 dfSpeedUp2 %>% mutate(max = max(Count)) %>%
     mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count)))  %>% arrange(algo_speedup,queryWidth,-ord)
@@ -1928,13 +1928,16 @@ dfSpeedUp2 %>% mutate(max = max(Count)) %>%
 #+end_example
 
 The color scale is normalized between the min and max count of the elements count in each facet.
+Note that Count increases as power of 2 . Therefore we take the logarithm to map it to linear color scale. (see Extra sections on org file)
 #+begin_src R :results output graphics :file "./img/speedup_color_count.svg" :exports both :width 14 :height 10 :session 
 dfSpeedUp2 %>%
+    mutate(Count = log2(Count)) %>%
     mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count))) %>%
     ggplot(aes(x = ord, y = val_speedup) ) +
     geom_bar(aes(fill=normCount), stat="identity",position="dodge",width=1) + 
     scale_fill_distiller(type="seq") +
     facet_grid(queryWidth~algo_speedup) +
+    labs(fill="Normalized log2(Count)") + 
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1)) +
     geom_hline(yintercept = 1, size = 0.5, linetype="dashed") +
@@ -1945,6 +1948,65 @@ dfSpeedUp2 %>%
 #+ATTR_SRC: :width 600
 #+RESULTS:
 [[file:./img/speedup_color_count.svg]]
+
+**** EXTRA: verify if relation between SpeedUp and Ratio is linear. :noexport:
+
+To verify that SpeedUp linearly decreases with SpeedUp we plot orderded by ratio.
+Although for RTree is not a clear straight line , there is a neat inverse relation between SpeedUp and False Positive ratio. 
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+dfSpeedUp2 %>% filter(queryWidth < 2) %>%
+    ggplot(aes(x = FPOS/TotScans, y = val_speedup) ) +
+    geom_line() + geom_point() + 
+    facet_wrap(queryWidth~algo_speedup,scale="free",ncol=2) +
+    theme(legend.position = "bottom",
+#          strip.text = element_blank() , 
+          axis.text.x = element_text(angle = 0, hjust = 1)) 
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-24355lQN/figure24355KKO.png]]
+
+**** EXTRA: Logarithmic interpolation of colors ?               :noexport:
+
+Note that the the dataset doubles the size at each experiments. 
+The counts should double in the same way.
+
+So to have a linear X scale we must take the log of Count on x axis.
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".svg") :exports both :width 14 :height 10 :session 
+dfSpeedUp2 %>%
+#    mutate(Count = log2(Count)) %>%
+#    mutate(normCount = (Count - min(Count)) / ( max(Count) - min(Count))) %>%
+    ggplot(aes(x = log2(Count), y = val_speedup) ) +
+#    geom_bar(aes(fill=normCount), stat="identity",position="dodge",width=1) + 
+    geom_line() + geom_point() + 
+#    scale_fill_distiller(type="seq") +
+    facet_wrap(queryWidth~algo_speedup,scale="free_y",ncol=2) +
+    theme(legend.position = "bottom",
+          strip.text = element_blank() , 
+          axis.text.x = element_text(angle = 0, hjust = 1)) 
+#    geom_hline(yintercept = 1, size = 0.5, linetype="dashed") +
+#    geom_vline(data=dfPct2, aes(xintercept = 80-PmqBest+0.5), size = 0.5 , linetype="dashed") +
+#    geom_text(data=dfPct2, aes(x=80-PmqBest + 4.5, y=4, label = paste(`%`,"%")))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-24355lQN/figure24355L9s.svg]]
+
+
+#+begin_src R :results output :exports both :session 
+s = 2**seq(1,10)
+si = (s - min(s)) / (max(s) - min(s))
+s
+si
+
+log2(s)
+#+end_src
+
+#+RESULTS:
+:  [1]    2    4    8   16   32   64  128  256  512 1024
+:  [1] 0.000000000 0.001956947 0.005870841 0.013698630 0.029354207 0.060665362
+:  [7] 0.123287671 0.248532290 0.499021526 1.000000000
+:  [1]  1  2  3  4  5  6  7  8  9 10
 
 * Final notes 
 - The element size doesn't seems to affect the throughput  (in elements / ms). 
