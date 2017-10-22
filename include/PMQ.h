@@ -87,7 +87,6 @@ class PMQ : public GeoCtnIntf<T> {
     return duration;
   }
 
-  // apply function for every el<valuetype>
   duration_t scan_at_region(const region_t &region, scantype_function __apply) override {
     duration_t duration;
     Timer timer;
@@ -172,6 +171,7 @@ class PMQ : public GeoCtnIntf<T> {
   size_t capacity() const { return _pma->array_size; }
 
  protected:
+  //Returns the PMA key pointed by x
 #define PMA_ELT(x) ((*(uint64_t*)x))
 
   inline pma_seg_it find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it &seg) const;
@@ -179,20 +179,35 @@ class PMQ : public GeoCtnIntf<T> {
   virtual pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const = 0;
 
   // apply function for every el<valuetype>
+  /**
+   * @brief scan_pma_at_region
+   * Recursively breaks down the quadrant @param el.
+   *
+   * @param el
+   * @param seg
+   * @param region
+   * @param __apply
+   * @param false_positives
+   * @param true_positives
+   * @return
+   */
   uint32_t scan_pma_at_region(const code_t &el, pma_seg_it &seg, const region_t &region,
                               scantype_function __apply, uint32_t &false_positives, uint32_t &true_positives) {
-    if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0;
+
+    //Check if the current segment has its first element greater than the max possibel key ot the current quandrant el.
+    if (seg == pma_seg_it::end(_pma) || PMA_ELT(seg.front()) > el.max_code) return 0; // return if so.
 
     if (el.z > region.z) return 0;
 
     region_t::overlap overlap = region.test(el);
 
     if (overlap == region_t::full) {
-      if (search_pma(el, seg) == pma_seg_it::end(_pma)) {
+      if (search_pma(el, seg) == pma_seg_it::end(_pma)) { // WARNING: advances seg
+          //the quadrant el is empty.
         return 0;
       } else {
         //scans a contiguous region of the PMA
-        scan_pma(el, seg, __apply);
+        scan_pma(el, seg, __apply); // WARNING : advances seg
         return 1;
       }
     } else if (overlap == region_t::partial) {
@@ -204,6 +219,7 @@ class PMQ : public GeoCtnIntf<T> {
         // break morton code into four
         uint64_t code = el.code << 2;
 
+        // Warning the order of this calls is important because each function may modify the seg pointer.
         refinements +=
             scan_pma_at_region(code_t(code | 0, (uint32_t) (el.z + 1)),
                                seg, region, __apply,
@@ -232,7 +248,7 @@ class PMQ : public GeoCtnIntf<T> {
           return 0;
         } else {
           // scans a tile checking longitude an latitude.
-          scan_if_pma(el, seg, region, __apply, false_positives, true_positives);
+          scan_if_pma(el, seg, region, __apply, false_positives, true_positives); // WARNING: Advances seg
           return 1;
         }
       }
@@ -477,13 +493,28 @@ class PMQ : public GeoCtnIntf<T> {
   pma_struct *_pma{nullptr};
 };
 
+/**
+ * @brief PMQ<T>::find_elt_pma
+ * @param code_min
+ * @param code_max
+ * @param seg
+ *
+ * Searches inside a single segment \a seg.
+ * Checks if there is Key with values between \a code_min and \a code_max in segment \a seg.
+ *
+ * @return
+ * If YES -> returns the same \a seg from input without modification
+ * If NOT -> returns the last segment from the PMA.
+ */
 template<typename T>
 pma_seg_it PMQ<T>::find_elt_pma(const uint64_t code_min, const uint64_t code_max, const pma_seg_it &seg) const {
   auto it = pma_offset_it::begin(_pma, seg);
 
   while (it < pma_offset_it::end(_pma, seg)) {
-    if (PMA_ELT(*it) > code_max) return pma_seg_it::end(_pma);
-    else if (PMA_ELT(*it) >= code_min) return seg;
+    if (PMA_ELT(*it) > code_max)
+         return pma_seg_it::end(_pma); //returns last segment of the PMA
+    else if (PMA_ELT(*it) >= code_min)
+        return seg; // returns same segment of input
     ++it;
   }
 
@@ -581,17 +612,30 @@ class PMQBinary : public PMQ<T> {
   }
 
  protected:
+  /**
+   * @brief Searches in the PMA if there is an element from quandrant \a el.
+   * Starts searching from segment \a seg
+   * @param el A geohash quadrant
+   * @param seg The segement to start the search
+   * @return
+   * If an element is found , return the segment where is was found.
+   * If an element if not found, returns the end iterator for the PMA
+   *
+   * The parameter \a seg advances to the matching segment
+   */
   pma_seg_it search_pma(const code_t &el, pma_seg_it &seg) const override final {
-    // current segment
-    if (PMA_ELT(*seg) >= el.min_code) {
-      return PMQ<T>::find_elt_pma(el.min_code, el.max_code, seg);
+    // searches the current segment
+    if (PMA_ELT(*seg) >= el.min_code) { // if first element of this segment is larger that the minimum possible index of this quadrant
+        return PMQ<T>::find_elt_pma(el.min_code, el.max_code, seg); // checks if there is a key in seg inside quadrant el
     }
 
+    //finds the fisrt segment starting by "seg" containing a key not less than el's minumm possible index
     seg = std::lower_bound(seg, pma_seg_it::end(this->_pma), el.min_code,
                            [](void *elt, uint64_t value) {
-                             return PMA_ELT(elt) < value;
+                             return PMA_ELT(elt) < value; //return the pointer to the segment where this condition doesn't hold
                            });
 
+   // is a segment was found, searches the first element inside el
     if (seg < pma_seg_it::end(this->_pma)) return PMQ<T>::find_elt_pma(el.min_code, el.max_code, seg);
 
     // not found

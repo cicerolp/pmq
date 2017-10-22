@@ -2,6 +2,11 @@
 
 #include "stde.h"
 
+/**
+ * @brief Class to iterate over the segments of a PMA
+ *
+ * Dereferencing this iterator returns a pointer to last element of current segment.
+ */
 class pma_seg_it :
     public std::iterator<std::random_access_iterator_tag, void *, std::ptrdiff_t, void *, void *> {
  public:
@@ -101,7 +106,13 @@ class pma_seg_it :
   size_type _seg;
   pma_struct *_pma;
 };
-
+/**
+ * @brief Iterates over elements inside a single segement
+ *
+ * Iterator is initalized with a segment number.
+ * Iterartor advances element by element inside a segment @param _seg
+ * Derrefencing this iterator returns the elements in @param _seg at position @param _offset.
+ */
 class pma_offset_it :
     public std::iterator<std::random_access_iterator_tag, void *, std::ptrdiff_t, void *, void *> {
  public:
