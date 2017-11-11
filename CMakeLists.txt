@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(PMQ)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
-set(PMA_BUILD_DIR "../pma/build-release" CACHE PATH "Location of the PMA build tree")
+set(PMA_BUILD_DIR "../../hppsimulations/pma_cd/build-Release" CACHE PATH "Location of the PMA build tree")
 
 #aux_source_directory(. SRC_LIST)
 
