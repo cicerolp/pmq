@@ -11,43 +11,15 @@
 #+PROPERTY: header-args :cache no :eval never-export 
 
 
-* TODO Description                                                   :export:ARCHIVE:
+* TODO Description                                                   :export:
 
-Test the queries on Twitter Dataset. 
-And compare the following performances.
+Test to check better refinemnet levels. 
 
 - PMQ / GEOHASH
 - BTREE 
-- RTREE - quadratic algorithm 
-- RTREE - quadratic algorithm with bulk loading
+  
+- test with twitter dataset
 
-Use the refinement level = 8 
-
-Elements:
-- Batch size = 1000
-- Variate T = 1M to 128M
-- Varaite Element size also = 16 to 256
- 
-#+begin_src python :results output :exports both
-
-minitems = 1000
-maxitems = 128000
-
-items = minitems
-while( items <= maxitems) :
-    print(items*1000)
-    items *=2
-#+end_src
-
-#+RESULTS:
-: 1000000
-: 2000000
-: 4000000
-: 8000000
-: 16000000
-: 32000000
-: 64000000
-: 128000000
 
 - Total elements = T * 1000  
   
@@ -125,7 +97,7 @@ git la -3
 : * bd2ed0d (master) LBK: new entry for exp20171111161232
 : | * 8a4aa51 (temp) Replicate test with random tweets on my machine
 
-** TODO Export run script 
+** DONE Export run script 
 
 - Test refinements levels on twitter dataset 
 
@@ -235,20 +207,17 @@ git status .
 
 #+RESULTS:
 #+begin_example
-On branch exp20171012184842
+On branch exp20171111161232
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git checkout -- <file>..." to discard changes in working directory)
 
 	modified:   exp.org
-	modified:   run.sh
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	exp.pdf
-	exp.tex
-	img/
+	run.sh
 
 no changes added to commit (use "git add" and/or "git commit -a")
 #+end_example
@@ -260,13 +229,15 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20171012184842 2292431] UPD: run.sh script
-:  2 files changed, 2 insertions(+), 2 deletions(-)
+: [exp20171111161232 ebb4318] UPD: run.sh script
+:  2 files changed, 102 insertions(+), 21 deletions(-)
+:  create mode 100755 data/cicero/exp20171111161232/run.sh
 
-Push to remote
+Push to remote (directly to the experiment machine)
 #+begin_src sh :results output :exports both :var expId=expId
 #git push bitbucket $expId
-git push origin $expId
+#git push origin $expId
+git push cicero $expId
 #+end_src
 
 #+RESULTS:
@@ -299,58 +270,34 @@ ssh -A cicero
 
 #+RESULTS:
 #+begin_example
-
+julio@cicero's password: 
 Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
 
  ,* Documentation:  https://help.ubuntu.com
  ,* Management:     https://landscape.canonical.com
  ,* Support:        https://ubuntu.com/advantage
 
-75 packages can be updated.
+115 packages can be updated.
 0 updates are security updates.
 
 ,*** System restart required ***
-Last login: Fri Oct 13 16:41:34 2017 from 143.54.11.6
+Last login: Sat Nov 11 16:21:42 2017 from 143.54.11.6
 #+end_example
 
 Get the last script on the remote machine (require entering a password
 for bitbucket)
 #+begin_src sh :session remote :results output :exports both :var expId=expId
 cd ~/Projects/pmq/
-git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
-git fetch origin $expId
+#git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+#git fetch origin $expId
 git checkout $expId
-git pull origin $expId
-git log -1 | cat 
+#git pull origin $expId
+#git log -1 | cat 
 #+end_src
 
 #+RESULTS:
-#+begin_example
-
-julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 23, done.
-(1/20)           remote: Compressing objects:  10% (2/20)           remote: Compressing objects:  15% (3/20)           remote: Compressing objects:  20% (4/20)           remote: Compressing objects:  25% (5/20)           remote: Compressing objects:  30% (6/20)           remote: Compressing objects:  35% (7/20)           remote: Compressing objects:  40% (8/20)           remote: Compressing objects:  45% (9/20)           remote: Compressing objects:  50% (10/20)           remote: Compressing objects:  55% (11/20)           remote: Compressing objects:  60% (12/20)           remote: Compressing objects:  65% (13/20)           remote: Compressing objects:  70% (14/20)           remote: Compressing objects:  75% (15/20)           remote: Compressing objects:  80% (16/20)           remote: Compressing objects:  85% (17/20)           remote: Compressing objects:  90% (18/20)           remote: Compressing objects:  95% (19/20)           remote: Compressing objects: 100% (20/20)           remote: Compressing objects: 100% (20/20), done.        
-remote: Total 23 (delta 16), reused 0 (delta 0)
-(1/23)   Unpacking objects:   8% (2/23)   Unpacking objects:  13% (3/23)   Unpacking objects:  17% (4/23)   Unpacking objects:  21% (5/23)   Unpacking objects:  26% (6/23)   Unpacking objects:  30% (7/23)   Unpacking objects:  34% (8/23)   Unpacking objects:  39% (9/23)   Unpacking objects:  43% (10/23)   Unpacking objects:  47% (11/23)   Unpacking objects:  52% (12/23)   Unpacking objects:  56% (13/23)   Unpacking objects:  60% (14/23)   Unpacking objects:  65% (15/23)   Unpacking objects:  69% (16/23)   Unpacking objects:  73% (17/23)   Unpacking objects:  78% (18/23)   Unpacking objects:  82% (19/23)   Unpacking objects:  86% (20/23)   Unpacking objects:  91% (21/23)   Unpacking objects:  95% (22/23)   Unpacking objects: 100% (23/23)   Unpacking objects: 100% (23/23), done.
-From bitbucket.org:jtoss/pmq
-FETCH_HEAD
-origin/exp20171012184842
-M	data/cicero/exp20171012184842/run_1507849705
-Already on 'exp20171012184842'
-Your branch is behind 'origin/exp20171012184842' by 4 commits, and can be fast-forwarded.
-  (use "git pull" to update your local branch)
-From bitbucket.org:jtoss/pmq
-FETCH_HEAD
-Updating 6c842e8..2292431
-Fast-forward
- benchmarks/bench_queries_region.cpp   |   3 +
- data/cicero/exp20171012184842/exp.org | 724 +++++++++++++++++-----------------
- data/cicero/exp20171012184842/run.sh  |   2 +-
- 3 files changed, 376 insertions(+), 353 deletions(-)
-commit 229243171c14b0e2c7cc9d9a4b1ffc0d6017cc79
-Date:   Fri Oct 13 16:43:23 2017 -0300
-
-    UPD: run.sh script
-#+end_example
+: 
+: julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ Switched to branch 'exp20171111161232'
 
 Update PMA repository on exp machine
 #+begin_src sh :session remote :results output :exports both :var expId=expId
@@ -383,7 +330,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20171012184842$ julio@cicero:~/Projects/pmq/data/cicero/exp20171012184842$ julio@cicero:~/Projects/pmq/data/cicero/exp20171012184842$ julio@cicero:~/Projects/pmq/data/cicero/exp20171012184842$ 1507923856
+: julio@cicero:~/Projects/pmq/data/cicero/exp20171111161232$ julio@cicero:~/Projects/pmq/data/cicero/exp20171111161232$ julio@cicero:~/Projects/pmq/data/cicero/exp20171111161232$ julio@cicero:~/Projects/pmq/data/cicero/exp20171111161232$ 1510425176
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -394,17 +341,20 @@ ps ux
 #+RESULTS:
 : no server running on /tmp/tmux-1001/default
 : USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-: julio    12367  0.0  0.0  45248  4684 ?        Ss   16:43   0:00 /lib/systemd/sy
-: julio    12370  0.0  0.0 145364  2112 ?        S    16:43   0:00 (sd-pam)
-: julio    12398  0.0  0.0  97464  3296 ?        R    16:43   0:00 sshd: julio@pts
-: julio    12399  0.0  0.0  22688  5132 pts/8    Ss   16:43   0:00 -bash
-: julio    12746  0.0  0.0  37368  3296 pts/8    R+   17:11   0:00 ps ux
+: julio    16748  0.0  0.0  45248  4604 ?        Ss   16:21   0:00 /lib/systemd/systemd --user
+: julio    16750  0.0  0.0 145352  2100 ?        S    16:21   0:00 (sd-pam)
+: julio    16800  0.0  0.0  97576  3464 ?        S    16:21   0:00 sshd: julio@pts/8
+: julio    16801  0.0  0.0  23724  6416 pts/8    Ss+  16:21   0:00 -bash
+: julio    16995  0.0  0.0  97496  3348 ?        S    16:27   0:00 sshd: julio@pts/9
+: julio    16996  0.0  0.0  22676  5112 pts/9    Ss   16:27   0:00 -bash
+: julio    17676  0.0  0.0  37368  3248 pts/9    R+   16:50   0:00 ps ux
 
 **** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
-git commit -a -m "wip"
-git status
-git pull --rebase origin $expId
+#git commit -a -m "wip"
+#git status
+#git pull --rebase origin $expId
+git pull cicero $expId
 #+end_src
 
 #+RESULTS:
@@ -456,127 +406,101 @@ First, rewinding head to replay your work on top of it...
 Applying: wip
 #+end_example
 
-
-* INPROGRESS Analysis
+* Refinement Level Analysis
 ** DONE Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
 :END:      
 
 List logFiles
-#+NAME: tarFile
 #+begin_src sh :results table :exports both
-ls *tgz
+ls -htl *tgz
 #+end_src
 
-#+RESULTS: tarFile
-| log_1508177471.tgz |
+#+RESULTS:
+| -rw-r--r-- 1 julio julio 669K nov 11 16:51 log_1510425176.tgz |
 
 #+NAME: logFile
-#+begin_src sh :results output :exports both :var f=tarFile
-for i in $f; do 
-    tar xvzf $i
-done
+#+begin_src sh :results table :exports both 
+tar xvzf log_*.tgz
 #+end_src
 
 #+RESULTS: logFile
-#+begin_example
-bench_queries_region_twitter_1000_1000_8_0_1508177471.log
-bench_queries_region_twitter_1000_1000_8_112_1508177471.log
-bench_queries_region_twitter_1000_1000_8_16_1508177471.log
-bench_queries_region_twitter_1000_1000_8_240_1508177471.log
-bench_queries_region_twitter_1000_1000_8_48_1508177471.log
-bench_queries_region_twitter_128000_1000_8_0_1508177471.log
-bench_queries_region_twitter_128000_1000_8_112_1508177471.log
-bench_queries_region_twitter_128000_1000_8_16_1508177471.log
-bench_queries_region_twitter_128000_1000_8_240_1508177471.log
-bench_queries_region_twitter_128000_1000_8_48_1508177471.log
-bench_queries_region_twitter_16000_1000_8_0_1508177471.log
-bench_queries_region_twitter_16000_1000_8_112_1508177471.log
-bench_queries_region_twitter_16000_1000_8_16_1508177471.log
-bench_queries_region_twitter_16000_1000_8_240_1508177471.log
-bench_queries_region_twitter_16000_1000_8_48_1508177471.log
-bench_queries_region_twitter_2000_1000_8_0_1508177471.log
-bench_queries_region_twitter_2000_1000_8_112_1508177471.log
-bench_queries_region_twitter_2000_1000_8_16_1508177471.log
-bench_queries_region_twitter_2000_1000_8_240_1508177471.log
-bench_queries_region_twitter_2000_1000_8_48_1508177471.log
-bench_queries_region_twitter_32000_1000_8_0_1508177471.log
-bench_queries_region_twitter_32000_1000_8_112_1508177471.log
-bench_queries_region_twitter_32000_1000_8_16_1508177471.log
-bench_queries_region_twitter_32000_1000_8_240_1508177471.log
-bench_queries_region_twitter_32000_1000_8_48_1508177471.log
-bench_queries_region_twitter_4000_1000_8_0_1508177471.log
-bench_queries_region_twitter_4000_1000_8_112_1508177471.log
-bench_queries_region_twitter_4000_1000_8_16_1508177471.log
-bench_queries_region_twitter_4000_1000_8_240_1508177471.log
-bench_queries_region_twitter_4000_1000_8_48_1508177471.log
-bench_queries_region_twitter_64000_1000_8_0_1508177471.log
-bench_queries_region_twitter_64000_1000_8_112_1508177471.log
-bench_queries_region_twitter_64000_1000_8_16_1508177471.log
-bench_queries_region_twitter_64000_1000_8_240_1508177471.log
-bench_queries_region_twitter_64000_1000_8_48_1508177471.log
-bench_queries_region_twitter_8000_1000_8_0_1508177471.log
-bench_queries_region_twitter_8000_1000_8_112_1508177471.log
-bench_queries_region_twitter_8000_1000_8_16_1508177471.log
-bench_queries_region_twitter_8000_1000_8_240_1508177471.log
-bench_queries_region_twitter_8000_1000_8_48_1508177471.log
-#+end_example
+| bench_queries_region_twitter_1000_1000_10_1510425176.log |
+| bench_queries_region_twitter_1000_1000_11_1510425176.log |
+| bench_queries_region_twitter_1000_1000_1_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_12_1510425176.log |
+| bench_queries_region_twitter_1000_1000_13_1510425176.log |
+| bench_queries_region_twitter_1000_1000_14_1510425176.log |
+| bench_queries_region_twitter_1000_1000_2_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_3_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_4_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_5_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_6_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_7_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_8_1510425176.log  |
+| bench_queries_region_twitter_1000_1000_9_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_10_1510425176.log |
+| bench_queries_region_twitter_2000_1000_11_1510425176.log |
+| bench_queries_region_twitter_2000_1000_1_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_12_1510425176.log |
+| bench_queries_region_twitter_2000_1000_13_1510425176.log |
+| bench_queries_region_twitter_2000_1000_14_1510425176.log |
+| bench_queries_region_twitter_2000_1000_2_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_3_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_4_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_5_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_6_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_7_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_8_1510425176.log  |
+| bench_queries_region_twitter_2000_1000_9_1510425176.log  |
 
 Create CSV using logFile 
-#+begin_src sh :results output :exports both :var logFileList=logFile
-for logFile in $logFileList ; 
-do
-output=$( basename -s .log $logFile).csv
-echo $output 
-grep "; query ;" $logFile | sed "s/QueryBench//g" >  $output
-done
-#+end_src
 
 #+NAME: csvFile
-#+RESULTS:
+#+begin_src sh :results output :exports both :var logFileList=logFile
+
+#echo $logFile | sed 's/bench_queries_region_random_10000_100_\([[:digit:]]\)//g'
+for logFile in $logFileList
+do
+echo $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree" $logFile | grep "query" | sed "s/QueryBench//g" >  $(basename -s .log $logFile ).csv
+done
+
+#+end_src
+
+#+RESULTS: csvFile
 #+begin_example
-bench_queries_region_twitter_1000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_1000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_1000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_1000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_1000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_128000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_128000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_128000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_128000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_128000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_16000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_16000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_16000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_16000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_16000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_2000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_2000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_2000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_2000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_2000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_32000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_32000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_32000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_32000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_32000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_4000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_4000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_4000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_4000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_4000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_64000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_64000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_64000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_64000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_64000_1000_8_48_1508177471.csv
-bench_queries_region_twitter_8000_1000_8_0_1508177471.csv
-bench_queries_region_twitter_8000_1000_8_112_1508177471.csv
-bench_queries_region_twitter_8000_1000_8_16_1508177471.csv
-bench_queries_region_twitter_8000_1000_8_240_1508177471.csv
-bench_queries_region_twitter_8000_1000_8_48_1508177471.csv
+bench_queries_region_twitter_1000_1000_10_1510425176.csv
+bench_queries_region_twitter_1000_1000_11_1510425176.csv
+bench_queries_region_twitter_1000_1000_1_1510425176.csv
+bench_queries_region_twitter_1000_1000_12_1510425176.csv
+bench_queries_region_twitter_1000_1000_13_1510425176.csv
+bench_queries_region_twitter_1000_1000_14_1510425176.csv
+bench_queries_region_twitter_1000_1000_2_1510425176.csv
+bench_queries_region_twitter_1000_1000_3_1510425176.csv
+bench_queries_region_twitter_1000_1000_4_1510425176.csv
+bench_queries_region_twitter_1000_1000_5_1510425176.csv
+bench_queries_region_twitter_1000_1000_6_1510425176.csv
+bench_queries_region_twitter_1000_1000_7_1510425176.csv
+bench_queries_region_twitter_1000_1000_8_1510425176.csv
+bench_queries_region_twitter_1000_1000_9_1510425176.csv
+bench_queries_region_twitter_2000_1000_10_1510425176.csv
+bench_queries_region_twitter_2000_1000_11_1510425176.csv
+bench_queries_region_twitter_2000_1000_1_1510425176.csv
+bench_queries_region_twitter_2000_1000_12_1510425176.csv
+bench_queries_region_twitter_2000_1000_13_1510425176.csv
+bench_queries_region_twitter_2000_1000_14_1510425176.csv
+bench_queries_region_twitter_2000_1000_2_1510425176.csv
+bench_queries_region_twitter_2000_1000_3_1510425176.csv
+bench_queries_region_twitter_2000_1000_4_1510425176.csv
+bench_queries_region_twitter_2000_1000_5_1510425176.csv
+bench_queries_region_twitter_2000_1000_6_1510425176.csv
+bench_queries_region_twitter_2000_1000_7_1510425176.csv
+bench_queries_region_twitter_2000_1000_8_1510425176.csv
+bench_queries_region_twitter_2000_1000_9_1510425176.csv
 #+end_example
+
 
 Create an director for images
 #+begin_src sh :results output :exports both :tangle no
@@ -590,27 +514,24 @@ mkdir img
 :HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
 :END:      
 
-#+LATEX_HEADER:  \usepackage[a4paper,includeheadfoot,margin=2cm]{geometry}
- 
-*** Prepare
 
 Load the CSV into R
 #+begin_src R :results output :exports both :var f=csvFile path=(print default-directory)
-library(tidyverse)
-options(tibble.width = Inf)
 setwd(path)
+library(tidyverse)
 
-readAdd <- function(input){  # Reads a csv file and add a column identifying the csv by parsing its name
+                                        # Reads a csv file and add a column identifying the csv by parsin its name
+readAdd <- function(input){
 
-return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep=""), col_types="ccicicdcici" ) %>%
+return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") ) %>%
          mutate (
-            EltSize = as.factor(
-                 gsub("bench_queries_region_twitter_[[:digit:]]+_1000_8_([[:digit:]]+)_[[:digit:]]+.csv","\\1",input))))
+             ref = as.factor(
+                 gsub("bench_queries_region_twitter_[[:digit:]]+_1000_([[:digit:]]+)_.*","\\1",input))))
 } 
 
 
 files = strsplit(f,"\n")[[1]]
-files
+
 df <- files %>%
     map(readAdd) %>%   # use my custom read function
     reduce(rbind)   # used rbind to combine into one dataframe
@@ -619,453 +540,653 @@ df <- files %>%
 
 #+RESULTS:
 #+begin_example
- [1] "bench_queries_region_twitter_1000_1000_8_0_1508177471.csv"    
- [2] "bench_queries_region_twitter_1000_1000_8_112_1508177471.csv"  
- [3] "bench_queries_region_twitter_1000_1000_8_16_1508177471.csv"   
- [4] "bench_queries_region_twitter_1000_1000_8_240_1508177471.csv"  
- [5] "bench_queries_region_twitter_1000_1000_8_48_1508177471.csv"   
- [6] "bench_queries_region_twitter_128000_1000_8_0_1508177471.csv"  
- [7] "bench_queries_region_twitter_128000_1000_8_112_1508177471.csv"
- [8] "bench_queries_region_twitter_128000_1000_8_16_1508177471.csv" 
- [9] "bench_queries_region_twitter_128000_1000_8_240_1508177471.csv"
-[10] "bench_queries_region_twitter_128000_1000_8_48_1508177471.csv" 
-[11] "bench_queries_region_twitter_16000_1000_8_0_1508177471.csv"   
-[12] "bench_queries_region_twitter_16000_1000_8_112_1508177471.csv" 
-[13] "bench_queries_region_twitter_16000_1000_8_16_1508177471.csv"  
-[14] "bench_queries_region_twitter_16000_1000_8_240_1508177471.csv" 
-[15] "bench_queries_region_twitter_16000_1000_8_48_1508177471.csv"  
-[16] "bench_queries_region_twitter_2000_1000_8_0_1508177471.csv"    
-[17] "bench_queries_region_twitter_2000_1000_8_112_1508177471.csv"  
-[18] "bench_queries_region_twitter_2000_1000_8_16_1508177471.csv"   
-[19] "bench_queries_region_twitter_2000_1000_8_240_1508177471.csv"  
-[20] "bench_queries_region_twitter_2000_1000_8_48_1508177471.csv"   
-[21] "bench_queries_region_twitter_32000_1000_8_0_1508177471.csv"   
-[22] "bench_queries_region_twitter_32000_1000_8_112_1508177471.csv" 
-[23] "bench_queries_region_twitter_32000_1000_8_16_1508177471.csv"  
-[24] "bench_queries_region_twitter_32000_1000_8_240_1508177471.csv" 
-[25] "bench_queries_region_twitter_32000_1000_8_48_1508177471.csv"  
-[26] "bench_queries_region_twitter_4000_1000_8_0_1508177471.csv"    
-[27] "bench_queries_region_twitter_4000_1000_8_112_1508177471.csv"  
-[28] "bench_queries_region_twitter_4000_1000_8_16_1508177471.csv"   
-[29] "bench_queries_region_twitter_4000_1000_8_240_1508177471.csv"  
-[30] "bench_queries_region_twitter_4000_1000_8_48_1508177471.csv"   
-[31] "bench_queries_region_twitter_64000_1000_8_0_1508177471.csv"   
-[32] "bench_queries_region_twitter_64000_1000_8_112_1508177471.csv" 
-[33] "bench_queries_region_twitter_64000_1000_8_16_1508177471.csv"  
-[34] "bench_queries_region_twitter_64000_1000_8_240_1508177471.csv" 
-[35] "bench_queries_region_twitter_64000_1000_8_48_1508177471.csv"  
-[36] "bench_queries_region_twitter_8000_1000_8_0_1508177471.csv"    
-[37] "bench_queries_region_twitter_8000_1000_8_112_1508177471.csv"  
-[38] "bench_queries_region_twitter_8000_1000_8_16_1508177471.csv"   
-[39] "bench_queries_region_twitter_8000_1000_8_240_1508177471.csv"  
-[40] "bench_queries_region_twitter_8000_1000_8_48_1508177471.csv"
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_0_1508177471.csv'
-... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_112_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_240_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_0_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                            file expected   <int> <chr>      <chr>      <chr>                                                           <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_112_1508177471.csv'
-... ................. ... ................................................................................................... ........ .............................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_16_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                            file expected   <int> <chr>      <chr>      <chr>                                                           <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_240_1508177471.csv'
-... ................. ... ................................................................................................... ........ .............................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_128000_1000_8_48_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_0_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_112_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_240_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_16000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_0_1508177471.csv'
-... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_112_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_240_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_0_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_112_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_240_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_32000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_0_1508177471.csv'
-... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_112_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_240_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_4000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_0_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_112_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                           file expected   <int> <chr>      <chr>      <chr>                                                          <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_240_1508177471.csv'
-... ................. ... .................................................................................................. ........ ...................................................................................... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_64000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_0_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_0_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_0_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_0_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_0_1508177471.csv'
-... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_112_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_112_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_112_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_112_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_112_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_16_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_16_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_16_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_16_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_16_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_240_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_240_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_240_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_240_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_240_1508177471.csv'
-... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
-Warning: 8000 parsing failures.
-row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_48_1508177471.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_48_1508177471.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_48_1508177471.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_48_1508177471.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_8000_1000_8_48_1508177471.csv'
-... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
-There were 40 warnings (use warnings() to see them)
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_10_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_10_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_10_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_10_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_10_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_11_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_11_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_11_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_11_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_11_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_1_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_1_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_1_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_1_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_1_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_12_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_12_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_12_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_12_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_12_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_13_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_13_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_13_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_13_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_13_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_14_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_14_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_14_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_14_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_14_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_2_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_2_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_2_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_2_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_2_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_3_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_3_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_3_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_3_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_3_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_4_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_4_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_4_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_4_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_4_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_5_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_5_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_5_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_5_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_5_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_6_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_6_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_6_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_6_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_6_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_7_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_7_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_7_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_7_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_7_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_8_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_9_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_9_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_9_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_9_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_1000_1000_9_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_10_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_10_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_10_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_10_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_10_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_11_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_11_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_11_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_11_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_11_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_double()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_1_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_1_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_1_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_1_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_1_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_12_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_12_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_12_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_12_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_12_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_13_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_13_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_13_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_13_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_13_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                       file expected   <int> <chr>      <chr>      <chr>                                                      <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_14_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_14_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_14_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_14_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_14_1510425176.csv'
+... ................. ... .............................................................................................. ........ .............................................................................................. ...... ................ [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_double()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_2_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_2_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_2_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_2_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_2_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_double()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_3_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_3_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_3_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_3_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_3_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_double()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_4_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_4_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_4_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_4_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_4_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_5_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_5_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_5_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_5_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_5_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_6_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_6_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_6_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_6_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_6_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_7_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_7_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_7_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_7_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_7_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_8_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 3200 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                      file expected   <int> <chr>      <chr>      <chr>                                                     <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_9_1510425176.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_9_1510425176.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_9_1510425176.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_9_1510425176.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_twitter_2000_1000_9_1510425176.csv'
+... ................. ... ............................................................................................. ........ ............................................................................................. ...... ......................... [... truncated]
+There were 28 warnings (use warnings() to see them)
 #+end_example
-
 
 Remove useless columns
 #+begin_src R :results output :exports both :session 
-names(df) <- c("algo" , "V2" , "queryId", "V4", "T", "bench" , "ms" , "V8", "Refine","V10","Count","EltSize")
+
+names(df) <- c("algo" , "V2" , "queryId",  "V4" , "T"  ,"bench" , "ms" , "V8", "refinements" , "V10", "Count", "refLevel")
 
 df <- select(df, -V2, -V4, -V8, -V10)
-df
+
+str(df)
 #+end_src
 
 #+RESULTS:
-#+begin_example
-# A tibble: 320,000 x 8
-            algo queryId     T           bench       ms Refine  Count EltSize
-           <chr>   <int> <int>           <chr>    <dbl>  <int>  <int>  <fctr>
- 1 GeoHashBinary       0  1000 apply_at_region 0.419478     29 924827       0
- 2 GeoHashBinary       0  1000 apply_at_region 0.410266     29 924827       0
- 3 GeoHashBinary       0  1000 apply_at_region 0.408498     29 924827       0
- 4 GeoHashBinary       0  1000 apply_at_region 0.408071     29 924827       0
- 5 GeoHashBinary       0  1000 apply_at_region 0.407314     29 924827       0
- 6 GeoHashBinary       0  1000 apply_at_region 0.408054     29 924827       0
- 7 GeoHashBinary       0  1000 apply_at_region 0.407821     29 924827       0
- 8 GeoHashBinary       0  1000 apply_at_region 0.407836     29 924827       0
- 9 GeoHashBinary       0  1000 apply_at_region 0.406955     29 924827       0
-10 GeoHashBinary       0  1000 apply_at_region 0.421066     29 924827       0
-# ... with 319,990 more rows
-#+end_example
-
-Fix the count for Rtrees
-#+begin_src R :results output :exports both :session 
-df <- 
-    df %>%  
-    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
-           Refine = ifelse(grepl("RTree",algo), NA, Refine)) %>%
-    mutate(queryWidth = 90 / 2**(queryId %/% 10))  %>%   # comput info about query width
-    mutate(EltSize = as.numeric(as.character(EltSize)) + 16 ) -> df # adjust the actual size of the elements
-#+end_src
-
-#+RESULTS:
+: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	89600 obs. of  8 variables:
+:  $ algo       : chr  "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" "GeoHashBinary" ...
+:  $ queryId    : int  0 0 0 0 0 0 0 0 0 0 ...
+:  $ T          : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+:  $ bench      : chr  "apply_at_region" "apply_at_region" "apply_at_region" "apply_at_region" ...
+:  $ ms         : num  0.357 0.355 0.361 0.353 0.352 ...
+:  $ refinements: int  69 69 69 69 69 69 69 69 69 69 ...
+:  $ Count      : num  924827 924827 924827 924827 924827 ...
+:  $ refLevel   : Factor w/ 14 levels "10","11","1",..: 1 1 1 1 1 1 1 1 1 1 ...
 
 Summarize the averages
 #+begin_src R :results output :session :exports both
-df 
-
-dfAvg <- 
+dfplot <- 
     df %>% 
-    group_by_at(vars(-ms)) %>%   #group_by all expect ms
-    summarize(avg_ms = mean(ms), stdv = sd(ms))
+    group_by_at(vars(-ms, -refinements)) %>%   #group_by all expect ms
+    summarize(avg_ms = mean(ms), stdv = sd(ms)) %>%
+    mutate(refLevel = as.integer(as.character(refLevel))) %>%
+    arrange(refLevel) %>%
+    filter(T == 1000)
 
-dfAvg
+dfplot
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 320,000 x 9
-            algo queryId     T           bench       ms Refine  Count EltSize queryWidth
-           <chr>   <int> <int>           <chr>    <dbl>  <int>  <int>   <dbl>      <dbl>
- 1 GeoHashBinary       0  1000 apply_at_region 0.419478     29 924827      16         90
- 2 GeoHashBinary       0  1000 apply_at_region 0.410266     29 924827      16         90
- 3 GeoHashBinary       0  1000 apply_at_region 0.408498     29 924827      16         90
- 4 GeoHashBinary       0  1000 apply_at_region 0.408071     29 924827      16         90
- 5 GeoHashBinary       0  1000 apply_at_region 0.407314     29 924827      16         90
- 6 GeoHashBinary       0  1000 apply_at_region 0.408054     29 924827      16         90
- 7 GeoHashBinary       0  1000 apply_at_region 0.407821     29 924827      16         90
- 8 GeoHashBinary       0  1000 apply_at_region 0.407836     29 924827      16         90
- 9 GeoHashBinary       0  1000 apply_at_region 0.406955     29 924827      16         90
-10 GeoHashBinary       0  1000 apply_at_region 0.421066     29 924827      16         90
-# ... with 319,990 more rows
-# A tibble: 32,000 x 10
-# Groups:   algo, queryId, T, bench, Refine, Count, EltSize [?]
-    algo queryId     T           bench Refine  Count EltSize queryWidth   avg_ms        stdv
-   <chr>   <int> <int>           <chr>  <int>  <int>   <dbl>      <dbl>    <dbl>       <dbl>
- 1 BTree       0  1000 apply_at_region     27 924827      16         90 10.92556 0.839933454
- 2 BTree       0  1000 apply_at_region     27 924827      32         90 10.60835 0.056736491
- 3 BTree       0  1000 apply_at_region     27 924827      64         90 10.85630 0.851608473
- 4 BTree       0  1000 apply_at_region     27 924827     128         90 10.97631 0.844460953
- 5 BTree       0  1000 apply_at_region     27 924827     256         90 11.22784 0.832504941
- 6 BTree       0  1000  scan_at_region     29     NA      16         90 17.43356 0.010635078
- 7 BTree       0  1000  scan_at_region     29     NA      32         90 17.48158 0.022587843
- 8 BTree       0  1000  scan_at_region     29     NA      64         90 17.50776 0.017892407
- 9 BTree       0  1000  scan_at_region     29     NA     128         90 17.48583 0.008840569
-10 BTree       0  1000  scan_at_region     29     NA     256         90 17.61844 0.032610912
-# ... with 31,990 more rows
+# A tibble: 4,480 x 8
+# Groups:   algo, queryId, T, bench, Count [908]
+    algo queryId     T           bench  Count refLevel   avg_ms       stdv
+   <chr>   <int> <int>           <chr>  <dbl>    <int>    <dbl>      <dbl>
+ 1 BTree       0  1000 apply_at_region 924827        1 17.88266 0.31246492
+ 2 BTree       0  1000  scan_at_region     NA        1 24.76905 0.01259605
+ 3 BTree       1  1000 apply_at_region 929918        1 17.78989 0.26006714
+ 4 BTree       1  1000  scan_at_region     NA        1 24.80026 0.02786073
+ 5 BTree       2  1000 apply_at_region 753921        1 17.52672 0.10294663
+ 6 BTree       2  1000  scan_at_region     NA        1 23.90354 0.01953829
+ 7 BTree       3  1000 apply_at_region 989228        1 17.62055 0.07342717
+ 8 BTree       3  1000  scan_at_region     NA        1 25.12633 0.03318695
+ 9 BTree       4  1000 apply_at_region 929320        1 18.92725 2.73186005
+10 BTree       4  1000  scan_at_region     NA        1 25.58921 2.18233342
+# ... with 4,470 more rows
 #+end_example
 
-*** Plot: change of query count with size of T.                    :export:
-#+begin_src R :results output graphics :file "./img/count_by_T.pdf" :exports both :width 14 :height 10 :session 
 
-dfAvg %>% 
-    filter(EltSize == 16) %>%
-    filter(algo == "BTree" & bench == "apply_at_region") %>%
-    ggplot(aes(x = factor(T), y = Count, color = factor(queryId%%10))) +
-    geom_line(aes(group=queryId))+
-    facet_wrap(~queryWidth, scale = "free_y") + 
-    theme(legend.position = "bottom", 
-          axis.text.x = element_text(angle = 45, hjust = 0.75))
-#+end_src
+PLot time Vs RefLevel
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
 
-#+RESULTS:
-[[file:./img/count_by_T.pdf]]
-
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
-
-dfAvg %>% 
-    filter(EltSize == 16) %>%
-    filter(algo == "BTree" & bench == "apply_at_region" & queryWidth < 1) %>%
-    ggplot(aes(x = factor(T), y = Count, color = factor(queryId))) +
-    geom_line(aes(group=queryId))+
-    facet_wrap(~queryId, scale = "free_y") + 
-    theme(legend.position = "bottom", 
-          axis.text.x = element_text(angle = 45, hjust = 0.75))
+dfplot %>% 
+    filter( T == 1000) %>%
+#    mutate(queryW = queryId %/% 10) 
+#    filter(queryId < 10) %>%
+    ggplot(aes(x = refLevel,avg_ms,color=as.factor(queryId))) + 
+ #   geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_line() +
+    scale_x_continuous(breaks=seq(0, 14, by=1)) +
+    facet_grid(bench~algo) 
+  #  facet_wrap(algo~bench,nrow=2)
 
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956jLX.pdf]]
+[[file:/tmp/babel-17282Hv/figure1728_0R.png]]
 
-*** Plot: Scan Query Time by T facet by queryId                    :export:
+Note the the smaller queryIDs have a larger area of selection 
+[[file:~/Projects/pmq/data/queriesLHS.org::*Coordinates%20LHS%20To%20avoid%20out-of-bound%20queries%20+%20LAPPLY%20+%20RBIND][Coordinates LHS To avoid out-of-bound queries + LAPPLY + RBIND]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
-dfAvg %>% 
-#    filter(EltSize == 0) %>%
-    filter(bench == "scan_at_region" & queryWidth < 1) %>%
-    ggplot(aes(x = factor(T), y = avg_ms, color = algo)) +
-    geom_line(aes(group=algo))+
-    geom_errorbar(aes(ymin = avg_ms - stdv , ymax = avg_ms + stdv)) + 
-    facet_wrap(EltSize~queryId, scale = "free_y",ncol=10,labeller=label_both) + 
-    theme(legend.position = "bottom", 
-          axis.text.x = element_text(angle = 45, hjust = 0.75))
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956hCV.pdf]]
-
-*** Plot: Scan query time by Query Count faceted by QueryId        :export:
-
+Group by query width
 #+begin_src R :results output :exports both :session 
-dfAvg %>% 
-    ungroup() %>%
-    filter(bench == "apply_at_region") %>%
-    select(queryId,algo,Count,T) %>%
-    left_join( 
-        filter(ungroup(dfAvg), bench == "scan_at_region") %>% select(-Count)
-   ) -> dfCount
-dfCount
+
+dfplot %>% 
+    mutate(queryW = queryId %/% 10) %>%
+    group_by(algo,queryW,bench,refLevel) %>%
+    summarize(time = mean(avg_ms), sdtdv = sd(avg_ms))
+
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Joining, by = c("queryId", "algo", "T")
-# A tibble: 80,000 x 10
-   queryId  algo  Count     T          bench Refine EltSize queryWidth   avg_ms        stdv
-     <int> <chr>  <int> <int>          <chr>  <int>   <dbl>      <dbl>    <dbl>       <dbl>
- 1       0 BTree 924827  1000 scan_at_region     29      16         90 17.43356 0.010635078
- 2       0 BTree 924827  1000 scan_at_region     29      32         90 17.48158 0.022587843
- 3       0 BTree 924827  1000 scan_at_region     29      64         90 17.50776 0.017892407
- 4       0 BTree 924827  1000 scan_at_region     29     128         90 17.48583 0.008840569
- 5       0 BTree 924827  1000 scan_at_region     29     256         90 17.61844 0.032610912
- 6       0 BTree 924827  1000 scan_at_region     29      16         90 17.43356 0.010635078
- 7       0 BTree 924827  1000 scan_at_region     29      32         90 17.48158 0.022587843
- 8       0 BTree 924827  1000 scan_at_region     29      64         90 17.50776 0.017892407
- 9       0 BTree 924827  1000 scan_at_region     29     128         90 17.48583 0.008840569
-10       0 BTree 924827  1000 scan_at_region     29     256         90 17.61844 0.032610912
-# ... with 79,990 more rows
+# A tibble: 448 x 6
+# Groups:   algo, queryW, bench [?]
+    algo queryW           bench refLevel     time     sdtdv
+   <chr>  <dbl>           <chr>    <int>    <dbl>     <dbl>
+ 1 BTree      0 apply_at_region        1 17.77716 0.4177340
+ 2 BTree      0 apply_at_region        2 17.61552 0.3825027
+ 3 BTree      0 apply_at_region        3 14.08434 1.3392955
+ 4 BTree      0 apply_at_region        4 12.95060 1.6072631
+ 5 BTree      0 apply_at_region        5 12.00733 0.7700920
+ 6 BTree      0 apply_at_region        6 11.54523 0.4004386
+ 7 BTree      0 apply_at_region        7 10.72311 0.6150486
+ 8 BTree      0 apply_at_region        8 10.54572 0.5945493
+ 9 BTree      0 apply_at_region        9 10.51401 0.6934013
+10 BTree      0 apply_at_region       10 10.65255 0.8656675
+# ... with 438 more rows
 #+end_example
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf") :exports both :width 14 :height 10 :session 
 
-dfCount %>% 
-    filter(queryWidth < 1) %>%
-    ggplot(aes(x = factor(Count), y = avg_ms, color = algo)) +
-    geom_line(aes(group=algo))+
-    geom_errorbar(aes(ymin = avg_ms - stdv , ymax = avg_ms + stdv)) + 
-    facet_wrap(EltSize~queryId, scale = "free",ncol=10, labeller = label_both) + 
-    theme(legend.position = "bottom", 
-          axis.text.x = element_text(angle = 45, hjust = 0.75))
+#+begin_src R :results output graphics :file "./img/Reflevel.png" :exports both :width 600 :height 400 :session 
 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure29567Wh.pdf]]
-
-*** Plot: Scan query throughput by Query Count faceted by QueryId  :export:
-:PROPERTIES: 
-:HEADER-ARGS:R: :exports results
-:END:      
-
-#+begin_src R :results output :exports both :session 
-
-tgpPlot <- function(dfCount){
-    dfCount %>% 
-        filter(queryWidth == w) %>%
-        arrange(Count,T) %>%
-        mutate(lbls = paste(Count," (",T/1000,")",sep="")) %>%
-        ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
-                                        #ggplot(aes(x = factor(Count), group=algo, y = Count / avg_ms, color = algo)) +  
-        geom_errorbar(aes(ymin = Count / (avg_ms - stdv) , ymax = Count / (avg_ms + stdv)) ) +
-        geom_line() +
-        facet_wrap(EltSize~queryId, scale = "free",ncol=10, labeller = label_both) + 
-        theme(legend.position = "bottom",
-              axis.text.x = element_text(angle = 45, hjust = 1)) +
-        labs(x = "Query Count ( Dataset size x 10^{6} )",
-             title = paste("Query width = ", w)) 
-
-}
+dfplot %>% 
+    mutate(queryW = 90 / 2**(queryId %/% 10)) %>%
+    group_by(algo,queryW,bench,refLevel) %>%
+    summarize(time = mean(avg_ms), stdv = sd(avg_ms)) %>%
+    ggplot(aes(x = refLevel,time,color=as.factor(queryW))) + 
+ #   geom_errorbar(aes(ymin = time - stdv, ymax = time + stdv) ) +
+    geom_line() +
+    scale_x_continuous(breaks=seq(0, 14, by=1)) +
+    scale_y_continuous(trans = scales::log2_trans()) +
+    labs(colour="Query Width\n (Degrees)", y = "times ms (log2 scale)") +
+    facet_grid(bench~algo)
+  #  facet_wrap(algo~bench,nrow=2)
 
 #+end_src
 
 #+RESULTS:
+[[file:./img/Reflevel.png]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[1]]
 
-tgpPlot(dfCount)
+#+begin_src R :results output graphics :file "./img/refLevelAnalysis.pdf" :exports both :width 10 :height 5 :session :var path=(print default-directory)
+setwd(path)
+
+
+algo_labels <- c(BTree = "BTree", GeoHashBinary = "PMQ")
+
+dfplot %>% 
+    filter( bench == "scan_at_region", algo == "GeoHashBinary") %>% 
+    mutate(queryW = 90 / 2**(queryId %/% 10)) %>%
+    ggplot( aes(x = refLevel,avg_ms, color=as.factor(queryW), group=(queryId))) + 
+    theme_bw() + 
+    geom_line() +
+    geom_vline(xintercept=8, linetype="dashed") + 
+    scale_x_continuous(breaks=seq(0, 14, by=1)) +
+    scale_y_continuous(trans = scales::log2_trans(),
+                       labels = scales::trans_format("log2", scales::math_format(2^.x))) +
+    labs(colour="Query Width (Degrees)", 
+         y = "Query execution time in (ms)" ,
+         x = "Geohash refinement level") +
+    facet_wrap(~queryW,
+               scale="fixed",
+               labeller = labeller(algo=algo_labels))+
+    theme(legend.position = "bottom",
+          axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14),
+          legend.text = element_text( size = 12),
+          legend.title = element_text( size = 12),
+          strip.text = element_text( size = 12)) +
+    guides(color=guide_legend(nrow=1,byrow=TRUE))
+
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956VAK.pdf]]
+[[file:./img/refLevelAnalysis.pdf]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[2]]
+** Conclusions
 
-tgpPlot(dfCount)
++We can justify that we verify in our experiments that Z = 8 gives in general the best performance.+
 
-#+end_src
++Z  = number of quadtree refinements of the query algorithm+
 
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956vUW.pdf]]
+In the case of irregular dataset there is no best threshold for every one. 
 
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[3]]
-
-tgpPlot(dfCount)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure29568ec.pdf]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[4]]
-
-tgpPlot(dfCount)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956Jpi.pdf]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[5]]
-
-tgpPlot(dfCount)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956Wzo.pdf]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[6]]
-
-tgpPlot(dfCount)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956j9u.pdf]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".pdf")  :width 14 :height 10 :session 
-levelsWidth = levels(as.factor(dfCount$queryWidth) )
-w = levelsWidth[[7]]
-
-tgpPlot(dfCount)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2956hId/figure2956wH1.pdf]]

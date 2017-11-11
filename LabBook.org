@@ -816,20 +816,21 @@ echo $expFolder
 
   #+RESULTS:
   : 
-  : sh-4.4$ sh-4.4$ sh-4.4$ sh-4.4$ ./data/cicero/exp20171111160707
+  : sh-4.4$ sh-4.4$ sh-4.4$ sh-4.4$ ./data/cicero/exp20171111161232
   
 - [X] Use the template to run your experiment
   
   #+begin_src sh :results output raw :exports both :session template
-  git log -1 origin/exp20171016155353--oneline | cat
-  git show exp20171016155353:./data/cicero/exp20171016155353/exp.org > ${expFolder}/exp.org
+  git log -1 origin/exp20171016155353 --oneline | cat
+  git show origin/exp20171016155353:./data/cicero/exp20171016155353/exp.org > ${expFolder}/exp.org
 
   echo "[[$expFolder/exp.org]]"
   #+end_src
 
   #+RESULTS:
-  21cd8b2 image file
-  sh-4.4$ sh-4.4$ [[./data/cicero/exp20171111160707/exp.org]]
+  5cf59ee exp.pdf : plots with variation of Element Size and T
+  sh-4.4$ sh-4.4$ [[./data/cicero/exp20171111161232/exp.org]]
+
   
 
 *** Benchmark Insert and Remove
