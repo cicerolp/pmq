@@ -11,7 +11,7 @@
 #+PROPERTY: header-args :cache no :eval never-export 
 
 
-* DONE Description                                                   :export:
+* TODO Description                                                   :export:ARCHIVE:
 
 Test the queries on Twitter Dataset. 
 And compare the following performances.
@@ -62,7 +62,7 @@ To generate the results outside emacs and orgmode you can use the standalone scr
 - plotResults.R : generate the plots 
   
 
-* DONE Experiment Script
+* TODO Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -72,7 +72,7 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20171016155353
+: exp20171111161232
 
 Set up git branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -82,8 +82,10 @@ git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 
 #+RESULTS:
 : M	LabBook.org
-: [master 79c39e9] LBK: new entry for exp20171016155353
-:  1 file changed, 45 insertions(+), 1 deletion(-)
+: Your branch is ahead of 'origin/master' by 2 commits.
+:   (use "git push" to publish your local commits)
+: [master bd2ed0d] LBK: new entry for exp20171111161232
+:  1 file changed, 35 insertions(+)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -101,7 +103,7 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20171016155353
+On branch exp20171111161232
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
@@ -109,9 +111,9 @@ Untracked files:
 	exp.org
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20171016155353 08e6c64] Initial commit for exp20171016155353
- 1 file changed, 835 insertions(+)
- create mode 100644 data/cicero/exp20171016155353/exp.org
+[exp20171111161232 d06e7c2] Initial commit for exp20171111161232
+ 1 file changed, 1068 insertions(+)
+ create mode 100644 data/cicero/exp20171111161232/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -119,11 +121,13 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 08e6c64 (HEAD -> exp20171016155353) Initial commit for exp20171016155353
-: * 79c39e9 (master) LBK: new entry for exp20171016155353
-: * d0189bf workaround - performance bugs ?
+: * d06e7c2 (HEAD -> exp20171111161232) Initial commit for exp20171111161232
+: * bd2ed0d (master) LBK: new entry for exp20171111161232
+: | * 8a4aa51 (temp) Replicate test with random tweets on my machine
 
-** DONE Export run script 
+** TODO Export run script 
+
+- Test refinements levels on twitter dataset 
 
 #+begin_src sh :results output :exports both
 
@@ -181,7 +185,7 @@ make
 # make twitterVis
 mkdir -p $BUILDIR
 cd $BUILDIR 
-cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DELT_SIZE=0 -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=ON -DBENCH_RTREE_BULK=ON ..
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DELT_SIZE=0 -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=OFF -DBENCH_DENSE=OFF -DBENCH_RTREE_BULK=OFF ..
 make
 
 #get machine configuration
@@ -196,15 +200,14 @@ set +e
 #Run queries
 b=1000
 #n=$(($t*$b))
-ref=8
+#ref=8
 
-for EL in 16 32 64 128 256 ; do
-    ELTSIZE=$(($EL-16))
-    cmake -DELT_SIZE=$ELTSIZE . ; make
     
-    for i in 1 2 4 8 16 32 64 128 ; do
+listRef=$(seq 1 14)
+for ref in $listRef
+    for i in 1 2 ; do
         t=$(($i * 1000))
-        stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+        stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
     done
 done
 
@@ -221,7 +224,7 @@ git checkout $expId
 git add info.org log_$EXECID.tgz run.sh 
 git add -u
 git commit -m "Finish execution $EXECID"
-git push origin $expId
+#git push origin $expId
 #+end_src 
 
 
