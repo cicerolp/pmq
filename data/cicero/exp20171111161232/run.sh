@@ -55,7 +55,7 @@ b=1000
 
     
 listRef=$(seq 1 14)
-for ref in $listRef
+for ref in $listRef ; do
     for i in 1 2 ; do
         t=$(($i * 1000))
         stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
