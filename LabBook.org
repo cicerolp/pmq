@@ -40,7 +40,8 @@ sudo ./b2 -j8 install
 *** stx:Brtree
 https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
 
-#+begin_src sh :session  :results output :exports both 
+#+begin_src sh :session installBtree :results output :exports both 
+cd ~/Downloads/
 wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz ; \
 tar -xvzf stx-btree-0.9.tar.gz ; \
 cd stx-btree-stx-btree-0.9 ;
@@ -76,6 +77,25 @@ http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
 #+begin_src sh :results output :exports both
 systemctl restart postgresql.service
 #+end_src
+
+
+
+** Compilation 
+
+- Needs to point to your pma build directory
+
+#+begin_src sh :results output :exports both :session compilePMQ
+
+mkdir -p ./build-Release
+cd ./build-Release
+PMABUILD_DIR=../../hppsimulations/pma_cd/build-Release
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+#+end_src
+
+#+RESULTS:
+
+
 
 * Scripts
 ** g5k_get_info.sh
