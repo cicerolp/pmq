@@ -64,3 +64,9 @@ Already on 'exp20171111161232'
 M	data/cicero/exp20171111161232/run.sh
 A	data/cicero/exp20171111161232/run_1510424914
 A	data/cicero/exp20171111161232/run_1510425176
+[exp20171111161232 8c31f7f] Finish execution 1510425176
+ 5 files changed, 506 insertions(+), 1 deletion(-)
+ create mode 100644 data/cicero/exp20171111161232/info.org
+ create mode 100644 data/cicero/exp20171111161232/log_1510425176.tgz
+ create mode 100644 data/cicero/exp20171111161232/run_1510424914
+ create mode 100644 data/cicero/exp20171111161232/run_1510425176

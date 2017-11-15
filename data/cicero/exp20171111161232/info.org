@@ -1,31 +1,32 @@
 
 #+TITLE: Experiment results
-#+DATE: Sáb Nov 11 16:32:57 -02 2017
+#+DATE: Qua Nov 15 20:02:31 -02 2017
 #+AUTHOR: julio
 #+MACHINE: cicero
 #+FILE: info.org
  
 * MACHINE INFO:
 ** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
-julio    pts/8        2017-11-11 16:21 (143.54.11.6)
-julio    pts/9        2017-11-11 16:27 (143.54.11.6)
-julio    pts/10       2017-11-11 16:32 (tmux(17375).%0)
+julio    pts/8        2017-11-15 19:58 (143.54.11.6)
+julio    pts/9        2017-11-15 16:49 (143.54.11.6)
+julio    pts/10       2017-11-15 16:49 (127.0.0.1)
+julio    pts/11       2017-11-15 20:02 (tmux(3451).%0)
 ############################################
 ** ENVIRONMENT VARIABLES:
 LC_PAPER=pt_BR.UTF-8
-XDG_SESSION_ID=13589
 LC_ADDRESS=pt_BR.UTF-8
+XDG_SESSION_ID=14289
 LC_MONETARY=pt_BR.UTF-8
 TERM=screen
 SHELL=/bin/bash
-SSH_CLIENT=143.54.11.6 45781 22
+SSH_CLIENT=127.0.0.1 40216 22
 LC_NUMERIC=pt_BR.UTF-8
-SSH_TTY=/dev/pts/9
+SSH_TTY=/dev/pts/10
 USER=julio
 LC_TELEPHONE=pt_BR.UTF-8
 LS_COLORS=
-SSH_AUTH_SOCK=/tmp/ssh-zj7Oj09Jfl/agent.16995
-TMUX=/tmp/tmux-1001/default,17375,0
+SSH_AUTH_SOCK=/tmp/ssh-AK7BIhxHQ5/agent.2091
+TMUX=/tmp/tmux-1001/default,3451,0
 MAIL=/var/mail/julio
 PATH=/home/julio/bin:/home/julio/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QT_QPA_PLATFORMTHEME=appmenu-qt5
@@ -39,8 +40,8 @@ TMUX_PANE=%0
 SHLVL=4
 HOME=/home/julio
 LOGNAME=julio
-SSH_CONNECTION=143.54.11.6 45781 143.54.13.134 22
 LC_CTYPE=pt_BR.UTF-8
+SSH_CONNECTION=127.0.0.1 40216 127.0.1.1 22
 LESSOPEN=| /usr/bin/lesspipe %s
 XDG_RUNTIME_DIR=/run/user/1001
 LC_TIME=pt_BR.UTF-8
@@ -59,7 +60,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3999.796
+cpu MHz		: 3991.921
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -86,7 +87,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3990.093
+cpu MHz		: 3998.390
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -113,7 +114,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3998.812
+cpu MHz		: 3997.546
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -140,7 +141,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3979.687
+cpu MHz		: 3800.109
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -167,7 +168,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3998.390
+cpu MHz		: 3802.921
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -194,7 +195,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3928.078
+cpu MHz		: 3873.515
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -221,7 +222,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3838.921
+cpu MHz		: 3976.031
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -248,7 +249,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3916.406
+cpu MHz		: 3886.171
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -273,40 +274,40 @@ power management:
 powersave
 ############################################
 ** CPU FREQUENCY:
-3999796
+3991921
 ############################################
 ** MEM INFO:
 MemTotal:       32895452 kB
-MemFree:        13148952 kB
-MemAvailable:   31865172 kB
-Buffers:        14918480 kB
-Cached:          3487444 kB
+MemFree:        27864304 kB
+MemAvailable:   31842600 kB
+Buffers:         1083328 kB
+Cached:          3186436 kB
 SwapCached:            0 kB
-Active:         10153900 kB
-Inactive:        8483756 kB
-Active(anon):     311100 kB
-Inactive(anon):   114408 kB
-Active(file):    9842800 kB
-Inactive(file):  8369348 kB
+Active:          3812888 kB
+Inactive:         694652 kB
+Active(anon):     325552 kB
+Inactive(anon):   122604 kB
+Active(file):    3487336 kB
+Inactive(file):   572048 kB
 Unevictable:          32 kB
 Mlocked:              32 kB
 SwapTotal:             0 kB
 SwapFree:              0 kB
-Dirty:               488 kB
+Dirty:               472 kB
 Writeback:             0 kB
-AnonPages:        231028 kB
-Mapped:           110628 kB
-Shmem:            193776 kB
-Slab:             949936 kB
-SReclaimable:     906900 kB
-SUnreclaim:        43036 kB
-KernelStack:        5392 kB
-PageTables:        14228 kB
+AnonPages:        236820 kB
+Mapped:           104776 kB
+Shmem:            210356 kB
+Slab:             363684 kB
+SReclaimable:     321740 kB
+SUnreclaim:        41944 kB
+KernelStack:        5216 kB
+PageTables:        15436 kB
 NFS_Unstable:          0 kB
 Bounce:                0 kB
 WritebackTmp:          0 kB
 CommitLimit:    16447724 kB
-Committed_AS:    1816864 kB
+Committed_AS:    1877108 kB
 VmallocTotal:   34359738367 kB
 VmallocUsed:           0 kB
 VmallocChunk:          0 kB
@@ -319,8 +320,8 @@ HugePages_Free:        0
 HugePages_Rsvd:        0
 HugePages_Surp:        0
 Hugepagesize:       2048 kB
-DirectMap4k:      255520 kB
-DirectMap2M:    14372864 kB
+DirectMap4k:      257568 kB
+DirectMap2M:    14370816 kB
 DirectMap1G:    18874368 kB
 ############################################
 ** GPU INFO FROM NVIDIA-SMI:
@@ -331,11 +332,11 @@ Linux version 4.4.0-92-generic (buildd@lcy01-17) (gcc version 5.4.0 20160609 (Ub
 ############################################
 * CODE REVISIONS:
 ** GIT REVISION OF TWITTERVIS:
-commit ebb431811a1abc4ddee5f0a0c9de3e01aeea4350
-Author: Julio Toss <jutoss@gmail.com>
-Date:   Sat Nov 11 16:20:56 2017 -0200
+commit 8c31f7f7bc25f43415c88bc76b9422aca529dff5
+Author: Julio Toss <jutoss@inf.ufrgs.br>
+Date:   Sat Nov 11 16:46:33 2017 -0200
 
-    UPD: run.sh script
+    Finish execution 1510425176
 *** CMAKE VARIABLES:
 -- cotire 1.7.8 loaded.
 -- Configuring done
