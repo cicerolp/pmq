@@ -51,16 +51,16 @@ set +e
 #Run queries
 b=1000
 #n=$(($t*$b))
-#ref=8
+ref=10
 
     
-listRef=$(seq 1 14)
-for ref in $listRef ; do
-    for i in 1 2 ; do
+#listRef=$(seq 1 14)
+#for ref in $listRef ; do
+    for i in 1 2 4 8 16 32 64 128 ; do
         t=$(($i * 1000))
         stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
     done
-done
+#done
 
 set -e
 
