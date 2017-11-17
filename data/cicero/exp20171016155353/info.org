@@ -1,30 +1,30 @@
 
 #+TITLE: Experiment results
-#+DATE: Seg Out 16 16:11:48 BRST 2017
+#+DATE: Qui Nov 16 08:05:06 -02 2017
 #+AUTHOR: julio
 #+MACHINE: cicero
 #+FILE: info.org
  
 * MACHINE INFO:
 ** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
-julio    pts/8        2017-10-16 16:07 (143.54.13.218)
-julio    pts/9        2017-10-16 16:11 (tmux(22076).%0)
+julio    pts/9        2017-11-16 08:03 (143.54.11.6)
+julio    pts/10       2017-11-16 08:04 (tmux(8516).%0)
 ############################################
 ** ENVIRONMENT VARIABLES:
 LC_PAPER=pt_BR.UTF-8
+XDG_SESSION_ID=14405
 LC_ADDRESS=pt_BR.UTF-8
-XDG_SESSION_ID=9091
 LC_MONETARY=pt_BR.UTF-8
 TERM=screen
 SHELL=/bin/bash
-SSH_CLIENT=143.54.13.218 38584 22
+SSH_CLIENT=143.54.11.6 55744 22
 LC_NUMERIC=pt_BR.UTF-8
-SSH_TTY=/dev/pts/8
+SSH_TTY=/dev/pts/9
 USER=julio
 LC_TELEPHONE=pt_BR.UTF-8
 LS_COLORS=
-SSH_AUTH_SOCK=/tmp/ssh-nEHZ4qXTOM/agent.21913
-TMUX=/tmp/tmux-1001/default,22076,0
+SSH_AUTH_SOCK=/tmp/ssh-219ORzIyWS/agent.8492
+TMUX=/tmp/tmux-1001/default,8516,0
 MAIL=/var/mail/julio
 PATH=/home/julio/bin:/home/julio/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QT_QPA_PLATFORMTHEME=appmenu-qt5
@@ -38,8 +38,8 @@ TMUX_PANE=%0
 SHLVL=4
 HOME=/home/julio
 LOGNAME=julio
+SSH_CONNECTION=143.54.11.6 55744 143.54.13.134 22
 LC_CTYPE=pt_BR.UTF-8
-SSH_CONNECTION=143.54.13.218 38584 143.54.13.134 22
 LESSOPEN=| /usr/bin/lesspipe %s
 XDG_RUNTIME_DIR=/run/user/1001
 LC_TIME=pt_BR.UTF-8
@@ -58,7 +58,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3980.671
+cpu MHz		: 3993.890
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -85,7 +85,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3996.000
+cpu MHz		: 3998.812
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -112,7 +112,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3917.531
+cpu MHz		: 3962.671
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -139,7 +139,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3993.750
+cpu MHz		: 3996.984
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -166,7 +166,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3964.359
+cpu MHz		: 3978.843
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -193,7 +193,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3996.703
+cpu MHz		: 3998.109
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -220,7 +220,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3877.031
+cpu MHz		: 3801.234
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -247,7 +247,7 @@ model		: 60
 model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
 stepping	: 3
 microcode	: 0x22
-cpu MHz		: 3999.515
+cpu MHz		: 3969.281
 cache size	: 8192 KB
 physical id	: 0
 siblings	: 8
@@ -272,45 +272,45 @@ power management:
 powersave
 ############################################
 ** CPU FREQUENCY:
-3959578
+3987843
 ############################################
 ** MEM INFO:
 MemTotal:       32895452 kB
-MemFree:        28174240 kB
-MemAvailable:   31950420 kB
-Buffers:          335200 kB
-Cached:          3735192 kB
+MemFree:        27463464 kB
+MemAvailable:   31857480 kB
+Buffers:         1096980 kB
+Cached:          3572024 kB
 SwapCached:            0 kB
-Active:          3637880 kB
-Inactive:         642092 kB
-Active(anon):     260484 kB
-Inactive(anon):    82360 kB
-Active(file):    3377396 kB
-Inactive(file):   559732 kB
+Active:          3930952 kB
+Inactive:         968004 kB
+Active(anon):     309336 kB
+Inactive(anon):   122552 kB
+Active(file):    3621616 kB
+Inactive(file):   845452 kB
 Unevictable:          32 kB
 Mlocked:              32 kB
 SwapTotal:             0 kB
 SwapFree:              0 kB
-Dirty:              5148 kB
-Writeback:             0 kB
-AnonPages:        210416 kB
-Mapped:            81052 kB
-Shmem:            132760 kB
-Slab:             283020 kB
-SReclaimable:     241880 kB
-SUnreclaim:        41140 kB
-KernelStack:        5184 kB
-PageTables:        13248 kB
+Dirty:              4388 kB
+Writeback:             4 kB
+AnonPages:        230056 kB
+Mapped:           109828 kB
+Shmem:            201936 kB
+Slab:             371428 kB
+SReclaimable:     329776 kB
+SUnreclaim:        41652 kB
+KernelStack:        5552 kB
+PageTables:        13836 kB
 NFS_Unstable:          0 kB
 Bounce:                0 kB
 WritebackTmp:          0 kB
 CommitLimit:    16447724 kB
-Committed_AS:    1624180 kB
+Committed_AS:    1860656 kB
 VmallocTotal:   34359738367 kB
 VmallocUsed:           0 kB
 VmallocChunk:          0 kB
 HardwareCorrupted:     0 kB
-AnonHugePages:    159744 kB
+AnonHugePages:    110592 kB
 CmaTotal:              0 kB
 CmaFree:               0 kB
 HugePages_Total:       0
@@ -318,333 +318,23 @@ HugePages_Free:        0
 HugePages_Rsvd:        0
 HugePages_Surp:        0
 Hugepagesize:       2048 kB
-DirectMap4k:      222752 kB
-DirectMap2M:     4968448 kB
-DirectMap1G:    28311552 kB
+DirectMap4k:      259616 kB
+DirectMap2M:    14368768 kB
+DirectMap1G:    18874368 kB
 ############################################
 ** GPU INFO FROM NVIDIA-SMI:
-
-==============NVSMI LOG==============
-
-Timestamp                           : Mon Oct 16 16:11:48 2017
-Driver Version                      : 375.66
-
-Attached GPUs                       : 2
-GPU 0000:01:00.0
-    Product Name                    : GeForce GTX 970
-    Product Brand                   : GeForce
-    Display Mode                    : Enabled
-    Display Active                  : Enabled
-    Persistence Mode                : Disabled
-    Accounting Mode                 : Disabled
-    Accounting Mode Buffer Size     : 1920
-    Driver Model
-        Current                     : N/A
-        Pending                     : N/A
-    Serial Number                   : N/A
-    GPU UUID                        : GPU-588c0d06-d86e-da22-ba2b-cd6247591932
-    Minor Number                    : 0
-    VBIOS Version                   : 84.04.2F.00.70
-    MultiGPU Board                  : No
-    Board ID                        : 0x100
-    GPU Part Number                 : N/A
-    Inforom Version
-        Image Version               : N/A
-        OEM Object                  : N/A
-        ECC Object                  : N/A
-        Power Management Object     : N/A
-    GPU Operation Mode
-        Current                     : N/A
-        Pending                     : N/A
-    GPU Virtualization Mode
-        Virtualization mode         : None
-    PCI
-        Bus                         : 0x01
-        Device                      : 0x00
-        Domain                      : 0x0000
-        Device Id                   : 0x13C210DE
-        Bus Id                      : 0000:01:00.0
-        Sub System Id               : 0x29763842
-        GPU Link Info
-            PCIe Generation
-                Max                 : 3
-                Current             : 1
-            Link Width
-                Max                 : 16x
-                Current             : 8x
-        Bridge Chip
-            Type                    : N/A
-            Firmware                : N/A
-        Replays since reset         : 0
-        Tx Throughput               : 0 KB/s
-        Rx Throughput               : 0 KB/s
-    Fan Speed                       : 0 %
-    Performance State               : P8
-    Clocks Throttle Reasons
-        Idle                        : Active
-        Applications Clocks Setting : Not Active
-        SW Power Cap                : Not Active
-        HW Slowdown                 : Not Active
-        Sync Boost                  : Not Active
-        Unknown                     : Not Active
-    FB Memory Usage
-        Total                       : 4032 MiB
-        Used                        : 63 MiB
-        Free                        : 3969 MiB
-    BAR1 Memory Usage
-        Total                       : 256 MiB
-        Used                        : 4 MiB
-        Free                        : 252 MiB
-    Compute Mode                    : Default
-    Utilization
-        Gpu                         : 0 %
-        Memory                      : 4 %
-        Encoder                     : 0 %
-        Decoder                     : 0 %
-    Encoder Stats
-        Active Sessions             : 0
-        Average FPS                 : 0
-        Average Latency             : 0 ms
-    Ecc Mode
-        Current                     : N/A
-        Pending                     : N/A
-    ECC Errors
-        Volatile
-            Single Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-            Double Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-        Aggregate
-            Single Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-            Double Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-    Retired Pages
-        Single Bit ECC              : N/A
-        Double Bit ECC              : N/A
-        Pending                     : N/A
-    Temperature
-        GPU Current Temp            : 51 C
-        GPU Shutdown Temp           : 96 C
-        GPU Slowdown Temp           : 91 C
-    Power Readings
-        Power Management            : Supported
-        Power Draw                  : 15.60 W
-        Power Limit                 : 170.00 W
-        Default Power Limit         : 170.00 W
-        Enforced Power Limit        : 170.00 W
-        Min Power Limit             : 100.00 W
-        Max Power Limit             : 187.00 W
-    Clocks
-        Graphics                    : 135 MHz
-        SM                          : 135 MHz
-        Memory                      : 324 MHz
-        Video                       : 405 MHz
-    Applications Clocks
-        Graphics                    : 1050 MHz
-        Memory                      : 3505 MHz
-    Default Applications Clocks
-        Graphics                    : 1050 MHz
-        Memory                      : 3505 MHz
-    Max Clocks
-        Graphics                    : 1392 MHz
-        SM                          : 1392 MHz
-        Memory                      : 3505 MHz
-        Video                       : 1281 MHz
-    Clock Policy
-        Auto Boost                  : N/A
-        Auto Boost Default          : N/A
-    Processes
-        Process ID                  : 28958
-            Type                    : G
-            Name                    : /usr/lib/xorg/Xorg
-            Used GPU Memory         : 62 MiB
-
-GPU 0000:02:00.0
-    Product Name                    : GeForce GTX 970
-    Product Brand                   : GeForce
-    Display Mode                    : Enabled
-    Display Active                  : Disabled
-    Persistence Mode                : Disabled
-    Accounting Mode                 : Disabled
-    Accounting Mode Buffer Size     : 1920
-    Driver Model
-        Current                     : N/A
-        Pending                     : N/A
-    Serial Number                   : N/A
-    GPU UUID                        : GPU-6dd8f422-120c-e4fc-dffb-9fc4973db7b4
-    Minor Number                    : 1
-    VBIOS Version                   : 84.04.2F.00.70
-    MultiGPU Board                  : No
-    Board ID                        : 0x200
-    GPU Part Number                 : N/A
-    Inforom Version
-        Image Version               : N/A
-        OEM Object                  : N/A
-        ECC Object                  : N/A
-        Power Management Object     : N/A
-    GPU Operation Mode
-        Current                     : N/A
-        Pending                     : N/A
-    GPU Virtualization Mode
-        Virtualization mode         : None
-    PCI
-        Bus                         : 0x02
-        Device                      : 0x00
-        Domain                      : 0x0000
-        Device Id                   : 0x13C210DE
-        Bus Id                      : 0000:02:00.0
-        Sub System Id               : 0x29763842
-        GPU Link Info
-            PCIe Generation
-                Max                 : 3
-                Current             : 1
-            Link Width
-                Max                 : 16x
-                Current             : 8x
-        Bridge Chip
-            Type                    : N/A
-            Firmware                : N/A
-        Replays since reset         : 0
-        Tx Throughput               : 0 KB/s
-        Rx Throughput               : 0 KB/s
-    Fan Speed                       : 0 %
-    Performance State               : P8
-    Clocks Throttle Reasons
-        Idle                        : Active
-        Applications Clocks Setting : Not Active
-        SW Power Cap                : Not Active
-        HW Slowdown                 : Not Active
-        Sync Boost                  : Not Active
-        Unknown                     : Not Active
-    FB Memory Usage
-        Total                       : 4037 MiB
-        Used                        : 1 MiB
-        Free                        : 4036 MiB
-    BAR1 Memory Usage
-        Total                       : 256 MiB
-        Used                        : 4 MiB
-        Free                        : 252 MiB
-    Compute Mode                    : Default
-    Utilization
-        Gpu                         : 0 %
-        Memory                      : 0 %
-        Encoder                     : 0 %
-        Decoder                     : 0 %
-    Encoder Stats
-        Active Sessions             : 0
-        Average FPS                 : 0
-        Average Latency             : 0 ms
-    Ecc Mode
-        Current                     : N/A
-        Pending                     : N/A
-    ECC Errors
-        Volatile
-            Single Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-            Double Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-        Aggregate
-            Single Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-            Double Bit            
-                Device Memory       : N/A
-                Register File       : N/A
-                L1 Cache            : N/A
-                L2 Cache            : N/A
-                Texture Memory      : N/A
-                Texture Shared      : N/A
-                Total               : N/A
-    Retired Pages
-        Single Bit ECC              : N/A
-        Double Bit ECC              : N/A
-        Pending                     : N/A
-    Temperature
-        GPU Current Temp            : 46 C
-        GPU Shutdown Temp           : 96 C
-        GPU Slowdown Temp           : 91 C
-    Power Readings
-        Power Management            : Supported
-        Power Draw                  : 13.57 W
-        Power Limit                 : 170.00 W
-        Default Power Limit         : 170.00 W
-        Enforced Power Limit        : 170.00 W
-        Min Power Limit             : 100.00 W
-        Max Power Limit             : 187.00 W
-    Clocks
-        Graphics                    : 135 MHz
-        SM                          : 135 MHz
-        Memory                      : 324 MHz
-        Video                       : 405 MHz
-    Applications Clocks
-        Graphics                    : 1050 MHz
-        Memory                      : 3505 MHz
-    Default Applications Clocks
-        Graphics                    : 1050 MHz
-        Memory                      : 3505 MHz
-    Max Clocks
-        Graphics                    : 1392 MHz
-        SM                          : 1392 MHz
-        Memory                      : 3505 MHz
-        Video                       : 1281 MHz
-    Clock Policy
-        Auto Boost                  : N/A
-        Auto Boost Default          : N/A
-    Processes                       : None
-
+Failed to initialize NVML: Driver/library version mismatch
 ############################################
 ** LINUX AND GCC VERSIONS:
 Linux version 4.4.0-92-generic (buildd@lcy01-17) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ) #115-Ubuntu SMP Thu Aug 10 09:04:33 UTC 2017
 ############################################
 * CODE REVISIONS:
 ** GIT REVISION OF TWITTERVIS:
-commit 08a08b9560a7826399681d49bb79c30bd5f60611
-Author: Julio Toss <jutoss@gmail.com>
-Date:   Mon Oct 16 16:07:59 2017 -0200
+commit 1f56fb3f7ad923162b82db4216ddea52812722ca
+Author: Julio Toss <jutoss@inf.ufrgs.br>
+Date:   Thu Nov 16 08:02:19 2017 -0200
 
-    UPD: run.sh script
+    UPD: run.sh running with refLevel == 10
 *** CMAKE VARIABLES:
 -- cotire 1.7.8 loaded.
 -- Configuring done
