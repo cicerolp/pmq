@@ -797,6 +797,42 @@ echo "[[$expFolder/exp.org]]"
 
 
 
+**** TODO [2017-09-04 Seg] Twitter Dataset refinements levels
+
+
+Test the best refinement level to use in Geohash programs. 
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+echo $expFolder
+#+end_src
+
+  #+RESULTS:
+  : 
+  : sh-4.4$ sh-4.4$ sh-4.4$ sh-4.4$ ./data/cicero/exp20171111161232
+  
+- [X] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 origin/exp20171016155353 --oneline | cat
+  git show origin/exp20171016155353:./data/cicero/exp20171016155353/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  5cf59ee exp.pdf : plots with variation of Element Size and T
+  sh-4.4$ sh-4.4$ [[./data/cicero/exp20171111161232/exp.org]]
+
+  
+
 *** Benchmark Insert and Remove
 **** DONE [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
 
