@@ -232,14 +232,14 @@ git commit -m "UPD: run.sh script"
 #+end_src
 
 #+RESULTS:
-: [exp20170914091842 3ae2d2f] UPD: run.sh script
-:  2 files changed, 123 insertions(+), 14 deletions(-)
-:  create mode 100755 data/cicero/exp20170914091842/run.sh
+: [exp20171125095944 1f2276e] UPD: run.sh script
+:  2 files changed, 93 insertions(+), 12 deletions(-)
+:  create mode 100755 data/cicero/exp20171125095944/run.sh
 
 Push to remote
 #+begin_src sh :results output :exports both :var expId=expId
 #git push bitbucket $expId
-git push origin $expId
+git push cicero $expId
 #+end_src
 
 #+RESULTS:
@@ -260,9 +260,9 @@ tmux ls
 ps ux
 #+end_src
 
-** DONE Remote Execution                                            :remote:
+** TODO Remote Execution                                            :remote:
 
-*** Get new changes on remote                                      :remote:
+*** TODO Get new changes on remote                                 :remote:
 #+begin_src sh :session remote :results output :exports both 
 ssh -A cicero
 #+end_src
@@ -343,7 +343,7 @@ Date:   Wed Sep 13 10:39:02 2017 -0300
     upd: return del counter on add_rm_array_elts
 #+end_example
 
-*** Execute Remotely                                               :remote:
+*** INPROGRESS Execute Remotely                                    :remote:
 
 Opens ssh connection and a tmux session
 
@@ -357,7 +357,7 @@ echo $runid
 
 #+RESULTS:
 : 
-: julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ julio@cicero:~/Projects/pmq/data/cicero/exp20170914091842$ 1505412384
+: julio@cicero:~/Projects/pmq/data/cicero/exp20171125095944$ julio@cicero:~/Projects/pmq/data/cicero/exp20171125095944$ julio@cicero:~/Projects/pmq/data/cicero/exp20171125095944$ julio@cicero:~/Projects/pmq/data/cicero/exp20171125095944$ 1511616672
 
 Check process running
 #+begin_src sh :results output :exports both :session remote
@@ -366,15 +366,26 @@ ps ux
 #+end_src
 
 #+RESULTS:
-: no server running on /tmp/tmux-1001/default
-: USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-: julio    19348  0.0  0.0  45248  4668 ?        Ss   14:59   0:00 /lib/systemd/sy
-: julio    19350  0.0  0.0 145364  2112 ?        S    14:59   0:00 (sd-pam)
-: julio    19423  0.0  0.0  97464  3328 ?        S    15:00   0:00 sshd: julio@pts
-: julio    19424  0.0  0.0  22688  5224 pts/9    Ss   15:00   0:00 -bash
-: julio    20198  0.0  0.0  97464  3328 ?        S    15:04   0:00 sshd: julio@pts
-: julio    20199  0.0  0.0  23716  6432 pts/8    Ss+  15:04   0:00 -bash
-: julio    21473  0.0  0.0  37368  3308 pts/9    R+   17:19   0:00 ps ux
+#+begin_example
+runExp: 1 windows (created Sat Nov 25 11:31:12 2017) [96x43]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio     8914  0.0  0.0  45248  4672 ?        Ss   11:07   0:00 /lib/systemd/systemd --user
+julio     8915  0.0  0.0 210732  1952 ?        S    11:07   0:00 (sd-pam)
+julio     9004  0.0  0.0  97576  4236 ?        S    11:07   0:00 sshd: julio@pts/18
+julio     9007  0.0  0.0  24060  6740 pts/18   Ss+  11:07   0:00 -bash
+julio     9709  0.0  0.0  97496  3148 ?        S    11:20   0:00 sshd: julio@pts/19
+julio     9710  0.0  0.0  22684  5360 pts/19   Ss   11:20   0:00 -bash
+julio    10527  0.0  0.0  29420  2804 ?        Ss   11:31   0:00 tmux new -d -s runExp cd ~/Proj
+julio    10528  0.0  0.0  12528  3088 pts/0    Ss+  11:31   0:00 bash -c cd ~/Projects/pmq/data/
+julio    10530  0.0  0.0  12540  3104 pts/0    S+   11:31   0:00 /bin/bash ./run.sh 1511616672
+julio    10539  0.0  0.0   9676  2432 pts/0    S+   11:31   0:00 make
+julio    10542  0.0  0.0   9676  2396 pts/0    S+   11:31   0:00 make -f CMakeFiles/Makefile2 al
+julio    10628  0.0  0.0   9676  2360 pts/0    S+   11:31   0:00 make -f benchmarks/CMakeFiles/b
+julio    10631  0.0  0.0   4508   852 pts/0    S+   11:31   0:00 /bin/sh -c cd /home/julio/Proje
+julio    10632  0.0  0.0   8352   860 pts/0    S+   11:31   0:00 /usr/bin/c++ -I/home/julio/Proj
+julio    10633 93.0  0.8 332044 280000 pts/0   R+   11:31   0:01 /usr/lib/gcc/x86_64-linux-gnu/6
+julio    10635  0.0  0.0  37368  3344 pts/19   R+   11:31   0:00 ps ux
+#+end_example
 
 **** DONE Pull local 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -428,7 +439,7 @@ Fast-forwarded exp20170914091842 to 1adced939ed1e68bf901e82bd40097309abecf9e.
 #+end_example
 
 
-* DONE Analysis
+* TODO Analysis
 ** Generate csv files
 :PROPERTIES: 
 :HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
