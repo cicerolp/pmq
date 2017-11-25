@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: t; -*-
-#+TITLE: Removal benchmark
+#+TITLE: Removal benchmark - Twitter Dataset
 #+LANGUAGE: en 
 #+STARTUP: indent
 #+STARTUP: logdrawer hideblocks
@@ -31,173 +31,9 @@ To generate the results outside emacs and orgmode you can use the standalone scr
   
 * DONE Design of Experiment                                          :export:
 
-PMA remove elements timely before doubling the array.
-The array double only when \tau * PMA_Capacity it reached. 
+same as [[file:../exp20170914091842/exp.org]]
 
-For several PMA sizes, how is the performance of the remove operation? 
-Variables that may affect the remove performance:
-
-- Amount of elements removed at each time: 
-  - as a percentage of the total of elements in the data structure. 
-  - as an absolute value of elements removed.
-
-- Size of the data structure: because before each removal we need to scan the storage array.
-  
-** Computation of PMA Capacity
-
-Pma Capacity is computed based on the desired number of elements to store and the \tau parameter:
-
-#+NAME: PmaCap
-#+begin_src python :results output :exports both :var n=1000 th=0.7
-import math as m
-def tauInit(n,th):
-    s = n / th / 8
-    seg = 2**(m.ceil(m.log2(s)))
-    return seg*8
-
-print( tauInit(n,th))
-#+end_src
-
-#+RESULTS: PmaCap
-: 2048
-
-** Computation of size and frequency of remove operations
-
-- Time window size :: a lower bound on the amount of =Batches= we will keep in-memory 
-- Batch size :: the number of elements inserted in each batch
-- EMin :: the lower bound of the amount of /elements/ kept in memory ( time window \times batch size ).
-- PMA Size :: The capacity of the PMA computed to store =EMin= elements given a \tau value of =0.7=
-- Tau Size :: The amount of elements at which the given PMA will be required to remove elements. ( PMA Size \times \tau)
-
-#+CAPTION: Example
-| Time Window Size | Batch |  EMin | PMA Size | Rho Size | Tau Size | First removal at batch | #del | Interval (# Batches) |       rm % |
-|------------------+-------+-------+----------+----------+----------+------------------------+------+----------------------+------------|
-|               15 |  1000 | 15000 |    32768 |    10000 |    22000 |                     22 | 8000 |                    8 | 0.36363636 |
-#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
-
-
-We first will test , for a fixed PMA Size, how the percentage of removals affects the performance.
-
-We choose a target Emin = 21600000 and compute the resulting PMA Capacity:
-PmaCap(n=21600000,th=0.7) = call_PmaCap(n=21600000,th=0.7) {{{results(=33554432=)}}}. 
-
-
-This will result in the following setup: 
-| Time Window Size | Batch |     EMin | PMA Size | Rho Size | Tau Size | First removal at batch |    #del | Interval (# Batches) |        rm % |
-|------------------+-------+----------+----------+----------+----------+------------------------+---------+----------------------+-------------|
-|            21600 |  1000 | 21600000 | 33554432 | 10067000 | 23488000 |                  23488 | 1889000 |                 1889 | 0.080424046 |
-#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
-
-The minimum =EMin= value that result in a PMA Size of =33554432= is \( \frac{PMA\_SIZE}{2}+1 \) = src_python{return (33554432 / 2.0 * 0.7 + 1)} {{{results(=11744052.2=)}}} . 
-Example: 
-- tauInit(n=11744052,th=0.7) =  call_PmaCap(n=11744052,th=0.7) {{{results(=33554432=)}}}
-- tauInit(n=11744051,th=0.7) =  call_PmaCap(n=11744051,th=0.7) {{{results(=16777216=)}}}
-
-
-The maximum =EMin= value with the this same size is equal to \( PMA\_SIZE \times \tau_h \) = src_python{return (33554432 * 0.7) } {{{results(=23488102.4=)}}} ( when \tau_{h} is =0.7= ) .
-
-
-We generate several window sizes to test with the allow boundaries of chosen PMA size.
-#+begin_src python :results output :exports both
-import math as m
-batch = 1000
-minWs = m.ceil(11744052 / batch)
-maxWs = m.floor(23488102.4 / batch)
-
-# Possible variation of window size.
-diff = maxWs - minWs;
-
-# Increase the window size logarithmicly from minWs to MaxWs
-wSizes = [ round(maxWs - diff/2**i) for i in range(0,10) ]
-print( wSizes )
-#print ("| Window Size",*wSizes,sep="|\n| ")
-
-#wSizes = [ round(minWs + diff/2**i) for i in range(0,10) ]
-#print (wSizes)
-
-#+end_src
-
-#+RESULTS:
-: [11745, 17616, 20552, 22020, 22754, 23121, 23305, 23396, 23442, 23465]
-
-#+NAME: tbl:ExpVariables
-#+CAPTION: Experiment variables
-| Time Window Size | Batch |     EMin | PMA Size | Rho Size | Tau Size | First removal at batch |     #del | Interval (# Batches) |         rm % |
-|------------------+-------+----------+----------+----------+----------+------------------------+----------+----------------------+--------------|
-|            11745 |  1000 | 11745000 | 33554432 | 10067000 | 23488000 |                  23488 | 11744000 |                11744 |          0.5 |
-|            17616 |  1000 | 17616000 | 33554432 | 10067000 | 23488000 |                  23488 |  5873000 |                 5873 |   0.25004257 |
-|            20552 |  1000 | 20552000 | 33554432 | 10067000 | 23488000 |                  23488 |  2937000 |                 2937 |   0.12504257 |
-|            22020 |  1000 | 22020000 | 33554432 | 10067000 | 23488000 |                  23488 |  1469000 |                 1469 |  0.062542575 |
-|            22754 |  1000 | 22754000 | 33554432 | 10067000 | 23488000 |                  23488 |   735000 |                  735 |  0.031292575 |
-|            23121 |  1000 | 23121000 | 33554432 | 10067000 | 23488000 |                  23488 |   368000 |                  368 |  0.015667575 |
-|            23305 |  1000 | 23305000 | 33554432 | 10067000 | 23488000 |                  23488 |   184000 |                  184 | 7.8337875e-3 |
-|            23396 |  1000 | 23396000 | 33554432 | 10067000 | 23488000 |                  23488 |    93000 |                   93 | 3.9594687e-3 |
-|            23442 |  1000 | 23442000 | 33554432 | 10067000 | 23488000 |                  23488 |    47000 |                   47 | 2.0010218e-3 |
-|            23465 |  1000 | 23465000 | 33554432 | 10067000 | 23488000 |                  23488 |    24000 |                   24 | 1.0217984e-3 |
-#+TBLFM: $3=$1*$2::$4='(org-sbe PmaCap (n $3) (th 0.7))::$5=ceil(0.3*$4 / $2) * $2::$6=floor(0.7*$4/$2) * $2::$7=$6/$2::$8=($6 + $2 - $3)::$9=$8/$2::$10=$8/$6
-
-
-** Parameters for RTree and Btree 
-:PROPERTIES:
-:CUSTOM_ID: execParameters
-:END:
-
-
-To compare the BTree / TREE with the PMQ we will define a MAXSIZE that these data structure can have.
-This way we afford some slack to perform the removals. 
-
-We set the max size equal to the max number of elements that the PMA can host ( =Tau Size= ). 
-At each removal all the elements inserted more =T= Batches in the past are deleted. 
-
- | Time Window Size (Batches) | Batch | n elts (min elts in tree) | PMA Size | % of Tau Size | Tau Size (Max elts in tree) |
- |----------------------------+-------+---------------------------+----------+---------------+-----------------------------|
- |                      11745 |  1000 |                  11745000 | 33554432 |    0.50004257 |                    23488000 |
- |                      17616 |  1000 |                  17616000 | 33554432 |          0.75 |                    23488000 |
- |                      20552 |  1000 |                  20552000 | 33554432 |         0.875 |                    23488000 |
- |                      22020 |  1000 |                  22020000 | 33554432 |        0.9375 |                    23488000 |
- |                      22754 |  1000 |                  22754000 | 33554432 |       0.96875 |                    23488000 |
- |                      23121 |  1000 |                  23121000 | 33554432 |      0.984375 |                    23488000 |
- |                      23305 |  1000 |                  23305000 | 33554432 |    0.99220879 |                    23488000 |
- |                      23396 |  1000 |                  23396000 | 33554432 |    0.99608311 |                    23488000 |
- |                      23442 |  1000 |                  23442000 | 33554432 |    0.99804155 |                    23488000 |
- |                      23465 |  1000 |                  23465000 | 33554432 |    0.99902078 |                    23488000 |
- #+TBLFM: $3=$2*$1::$5=$3/$6
-
-** Execution parameters 
-
-#+NAME: execParam
-| Time Window Size | Batch |    tSize | Results in removal % |
-|------------------+-------+----------+----------------------|
-|            11745 |  1000 | 23488000 |                  0.5 |
-|            17616 |  1000 | 23488000 |           0.25004257 |
-|            20552 |  1000 | 23488000 |           0.12504257 |
-|            22020 |  1000 | 23488000 |          0.062542575 |
-|            22754 |  1000 | 23488000 |          0.031292575 |
-|            23121 |  1000 | 23488000 |          0.015667575 |
-|            23305 |  1000 | 23488000 |         7.8337875e-3 |
-|            23396 |  1000 | 23488000 |         3.9594687e-3 |
-|            23442 |  1000 | 23488000 |         2.0010218e-3 |
-|            23465 |  1000 | 23488000 |         1.0217984e-3 |
-
-We will run the experiment inserting src_python{return (23488000 * 2)} {{{results(=46976000=)}}} elements.
-The measured times are reported in terms of % of Removals:
-
-| % of elts RM | Time of the RM OP | Avg time of the Period |
-|--------------+-------------------+------------------------|
-|        0.500 |                   |                        |
-|        0.250 |                   |                        |
-|        0.125 |                   |                        |
-|        0.063 |                   |                        |
-|        0.031 |                   |                        |
-|        0.016 |                   |                        |
-|        0.008 |                   |                        |
-|        0.004 |                   |                        |
-|        0.002 |                   |                        |
-|        0.001 |                   |                        |
-#+TBLFM: $1=$0;%.3f
-
-
-* DONE Experiment Script
+* TODO Experiment Script
 ** DONE Initial Setup 
 
 #+begin_src sh :results value :exports both
@@ -207,14 +43,18 @@ echo $expId
 
 #+NAME: expId
 #+RESULTS:
-: exp20170914091842
+: exp20171125095944
 
 Set up git branch
 #+begin_src sh :results output :exports both
 git checkout master
+git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 #+end_src
 
 #+RESULTS:
+: M	LabBook.org
+: Your branch is ahead of 'origin/master' by 4 commits.
+:   (use "git push" to publish your local commits)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -222,6 +62,7 @@ git checkout -b $expId
 #+end_src
 
 #+RESULTS:
+: M	LabBook.org
 
 Commit branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -232,21 +73,17 @@ git commit -m "Initial commit for $expId"
 
 #+RESULTS:
 #+begin_example
-On branch exp20170914091842
+On branch exp20171125095944
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
 	.#exp.org
-	exp.html
 	exp.org
-	exp.pdf
-	exp.rst
-	exp.tex
 
 nothing added to commit but untracked files present (use "git add" to track)
-[exp20170914091842 87d4f4c] Initial commit for exp20170914091842
- 1 file changed, 884 insertions(+)
- create mode 100644 data/cicero/exp20170914091842/exp.org
+[exp20171125095944 9fadabd] Initial commit for exp20171125095944
+ 1 file changed, 1172 insertions(+)
+ create mode 100644 data/cicero/exp20171125095944/exp.org
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -254,9 +91,10 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 87d4f4c (HEAD -> exp20170914091842) Initial commit for exp20170914091842
-: * dd21b9e (master) exp insert remove count
-: * 1b319c5 wip: labbook
+: * 9fadabd (HEAD -> exp20171125095944) Initial commit for exp20171125095944
+: * 8c628c1 (master) WIP: better refinement threshold
+: | *   ce4c889 (refs/stash) WIP on DATA: cc58ed9 Merge branch 'exp20171111161232' into DATA
+: | |\  
 
 ** DONE Export run script 
 
@@ -332,16 +170,16 @@ echo "" > $DATADIR/info.org
 #Continue execution even if one these fails
 set +e 
 # Queries insert remove count
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
-stdbuf -oL ./benchmarks/bench_insert_remove_count -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 11745 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_11745_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 17616 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_17616_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 20552 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_20552_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 22020 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22020_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 22754 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_22754_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 23121 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23121_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 23305 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23305_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 23396 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23396_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 23442 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23442_${EXECID}.log
+stdbuf -oL ./benchmarks/bench_insert_remove_count  -f ../data/geo-tweets.dat  -rate 1000 -n 46976000 -T 23465 -tSize 23488000 > ${TMPDIR}/bench_ins_rm_23465_${EXECID}.log
 
 
 set -e
@@ -367,19 +205,19 @@ git status .
 
 #+RESULTS:
 #+begin_example
-On branch exp20170907145711
-Your branch is up-to-date with 'origin/exp20170907145711'.
+On branch exp20171125095944
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	$HA
-	.#exp.org
-	exp.html
-	exp.pdf
-	exp.rst
-	exp.tex
+	run.sh
 
-nothing added to commit but untracked files present (use "git add" to track)
+no changes added to commit (use "git add" and/or "git commit -a")
 #+end_example
 
 #+begin_src sh :results output :exports both
