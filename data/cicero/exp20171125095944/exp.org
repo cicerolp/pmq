@@ -46,7 +46,7 @@ echo $expId
 : exp20171125095944
 
 Set up git branch
-#+begin_src sh :results output :exports both
+#+begin_src sh :results output :exports both :var expId=expId
 git checkout master
 git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 #+end_src
@@ -55,6 +55,8 @@ git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
 : M	LabBook.org
 : Your branch is ahead of 'origin/master' by 4 commits.
 :   (use "git push" to publish your local commits)
+: [master 0a9e949] LBK: new entry for exp20171125095944
+:  1 file changed, 42 insertions(+)
 
 Create EXP branch
 #+begin_src sh :results output :exports both :var expId=expId
@@ -74,16 +76,20 @@ git commit -m "Initial commit for $expId"
 #+RESULTS:
 #+begin_example
 On branch exp20171125095944
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 
-	.#exp.org
-	exp.org
+	run.sh
 
-nothing added to commit but untracked files present (use "git add" to track)
-[exp20171125095944 9fadabd] Initial commit for exp20171125095944
- 1 file changed, 1172 insertions(+)
- create mode 100644 data/cicero/exp20171125095944/exp.org
+no changes added to commit (use "git add" and/or "git commit -a")
+[exp20171125095944 a2c78f5] Initial commit for exp20171125095944
+ 1 file changed, 36 insertions(+), 198 deletions(-)
 #+end_example
 
 #+begin_src sh :results output :exports both :var expId=expId
@@ -91,10 +97,9 @@ git la -3
 #+end_src
 
 #+RESULTS:
-: * 9fadabd (HEAD -> exp20171125095944) Initial commit for exp20171125095944
-: * 8c628c1 (master) WIP: better refinement threshold
-: | *   ce4c889 (refs/stash) WIP on DATA: cc58ed9 Merge branch 'exp20171111161232' into DATA
-: | |\  
+: * e346c61 (HEAD -> exp20171125095944) Initial commit for exp20171125095944
+: * ab9aa21 Initial commit for exp20171125095944
+: * 0a9e949 (master) LBK: new entry for exp20171125095944
 
 ** DONE Export run script 
 
@@ -195,7 +200,7 @@ git checkout $expId
 git add info.org log_$EXECID.tgz run.sh 
 git add -u
 git commit -m "Finish execution $EXECID"
-git push origin $expId
+#git push origin $expId
 #+end_src 
 
 ** DONE Commit local changes
