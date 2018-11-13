@@ -1,0 +1,524 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Experiment Diary
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4
+#+PROPERTY: header-args :cache no :eval no-export 
+
+* TODO Description 
+- Describe what are you doing
+
+- A template to execute experiment _locally_
+  
+* Experiment Script
+** Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp1483472768
+
+Set up git branch
+#+begin_src sh :results output :exports both
+git checkout master
+#+end_src
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+: M	include/GeoHash.cpp
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp1483472768
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	exec_1483475450.log
+	exec_1483475645.log
+	exec_1483475656.log
+	exp.org~
+	run.sh
+	run.sh~
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[exp1483472768 ddeef18] Initial commit for exp1483472768
+ 1 file changed, 32 insertions(+), 2 deletions(-)
+#+end_example
+
+Check Log
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 13cc243 (HEAD -> exp1483472768) Initial commit for
+: * 89c5385 (bitbucket/master, master) Code cleanup (formatting style). Add .gitignore file.
+: | *   a7f2592 (refs/stash) WIP on master: 208d730 optimize GeoHash binary search (2)
+: | |\  
+: |/ /  
+
+
+** OAR Reservation                                                  :remote:
+#+begin_src sh :session g5k :results output :exports both 
+ssh digitalis.grenoble.g5k
+oarsub -p "machine = 'idphix'" -l walltime=1 -t redeploy "sleep 1h"
+
+#+end_src
+
+#+RESULTS:
+
+*** Loop script to renew a reservation 
+#+begin_src sh :results output :exports both :tangle ext_oarsub.sh :shebang #!/bin/sh
+while true
+do 
+oarsub -p "machine = 'idphix'" -l walltime=1 -t redeploy "sleep 1h"
+sleep 55m 
+done 
+#+end_src
+
+
+** Deploy custom image
+#+begin_src sh :session g5k :results output :exports both 
+kadeploy3 -m idphix -a ~/g5kUtils/images/jessie-x64-nfs-my.env -k &
+#+end_src 
+ 
+
+** Export run script 
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/twitterVis/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/tmp/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/twitterVis/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK ->>> CHANGE HERE
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+
+# Vary removal window 
+# Fills up to the double of the capacity of the buffer. (will force the removal of half of the elements)
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 21600000 -rate 1000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_1k_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 43200000 -rate 1000 -min_t 21600 -max_t 21600 &> $TMPDIR/bench_ins_rm_21600_1k_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 64800000 -rate 1000 -min_t 32400 -max_t 32400 &> $TMPDIR/bench_ins_rm_32400_1k_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 86400000 -rate 1000 -min_t 43200 -max_t 43200 &> $TMPDIR/bench_ins_rm_43200_1K_$EXECID.log
+
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 129600000 -rate 6000 -min_t 10800 -max_t 10800 &> $TMPDIR/bench_ins_rm_10800_6k_$EXECID.log
+# NOT enought tweets on the dataset to test the other variations with rate 6k
+
+
+# Vary insertion rate fix T to 6 hours (-min_t 21600 -max_t 21600)
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 10800000 -min_t 21600 -max_t 21600 -rate 250 > $TMPDIR/bench_ins_rm_250_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 21600000 -min_t 21600 -max_t 21600 -rate 500 > $TMPDIR/bench_ins_rm_500_$EXECID.log
+# Same as in the set of tests above 
+#./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 43200000 -min_t 21600 -max_t 21600 -rate 1000 > $TMPDIR/bench_ins_rm_1000_$EXECID.log 
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 86400000 -min_t 21600 -max_t 21600 -rate 2000 > $TMPDIR/bench_ins_rm_2000_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 172800000 -min_t 21600 -max_t 21600 -rate 4000 > $TMPDIR/bench_ins_rm_4000_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 345600000 -min_t 21600 -max_t 21600 -rate 8000 > $TMPDIR/bench_ins_rm_8000_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 691200000 -min_t 21600 -max_t 21600 -rate 16000 > $TMPDIR/bench_ins_rm_16000_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 1382400000 -min_t 21600 -max_t 21600 -rate 32000 > $TMPDIR/bench_ins_rm_32000_$EXECID.log
+./benchmarks/bench_insert_remove_count -f ../data/geo-tweets.dmp -n 2764800000 -min_t 21600 -max_t 21600 -rate 64000 > $TMPDIR/bench_ins_rm_64000_$EXECID.log
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+** Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp1476928803
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+	modified:   run.sh
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	exp.org~
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+
+#+begin_src sh :results output :exports both
+git add run.sh
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** Get new changes on remote                                        :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A digitalis.grenoble.g5k
+#+end_src
+
+#+RESULTS:
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/twitterVis/
+git config remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+** Execute on idphix                                                :remote:
+
+Opens ssh connection and a tmux session
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+ssh -A digitalis.grenoble.g5k 
+tmux new -d -s idphix " ssh -A idphix \"cd ~/Projects/twitterVis/data/idphix/$expId; ./run.sh &> run_$(date +%s) \" "
+exit
+#+end_src
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/twitterVis/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/twitterVis/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+#ssh digitalis.grenoble.g5k 
+tmux ls
+ssh idphix
+ps ux
+exit
+exit
+#+end_src
+
+
+** Execute on local Machine
+
+#+begin_src sh :results output :exports both 
+tmux new -d -s benchmarks './run.sh &> run_$(date +%s)'
+tmux ls
+#+end_src
+
+
+* TODO Analisys
+** TODO Generate csv files
+
+*** Check logFiles
+
+#+begin_src sh :results table :exports both
+ls -htl
+#+end_src
+
+#+begin_src sh :results output :exports both
+#ls *tgz
+tar xvzf log_1485975360.tgz
+#+end_src
+
+#+RESULTS:
+#+begin_example
+bench_ins_rm_10800_1k_1485975360.log
+bench_ins_rm_10800_6k_1485975360.log
+bench_ins_rm_16000_1485975360.log
+bench_ins_rm_2000_1485975360.log
+bench_ins_rm_21600_1k_1485975360.log
+bench_ins_rm_250_1485975360.log
+bench_ins_rm_32000_1485975360.log
+bench_ins_rm_32400_1k_1485975360.log
+bench_ins_rm_4000_1485975360.log
+bench_ins_rm_43200_1K_1485975360.log
+bench_ins_rm_500_1485975360.log
+bench_ins_rm_64000_1485975360.log
+bench_ins_rm_8000_1485975360.log
+#+end_example
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both
+ls *_1k*.log
+ls *_1K*.log
+ls *_6k*.log
+#+end_src
+
+#+RESULTS: logFile
+: bench_ins_rm_16000_1485975360.log
+: bench_ins_rm_2000_1485975360.log
+: bench_ins_rm_250_1485975360.log
+: bench_ins_rm_32000_1485975360.log
+: bench_ins_rm_4000_1485975360.log
+: bench_ins_rm_500_1485975360.log
+: bench_ins_rm_64000_1485975360.log
+: bench_ins_rm_8000_1485975360.log
+
+
+*** Create CSV using logFile - Variating the the time window.
+#+NAME: csvTimeWindow
+#+begin_src sh :results table :exports both :var logFiles=logFile[0:1]
+#echo $logFiles
+for logFile in $logFiles ; do
+    echo $(basename -s .log $logFile ).csv
+    grep "InsertionRemoveBench " $logFile | sed "s/InsertionRemoveBench//g" >  $(basename -s .log $logFile ).csv
+done
+#+end_src
+
+#+RESULTS: csvTimeWindow
+| bench_ins_rm_10800_1k_1485975360.csv |
+| bench_ins_rm_21600_1k_1485975360.csv |
+| bench_ins_rm_32400_1k_1485975360.csv |
+| bench_ins_rm_43200_1K_1485975360.csv |
+| bench_ins_rm_10800_6k_1485975360.csv |
+
+
+** TODO Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R*
+:END:      
+
+
+*** Load Dataframes
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvTimeWindow
+library(plyr)
+
+tables = lapply(f$V1, read.csv, header=FALSE,strip.white=TRUE,sep=";")
+df = do.call(rbind , tables)
+names(df) = c("algo","bench","Rate","T","id","time","ms","elts")
+head(df)
+str(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+           algo     bench Rate     T    id     time ms     elts NA
+1 GeoHashBinary Insert RM 1000 10800 10801 0.916398 ms 10801000 NA
+2 GeoHashBinary Insert RM 1000 10800 10802 0.908959 ms 10802000 NA
+3 GeoHashBinary Insert RM 1000 10800 10803 0.902034 ms 10803000 NA
+4 GeoHashBinary Insert RM 1000 10800 10804 0.913131 ms 10804000 NA
+5 GeoHashBinary Insert RM 1000 10800 10805 0.916552 ms 10805000 NA
+6 GeoHashBinary Insert RM 1000 10800 10806 0.912249 ms 10806000 NA
+'data.frame':	118800 obs. of  9 variables:
+ $ algo : Factor w/ 1 level "GeoHashBinary": 1 1 1 1 1 1 1 1 1 1 ...
+ $ bench: Factor w/ 1 level "Insert RM": 1 1 1 1 1 1 1 1 1 1 ...
+ $ Rate : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ T    : int  10800 10800 10800 10800 10800 10800 10800 10800 10800 10800 ...
+ $ id   : int  10801 10802 10803 10804 10805 10806 10807 10808 10809 10810 ...
+ $ time : num  0.916 0.909 0.902 0.913 0.917 ...
+ $ ms   : Factor w/ 1 level "ms": 1 1 1 1 1 1 1 1 1 1 ...
+ $ elts : int  10801000 10802000 10803000 10804000 10805000 10806000 10807000 10808000 10809000 10810000 ...
+ $ NA   : logi  NA NA NA NA NA NA ...
+#+end_example
+
+Summary of the data frame
+#+begin_src R :results output on :exports both
+summary(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+            algo              bench             Rate            T        
+ GeoHashBinary:118800   Insert RM:118800   Min.   :1000   Min.   :10800  
+                                           1st Qu.:1000   1st Qu.:21600  
+                                           Median :1000   Median :32400  
+                                           Mean   :1455   Mean   :30436  
+                                           3rd Qu.:1000   3rd Qu.:43200  
+                                           Max.   :6000   Max.   :43200  
+       id             time            ms              elts         
+ Min.   :10801   Min.   :   0.6863   ms:118800   Min.   :10800000  
+ 1st Qu.:29701   1st Qu.:   1.1148               1st Qu.:23518000  
+ Median :45900   Median :   1.2061               Median :43484000  
+ Mean   :45655   Mean   :  14.7839               Mean   :39638750  
+ 3rd Qu.:60750   3rd Qu.:   1.3445               3rd Qu.:45959000  
+ Max.   :86400   Max.   :1952.9000               Max.   :95106000  
+    NA         
+ Mode:logical  
+ NA's:118800
+#+end_example
+
+Total time of the benchmark (minutes)
+#+begin_src R :results output :session :exports both
+sum(df$time) / 1000 / 60
+#+end_src
+
+#+RESULTS:
+: [1] 29.27204
+
+
+*** Overview of results                                                :plot:
+
+Plot an overview of every benchmark , doing average of times. 
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
+library(ggplot2)
+summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
+facet_wrap(~bench, scales="free",labeller=label_both)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** Insertion performance
+
+Composition of time per benchmarks
+
+For PMABatch :
+- time = Insert + ModifiedKeys + QuadtreeUpdate 
+For Geohash :
+- timee = Insert
+#+begin_src R :results output :exports both
+insTime = ddply( subset(summary_avg , bench!="ReadElts") , c("algo","k"),summarise,"time"=sum(time) ) 
+#+end_src
+
+#+RESULTS:
+
+**** Overall                                                        :plot:
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() +
+facet_wrap(~algo)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+Total insertion time:
+#+begin_src R :results output :session :exports both
+ddply(insTime,c("algo"),summarize, Total=sum(time))
+#+end_src
+
+#+RESULTS:
+:                algo     Total
+: 1     GeoHashBinary  843.8639
+: 2 GeoHashSequential  848.5558
+: 3          PMABatch 7714.5152
+
+**** Amortized time
+
+We compute three times:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both
+avgTime = cbind(insTime, 
+                sumTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)), recursive=T),
+                avgTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)/(x$k+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+
+***** Melting the data (time / avgTime)
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :session :exports both
+library(reshape2)
+melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","sumTime","avgTime"))
+#+end_src
+
+#+RESULTS:
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+ggplot(melted_times, aes(x=k,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+

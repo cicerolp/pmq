@@ -1,0 +1,863 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Benchmark Queries - Twitter Dataset
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4 toc:t tags:nil author:nil
+#+PROPERTY: header-args :cache no :eval never-export 
+
+
+* DONE Description                                                   :export:
+
+Test the queries on Twitter Dataset. 
+And compare the following performances.
+
+- PMQ / GEOHASH
+- BTREE 
+- RTREE - quadratic algorithm 
+- RTREE - quadratic algorithm with bulk loading
+
+Use the refinement level = 8 
+
+Elements:
+- Timewindow = 26000
+- Batch size = 1000
+
+- Total elements = 26.000.000 
+  
+Use the syntehic queries gerenerate by the DoE in [[file:../../queriesLHS.org::#queries20170923145357][Twitter Data]].
+
+queries Dataset : [[file:../../queriesTwitter.csv]].
+
+** Standalone script                                              :noexport:
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* DONE Experiment Script
+** DONE Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20170923144931
+
+Set up git branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout master
+git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+: Your branch is ahead of 'origin/master' by 1 commit.
+:   (use "git push" to publish your local commits)
+: [master 7f23fb0] LBK: new entry for exp20170923144931
+:  1 file changed, 42 insertions(+)
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923144931
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170923144931 84b3921] Initial commit for exp20170923144931
+ 1 file changed, 865 insertions(+)
+ create mode 100644 data/cicero/exp20170923144931/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 84b3921 (HEAD -> exp20170923144931) Initial commit for exp20170923144931
+: * 7f23fb0 (master) LBK: new entry for exp20170923144931
+: * b309480 UPD : queries DoE
+
+** DONE Export run script 
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+
+#Run queries
+#t=$((10**6))
+t=26000
+b=1000
+#n=$(($t*$b))
+ref=8
+stdbuf -oL ./benchmarks/bench_queries_region -f ../data/geo-tweets.dat -x 10 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesTwitter.csv >  ${TMPDIR}/bench_queries_region_twitter_${t}_${b}_${ref}_${EXECID}.log
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923144931
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	run.sh
+
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170923144931 400a3b3] UPD: run.sh script
+:  3 files changed, 91 insertions(+), 20 deletions(-)
+:  create mode 100755 data/cicero/exp20170923144931/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** CANCELED Local Execution                                          :local:
+:LOGBOOK:
+- State "CANCELED"   from "TODO"       [2017-09-05 Ter 19:00]
+:END:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** DONE Remote Execution                                            :remote:
+
+*** Get new changes on remote                                      :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+53 packages can be updated.
+0 updates are security updates.
+
+,*** System restart required ***
+Last login: Sat Sep 23 17:45:22 2017 from 143.54.11.6
+#+end_example
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 23, done.
+(1/20)           remote: Compressing objects:  10% (2/20)           remote: Compressing objects:  15% (3/20)           remote: Compressing objects:  20% (4/20)           remote: Compressing objects:  25% (5/20)           remote: Compressing objects:  30% (6/20)           remote: Compressing objects:  35% (7/20)           remote: Compressing objects:  40% (8/20)           remote: Compressing objects:  45% (9/20)           remote: Compressing objects:  50% (10/20)           remote: Compressing objects:  55% (11/20)           remote: Compressing objects:  60% (12/20)           remote: Compressing objects:  65% (13/20)           remote: Compressing objects:  70% (14/20)           remote: Compressing objects:  75% (15/20)           remote: Compressing objects:  80% (16/20)           remote: Compressing objects:  85% (17/20)           remote: Compressing objects:  90% (18/20)           remote: Compressing objects:  95% (19/20)           remote: Compressing objects: 100% (20/20)           remote: Compressing objects: 100% (20/20), done.        
+remote: Total 23 (delta 13), reused 0 (delta 0)
+(1/23)   Unpacking objects:   8% (2/23)   Unpacking objects:  13% (3/23)   Unpacking objects:  17% (4/23)   Unpacking objects:  21% (5/23)   Unpacking objects:  26% (6/23)   Unpacking objects:  30% (7/23)   Unpacking objects:  34% (8/23)   Unpacking objects:  39% (9/23)   Unpacking objects:  43% (10/23)   Unpacking objects:  47% (11/23)   Unpacking objects:  52% (12/23)   Unpacking objects:  56% (13/23)   Unpacking objects:  60% (14/23)   Unpacking objects:  65% (15/23)   Unpacking objects:  69% (16/23)   Unpacking objects:  73% (17/23)   Unpacking objects:  78% (18/23)   Unpacking objects:  82% (19/23)   Unpacking objects:  86% (20/23)   Unpacking objects:  91% (21/23)   Unpacking objects:  95% (22/23)   Unpacking objects: 100% (23/23)   Unpacking objects: 100% (23/23), done.
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+origin/exp20170923144931
+Branch exp20170923144931 set up to track remote branch exp20170923144931 from origin.
+Switched to a new branch 'exp20170923144931'
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Already up-to-date.
+commit 400a3b3fa3731d6b7cd8a871d95c6e9f872f9acd
+Date:   Sat Sep 23 17:48:36 2017 -0300
+
+    UPD: run.sh script
+#+end_example
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
+: FETCH_HEAD
+: Already up-to-date.
+: commit 6931408d8b9c109f3f2a9543374cfd712791b1e7
+: Date:   Tue Sep 19 16:58:38 2017 -0300
+: 
+:     error ouput on pma initialization
+
+*** DONE Execute Remotely                                          :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170923144931$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923144931$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923144931$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923144931$ 1506199809
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+#+RESULTS:
+#+begin_example
+runExp: 1 windows (created Sat Sep 23 17:50:09 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio    13585  0.0  0.0  45248  4596 ?        Ss   17:49   0:00 /lib/systemd/sy
+julio    13586  0.0  0.0 145364  2112 ?        S    17:49   0:00 (sd-pam)
+julio    13615  0.0  0.0  97464  3376 ?        R    17:49   0:00 sshd: julio@pts
+julio    13616  0.0  0.0  22764  5292 pts/8    Ss   17:49   0:00 -bash
+julio    13661  0.0  0.0  29420  2852 ?        Ss   17:50   0:00 tmux new -d -s 
+julio    13662  0.0  0.0  12532  3092 pts/9    Ss+  17:50   0:00 bash -c cd ~/Pr
+julio    13664  0.0  0.0  12536  3016 pts/9    S+   17:50   0:00 /bin/bash ./run
+julio    13786  0.0  0.0   9676  2436 pts/9    S+   17:50   0:00 make
+julio    13789  0.0  0.0   9676  2416 pts/9    S+   17:50   0:00 make -f CMakeFi
+julio    13815  0.2  0.0  11832  4484 pts/9    S+   17:50   0:00 make -f benchma
+julio    13818  0.0  0.0   4508   716 pts/9    S+   17:50   0:00 /bin/sh -c cd /
+julio    13819  0.0  0.0   8352   720 pts/9    S+   17:50   0:00 /usr/bin/c++ -I
+julio    13820  106  2.6 977340 875400 pts/9   R+   17:50   0:09 /usr/lib/gcc/x8
+julio    13824  0.0  0.0  37368  3292 pts/8    R+   17:50   0:00 ps ux
+#+end_example
+
+**** DONE Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+git commit -a -m "wip"
+git status
+git pull --rebase origin $expId
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923144931
+Untracked files:
+	../../../LabBook.man
+	../../../LabBook.markdown_phpextra
+	../../../LabBook.md
+	../../../LabBook.org.orig
+	../../../LabBook.rst
+	../../../LabBook.rtf
+	../../../LabBook.txt
+	../../../LabBook_BACKUP_19287.md
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../README.html
+	../../../benchmarks/bench_insert_and_scan.cpp.orig
+	../../../benchmarks/bench_queries_region.cpp.orig
+	../exp20170825181747/
+	../exp20170830124159/
+	../exp20170904153555/
+	../exp20170907105314/
+	../exp20170907105804/
+	../exp20170907112116/
+	../exp20170907145711/
+	../exp20170914091842/
+	../exp20170915143003/
+	../exp20170919161448/
+	.#exp.org
+	../../queriesLHS.html
+	../../randomLhsQueries.png
+
+nothing added to commit but untracked files present
+On branch exp20170923144931
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../../LabBook.man
+	../../../LabBook.markdown_phpextra
+	../../../LabBook.md
+	../../../LabBook.org.orig
+	../../../LabBook.rst
+	../../../LabBook.rtf
+	../../../LabBook.txt
+	../../../LabBook_BACKUP_19287.md
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../README.html
+	../../../benchmarks/bench_insert_and_scan.cpp.orig
+	../../../benchmarks/bench_queries_region.cpp.orig
+	../exp20170825181747/
+	../exp20170830124159/
+	../exp20170904153555/
+	../exp20170907105314/
+	../exp20170907105804/
+	../exp20170907112116/
+	../exp20170907145711/
+	../exp20170914091842/
+	../exp20170915143003/
+	../exp20170919161448/
+	.#exp.org
+	../../queriesLHS.html
+	../../randomLhsQueries.png
+
+nothing added to commit but untracked files present (use "git add" to track)
+First, rewinding head to replay your work on top of it...
+Applying: wip
+#+end_example
+
+
+* INPROGRESS Analysis
+** DONE Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+NAME: tarFile
+#+begin_src sh :results table :exports both
+ls *tgz
+#+end_src
+
+#+RESULTS: tarFile
+| log_1506199809.tgz |
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both :var f=tarFile
+tar xvzf $f
+#+end_src
+
+#+RESULTS: logFile
+: bench_queries_region_twitter_26000_1000_8_1506199809.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#echo Lile
+echo $(basename -s .log $logFile ).csv
+grep "; query ;" $logFile | sed "s/QueryBench//g" >  $(basename -s .log $logFile ).csv
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_queries_region_twitter_26000_1000_8_1506199809.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+*** Prepare
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile
+library(tidyverse)
+
+df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") )
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 8000 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual expected   <int> <chr>      <chr>      <chr> actual 1     1  <NA> 11 columns 10 columns file 2     2  <NA> 11 columns 10 columns row 3     3  <NA> 11 columns 10 columns col 4     4  <NA> 11 columns 10 columns expected 5     5  <NA> 11 columns 10 columns actual # ... with 1 more variables: file <chr>
+... ................. ... ................................... ........ ................................... ...... ................................... .... ................................... ... ................................... ... ................................... ........ ................................... ...... .......................................
+See problems(...) for more details.
+
+Warning message:
+In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+# A tibble: 8,000 x 11
+              V1    V2    V3    V4    V5             V6      V7
+           <chr> <chr> <int> <lgl> <int>          <chr>   <dbl>
+ 1 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.638
+ 2 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.571
+ 3 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.608
+ 4 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.615
+ 5 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.685
+ 6 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.680
+ 7 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.616
+ 8 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.609
+ 9 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.524
+10 GeoHashBinary query     0  TRUE 26000 scan_at_region 122.647
+# ... with 7,990 more rows, and 4 more variables: V8 <chr>, V9 <int>,
+#   V10 <chr>, V11 <int>
+#+end_example
+
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+names(df) <- c("algo" , "V2" , "queryId", "V4", "V5", "bench" , "ms" , "V8", "Refine","V10","Count")
+
+df <- select(df, -V2, -V4, -V5, -V8, -V10)
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 8,000 x 6
+            algo queryId          bench      ms Refine Count
+           <chr>   <int>          <chr>   <dbl>  <int> <int>
+ 1 GeoHashBinary       0 scan_at_region 122.638     58    NA
+ 2 GeoHashBinary       0 scan_at_region 122.571     58    NA
+ 3 GeoHashBinary       0 scan_at_region 122.608     58    NA
+ 4 GeoHashBinary       0 scan_at_region 122.615     58    NA
+ 5 GeoHashBinary       0 scan_at_region 122.685     58    NA
+ 6 GeoHashBinary       0 scan_at_region 122.680     58    NA
+ 7 GeoHashBinary       0 scan_at_region 122.616     58    NA
+ 8 GeoHashBinary       0 scan_at_region 122.609     58    NA
+ 9 GeoHashBinary       0 scan_at_region 122.524     58    NA
+10 GeoHashBinary       0 scan_at_region 122.647     58    NA
+# ... with 7,990 more rows
+#+end_example
+
+Summarize the averages
+#+begin_src R :results output :session :exports both
+dfplot <- 
+    df %>% 
+    group_by_at(vars(-ms)) %>%   #group_by all expect ms
+    summarize(avg_ms = mean(ms), stdv = sd(ms)) %>%
+    ungroup %>% 
+    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
+           Refine = ifelse(grepl("RTree",algo), NA, Refine))
+
+dfplot %>% filter(queryId == 20)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 10 x 7
+                  algo queryId           bench Refine   Count    avg_ms
+                 <chr>   <int>           <chr>  <int>   <int>     <dbl>
+ 1               BTree      20 apply_at_region     45 1720216 33.650190
+ 2               BTree      20  scan_at_region     52      NA 42.927060
+ 3       GeoHashBinary      20 apply_at_region     52 1720216  2.613443
+ 4       GeoHashBinary      20  scan_at_region     52      NA 10.549540
+ 5 ImplicitDenseVector      20 apply_at_region    130 1720216  1.543726
+ 6 ImplicitDenseVector      20  scan_at_region    130      NA  5.418057
+ 7               RTree      20 apply_at_region     NA 1720216 23.789190
+ 8               RTree      20  scan_at_region     NA      NA 46.998710
+ 9           RTreeBulk      20 apply_at_region     NA 1720216  3.797760
+10           RTreeBulk      20  scan_at_region     NA      NA 23.959600
+# ... with 1 more variables: stdv <dbl>
+#+end_example
+
+
+*** Plot overview                                                  :export:
+#+begin_src R :results output graphics :file "./img/overview_query_region.png" :exports results :width 800 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+#    filter( algo == "GeoHashBinary" ) %>%    
+    #mutate(queryW = queryId %/% 10) %>%
+    mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+#    arrange(desc(queryW)) %>%
+    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_point() +
+    #labs(title= data$bench) +     
+#    scale_x_continuous(breaks=seq(0, 14, by=1)) +
+    facet_wrap(bench~`Query Width`,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
+#    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
+#    facet_grid(queryW~bench,scale="free") + 
+    theme(legend.position = "bottom",)
+}
+#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
+#dfplot %>% filter(bench == "apply_at_region") %>% myplot()
+dfplot %>% 
+    myplot() 
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview_query_region.png]]
+
+*** DONE Plot ordered by query return size                         :export:
+
+Count queries
+
+#+begin_src R :results output graphics :file "./img/count_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+        mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+      #  group_by(algo,bench,queryId) %>% 
+      #  summarize(max_ms = max(avg_ms)) %>%
+    ggplot(aes(x = as.factor(Count), y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_point() +
+    #geom_text(aes(label=queryId), vjust=-0.25) +
+    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    facet_wrap(bench~`Query Width`,scale="free", nrow = 2 , 
+               labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+        
+        
+        
+}
+#dfplot %>% filter(bench == "scan_at_region") %>% myplot()
+dfplot %>% filter(bench == "apply_at_region") %>% myplot()
+#dfplot %>% 
+#    myplot() 
+#+end_src
+
+#+RESULTS:
+[[file:./img/count_queries_by_size.png]]
+
+Scan queries: 
+
+#+begin_src R :results output graphics :file "./img/scan_queries_by_size.png"  :exports results :width 1000 :height 600 :session 
+dfplot %>% 
+    filter(bench == "apply_at_region") %>%
+    select(queryId,algo,Count) %>%
+    left_join( 
+        filter(dfplot, bench == "scan_at_region") %>% select(-Count)
+    ) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/scan_queries_by_size.png]]
+
+*** TODO Comments                                                  :export:
+
+- PMQ seems to be the best algorithmn when the amount of elements returned by the query is large. 
+See table in [[#tab20170923185752]].
+
+** What is the actual count of elements per query ?
+:PROPERTIES:
+:CUSTOM_ID: tab20170923185752
+:END:
+
+*** Table                                                          :export:
+
+Variance shows if some counts differ between algorithms:
+(all the algorithms had the same counts for every query)
+#+begin_src R :results output :exports none :session :colnames yes
+
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId) %>%                     #group to see if every algo has same coubts
+    summarize(Var = round(var(Count),3)  ) -> 
+    countVariation
+
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench == "apply_at_region") %>%
+    ungroup( bench) %>% # must ungroup to drop the column
+    select( -bench, -stdv, -Refine) %>%
+    gather(measure, value, Count, avg_ms) %>%
+    unite(temp, algo, measure) %>%
+    spread( temp, value) %>% 
+    #select(queryId,ends_with("Count") , ends_with("ms")) %>%
+    select(queryId,ends_with("Count") ) %>%
+ #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
+    inner_join(countVariation) -> wideTable
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = "queryId"
+
+#+CAPTION: Number of elements returned in each query
+#+NAME: tab:elCount
+#+begin_src R :results table :exports results :session :colnames yes
+wideTable %>%
+    as_tibble() %>%
+    print(n = nrow(.))
+#+end_src
+
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | ImplicitDenseVector_Count | RTreeBulk_Count | RTree_Count | Var |
+|---------+-------------+---------------------+---------------------------+-----------------+-------------+-----|
+|       0 |    24178715 |            24178715 |                  24178715 |        24178715 |    24178715 |   0 |
+|       1 |    24320314 |            24320314 |                  24320314 |        24320314 |    24320314 |   0 |
+|       2 |    19754592 |            19754592 |                  19754592 |        19754592 |    19754592 |   0 |
+|       3 |    25763943 |            25763943 |                  25763943 |        25763943 |    25763943 |   0 |
+|       4 |    24307788 |            24307788 |                  24307788 |        24307788 |    24307788 |   0 |
+|       5 |    24131410 |            24131410 |                  24131410 |        24131410 |    24131410 |   0 |
+|       6 |    25763888 |            25763888 |                  25763888 |        25763888 |    25763888 |   0 |
+|       7 |    24648489 |            24648489 |                  24648489 |        24648489 |    24648489 |   0 |
+|       8 |    25763951 |            25763951 |                  25763951 |        25763951 |    25763951 |   0 |
+|       9 |    24556041 |            24556041 |                  24556041 |        24556041 |    24556041 |   0 |
+|      10 |    22266461 |            22266461 |                  22266461 |        22266461 |    22266461 |   0 |
+|      11 |    22255409 |            22255409 |                  22255409 |        22255409 |    22255409 |   0 |
+|      12 |     7561928 |             7561928 |                   7561928 |         7561928 |     7561928 |   0 |
+|      13 |    21465987 |            21465987 |                  21465987 |        21465987 |    21465987 |   0 |
+|      14 |    20823150 |            20823150 |                  20823150 |        20823150 |    20823150 |   0 |
+|      15 |      172485 |              172485 |                    172485 |          172485 |      172485 |   0 |
+|      16 |    21867218 |            21867218 |                  21867218 |        21867218 |    21867218 |   0 |
+|      17 |    21899103 |            21899103 |                  21899103 |        21899103 |    21899103 |   0 |
+|      18 |     6746852 |             6746852 |                   6746852 |         6746852 |     6746852 |   0 |
+|      19 |    21863148 |            21863148 |                  21863148 |        21863148 |    21863148 |   0 |
+|      20 |     1720216 |             1720216 |                   1720216 |         1720216 |     1720216 |   0 |
+|      21 |     3656734 |             3656734 |                   3656734 |         3656734 |     3656734 |   0 |
+|      22 |     3239932 |             3239932 |                   3239932 |         3239932 |     3239932 |   0 |
+|      23 |     3359208 |             3359208 |                   3359208 |         3359208 |     3359208 |   0 |
+|      24 |    16754579 |            16754579 |                  16754579 |        16754579 |    16754579 |   0 |
+|      25 |    10500916 |            10500916 |                  10500916 |        10500916 |    10500916 |   0 |
+|      26 |    14436603 |            14436603 |                  14436603 |        14436603 |    14436603 |   0 |
+|      27 |     5949544 |             5949544 |                   5949544 |         5949544 |     5949544 |   0 |
+|      28 |    12512448 |            12512448 |                  12512448 |        12512448 |    12512448 |   0 |
+|      29 |     5363962 |             5363962 |                   5363962 |         5363962 |     5363962 |   0 |
+|      30 |     2933887 |             2933887 |                   2933887 |         2933887 |     2933887 |   0 |
+|      31 |     6357856 |             6357856 |                   6357856 |         6357856 |     6357856 |   0 |
+|      32 |     5622730 |             5622730 |                   5622730 |         5622730 |     5622730 |   0 |
+|      33 |     7882904 |             7882904 |                   7882904 |         7882904 |     7882904 |   0 |
+|      34 |     4453847 |             4453847 |                   4453847 |         4453847 |     4453847 |   0 |
+|      35 |     2771423 |             2771423 |                   2771423 |         2771423 |     2771423 |   0 |
+|      36 |     6580851 |             6580851 |                   6580851 |         6580851 |     6580851 |   0 |
+|      37 |     4879016 |             4879016 |                   4879016 |         4879016 |     4879016 |   0 |
+|      38 |     2969182 |             2969182 |                   2969182 |         2969182 |     2969182 |   0 |
+|      39 |     2779782 |             2779782 |                   2779782 |         2779782 |     2779782 |   0 |
+|      40 |      923319 |              923319 |                    923319 |          923319 |      923319 |   0 |
+|      41 |      932176 |              932176 |                    932176 |          932176 |      932176 |   0 |
+|      42 |      284653 |              284653 |                    284653 |          284653 |      284653 |   0 |
+|      43 |     1944583 |             1944583 |                   1944583 |         1944583 |     1944583 |   0 |
+|      44 |      428643 |              428643 |                    428643 |          428643 |      428643 |   0 |
+|      45 |      290775 |              290775 |                    290775 |          290775 |      290775 |   0 |
+|      46 |     1192366 |             1192366 |                   1192366 |         1192366 |     1192366 |   0 |
+|      47 |      448450 |              448450 |                    448450 |          448450 |      448450 |   0 |
+|      48 |     5230730 |             5230730 |                   5230730 |         5230730 |     5230730 |   0 |
+|      49 |     2018612 |             2018612 |                   2018612 |         2018612 |     2018612 |   0 |
+|      50 |     2443223 |             2443223 |                   2443223 |         2443223 |     2443223 |   0 |
+|      51 |       61318 |               61318 |                     61318 |           61318 |       61318 |   0 |
+|      52 |     2853477 |             2853477 |                   2853477 |         2853477 |     2853477 |   0 |
+|      53 |     1024119 |             1024119 |                   1024119 |         1024119 |     1024119 |   0 |
+|      54 |      173015 |              173015 |                    173015 |          173015 |      173015 |   0 |
+|      55 |     1838813 |             1838813 |                   1838813 |         1838813 |     1838813 |   0 |
+|      56 |      897456 |              897456 |                    897456 |          897456 |      897456 |   0 |
+|      57 |     2936650 |             2936650 |                   2936650 |         2936650 |     2936650 |   0 |
+|      58 |      912272 |              912272 |                    912272 |          912272 |      912272 |   0 |
+|      59 |     2171693 |             2171693 |                   2171693 |         2171693 |     2171693 |   0 |
+|      60 |        9615 |                9615 |                      9615 |            9615 |        9615 |   0 |
+|      61 |      447052 |              447052 |                    447052 |          447052 |      447052 |   0 |
+|      62 |      559470 |              559470 |                    559470 |          559470 |      559470 |   0 |
+|      63 |      144198 |              144198 |                    144198 |          144198 |      144198 |   0 |
+|      64 |      146267 |              146267 |                    146267 |          146267 |      146267 |   0 |
+|      65 |       38191 |               38191 |                     38191 |           38191 |       38191 |   0 |
+|      66 |      561318 |              561318 |                    561318 |          561318 |      561318 |   0 |
+|      67 |      327875 |              327875 |                    327875 |          327875 |      327875 |   0 |
+|      68 |      204817 |              204817 |                    204817 |          204817 |      204817 |   0 |
+|      69 |      186626 |              186626 |                    186626 |          186626 |      186626 |   0 |
+|      70 |      777466 |              777466 |                    777466 |          777466 |      777466 |   0 |
+|      71 |       41667 |               41667 |                     41667 |           41667 |       41667 |   0 |
+|      72 |      180284 |              180284 |                    180284 |          180284 |      180284 |   0 |
+|      73 |      558507 |              558507 |                    558507 |          558507 |      558507 |   0 |
+|      74 |      125097 |              125097 |                    125097 |          125097 |      125097 |   0 |
+|      75 |      594165 |              594165 |                    594165 |          594165 |      594165 |   0 |
+|      76 |        6091 |                6091 |                      6091 |            6091 |        6091 |   0 |
+|      77 |      302551 |              302551 |                    302551 |          302551 |      302551 |   0 |
+|      78 |      184109 |              184109 |                    184109 |          184109 |      184109 |   0 |
+|      79 |      173799 |              173799 |                    173799 |          173799 |      173799 |   0 |
+#+TBLFM: $6=$0;%0.3f
+
+
+
+**** Just the diverging queries :                       :noexport:ARCHIVE:
+#+begin_src R :results table :exports results :session :colnames yes
+
+wideTable %>%
+    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
+    as_tibble() %>%
+    print(n = nrow(.))
+
+#+end_src
+
+#+CAPTION: Queries that returned different result depending on the algorithm 
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | ImplicitDenseVector_Count | RTreeBulk_Count | RTree_Count | Var |
+|---------+-------------+---------------------+---------------------------+-----------------+-------------+-----|
+
+
+*** Plot                                                 :noexport:ARCHIVE:
+
+There are some queries where the count differs for Rtree by a small amount of elements.
+
+Counts have some differences :
+#+begin_src R :results output :exports none :session 
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId, bench) %>% #group to see if every algo has same counts
+    summarize(c = mean(Count), s = sd(Count)  ) %>% 
+    filter ( s > 0) %>% 
+    select(queryId, bench) %>% 
+    left_join(dfplot) -> dfWrongCounts
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = c("queryId", "bench")
+
+
+These are the queries that for some misterious reason resulted in different counts.
+#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
+
+myplot <- function(data) {
+    data %>%
+   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
+# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
+        #geom_jitter( width=0.1, height=0) +
+        geom_point( ) +
+        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
+        theme(legend.position = "bottom",) + 
+#        labs(x = "Query width (degrees)") +
+        #scale_y_continuous(breaks=c(3440446,3440447) )
+        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
+    
+}
+
+#dfWrongCounts %>% myplot() 
+
+dfWrongCounts %>% myplot()
+
+#dfWrongCounts %>% 
+#group_by(queryId) %>% filter(queryId == 1 ) %>%
+#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/differing_counts.png]]
+

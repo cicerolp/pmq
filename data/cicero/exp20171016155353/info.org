@@ -1,0 +1,381 @@
+
+#+TITLE: Experiment results
+#+DATE: Qui Nov 16 08:05:06 -02 2017
+#+AUTHOR: julio
+#+MACHINE: cicero
+#+FILE: info.org
+ 
+* MACHINE INFO:
+** PEOPLE LOGGED WHEN EXPERIMENT STARTED:
+julio    pts/9        2017-11-16 08:03 (143.54.11.6)
+julio    pts/10       2017-11-16 08:04 (tmux(8516).%0)
+############################################
+** ENVIRONMENT VARIABLES:
+LC_PAPER=pt_BR.UTF-8
+XDG_SESSION_ID=14405
+LC_ADDRESS=pt_BR.UTF-8
+LC_MONETARY=pt_BR.UTF-8
+TERM=screen
+SHELL=/bin/bash
+SSH_CLIENT=143.54.11.6 55744 22
+LC_NUMERIC=pt_BR.UTF-8
+SSH_TTY=/dev/pts/9
+USER=julio
+LC_TELEPHONE=pt_BR.UTF-8
+LS_COLORS=
+SSH_AUTH_SOCK=/tmp/ssh-219ORzIyWS/agent.8492
+TMUX=/tmp/tmux-1001/default,8516,0
+MAIL=/var/mail/julio
+PATH=/home/julio/bin:/home/julio/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+QT_QPA_PLATFORMTHEME=appmenu-qt5
+EVENT_NOEPOLL=1
+LC_IDENTIFICATION=pt_BR.UTF-8
+PWD=/home/julio/Projects/pmq/build-release
+LANG=en_US.UTF-8
+NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
+LC_MEASUREMENT=pt_BR.UTF-8
+TMUX_PANE=%0
+SHLVL=4
+HOME=/home/julio
+LOGNAME=julio
+SSH_CONNECTION=143.54.11.6 55744 143.54.13.134 22
+LC_CTYPE=pt_BR.UTF-8
+LESSOPEN=| /usr/bin/lesspipe %s
+XDG_RUNTIME_DIR=/run/user/1001
+LC_TIME=pt_BR.UTF-8
+LESSCLOSE=/usr/bin/lesspipe %s %s
+LC_NAME=pt_BR.UTF-8
+_=/usr/bin/env
+############################################
+** HOSTNAME:
+cicero
+############################################
+** CPU INFO:
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3993.890
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3998.812
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3962.671
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3996.984
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3978.843
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3998.109
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3801.234
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 60
+model name	: Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz
+stepping	: 3
+microcode	: 0x22
+cpu MHz		: 3969.281
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts
+bugs		:
+bogomips	: 7199.13
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+############################################
+** CPU GOVERNOR:
+powersave
+############################################
+** CPU FREQUENCY:
+3987843
+############################################
+** MEM INFO:
+MemTotal:       32895452 kB
+MemFree:        27463464 kB
+MemAvailable:   31857480 kB
+Buffers:         1096980 kB
+Cached:          3572024 kB
+SwapCached:            0 kB
+Active:          3930952 kB
+Inactive:         968004 kB
+Active(anon):     309336 kB
+Inactive(anon):   122552 kB
+Active(file):    3621616 kB
+Inactive(file):   845452 kB
+Unevictable:          32 kB
+Mlocked:              32 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:              4388 kB
+Writeback:             4 kB
+AnonPages:        230056 kB
+Mapped:           109828 kB
+Shmem:            201936 kB
+Slab:             371428 kB
+SReclaimable:     329776 kB
+SUnreclaim:        41652 kB
+KernelStack:        5552 kB
+PageTables:        13836 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    16447724 kB
+Committed_AS:    1860656 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:    110592 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      259616 kB
+DirectMap2M:    14368768 kB
+DirectMap1G:    18874368 kB
+############################################
+** GPU INFO FROM NVIDIA-SMI:
+Failed to initialize NVML: Driver/library version mismatch
+############################################
+** LINUX AND GCC VERSIONS:
+Linux version 4.4.0-92-generic (buildd@lcy01-17) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ) #115-Ubuntu SMP Thu Aug 10 09:04:33 UTC 2017
+############################################
+* CODE REVISIONS:
+** GIT REVISION OF TWITTERVIS:
+commit 1f56fb3f7ad923162b82db4216ddea52812722ca
+Author: Julio Toss <jutoss@inf.ufrgs.br>
+Date:   Thu Nov 16 08:02:19 2017 -0200
+
+    UPD: run.sh running with refLevel == 10
+*** CMAKE VARIABLES:
+-- cotire 1.7.8 loaded.
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/twitterVis/build-release
+-- Cache values
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
+COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_EXTENSIONS:STRING=inc;inl;ipp
+COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_PATH:STRING=
+COTIRE_DEBUG:BOOL=OFF
+COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES:STRING=0
+COTIRE_MINIMUM_NUMBER_OF_TARGET_SOURCES:STRING=3
+COTIRE_UNITY_SOURCE_EXCLUDE_EXTENSIONS:STRING=m;mm
+COTIRE_VERBOSE:BOOL=OFF
+GEOS_C_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so
+PMA_BUILD_DIR:PATH=/home/julio/Projects/hppsimulations/build-release
+PQ_C_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpq.so
+SPATIALITE_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libspatialite.so
+SQLITE_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libsqlite3.so
+** GIT REVISION OF PMA :
+commit 6931408d8b9c109f3f2a9543374cfd712791b1e7
+Author: Julio Toss <jutoss@gmail.com>
+Date:   Tue Sep 19 16:58:38 2017 -0300
+
+    error ouput on pma initialization
+*** CMAKE VARIABLES:
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+-- Cache values
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
+DO_PMA_STATS:BOOL=OFF
+LOCAL_REMOVES:BOOL=OFF
+MATH_INCLUDE_DIR:PATH=/usr/include
+MATH_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libm.so
+PMA_DEBUG:BOOL=OFF
+PMA_DEBUG_BAL:BOOL=OFF
+PMA_TRACE_MOVE:BOOL=OFF
+RHO_INIT:BOOL=OFF
+TWITTERVIS:BOOL=OFF
+TWITTER_BENCH:BOOL=OFF
+############################################

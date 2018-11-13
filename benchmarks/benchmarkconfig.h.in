@@ -1,0 +1,12 @@
+#ifndef BENCHMARKCONFIG_H_IN
+#define BENCHMARKCONFIG_H_IN
+
+#cmakedefine BENCH_PMQ
+#cmakedefine BENCH_BTREE
+#cmakedefine BENCH_RTREE
+#cmakedefine BENCH_RTREE_BULK
+#cmakedefine BENCH_DENSE
+
+#define ELT_SIZE @ELT_SIZE@
+
+#endif // BENCHMARKCONFIG_H_IN

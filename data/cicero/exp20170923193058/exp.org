@@ -1,0 +1,645 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Benchmark Insertions - Twitter Data
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4 author:nil tags:nil
+#+PROPERTY: header-args :cache no :eval no-export 
+
+
+* Description                                                        :export:
+
+Benchmark insertion time
+- PMQ / GEOHASH
+- BTREE 
+- RTREE -  Quadratic algorithm 
+- Dense vector
+
+Number of insertions: 
+elements of size 32 bytes:
+- Key = 8 bytes
+- Value = (19) aligned to 24 Bytes
+
+- PMA batch size = 1000
+
+With 10 M elemtents PMA has size src_python{return( 16777216 * 32 / 2**20) ;} {{{results(=512.0=)}}} Megabytes. 
+
+Tests with larger Size will be done in the querying and scanning benchmark.
+
+** Standalone script                                              :noexport:
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* DONE Experiment Script                                           :noexport:
+** DONE Initial Setup
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20170923193058
+
+Set up git branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout master
+git commit -m "LBK: add ${expId} entry" ../../../LabBook.org
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+: Your branch is up-to-date with 'origin/master'.
+: [master cd3dea9] LBK: add exp20170923193058 entry
+:  1 file changed, 40 insertions(+)
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923193058
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170923193058 361affe] Initial commit for exp20170923193058
+ 1 file changed, 727 insertions(+)
+ create mode 100644 data/cicero/exp20170923193058/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 361affe (HEAD -> exp20170923193058) Initial commit for exp20170923193058
+: * cd3dea9 (master) LBK: add exp20170923193058 entry
+: * 615175f (origin/master, origin/HEAD) bugfix: latitude / longitude
+
+
+** DONE Export run script
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+n=$((10**7))
+b=1000
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -f ../data/geo-tweets.dat -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923193058
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   exp.org
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	run.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20170923193058 8f9c61e] UPD: run.sh script
+:  2 files changed, 83 insertions(+), 37 deletions(-)
+:  create mode 100755 data/cicero/exp20170923193058/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** Local Execution                                                   :local:ARCHIVE:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** DONE Remote Execution                                            :remote:
+
+*** Get new changes on remote                                      :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+53 packages can be updated.
+0 updates are security updates.
+
+,*** System restart required ***
+Last login: Sat Sep 23 17:49:29 2017 from 143.54.11.6
+#+end_example
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Branch exp20170923193058 set up to track remote branch exp20170923193058 from origin.
+Switched to a new branch 'exp20170923193058'
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Already up-to-date.
+commit 8f9c61ef884a42d6aa8c99242ef1c5c83b02caf4
+Date:   Sat Sep 23 19:38:01 2017 -0300
+
+    UPD: run.sh script
+#+end_example
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
+: FETCH_HEAD
+: Already up-to-date.
+: commit 6931408d8b9c109f3f2a9543374cfd712791b1e7
+: Date:   Tue Sep 19 16:58:38 2017 -0300
+: 
+:     error ouput on pma initialization
+
+*** DONE Execute Remotely                                          :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+cho $runid
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ julio@cicero:~/Projects/pmq/data/cicero/exp20170923193058$ 1506206431
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+#+RESULTS:
+#+begin_example
+runExp: 1 windows (created Sat Sep 23 19:40:31 2017) [80x23]
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+julio    13585  0.0  0.0  45248  4596 ?        Ss   17:49   0:00 /lib/systemd/sy
+julio    13586  0.0  0.0 145364  2112 ?        S    17:49   0:00 (sd-pam)
+julio    13615  0.0  0.0  97464  3376 ?        R    17:49   0:00 sshd: julio@pts
+julio    13616  0.0  0.0  22764  5292 pts/8    Ss   17:49   0:00 -bash
+julio    14024  0.0  0.0  44920  5380 pts/8    S+   19:38   0:00 ssh -A cicero
+julio    14074  0.0  0.0  97464  3308 ?        S    19:38   0:00 sshd: julio@pts
+julio    14075  0.0  0.0  22764  5320 pts/9    Ss   19:38   0:00 -bash
+julio    14239  0.0  0.0  29420  2972 ?        Ss   19:40   0:00 tmux new -d -s 
+julio    14240  0.0  0.0  12532  3028 pts/10   Ss+  19:40   0:00 bash -c cd ~/Pr
+julio    14242  0.0  0.0  12544  3016 pts/10   S+   19:40   0:00 /bin/bash ./run
+julio    14457 94.8  0.3 1115900 105260 pts/10 R+   19:40   0:08 ./benchmarks/be
+julio    14459  0.0  0.0  37368  3332 pts/9    R+   19:40   0:00 ps ux
+#+end_example
+
+**** DONE Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+#git commit -a -m "wip"
+git status
+#git pull --rebase origin $expId
+git pull origin $expId
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170923193058
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../../.#LabBook.org
+	../../../LabBook.man
+	../../../LabBook.markdown_phpextra
+	../../../LabBook.md
+	../../../LabBook.org.orig
+	../../../LabBook.rst
+	../../../LabBook.rtf
+	../../../LabBook.txt
+	../../../LabBook_BACKUP_19287.md
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../README.html
+	../../../benchmarks/bench_insert_and_scan.cpp.orig
+	../../../benchmarks/bench_queries_region.cpp.orig
+	../exp20170825181747/
+	../exp20170830124159/
+	../exp20170904153555/
+	../exp20170907105314/
+	../exp20170907105804/
+	../exp20170907112116/
+	../exp20170907145711/
+	../exp20170914091842/
+	../exp20170915143003/
+	../exp20170919161448/
+	../exp20170923144931/
+	.#exp.org
+	../../queriesLHS.html
+	../../queriesLHS_BACKUP_23848.org
+	../../queriesLHS_BASE_23848.org
+	../../queriesLHS_LOCAL_23848.org
+	../../queriesLHS_REMOTE_23848.org
+	../../randomLhsQueries.png
+
+nothing added to commit but untracked files present (use "git add" to track)
+Merge made by the 'recursive' strategy.
+ data/cicero/exp20170923193058/info.org           | 692 +++++++++++++++++++++++
+ data/cicero/exp20170923193058/log_1506206431.tgz | Bin 0 -> 1442013 bytes
+ data/cicero/exp20170923193058/run_1506206431     |  41 ++
+ 3 files changed, 733 insertions(+)
+ create mode 100644 data/cicero/exp20170923193058/info.org
+ create mode 100644 data/cicero/exp20170923193058/log_1506206431.tgz
+ create mode 100644 data/cicero/exp20170923193058/run_1506206431
+#+end_example
+
+
+* DONE Analysis                                                      :export:
+** Generate csv files                                             :noexport:
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+NAME: fileList
+#+begin_src sh :results table :exports both
+ls  *tgz
+#+end_src
+
+#+RESULTS: fileList
+| log_1506206431.tgz |
+
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both :var f=fileList[-1]
+#echo $f
+tar xvzf $f
+#+end_src
+
+#+RESULTS: logFile
+: bench_insert_and_scan_1506206431.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#echo $logFile
+echo $(basename -s .log $logFile ).csv
+grep "InsertionBench " $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_insert_and_scan_1506206431.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+
+*** Load the CSV into R                                          :noexport:
+#+begin_src R :results output :exports both :var f=csvFile
+library(tidyverse)
+
+df <- f[[1]] %>%
+    read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:8),sep=""),
+               col_types="cicdcdci", progress=FALSE ) # specify colum types to avoid parsing errors
+
+str(as.tibble(f))
+
+#+end_src
+
+#+RESULTS:
+: Warning: 200000 parsing failures.
+: row # A tibble: 5 x 5 col     row   col  expected    actual                                   file expected   <int> <chr>     <chr>     <chr>                                  <chr> actual 1     1  <NA> 8 columns 5 columns 'bench_insert_and_scan_1506206431.csv' file 2     2  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' row 3     3  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' col 4     4  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv' expected 5     5  <NA> 8 columns 9 columns 'bench_insert_and_scan_1506206431.csv'
+: ... ................. ... ........................................................................ ........ ........................................................................ ...... ........................................................................ .... ........................................................................ ... ......................................................... [... truncated]
+: Warning message:
+: In rbind(names(probs), probs_f) :
+:   number of columns of result is not a multiple of vector length (arg 1)
+: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1 obs. of  1 variable:
+:  $ value: chr "bench_insert_and_scan_1506206431.csv"
+
+
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+
+names(df) <- c("algo", "id", "bench" , "time" , "V5" , "Value"  , "V7" , "count")
+
+df %>% 
+    mutate( time = ifelse( bench == "insert" & !is.na(Value), time + Value, time)) %>%
+    select( -V5, -Value, -V7) -> df
+#+end_src
+
+#+RESULTS:
+
+
+*** Overview of results                                                :plot:
+
+Plot an overview of every benchmark , doing average of times. 
+#+begin_src R :results output :exports none
+df %>% group_by(algo,id,bench, count) %>%
+    summarize(ms = mean(time), stdv = sd(time)) -> dfplot
+
+dfplot
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 120,000 x 6
+# Groups:   algo, id, bench [?]
+    algo    id           bench count          ms         stdv
+   <chr> <int>           <chr> <int>       <dbl>        <dbl>
+ 1 BTree     0 apply_at_region  1000 0.002275000           NA
+ 2 BTree     0          insert    NA 0.351185000           NA
+ 3 BTree     0  scan_at_region  1000 0.004493333 1.574622e-04
+ 4 BTree     1 apply_at_region  2000 0.003809000           NA
+ 5 BTree     1          insert    NA 0.365357000           NA
+ 6 BTree     1  scan_at_region  2000 0.009243000 2.121768e-04
+ 7 BTree     2 apply_at_region  3000 0.005789000           NA
+ 8 BTree     2          insert    NA 0.378500000           NA
+ 9 BTree     2  scan_at_region  3000 0.013940667 4.250098e-05
+10 BTree     3 apply_at_region  4000 0.007924000           NA
+# ... with 119,990 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
+library(ggplot2)
+
+dfplot %>% 
+  #  filter( id < 100) %>%
+#    ungroup %>% 
+ #   mutate(bench = revalue( bench, c("apply_at_region" = "count"))) %>% 
+ggplot(aes(x=id,y=ms, color=factor(algo))) + 
+    geom_line() +
+    #geom_errorbar(aes(ymin = ms - stdv, ymax = ms + stdv), width = 0.3 ) +
+    facet_wrap(~bench, scales="free",ncol=1,labeller=labeller(bench=c(apply_at_region="Global Count", insert="Insertion", scan_at_region="Golbal scan")))
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** DONE Insertion performance
+
+#+begin_src R :results output :exports both :session 
+ dfplot %>% filter( bench == "insert") -> dfinsert
+#+end_src
+
+#+RESULTS:
+
+**** Overall                                                        :plot:
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+dfinsert %>%
+ggplot(aes(x=id,y=ms, color=factor(algo))) + 
+geom_line() +
+labs(title = "Insertions") + 
+facet_wrap(~algo, scales="free", ncol=1)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+Total insertion time:
+#+begin_src R :results table :session :exports both :colnames yes
+dfinsert %>% 
+    group_by(algo) %>%
+    summarize(Average = mean(ms), Total = sum(ms)) %>% arrange(Total)
+#+end_src
+
+#+RESULTS:
+| algo                | Average |      Total |
+|---------------------+---------+------------|
+| BTree               |   0.698 |   6976.455 |
+| RTree               |   0.967 |   9669.935 |
+| GeoHashBinary       |   1.015 |  10154.884 |
+| ImplicitDenseVector |  24.925 | 249248.270 |
+#+TBLFM: @2$2..@5$3=$0;%0.3f
+
+
+**** Amortized time
+
+We compute three times:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports results
+avgTime = cbind(dfinsert, 
+                sumTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)), recursive=T),
+                avgTime=c(lapply(split(dfinsert, dfinsert$algo), function(x) cumsum(x$ms)/(x$id+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+
+***** Melting the data (time / avgTime)                        :noexport:
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :exports both :session 
+avgTime %>% 
+    select(-count,-stdv) %>%
+    gather(stat, value, ms, sumTime, avgTime) -> melted_times
+
+melted_times
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Warning message:
+attributes are not identical across measure variables;
+they will be dropped
+# A tibble: 120,000 x 5
+# Groups:   algo, id, bench [40,000]
+    algo    id  bench  stat    value
+   <chr> <int>  <chr> <chr>    <dbl>
+ 1 BTree     0 insert    ms 0.351185
+ 2 BTree     1 insert    ms 0.365357
+ 3 BTree     2 insert    ms 0.378500
+ 4 BTree     3 insert    ms 0.379371
+ 5 BTree     4 insert    ms 0.383623
+ 6 BTree     5 insert    ms 0.385603
+ 7 BTree     6 insert    ms 0.384649
+ 8 BTree     7 insert    ms 0.390620
+ 9 BTree     8 insert    ms 0.394456
+10 BTree     9 insert    ms 0.391402
+# ... with 119,990 more rows
+#+end_example
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+melted_times %>%
+    ggplot(aes(x=id,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(stat~algo,scales="free", labeller=labeller(stat=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+
+**** Zoom View                                                      :plot:
+
+#+begin_src R :results output graphics :file "./img/Zoom.png" :exports both :width 600 :height 400
+avgTime %>% 
+    ggplot(aes(x=id, color=factor(algo))) + 
+    labs(title="Insertions") +
+    geom_point(aes(y=ms), alpha=1) +
+#    geom_line(aes(y=avgTime)) + 
+    ylim(0,1.5) 
+#+end_src
+
+#+RESULTS:
+[[file:./img/Zoom.png]]
+
+
+*** Final Notes
+
+Results are very similar to the insertion of the synthetic data set of uniform data ( [[file:../exp20170919161448/exp.org]] ) .

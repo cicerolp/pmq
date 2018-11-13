@@ -1,0 +1,53 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+[ 22%] Built target twitterVis
+[ 29%] Built target test_insert_remove_scan
+[ 36%] Built target test_containers_count
+[ 42%] Built target test_geohash
+[ 48%] Built target test_geohash_count
+[ 55%] Built target bench_insert_remove_count
+[ 64%] Built target bench_topk_search
+[ 75%] Built target bench_queries_region
+[ 83%] Built target bench_memory
+[ 91%] Built target bench_insert_remove_scan
+[100%] Built target bench_insert_and_scan
+bench_queries_region_random_26000_1000_8_1505497224.log
+Already on 'exp20170915143003'
+A	data/cicero/exp20170915143003/run_1505497224
+Your branch is up-to-date with 'origin/exp20170915143003'.
+[exp20170915143003 c084370] Finish execution 1505497224
+ 3 files changed, 733 insertions(+)
+ create mode 100644 data/cicero/exp20170915143003/info.org
+ create mode 100644 data/cicero/exp20170915143003/log_1505497224.tgz
+ create mode 100644 data/cicero/exp20170915143003/run_1505497224
+remote: 
+remote: Create pull request for exp20170915143003:        
+remote:   https://bitbucket.org/jtoss/pmq/pull-requests/new?source=exp20170915143003&t=1        
+remote: 
+To git@bitbucket.org:jtoss/pmq.git
+   33c9084..c084370  exp20170915143003 -> exp20170915143003

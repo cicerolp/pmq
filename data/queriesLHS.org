@@ -1,0 +1,542 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Design of Experiments - Queries Dataset
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+CATEGORY: TwitterVis
+#+OPTIONS: ^:{} H:3 tags:nil todo:nil author:nil
+#+PROPERTY: header-args :cache no :eval no-export
+
+* Random Data
+** Preliminary Tests                                              :noexport:
+
+*** Varying Radius only up to 400 km
+
+#+begin_src R :results output :exports both :session 
+n = 10**4
+x <- runif(n,min=-179,max=179)
+y <- runif(n,min=-89,max=89)
+
+rand_pts <- data.frame(lon = x, lat = y)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d5_HD, aes(x=lon, y=lat, width=R/( 111.31 * cos(lat/57.3)),height=R/111.31) ,color="black", fill="red") +
+geom_point(alpha=0.1)  
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753BYT.png]]
+
+
+Make width of queries relative to the lat x lon in degrees instead of KM
+#+begin_src R :results output :exports both :session 
+w <- runif(25,min=1,max=360)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+library(DoE.wrapper)
+set.seed(42);
+d6_llw = lhs.design( type= "maximin" , nruns= 10 ,nfactors= 3 ,seed= 42 , 
+                   factor.names=list( lat=c(-89,+89),lon=c(-179,179),width=c(0.1,180) ) )
+
+                                        #Response5 = 10 + 2*as.numeric(d5_HD$A) + 3*as.numeric(d5_HD$B)*as.numeric(d5_HD$C) +
+#rnorm(nrow(d5_HD),sd=1)
+#d5_HD <- add.response(d5_HD, Response5, replace=TRUE)
+plot(d6_llw ,main="LHS design")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure277532Bz.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d6_llw, aes(x=lon, y=lat, width=width,height=width/2) ,color="black", fill="blue", alpha=0.1) +
+geom_point(alpha=0.1)  
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753ctm.png]]
+
+*** No variability in Width
+
+#+begin_src R :results output :exports both :session 
+w = 360/(2**c(1:10))
+#w
+
+#probability
+p = (w*(w/2)) / (360 * 180)
+fp = sprintf("%0.6f",p*100)
+#probable number of elements in a dataset of 10**6 elements
+fn = sprintf("%0.2f",10**6 * p)
+
+dfwuni = data.frame(width=w,percent=fp,expElt=fn)
+dfwuni
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    width   percent    expElt
+1  180.00 25.000000 250000.00
+2   90.00  6.250000  62500.00
+3   45.00  1.562500  15625.00
+4   22.50  0.390625   3906.25
+5   11.25  0.097656    976.56
+6    5.62  0.024414    244.14
+7    2.81  0.006104     61.04
+8    1.41  0.001526     15.26
+9    0.70  0.000381      3.81
+10   0.35  0.000095      0.95
+#+end_example
+
+*** Using LHS variabilty in Width 
+
+#+begin_src R :results output :exports both :session 
+w = 360/(2**c(1:10))
+w_lhs = lhs.design( type= "maximin" , nruns= 10 ,nfactors=1 , seed=42 ,
+           factor.names=list( width=c(w[length(w)],180) ) )
+
+dfwlhs = data.frame(width=w_lhs$width,"percent "= (w_lhs$width*(w_lhs$width/2)) / (360 * 180) * 100)
+
+format(dfwlhs[order(dfwlhs$width,decreasing=TRUE),],scientific=FALSE, digits=3)
+# print(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    width  percent.
+10 175.49 23.762202
+2  155.57 18.674061
+3  143.55 15.900255
+6  114.37 10.093503
+4  101.30  7.917472
+8   86.31  5.748302
+5   60.24  2.800201
+7   43.45  1.456473
+1   34.27  0.906284
+9    1.06  0.000866
+#+end_example
+*** Coordinates LHS To avoid out-of-bound queries
+
+#+begin_src R :results output :exports both :session 
+
+set.seed(42);
+
+wq = dfwuni$width[1] / 2
+hq = wq/2
+
+wq
+hq
+
+d7_llw = lhs.design( type= "maximin" , nruns= 10 ,nfactors=2 ,seed= 42 , 
+                   factor.names=list( 
+                       lat=c(-90+hq/2,+90-hq/2),
+                       lon=c(-180+wq/2,180-wq/2) ) )
+
+#d7_llw$width = runif(10,min=0.1,max=180)
+d7_llw$width = wq
+d7_llw$height = hq
+d7_llw
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] 90
+[1] 45
+     lat  lon width height
+1  -24.2  106    90     45
+2   26.0  -88    90     45
+3  -63.0  -13    90     45
+4   -3.5   17    90     45
+5   35.5   33    90     45
+6    2.9  -43    90     45
+7   53.2  -55    90     45
+8  -30.5   74    90     45
+9  -46.8 -135    90     45
+10  62.2  131    90     45
+class=design, type= lhs
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ggplot(rand_pts,aes(x=lon,y=lat)) + 
+geom_tile(data=d7_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
+geom_point(alpha=0.1)  
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-27753x0V/figure27753PxI.png]]
+
+
+** DONE Generate queries distributed on the whole coordinates grid
+
+- Use LHS design to choose centers of each query
+- Avoid out-of-bound queries
+
+#+begin_src R :results output :exports code :session 
+library(DoE.wrapper)
+#+end_src
+
+#+RESULTS:
+
+Generates 8 sizes of width and height ( queries are square regions): 
+#+begin_src R :results output :exports both :session 
+dfwuni = data.frame( width = 180/(2**c(1:8)))
+dfwuni$height = dfwuni$width
+dfwuni$width
+#+end_src
+
+#+RESULTS:
+: [1] 90.000000 45.000000 22.500000 11.250000  5.625000  2.812500  1.406250
+: [8]  0.703125
+
+Compute the percentage of the whole are that each query represents 
+and the expected amount of elements in each query, assuming =n= uniform data points.
+#+begin_src R :results table :exports both :session :colnames yes
+n = 10**6 
+dfwuni$percent = ( dfwuni$width *  dfwuni$height) / (360*180) * 100
+dfwuni$expElts = round(( dfwuni$percent ) / 100 * n,2)
+dfwuni
+#+end_src
+
+#+RESULTS:
+|  width | height | percent |   expElts |
+|--------+--------+---------+-----------|
+| 90.000 | 90.000 |  12.500 | 125000.00 |
+| 45.000 | 45.000 |   3.125 |  31250.00 |
+| 22.500 | 22.500 |   0.781 |   7812.50 |
+| 11.250 | 11.250 |   0.195 |   1953.12 |
+|  5.625 |  5.625 |   0.049 |    488.28 |
+|  2.812 |  2.812 |   0.012 |    122.07 |
+|  1.406 |  1.406 |   0.003 |     30.52 |
+|  0.703 |  0.703 |   0.001 |      7.63 |
+#+TBLFM: $4=$0;%.2f::@2$1..@9$3=$0;%.3f
+
+
+Function: for a given width generates 10 position using LHS desing
+Note: we limit latitude between -85.051132f and +85.051132f
+#+begin_src R :results output :exports both :session :colnames yes
+
+latr = c(-85.051132,+85.051132)   # boundaries of latitude to generate the queries
+
+flhs = function(w){
+    wq = w
+    hq = wq # square queries
+
+    d = lhs.design( type= "maximin" , nruns= 10 ,nfactors=2 , 
+                   factor.names=list( 
+                       lat=c(latr[1]+hq/2 , latr[2]-hq/2),
+                       lon=c(-180+wq/2,180-wq/2)) 
+                   )
+
+    d$width = wq
+    d$height = hq
+    d
+}
+#+end_src
+
+#+RESULTS:
+
+Generates queries position for each value of Width.
+#+begin_src R :results table :exports both :session :colnames yes 
+set.seed(42);
+# dflist = mapply(flhs,dfwuni$width,dfwuni$height) 
+
+d8_llw = do.call( rbind, 
+                 lapply(dfwuni$width,flhs) 
+                 )
+head(d8_llw)
+#+end_src
+
+#+RESULTS:
+|               lat |               lon | width | height |
+|-------------------+-------------------+-------+--------|
+| -14.3493546448834 |  106.191921438323 |    90 |     90 |
+|  15.4244144363771 | -88.1794538728427 |    90 |     90 |
+| -37.3820934128109 |  -13.093290094519 |    90 |     90 |
+| -2.05076308297226 |  16.7172994811553 |    90 |     90 |
+|   21.036225209632 |   32.863257852383 |    90 |     90 |
+|  1.73470416087192 | -43.4984842264094 |    90 |     90 |
+
+*** Visualization of queries with 10**4 sample elements
+#+begin_src R :results output graphics :file "./img/randomLhsQueries.png" :exports both :width 800 :height 600 :session 
+library(tidyverse)
+
+set.seed(42);
+n = 10**4
+x <- runif(n,min=-179,max=179)
+y <- runif(n,min=-89,max=89)
+
+data.frame(lon = x, lat = y) %>% 
+ggplot(aes(x=lon,y=lat)) + 
+#geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height) ,color="black", fill="blue", alpha=0.1) +
+geom_tile(data=d8_llw, aes(x=lon, y=lat, width=width,height=height, color=factor(width),fill=factor(width)), size=0.5, alpha=0.1)+
+geom_point(alpha=0.1)  +
+labs(color = "Query Width " ) + 
+theme(legend.position="bottom" ) +
+guides(color = guide_legend(nrow = 1), fill=FALSE)
+#+end_src
+
+#+RESULTS:
+[[file:./img/randomLhsQueries.png]]
+
+** DONE Output Bounding Boxes to CSV
+
+Convert to columns to bounding box coordinates
+
+#+begin_src R :results output :exports both :session 
+d = d8_llw
+bbox = data.frame(lat0 = d$lat + d$width/2 ,
+                  lon0 = d$lon - d$height/2 ,
+                  lat1 = d$lat - d$width/2 ,
+                  lon1 = d$lon + d$height/2)
+tail(bbox)
+#+end_src
+
+#+RESULTS:
+:         lat0        lon0      lat1        lon1
+: 75 -17.88356    5.556157 -18.58669    6.259282
+: 76 -64.14098 -176.444238 -64.84411 -175.741113
+: 77 -70.30332   -7.324929 -71.00645   -6.621804
+: 78 -45.73760  123.537580 -46.44073  124.240705
+: 79  61.77395  156.651935  61.07082  157.355060
+: 80  23.76805 -111.183409  23.06492 -110.480284
+
+Write the csv file of bounding boxes
+#+begin_src R :results output :exports none :session 
+write.table(bbox,"queriesLHS.csv",row.names=FALSE,col.names=FALSE,sep=",")
+#write.csv(bbox,"queries.csv",row.names=FALSE)
+#+end_src
+
+[[file:queriesLHS.csv]]
+
+** CANCELED Convert the width in degrees to KM                    :noexport:
+
+input benchmark receives lat lon and Radius ( Width in KM / 2 ) 
+
+Canceled: we will query degrees directly 
+
+* Twitter Data
+:PROPERTIES:
+:CUSTOM_ID: queries20170923145357
+:END:
+
+Description:
+- Get n random position from the dataset of tweets. 
+  [[file:tweet10_6.dat]] or from geo-tweets.dat
+
+- generate queries with 10 different widths
+  
+** C++ : get random tweets from the dataset 
+
+Use the following twitter dataset: 
+#+name: dataset
+[[file:tweet10_4.dat]]
+
+
+#+begin_src C++ :exports code :flags -std=c++11 :var fname=dataset :includes '(<iostream> <vector>) :libs -I/home/julio/Projects/pmq/include -isystem /home/julio/Projects/hppsimulations/pma_cd/inc -isystem /home/julio/Projects/hppsimulations/build-release
+
+#include <GenericType.h>
+#include <input_it.h>
+
+#include <fstream>
+#include <unordered_set>
+
+using namespace std;
+
+int main(){
+  using el_t = TweetDatType;
+  using it_t = input_file_it<el_t>;
+
+  std::unordered_set<int> offsets;
+
+  std::shared_ptr < std::ifstream > file_ptr = std::make_shared<std::ifstream>(fname, std::ios::binary);
+
+  auto begin = it_t::begin(file_ptr);
+  auto end = it_t::end(file_ptr); 
+
+  int itSize = end - begin;
+  
+  std::srand(42);
+
+  int n = 80; // number of queries
+  while(offsets.size() < n) 
+    offsets.insert( std::rand() % itSize);
+
+  
+  cout << "id Latitude Longitude" << endl;
+  for (auto& off : offsets){
+    auto it = begin+off;
+    printf("%d %.8f %.8f\n", off, (it)->getLatitude(), (it)->getLongitude()  );
+    ++it;
+  }
+
+  return 0;
+}
+#+end_src
+
+#+name: cppqueries
+#+RESULTS:
+|   id |    Latitude |     Longitude |
+| 5230 | 40.73379898 |  -74.24279785 |
+| 7278 | 39.90430069 |  -75.32160187 |
+| 3773 | 47.75630188 | -122.15399933 |
+| 8185 |  41.7521019 |  -87.65480042 |
+| 1969 |  40.1169014 |  -75.02999878 |
+|  320 | 40.91159821 |  -74.05319977 |
+| 8023 | 33.19829941 |  -87.58439636 |
+| 7520 | 33.92380142 | -118.17299652 |
+| 1360 | 35.92990112 |  -89.87049866 |
+| 2935 | 34.01779938 | -118.40699768 |
+| 6170 | 34.83950043 |  -92.38680267 |
+| 1269 | 35.84600067 |   -90.6785965 |
+| 6901 | 36.09049988 | -115.03199768 |
+| 8483 | 37.27080154 |  -79.94139862 |
+| 6725 | 39.95059967 |  -75.15930176 |
+| 3195 | 52.34379959 |   30.96960068 |
+| 7263 | 41.97669983 |  -87.84120178 |
+| 9454 |  36.3484993 |  -94.21640015 |
+| 6450 |  32.8742981 | -117.21700287 |
+| 1600 | 41.63779831 |  -87.43430328 |
+| 4121 | 47.67679977 | -122.11399841 |
+| 6352 | 37.48350143 | -122.22899628 |
+| 7809 | 44.97969818 | -123.00900269 |
+| 5127 | 34.08050156 | -117.73000336 |
+|  665 | 32.36320114 |  -86.29669952 |
+|  698 | 32.44200134 |  -93.76509857 |
+| 9995 | 42.26869965 |  -85.56790161 |
+| 5727 | 30.26880074 |   -97.7684021 |
+| 3696 | 40.74980164 |   -73.9878006 |
+| 3743 | 29.54640007 |  -98.61070251 |
+| 8960 | 33.23149872 | -117.22899628 |
+|  176 | 39.90660095 |  -83.81890106 |
+| 9762 | 39.77399826 |  -86.18470001 |
+| 8307 | 39.45510101 |  -74.73239899 |
+| 6433 | 30.42490005 |  -84.28540039 |
+| 1033 | 32.52349854 | -117.01300049 |
+| 1843 |  41.4632988 |  -81.48249817 |
+| 9021 | 33.83800125 |  -84.20559692 |
+| 1688 | 33.96360016 | -117.05400085 |
+| 1979 | 34.19200134 | -119.21700287 |
+| 3143 | 38.10710144 | -122.21099854 |
+| 9448 | 38.27769852 |  -121.3010025 |
+| 4940 | 33.35770035 |  -111.9469986 |
+| 3241 | 36.21659851 |  -81.68319702 |
+| 5874 | 43.16120148 |  -93.20999908 |
+| 8881 | 33.49380112 | -112.20500183 |
+| 9204 | 32.74060059 |  -96.70330048 |
+|  280 | 35.99959946 |   -95.7983017 |
+|  535 | 39.86949921 |  -75.38310242 |
+| 1169 |  33.7867012 |  -84.75730133 |
+| 6504 | 40.65539932 |  -73.74299622 |
+| 3867 | 44.01240158 | -123.09100342 |
+| 6734 | 40.69020081 |  -73.99210358 |
+| 2740 | 41.71849823 |  -87.60900116 |
+| 6758 | 40.11249924 |  -88.24629974 |
+| 6497 | 38.92129898 |  -77.04229736 |
+| 1259 | 41.51739883 |  -87.76940155 |
+| 9892 | 40.44620132 |  -74.31800079 |
+| 3547 | 41.61529922 |  -87.73880005 |
+| 6166 | 40.82929993 |  -73.35549927 |
+| 4504 | 43.52180099 |  -96.77210236 |
+| 1012 | 26.27420044 |  -80.27950287 |
+| 1819 | 42.38479996 |  -83.19400024 |
+| 9579 | 38.77149963 | -121.25499725 |
+| 2141 | 45.52700043 | -122.63600159 |
+| 9900 |  45.3893013 |  -75.69110107 |
+| 2916 | 42.37540054 |  -83.21900177 |
+| 1822 | 28.60230064 |    -81.479599 |
+| 4247 |  32.6053009 | -117.08899689 |
+| 5314 | 36.35070038 |   -79.6765976 |
+| 7900 | 34.06999969 | -118.35700226 |
+| 5221 | 37.96760178 |  -87.45829773 |
+| 8424 | 44.95669937 |  -93.38369751 |
+| 6921 | 33.80360031 | -117.91600037 |
+| 7447 | 33.03540039 | -116.87200165 |
+| 8455 | 41.76660156 |  -87.68119812 |
+| 1272 | 40.15710068 |  -89.35980225 |
+| 1951 |  41.4632988 |  -81.48249817 |
+| 9717 | 32.80179977 | -117.23100281 |
+| 2151 | 38.67969894 |  -90.46309662 |
+
+
+** Create bounding boxes for queries
+
+#+begin_src R :results table :colnames yes :exports both :session :var queries=cppqueries[0:-1]
+#queries
+queries$width = rep(dfwuni$width, each=10)
+names(queries) = c("tweet", "Lat", "Lon","width")
+head(queries)
+#+end_src
+
+#+RESULTS:
+| tweet |         Lat |           Lon | width |
+|-------+-------------+---------------+-------|
+|  5230 | 40.73379898 |  -74.24279785 |    90 |
+|  7278 | 39.90430069 |  -75.32160187 |    90 |
+|  3773 | 47.75630188 | -122.15399933 |    90 |
+|  8185 |  41.7521019 |  -87.65480042 |    90 |
+|  1969 |  40.1169014 |  -75.02999878 |    90 |
+|   320 | 40.91159821 |  -74.05319977 |    90 |
+
+*** Visualization of queries for the Twitter Dataset 
+
+#+begin_src R :results output graphics :file "./img/twitterQueries.png" :exports both :width 800 :height 600 :session 
+library(tidyverse)
+library(maps) 
+
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+
+queries %>% filter( width <= 90 ) %>%
+ggplot(aes(x=Lon,y=Lat)) + 
+mapWorld + 
+#geom_tile(aes(width=width, height=width), color="black", fill=NA, alpha=0.1, size = 0.5) +
+geom_tile(aes(width=width, height=width, color=factor(width)),size=0.3,fill=NA) +
+xlim(-180,+180) + 
+ylim(-90,+90) +
+labs(color = "Query Width " ) + 
+theme(legend.position="bottom" ) +
+guides(color = guide_legend(nrow = 1))
+#+end_src
+
+#+RESULTS:
+[[file:./img/twitterQueries.png]]
+
+
+** Output Bounding Boxes to CSV
+Convert to columns to bounding box coordinates
+
+#+begin_src R :results output :exports both :session 
+d = queries
+queries_bbox = data.frame(lat0 = d$Lat + d$width/2 ,
+                          lon0 = d$Lon - d$width/2 ,
+                          lat1 = d$Lat - d$width/2 ,
+                          lon1 = d$Lon + d$width/2)
+head(queries_bbox)
+#+end_src
+
+#+RESULTS:
+:      lat0      lon0      lat1     lon1
+: 1 85.7338 -119.2428 -4.266201 -29.2428
+: 2 84.9043 -120.3216 -5.095699 -30.3216
+: 3 92.7563 -167.1540  2.756302 -77.1540
+: 4 86.7521 -132.6548 -3.247898 -42.6548
+: 5 85.1169 -120.0300 -4.883099 -30.0300
+: 6 85.9116 -119.0532 -4.088402 -29.0532
+
+Write the csv file of bounding boxes
+#+begin_src R :results output :exports both :session 
+write.table(queries_bbox,"queriesTwitter.csv",row.names=FALSE,col.names=FALSE,sep=",")
+#+end_src
+
+#+RESULTS:
+
+[[file:queriesTwitter.csv]]

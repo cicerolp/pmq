@@ -1,0 +1,903 @@
+# -*- org-export-babel-evaluate: t; org-link-file-path-type: relative;-*-
+#+TITLE: Lab Book for PMQ Experiments 
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+SEQ_TODO: TODO RUNNING RERUN ANALYSIS | FINISHED CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C)
+#+TAGS: IMPORTANT(I) ignore(i) TEST(t) DEPRECATED(d) noexport(n) export(e) paper(p)
+#+CATEGORY: TwitterVis
+#+OPTIONS: ^:{} H:3 author:nil
+#+PROPERTY: header-args :cache no :eval never-export
+
+
+Labbook about implementation of the PMQ
+
+* Research Notes
+Extra research notes in [[file:ResearchNotes.org]]
+
+* Source Code
+** Dependencies
+
+*** Boost library  V 1.64
+Version 1.64 
+
+#+begin_src sh :session boost :results output :exports both 
+cd ~/Downloads
+wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 
+#+end_src
+
+#+begin_src sh :session boost :results output :exports both 
+tar -xvjf boost_1_64_0.tar.bz2
+
+cd ./boost_1_64_0
+
+./bootstrap.sh --prefix=/usr/
+sudo ./b2 -j8 install
+#+end_src
+
+*** stx:Brtree
+https://github.com/bingmann/stx-btree/releases/tag/stx-btree-0.9
+
+#+begin_src sh :session installBtree :results output :exports both 
+cd ~/Downloads/
+wget https://github.com/bingmann/stx-btree/archive/stx-btree-0.9.tar.gz ; \
+tar -xvzf stx-btree-0.9.tar.gz ; \
+cd stx-btree-stx-btree-0.9 ;
+
+./configure
+make -j8
+sudo make install
+
+#+end_src
+
+*** Databases
+Dependencies added for the bechmarks with databases
+#+begin_src sh :results output :exports both
+sudo apt-get install postgis libpq-dev libspatialite-dev libsqlite3-dev libgeos-dev
+#+end_src
+
+**** Configuring Postgres
+Start psql console
+#+begin_src sh :results output :exports both
+sudo -u postgres psql postgres
+#+end_src
+
+Configure database in psql console
+#+BEGIN_EXAMPLE
+postgres=# \password postgres
+postgres=# CREATE DATABASE twittervis;
+postgres=# \c twittervis
+postgres=# CREATE EXTENSION postgis;
+#+END_EXAMPLE
+
+To start/stop/restart the Server
+http://www.pontikis.net/blog/postgresql-9-debian-7-wheezy
+#+begin_src sh :results output :exports both
+systemctl restart postgresql.service
+#+end_src
+
+
+
+** Compilation 
+
+- Needs to point to your pma build directory
+
+#+begin_src sh :results output :exports both :session compilePMQ
+
+mkdir -p ./build-Release
+cd ./build-Release
+PMABUILD_DIR=../../hppsimulations/pma_cd/build-Release
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+#+end_src
+
+#+RESULTS:
+
+
+
+* Scripts
+** g5k_get_info.sh
+Script to get info in experiments on grid5000
+
+#+begin_src sh :results output :exports both :tangle ./scripts/g5k_get_info.sh :shebang #!/bin/bash
+# Script for to get machine information before doing the experiment
+
+set +e # Don't fail fast since some information is maybe not available
+
+title="Experiment results"
+starpu_build=""
+inputfile=""
+host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
+help_script()
+{
+cat << EOF
+Usage: $0 [options] outputfile.org
+
+Script for to get machine information before doing the experiment
+
+OPTIONS:
+-h      Show this message
+-t      Title of the output file
+-s      Path to the StarPU installation
+-i      Input file name if doing SimGrid simulation based on input
+EOF
+}
+# Parsing options
+while getopts "t:s:i:h" opt; do
+case $opt in
+    t)
+        title="$OPTARG"
+        ;;
+    s)
+        starpu_build="$OPTARG"
+        ;;
+    i)
+        inputfile="$OPTARG"
+        ;;
+    h)
+        help_script
+        exit 4
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG"
+        help_script
+        exit 3
+        ;;
+esac
+done
+
+shift $((OPTIND - 1))
+filedat=$1
+if [[ $# != 1 ]]; then
+echo 'ERROR!'
+help_script
+exit 2
+fi
+
+##################################################
+# Preambule of the output file
+echo "#+TITLE: $title" >> $filedat
+echo "#+DATE: $(eval date)" >> $filedat
+echo "#+AUTHOR: $(eval whoami)" >> $filedat
+echo "#+MACHINE: $(eval hostname)" >> $filedat
+echo "#+FILE: $(eval basename $filedat)" >> $filedat
+if [[ -n "$inputfile" ]]; 
+then
+echo "#+INPUTFILE: $inputfile" >> $filedat
+fi
+echo " " >> $filedat 
+
+##################################################
+# Collecting metadata
+echo "* MACHINE INFO:" >> $filedat
+
+echo "** PEOPLE LOGGED WHEN EXPERIMENT STARTED:" >> $filedat
+who >> $filedat
+echo "############################################" >> $filedat
+
+echo "** ENVIRONMENT VARIABLES:" >> $filedat
+env >> $filedat
+echo "############################################" >> $filedat
+
+echo "** HOSTNAME:" >> $filedat
+hostname >> $filedat
+echo "############################################" >> $filedat
+
+if [[ -n $(command -v lstopo) ]];
+then
+echo "** MEMORY HIERARCHY:" >> $filedat
+lstopo --of console >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/cpuinfo ];
+then
+echo "** CPU INFO:" >> $filedat
+cat /proc/cpuinfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
+then
+echo "** CPU GOVERNOR:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
+then
+echo "** CPU FREQUENCY:" >> $filedat
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [ -f /proc/meminfo ];
+then
+echo "** MEM INFO:" >> $filedat
+cat /proc/meminfo >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v nvidia-smi) ]];
+then
+echo "** GPU INFO FROM NVIDIA-SMI:" >> $filedat
+nvidia-smi -q >> $filedat
+echo "############################################" >> $filedat
+fi 
+
+if [ -f /proc/version ];
+then
+echo "** LINUX AND GCC VERSIONS:" >> $filedat
+cat /proc/version >> $filedat
+echo "############################################" >> $filedat
+fi
+
+if [[ -n $(command -v module) ]];
+then
+echo "** MODULES:" >> $filedat
+module list 2>> $filedat
+echo "############################################" >> $filedat
+fi
+
+##################################################
+# Collecting revisions info 
+echo "* CODE REVISIONS:" >> $filedat
+
+git_exists=`git rev-parse --is-inside-work-tree`
+if [ "${git_exists}" ]
+then
+echo "** GIT REVISION OF TWITTERVIS:" >> $filedat
+git log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/twitterVis/build-release >> $filedat
+
+echo "** GIT REVISION OF PMA :" >> $filedat
+git -C ~/Projects/hppsimulations/ log -1 >> $filedat
+echo "*** CMAKE VARIABLES:" >> $filedat
+cmake -L ~/Projects/hppsimulations/build-release >> $filedat
+
+echo "############################################" >> $filedat
+fi
+
+#+end_src
+
+* Datasets 
+** Datastet of queries generate with R
+[[file:data/queriesLHS.org]]
+
+
+* Task list [0/1]
+** TODO Rerun bench_insert_and_scan with rtree quadratic algorithm. 
+** TODO Fix implementation to allow change in size of the value data easily 
+** TODO Implement Removals on the dense containers
+** TODO Benchmark of memory consuption
+* Data
+:PROPERTIES:
+:EXPORT_OPTIONS: H:2
+:COLUMNS:  %50ITEM %1PRIORITY %TODO %TAGS
+:END:
+Note: Only DATA branch contains entries here; 
+
+Reference about each experiment campaing. Usefull for comparing
+results of different experiments. 
+
+** Sample machine                                                 :template:
+Copy the subtree bellow to start a new experiment 
+
+*** TODO Template Experiment                               :YYYYMMDDHHMMSS:
+
+**** Setup                                                      :noexport:
+- [ ] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+  set -e
+  #expId=$(date +%Y%m%d%H%M%S)
+  machineDesc=$(hostname)
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
+
+  #+RESULTS:
+
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results raw :exports both :session template
+  cp ./data/template_exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+**** Description                                                  :ignore:
+
+Template to start an experiment:
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[file:data/template_exp.org]]
+
+
+** Cicero desktop
+:PROPERTIES:
+:EXPORT_TITLE: Experiments with PMQ
+:EXPORT_FILE_NAME: README.rst
+:END:
+*** Benchmark Insert and Scan
+**** DONE [2017-08-22 Ter] Experiment =bench_insert_and_scan= :exp20170822165129:
+:PROPERTIES:
+:CUSTOM_ID: exp20170822165129
+:END:
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=$(hostname)
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+***** Description                                                :ignore:
+[[./data/cicero/exp20170822165129/exp.org]]
+  
+**** ANALYSIS [2017-08-25 Sex] Twitter dataset =bench_insert_and_scan= :exp20170825181747:
+
+Testing with twitter distribution of data
+
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  #cp ~/Projects/twitterVis-DATA/data/inf-desktop/exp1483478591/exp.org $expFolder/exp.org
+  git show DATA:./data/inf-desktop/exp20170822165129/exp.org > ${expFolder}/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+***** Description                                                :ignore:
+  [[./data/cicero/exp20170825181747/exp.org]]
+  
+
+**** DONE [2017-08-22 Ter] =bench_insert_and_scan= V.2   :exp20170907112116:
+
+- Old experiment used Rtree* algorithm, use the quadratic one now.
+- Count was not correct in the plots from [[#exp20170822165129]]
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170822165129/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  0b5f0d6 UPD: fixed paths
+  $ $ [[./data/cicero/exp20170907112116/exp.org]]
+
+***** Description                                                :ignore:
+ [[./data/cicero/exp20170907112116/exp.org]]
+ 
+**** DONE [2017-09-15 Sex] Uniform Dataset =bench_insert_and_scan= :paper:exp20170919161448:
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+  set -e
+  expId=$(date +%Y%m%d%H%M%S)
+  machineDesc="cicero"
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170907112116/exp.org > ${expFolder}/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  b299a4e Merge branch 'master' into DATA
+  $ [[./data/cicero/exp20170919161448/exp.org]]
+
+
+***** Description                                                :ignore:
+
+Test insertions with larger inputs
+- Rtree (quadratic)
+- Btree
+- PMQ
+- DenseVector
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170919161448/exp.org]]
+
+
+**** DONE [2017-09-15 Sex] Twitter Dataset =bench_insert_and_scan= :paper:exp20170923193058:
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+  set -e
+  expId=$(date +%Y%m%d%H%M%S)
+  machineDesc="cicero"
+  expFolder=./data/$machineDesc/exp$expId
+  mkdir -p $expFolder
+  #+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170919161448/exp.org > ${expFolder}/exp.org
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  2e44f88 Merge branch 'exp20170923144931' into DATA
+  $ [[./data/cicero/exp20170923193058/exp.org]]
+
+***** Description                                                :ignore:
+
+Test insertions with larger inputs
+- Rtree (quadratic)
+- Btree
+- PMQ
+- DenseVector
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170923193058/exp.org]]
+
+*** Benchmark Queries region 
+  
+**** DONE [2017-08-30 Qua] =bench_queries_region=        :exp20170830124159:
+
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [ ] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  git show cadbec3c345a183f96a0b2822f4f96a17de8c20b:./data/cicero/exp20170825181747/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170830124159/exp.org]]
+
+- PMQ best on queries with large amount of elements
+  
+**** DONE [2017-09-04 Seg] Test the refinements levels :paper:exp20170904153555:
+
+Test the best refinement level to use in Geohash programs. 
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+echo $expFolder
+#+end_src
+
+  #+RESULTS:
+  : 
+  : $ $ $ $ ./data/cicero/exp20170904153555
+  
+- [X] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 exp20170825181747 --oneline | cat
+  git show exp20170825181747:./data/cicero/exp20170825181747/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  cadbec3 wip exp
+  $ $ [[./data/cicero/exp20170904153555/exp.org]]
+  
+***** Description                                                :ignore:
+  [[./data/cicero/exp20170904153555/exp.org]]
+  
+
+**** DONE [2017-09-07 Qui] =bench_queries_region= V.2    :exp20170907145711:
+
+Test with a larger ammount of data -> 10*8
+
+- added bulk RTREE loading to the experiments
+*NOTE*: Rtree used ineficient boost geogarphic coordinates.
+
+***** Setup                                                    :noexport:
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+#machineDesc=$(hostname)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+git show DATA:./data/cicero/exp20170830124159/exp.org > ${expFolder}/exp.org
+echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+
+***** Description                                                :ignore:
+  [[./data/cicero/exp20170907145711/exp.org]]
+  
+**** DONE [2017-09-15 Sex] =bench_queries_region= V.3 :paper:exp20170915143003:
+
+- Fixed code of Rtree (efficient Cartesian coordinates) . 
+- More elements in the time window: 6h * batches of size 1000 ( total of 26.000.000 elements )
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 exp20170907145711 --oneline | cat
+  git show exp20170907145711:./data/cicero/exp20170907145711/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  2a5b5d2 UPD: report in markdown
+  $ $ [[./data/cicero/exp20170915143003/exp.org]]
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170915143003/exp.org]]
+
+**** DONE [2017-09-23 Sáb] =bench_queries_region= Twitter Dataset :paper:exp20170923144931:
+
+- Test queries on real datasets
+- Use a time window of 6h * batches of size 1000  = 26.000.000 elements
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170915143003/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  6c231da minor chgs
+  $ $ [[./data/cicero/exp20170923144931/exp.org]]
+
+
+***** Description                                                :ignore:
+
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20170923144931/exp.org]]
+
+
+**** DONE [2017-10-09 Seg] Queries Variating Elt Size  :exp20171009155025:
+
+- Fixed query width on the map
+- Uniform dataset (to get the same amount of elements on the average)
+- Timewindow of size 26.000.000
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170915143003/exp.org > ${expFolder}/exp.org
+  #+end_src
+
+
+***** Description                                                :ignore:
+
+#+begin_src sh :results output raw :exports both :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20171009155025/exp.org]]
+
+
+
+**** DONE [2017-10-12 Qui] Twitter Dataset - Varying T :exp20171012184842:
+
+- Test queries on real datasets
+- batch size of 1000
+- Timewindow variation 
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170923144931/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  3e2d4bf upd readme
+  $ $ [[./data/cicero/exp20171012184842/exp.org]]
+
+***** Description                                                :ignore:
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20171012184842/exp.org]]
+
+
+
+
+**** DONE [2017-10-16 Seg] Twitter Dataset - Varying T and Elt Size :exp20171016155353:
+
+- Test queries on real datasets
+- batch size of 1000
+- Timewindow variation 
+- variate also the elements sizes
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 exp20171012184842 --oneline | cat
+  git show exp20171012184842:./data/cicero/exp20171012184842/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  3dbcc9f upd: analysis with RTreeBulk
+  $ $ [[./data/cicero/exp20171016155353/exp.org]]
+
+***** Description                                                :ignore:
+
+#+begin_src sh :results raw :exports results :session template
+echo "[[$expFolder/exp.org]]"
+#+end_src
+
+#+RESULTS:
+[[./data/cicero/exp20171016155353/exp.org]]
+
+
+
+**** TODO [2017-09-04 Seg] Twitter Dataset refinements levels
+
+
+Test the best refinement level to use in Geohash programs. 
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc=cicero
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+echo $expFolder
+#+end_src
+
+  #+RESULTS:
+  : 
+  : sh-4.4$ sh-4.4$ sh-4.4$ sh-4.4$ ./data/cicero/exp20171111161232
+  
+- [X] Use the template to run your experiment
+  
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 origin/exp20171016155353 --oneline | cat
+  git show origin/exp20171016155353:./data/cicero/exp20171016155353/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  5cf59ee exp.pdf : plots with variation of Element Size and T
+  sh-4.4$ sh-4.4$ [[./data/cicero/exp20171111161232/exp.org]]
+
+  
+
+*** Benchmark Insert and Remove
+**** DONE [2017-09-14 Qui] =bench_insert_remove_count= :paper:exp20170914091842:
+
+Test performance of removals in the PMQ. 
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170907112116/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  22e9c95 upd exp info
+  $ $ [[./data/cicero/exp20170914091842/exp.org]]
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170914091842/exp.org]]
+
+**** DONE [2017-09-25 Seg] =bench_insert_remove_count= :paper:exp20170925155952:
+
+Test performance of removals in the PMQ. 
+
+Use the same window size for every algorithm and set a best remove frequency for BTree and Trees
+
+***** Setup                                                    :noexport:
+
+- [X] Create a direcorty for this experiment 
+  #+begin_src sh :results output :exports both :session template
+set -e
+expId=$(date +%Y%m%d%H%M%S)
+machineDesc="cicero"
+expFolder=./data/$machineDesc/exp$expId
+mkdir -p $expFolder
+#+end_src
+
+  #+RESULTS:
+  
+- [X] Use the template to run your experiment
+  #+begin_src sh :results output raw :exports both :session template
+  git log -1 DATA --oneline | cat
+  git show DATA:./data/cicero/exp20170914091842/exp.org > ${expFolder}/exp.org
+
+  echo "[[$expFolder/exp.org]]"
+  #+end_src
+
+  #+RESULTS:
+  dfa5355 typos
+  $ $ [[./data/cicero/exp20170925155952/exp.org]]
+
+***** Description                                                :ignore:
+
+[[./data/cicero/exp20170925155952/exp.org]]

@@ -1,0 +1,119 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+Scanning dependencies of target twitterVis
+[  1%] Building CXX object CMakeFiles/twitterVis.dir/main.cpp.o
+[  2%] Building CXX object CMakeFiles/twitterVis.dir/include/GeoRunner.cpp.o
+[  4%] Building CXX object CMakeFiles/twitterVis.dir/include/QuadtreeIntf.cpp.o
+[  5%] Building CXX object CMakeFiles/twitterVis.dir/include/BTreeCtn.cpp.o
+[  7%] Building CXX object CMakeFiles/twitterVis.dir/include/GeoHash.cpp.o
+[  8%] Building CXX object CMakeFiles/twitterVis.dir/include/PostGisCtn.cpp.o
+[ 10%] Building CXX object CMakeFiles/twitterVis.dir/include/PMABatchCtn.cpp.o
+[ 11%] Building CXX object CMakeFiles/twitterVis.dir/include/SpatiaLiteCtn.cpp.o
+[ 13%] Building CXX object CMakeFiles/twitterVis.dir/include/DenseVectorCtn.cpp.o
+[ 14%] Building CXX object CMakeFiles/twitterVis.dir/include/nc_query_util.cpp.o
+[ 16%] Building CXX object CMakeFiles/twitterVis.dir/include/Query.cpp.o
+[ 17%] Building CXX object CMakeFiles/twitterVis.dir/include/Server.cpp.o
+[ 19%] Linking CXX executable twitterVis
+[ 26%] Built target twitterVis
+Scanning dependencies of target test_insert_remove_scan
+[ 28%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/test_insert_remove_scan.cpp.o
+[ 29%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 31%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 32%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/PMABatchCtn.cpp.o
+[ 34%] Building CXX object tests/CMakeFiles/test_insert_remove_scan.dir/__/include/DenseVectorCtn.cpp.o
+[ 35%] Linking CXX executable test_insert_remove_scan
+[ 35%] Built target test_insert_remove_scan
+Scanning dependencies of target test_pma_diff
+[ 37%] Building CXX object tests/CMakeFiles/test_pma_diff.dir/test_pma_diff.cpp.o
+[ 38%] Building CXX object tests/CMakeFiles/test_pma_diff.dir/__/include/PMABatchCtn.cpp.o
+[ 40%] Building CXX object tests/CMakeFiles/test_pma_diff.dir/__/include/QuadtreeIntf.cpp.o
+[ 41%] Linking CXX executable test_pma_diff
+[ 41%] Built target test_pma_diff
+Scanning dependencies of target test_geohash
+[ 43%] Building CXX object tests/CMakeFiles/test_geohash.dir/test_geohash.cpp.o
+[ 44%] Building CXX object tests/CMakeFiles/test_geohash.dir/__/include/QuadtreeIntf.cpp.o
+[ 46%] Building CXX object tests/CMakeFiles/test_geohash.dir/__/include/GeoHash.cpp.o
+[ 47%] Linking CXX executable test_geohash
+[ 47%] Built target test_geohash
+Scanning dependencies of target bench_insert_remove_count
+[ 49%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/bench_insert_remove_count.cpp.o
+[ 50%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/QuadtreeIntf.cpp.o
+[ 52%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/GeoHash.cpp.o
+[ 53%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_count.dir/__/include/BTreeCtn.cpp.o
+[ 55%] Linking CXX executable bench_insert_remove_count
+[ 55%] Built target bench_insert_remove_count
+Scanning dependencies of target bench_topk_search
+[ 56%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/bench_topk_search.cpp.o
+[ 58%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/BTreeCtn.cpp.o
+[ 59%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/GeoHash.cpp.o
+[ 61%] Building CXX object benchmarks/CMakeFiles/bench_topk_search.dir/__/include/QuadtreeIntf.cpp.o
+[ 62%] Linking CXX executable bench_topk_search
+[ 64%] Built target bench_topk_search
+Scanning dependencies of target bench_queries_region
+[ 65%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/bench_queries_region.cpp.o
+[ 67%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/QuadtreeIntf.cpp.o
+[ 68%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/GeoHash.cpp.o
+[ 70%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/PostGisCtn.cpp.o
+[ 71%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/PMABatchCtn.cpp.o
+[ 73%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/SpatiaLiteCtn.cpp.o
+[ 74%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/DenseVectorCtn.cpp.o
+[ 76%] Building CXX object benchmarks/CMakeFiles/bench_queries_region.dir/__/include/BTreeCtn.cpp.o
+[ 77%] Linking CXX executable bench_queries_region
+[ 79%] Built target bench_queries_region
+Scanning dependencies of target bench_insert_remove_scan
+[ 80%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/bench_insert_remove_scan.cpp.o
+[ 82%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 83%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/GeoHash.cpp.o
+[ 85%] Building CXX object benchmarks/CMakeFiles/bench_insert_remove_scan.dir/__/include/BTreeCtn.cpp.o
+[ 86%] Linking CXX executable bench_insert_remove_scan
+[ 86%] Built target bench_insert_remove_scan
+Scanning dependencies of target bench_insert_and_scan
+[ 88%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/bench_insert_and_scan.cpp.o
+[ 89%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/QuadtreeIntf.cpp.o
+[ 91%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/GeoHash.cpp.o
+[ 92%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/PostGisCtn.cpp.o
+[ 94%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/PMABatchCtn.cpp.o
+[ 95%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/SpatiaLiteCtn.cpp.o
+[ 97%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/DenseVectorCtn.cpp.o
+[ 98%] Building CXX object benchmarks/CMakeFiles/bench_insert_and_scan.dir/__/include/BTreeCtn.cpp.o
+[100%] Linking CXX executable bench_insert_and_scan
+[100%] Built target bench_insert_and_scan
+bench_insert_and_scan_Random_1503702288.log
+bench_insert_and_scan_Twitter_1503702288.log
+Already on 'exp20170825181747'
+A	data/cicero/exp20170825181747/run_1503702288
+Your branch is up-to-date with 'origin/exp20170825181747'.
+[exp20170825181747 219fa32] Finish execution 1503702288
+ 3 files changed, 806 insertions(+)
+ create mode 100644 data/cicero/exp20170825181747/info.org
+ create mode 100644 data/cicero/exp20170825181747/log_1503702288.tgz
+ create mode 100644 data/cicero/exp20170825181747/run_1503702288
+Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.

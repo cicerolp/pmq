@@ -1,0 +1,456 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Experiment Diary
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4
+#+PROPERTY: header-args :cache no :eval no-export 
+
+
+* Description 
+First benchmark to check the performance of 
+- PMQ / GEOHASH
+- BTREE 
+- RTREE
+
+Element structure used is tweet_text_t : { Longitude, Latitude, timestamp , text[140] } 
+
+** Standalone script 
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* Experiment Script
+** Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20170822165129
+
+Set up git branch
+#+begin_src sh :results output :exports both
+git checkout master
+#+end_src
+
+#+RESULTS:
+: M	benchmarks/bench_insert_and_scan.cpp
+: M	include/stde.h
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+: M	benchmarks/bench_insert_and_scan.cpp
+: M	include/stde.h
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20170822165129
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.#exp.org
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20170822165129 1e990e9] Initial commit for exp20170822165129
+ 1 file changed, 333 insertions(+)
+ create mode 100644 data/inf-desktop/exp20170822165129/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 1e990e9 (HEAD -> exp20170822165129) Initial commit for exp20170822165129
+: * 7b23257 (origin/master, master) fix bench_topk_search target
+: * d225b64 fix btree::size and rtree::size
+
+** Export run script 
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=ON -DRHO_INIT=OFF ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+# Queries insert remove count
+n=$((10**6))
+b=100
+stdbuf -oL ./benchmarks/bench_insert_and_scan -n $n -r 123 -x 3 -b $b > $TMPDIR/bench_insert_and_scan_$n_$b_$EXECID.log
+
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+# git push origin $expId
+#+end_src 
+
+
+** DONE Local Execution                                              :local:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** Remote Execution                                                 :remote:
+
+*** Get new changes on remote                                      :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
+: FETCH_HEAD
+: Already up-to-date.
+: commit 011775f5fdeaeeff330da7df39751d9c5323b570
+: Date:   Mon Feb 13 12:20:46 2017 -0200
+: 
+:     Bugfix: corrected pointer casts
+
+*** Execute Remotely                                               :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+**** DONE Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+#git commit -a -m "wip"
+git status
+git pull origin $expId
+#+end_src
+
+
+* Analisys
+** Generate csv files                                             :noexport:
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+begin_src sh :results table :exports both
+ls -htl *tgz
+#+end_src
+
+#+RESULTS:
+| -rw-rw-r-- 1 julio julio 861K Ago 23 14:41 log_1503497835.tgz |
+
+#+NAME: logFile
+#+begin_src sh :results output :exports both 
+tar xvzf log_1503497835.tgz
+#+end_src
+
+#+RESULTS: logFile
+: bench_insert_and_scan_1503497835.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFile=logFile[0]
+#echo $logFile
+echo $(basename -s .log $logFile ).csv
+grep "GeoHashBinary\|BTree\|RTree ;" $logFile | sed "s/InsertionBench//g" >  $(basename -s .log $logFile ).csv
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_insert_and_scan_1503497835.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile
+library(plyr)
+df = read.csv(f,header=FALSE,strip.white=TRUE,sep=";")
+df[7] <- NULL
+df[5] <- NULL
+names(df) = c("algo","bench","k","time","count")
+head(df)
+
+#+end_src
+
+#+RESULTS:
+:            algo           bench k     time count
+: 1 GeoHashBinary          insert 0 0.029754    NA
+: 2 GeoHashBinary        ReadElts 0 0.001554    NA
+: 3 GeoHashBinary        ReadElts 0 0.001440    NA
+: 4 GeoHashBinary        ReadElts 0 0.001389    NA
+: 5 GeoHashBinary apply_at_region 0 0.001389   100
+: 6 GeoHashBinary          insert 1 0.022867    NA
+
+Summary of the data frame
+#+begin_src R :results output :session :exports both
+summary(df[df$algo=="GeoHashBinary",])
+summary(df[df$algo=="BTree",])
+summary(df[df$algo=="RTree",])
+#+end_src
+
+#+RESULTS:
+#+begin_example
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:50000   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00139   Min.   :    100  
+ 1st Qu.: 1.34083   1st Qu.: 250075  
+ Median : 9.44647   Median : 500050  
+ Mean   : 9.02828   Mean   : 500050  
+ 3rd Qu.:12.87295   3rd Qu.: 750025  
+ Max.   :32.73830   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :50000   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :    0   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00422   Min.   :    100  
+ 1st Qu.: 3.59117   1st Qu.: 250075  
+ Median :28.44325   Median : 500050  
+ Mean   :28.26849   Mean   : 500050  
+ 3rd Qu.:47.47653   3rd Qu.: 750025  
+ Max.   :71.60770   Max.   :1000000  
+                    NA's   :40000
+            algo                   bench             k       
+ BTree        :    0   apply_at_region:10000   Min.   :   0  
+ GeoHashBinary:    0   insert         :10000   1st Qu.:2500  
+ RTree        :50000   ReadElts       :30000   Median :5000  
+                                               Mean   :5000  
+                                               3rd Qu.:7499  
+                                               Max.   :9999  
+                                                             
+      time              count        
+ Min.   : 0.00464   Min.   :    100  
+ 1st Qu.: 3.73900   1st Qu.: 250075  
+ Median :32.37425   Median : 500050  
+ Mean   :32.92621   Mean   : 500050  
+ 3rd Qu.:57.50140   3rd Qu.: 750025  
+ Max.   :72.46010   Max.   :1000000  
+                    NA's   :40000
+#+end_example
+
+*** Overview of results                                                :plot:
+
+Plot an overview of every benchmark , doing average of times. 
+#+begin_src R :results output :exports both
+summary_avg = ddply(df ,c("algo","k","bench"),summarise,"time"=mean(time))
+#+end_src
+
+#+begin_src R :results output graphics :file "./img/overview.png" :exports both :width 800 :height 600
+library(ggplot2)
+ggplot(summary_avg, aes(x=k,y=time, color=factor(algo))) + geom_line() + 
+facet_wrap(~bench, scales="free",labeller=label_both, ncol=1)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview.png]]
+
+*** Insertion performance
+
+
+#+begin_src R :results output :exports both
+insTime  = subset(summary_avg, bench=="insert")
+#+end_src
+
+#+RESULTS:
+
+**** Overall                                                        :plot:
+#+begin_src R :results output graphics :file "./img/overallInsertion.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() +
+facet_wrap(~algo, scales="free", ncol=1)
+#+end_src
+
+#+RESULTS:
+[[file:./img/overallInsertion.png]]
+
+Total insertion time:
+#+begin_src R :results output :session :exports both
+ddply(insTime,c("algo"),summarize, Average=mean(time), Total=sum(time))
+#+end_src
+
+#+RESULTS:
+:            algo    Average      Total
+: 1         BTree 0.05150084   515.0084
+: 2 GeoHashBinary 0.10885076  1088.5076
+: 3         RTree 1.24829441 12482.9441
+
+**** Amortized time
+
+We compute tree time:
+- individual insertion time for each batch
+- accumulated time at batch #k
+- ammortized time : average of the past times at batch #k
+
+#+begin_src R :results output :exports both
+avgTime = cbind(insTime, 
+                sumTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)), recursive=T),
+                avgTime=c(lapply(split(insTime, insTime$algo), function(x) cumsum(x$time)/(x$k+1)), recursive=T)
+                )
+#+end_src
+
+#+RESULTS:
+
+***** Melting the data (time / avgTime)
+We need to melt the time columns to be able to plot as a grid
+
+#+begin_src R :results output :session :exports both
+library(reshape2)
+melted_times = melt(avgTime, id.vars = c("algo","k"),measure.vars = c("time","sumTime","avgTime"))
+#+end_src
+
+#+RESULTS:
+
+***** Comparison Time X avgTime                                    :plot:
+#+begin_src R :results output graphics :file "./img/grid_times.png" :exports both :width 600 :height 400 
+ggplot(melted_times, aes(x=k,y=value,color=factor(algo))) +
+geom_line() + 
+facet_grid(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#facet_wrap(variable~algo,scales="free", labeller=labeller(variable=label_value))
+#+end_src
+
+#+RESULTS:
+[[file:./img/grid_times.png]]
+
+**** Zoom View 
+
+#+begin_src R :results output graphics :file "./img/Zoom_0.2.png" :exports both :width 600 :height 400
+ggplot(insTime, aes(x=k,y=time, color=factor(algo))) + 
+geom_line() + ylim(0,0.2) 
+#+end_src
+
+#+RESULTS:
+[[file:./img/Zoom_0.2.png]]
+

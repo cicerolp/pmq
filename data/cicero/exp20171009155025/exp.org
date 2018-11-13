@@ -1,0 +1,2048 @@
+# -*- org-export-babel-evaluate: t; -*-
+#+TITLE: Benchmark Queries - Uniform Dataset
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) ignore(n) export(e)
+#+CATEGORY: exp
+#+OPTIONS: ^:{} todo:nil H:4 toc:t tags:nil author:nil
+#+PROPERTY: header-args :cache no :eval never-export 
+
+
+* DONE Description                                                   :export:
+
+Test the queries on uniform data. 
+And compare the following performances.
+
+
+- PMQ / GEOHASH
+- BTREE 
+- RTREE - quadratic algorithm 
+- RTREE - quadratic algorithm with bulk loading
+- DENSE
+
+Use the refinement level = 8 
+
+Elements:
+- Timewindow = 26000
+- Batch size = 1000
+
+- Total elements = 26.000.000 
+
+- Fixed query width on the map
+- Uniform dataset (to get the same amount of elements on the average)
+
+** Standalone script                                              :noexport:
+To generate the results outside emacs and orgmode you can use the standalone scripts, generated from the tangled source blocks in this file
+
+- parse.sh : parse the results to CSV
+- plotResults.R : generate the plots 
+  
+
+* DONE Experiment Script
+** DONE Initial Setup 
+
+#+begin_src sh :results value :exports both
+expId=$(basename $(pwd))
+echo $expId
+#+end_src
+
+#+NAME: expId
+#+RESULTS:
+: exp20171009155025
+
+Set up git branch
+
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout master
+git commit ../../../LabBook.org -m "LBK: new entry for ${expId}"
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+: [master bb12441] LBK: new entry for exp20171009155025
+:  1 file changed, 39 insertions(+), 2 deletions(-)
+
+Create EXP branch
+#+begin_src sh :results output :exports both :var expId=expId
+git checkout -b $expId
+#+end_src
+
+#+RESULTS:
+: M	LabBook.org
+
+Commit branch
+#+begin_src sh :results output :exports both :var expId=expId
+git status .
+git add exp.org
+git commit -m "Initial commit for $expId"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20171009155025
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	exp.org
+
+nothing added to commit but untracked files present (use "git add" to track)
+[exp20171009155025 85b4e29] Initial commit for exp20171009155025
+ 1 file changed, 867 insertions(+)
+ create mode 100644 data/cicero/exp20171009155025/exp.org
+#+end_example
+
+#+begin_src sh :results output :exports both :var expId=expId
+git la -3 
+#+end_src
+
+#+RESULTS:
+: * 85b4e29 (HEAD -> exp20171009155025) Initial commit for exp20171009155025
+: * 678a50e (master) LBK: new entry for exp20171009155025
+: * 706cb9a upd: ELT_SIZE on CMAKE variables
+
+** DONE Export run script 
+
+#+begin_src sh :results output :exports both
+
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    echo "cmake -DELT_SIZE=$ELTSIZE . ; make"
+done
+#+end_src
+
+#+RESULTS:
+: cmake -DELT_SIZE=0 . ; make
+: cmake -DELT_SIZE=16 . ; make
+: cmake -DELT_SIZE=48 . ; make
+: cmake -DELT_SIZE=112 . ; make
+: cmake -DELT_SIZE=240 . ; make
+
+Use C-u C-c C-v t to tangle this script 
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF  ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=ON -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=ON -DBENCH_RTREE_BULK=ON ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+
+
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    cmake -DELT_SIZE=$ELTSIZE . ; make
+
+    #Run queries
+    #t=$((10**6))
+    t=26000
+    b=1000
+    #n=$(($t*$b))
+    ref=8
+    stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 33 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+
+done
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+** DONE Commit local changes
+#+begin_src sh :results output :exports both
+git status .
+#+end_src
+
+#+RESULTS:
+: On branch exp20171009155025
+: Your branch is ahead of 'origin/exp20171009155025' by 1 commit.
+:   (use "git push" to publish your local commits)
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 
+: 	img/
+: 
+: nothing added to commit but untracked files present (use "git add" to track)
+
+#+begin_src sh :results output :exports both
+git add run.sh exp.org
+git commit -m "UPD: run.sh script"
+#git commit --amend -m "UPD: run.sh script"
+#+end_src
+
+#+RESULTS:
+: [exp20171009155025 202321f] UPD: run.sh script
+:  2 files changed, 115 insertions(+), 20 deletions(-)
+:  create mode 100755 data/cicero/exp20171009155025/run.sh
+
+Push to remote
+#+begin_src sh :results output :exports both :var expId=expId
+#git push bitbucket $expId
+git push origin $expId
+#+end_src
+
+#+RESULTS:
+
+** CANCELED Local Execution                                          :local:
+:LOGBOOK:
+- State "CANCELED"   from "TODO"       [2017-09-05 Ter 19:00]
+:END:
+
+#+begin_src sh :results output :exports both :session local :var expId=expId
+cd ~/Projects/pmq/data/$(hostname)/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/$(hostname)/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+** DONE Remote Execution                                            :remote:
+
+*** DONE Get new changes on remote                                 :remote:
+#+begin_src sh :session remote :results output :exports both 
+ssh -A cicero
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ ,* Documentation:  https://help.ubuntu.com
+ ,* Management:     https://landscape.canonical.com
+ ,* Support:        https://ubuntu.com/advantage
+
+67 packages can be updated.
+0 updates are security updates.
+
+,*** System restart required ***
+Last login: Wed Oct 11 00:13:47 2017 from 143.54.11.6
+#+end_example
+
+Get the last script on the remote machine (require entering a password
+for bitbucket)
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/pmq/
+git config --add remote.origin.fetch refs/heads/$expId:refs/remotes/origin/$expId
+git fetch origin $expId
+git checkout $expId
+git pull origin $expId
+git log -1 | cat 
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+julio@cicero:~/Projects/pmq$ julio@cicero:~/Projects/pmq$ remote: Counting objects: 9, done.
+(1/8)           remote: Compressing objects:  25% (2/8)           remote: Compressing objects:  37% (3/8)           remote: Compressing objects:  50% (4/8)           remote: Compressing objects:  62% (5/8)           remote: Compressing objects:  75% (6/8)           remote: Compressing objects:  87% (7/8)           remote: Compressing objects: 100% (8/8)           remote: Compressing objects: 100% (8/8), done.
+(1/9)   Unpacking objects:  22% (2/9)   Unpacking objects:  33% (3/9)   Unpacking objects:  44% (4/9)   Unpacking objects:  55% (5/9)   Unpacking objects:  66% (6/9)   Unpacking objects:  77% (7/9)   remote: Total 9 (delta 6), reused 0 (delta 0)
+(8/9)   Unpacking objects: 100% (9/9)   Unpacking objects: 100% (9/9), done.
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+origin/exp20171009155025
+M	data/cicero/exp20171009155025/run_1507669861
+Already on 'exp20171009155025'
+Your branch is behind 'origin/exp20171009155025' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+From bitbucket.org:jtoss/pmq
+FETCH_HEAD
+Updating e81c641..972deb8
+Fast-forward
+ benchmarks/bench_queries_region.cpp   |   19 +-
+ data/cicero/exp20171009155025/exp.org | 1378 +++++++++++++++++++++++++++++++--
+ data/cicero/exp20171009155025/run.sh  |    4 +-
+ 3 files changed, 1304 insertions(+), 97 deletions(-)
+commit 972deb8a8f8d0dcdd0ceb8dc8b3310067f28cd55
+Date:   Wed Oct 11 00:12:03 2017 -0300
+
+    rerun: 33 repetitions , invert order
+#+end_example
+
+Update PMA repository on exp machine
+#+begin_src sh :session remote :results output :exports both :var expId=expId
+cd ~/Projects/hppsimulations/
+git pull origin PMA_2016
+git log -1 | cat
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/hppsimulations$ From bitbucket.org:joaocomba/pma
+: FETCH_HEAD
+: Already up-to-date.
+: commit 6931408d8b9c109f3f2a9543374cfd712791b1e7
+: Date:   Tue Sep 19 16:58:38 2017 -0300
+: 
+:     error ouput on pma initialization
+
+*** DONE Execute Remotely                                          :remote:
+
+Opens ssh connection and a tmux session
+
+#+begin_src sh :results output :exports both :session remote :var expId=expId
+cd ~/Projects/pmq/data/cicero/$expId
+runid=$(date +%s)
+tmux new -d -s runExp "cd ~/Projects/pmq/data/cicero/$expId; ./run.sh ${runid} &> run_${runid}"
+git add run_$runid
+echo $runid
+#+end_src
+
+#+RESULTS:
+: 
+: julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ julio@cicero:~/Projects/pmq/data/cicero/exp20171009155025$ 1507691669
+
+Check process running
+#+begin_src sh :results output :exports both :session remote
+tmux ls
+ps ux
+#+end_src
+
+#+RESULTS:
+: no server running on /tmp/tmux-1001/default
+: USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+: julio     9135  0.0  0.0  45248  4616 ?        Ss   08:20   0:00 /lib/systemd/sy
+: julio     9137  0.0  0.0 145364  2112 ?        S    08:20   0:00 (sd-pam)
+: julio     9187  0.0  0.0  97464  3376 ?        R    08:20   0:00 sshd: julio@pts
+: julio     9188  0.1  0.0  22688  5188 pts/8    Ss   08:20   0:00 -bash
+: julio     9205  0.0  0.0  37368  3292 pts/8    R+   08:21   0:00 ps ux
+
+**** DONE Pull local 
+#+begin_src sh :results output :exports both :var expId=expId
+#git commit -a -m "wip"
+git status
+git pull origin $expId
+#+end_src
+
+#+RESULTS:
+#+begin_example
+On branch exp20171009155025
+Your branch is up-to-date with 'origin/exp20171009155025'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../../LabBook.man
+	../../../LabBook.markdown_phpextra
+	../../../LabBook.md
+	../../../LabBook.rst
+	../../../LabBook.rtf
+	../../../LabBook.txt
+	../../../LabBook_BACKUP_19287.md
+	../../../LabBook_BACKUP_19287.org
+	../../../LabBook_BASE_19287.org
+	../../../LabBook_LOCAL_19287.org
+	../../../LabBook_REMOTE_19287.org
+	../../../README.html
+	../exp20170825181747/
+	../exp20170830124159/
+	../exp20170907105314/
+	../exp20170907105804/
+	../exp20170907112116/
+	../exp20170907145711/
+	../exp20170914091842/
+	../exp20170915143003/
+	../exp20170919161448/
+	../exp20170923144931/
+	../exp20170923193058/
+	.#exp.org
+	img/
+	../../queriesLHS.html
+	../../queriesLHS_BACKUP_23848.org
+	../../queriesLHS_BASE_23848.org
+	../../queriesLHS_LOCAL_23848.org
+	../../queriesLHS_REMOTE_23848.org
+	../../randomLhsQueries.png
+	../../../history.txt
+	../../../qqqq
+
+nothing added to commit but untracked files present (use "git add" to track)
+Updating 38877a4..1ea62be
+Fast-forward
+ data/cicero/exp20171009155025/info.org           |  88 ++++++------
+ data/cicero/exp20171009155025/log_1507691669.tgz | Bin 0 -> 539457 bytes
+ data/cicero/exp20171009155025/run_1507669861     |  10 ++
+ data/cicero/exp20171009155025/run_1507691669     | 164 +++++++++++++++++++++++
+ 4 files changed, 218 insertions(+), 44 deletions(-)
+ create mode 100644 data/cicero/exp20171009155025/log_1507691669.tgz
+ create mode 100644 data/cicero/exp20171009155025/run_1507691669
+#+end_example
+
+
+
+* TODO Analysis
+** Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+begin_src sh :results table :exports both
+ls *tgz
+#+end_src
+
+#+RESULTS:
+| log_1507581698.tgz |
+| log_1507669861.tgz |
+| log_1507691669.tgz |
+
+
+#+NAME: EXEC1
+| log_1507581698.tgz |
+
+#+NAME: EXEC2
+| log_1507669861.tgz |
+
+#+NAME: EXEC3
+| log_1507691669.tgz |
+
+Choose which execution log to use 
+#+NAME: logFile
+#+begin_src sh :results output :exports both :var f=EXEC3
+tar xvzf $f
+#+end_src
+
+#+RESULTS: logFile
+: bench_queries_region_random_26000_1000_8_0_1507691669.log
+: bench_queries_region_random_26000_1000_8_112_1507691669.log
+: bench_queries_region_random_26000_1000_8_16_1507691669.log
+: bench_queries_region_random_26000_1000_8_240_1507691669.log
+: bench_queries_region_random_26000_1000_8_48_1507691669.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFileList=logFile
+
+#f=$(echo $logFileList | cut -d" " -f1)
+
+#output=$( basename -s .log $f | sed "s/_[[:digit:]]\{5\}_/_/g").csv
+#echo $output
+#rm $output
+#touch $output
+
+for logFile in $logFileList ; 
+do
+output=$( basename -s .log $logFile).csv
+echo $output 
+grep " ; query ; " $logFile | sed "s/QueryBench//g" >  $output
+done
+#+end_src
+
+#+NAME: csvFile
+#+RESULTS:
+: bench_queries_region_random_26000_1000_8_0_1507691669.csv
+: bench_queries_region_random_26000_1000_8_112_1507691669.csv
+: bench_queries_region_random_26000_1000_8_16_1507691669.csv
+: bench_queries_region_random_26000_1000_8_240_1507691669.csv
+: bench_queries_region_random_26000_1000_8_48_1507691669.csv
+
+Create an director for images
+#+begin_src sh :results output :exports both :tangle no
+mkdir img
+#+end_src
+
+#+RESULTS:
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+*** Prepare
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile path=(print default-directory)
+library(tidyverse)
+setwd(path)
+
+#df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") )
+#df
+
+readAdd <- function(input){  # Reads a csv file and add a column identifying the csv by parsing its name
+
+return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") ) %>%
+         mutate (
+             tSize = as.factor(
+                 gsub("bench_queries_region_random_26000_1000_8_([[:digit:]]+)_.*","\\1",input))))
+} 
+
+
+files = strsplit(f,"\n")[[1]]
+files
+df <- files %>%
+    map(readAdd) %>%   # use my custom read function
+    reduce(rbind)   # used rbind to combine into one dataframe
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] "bench_queries_region_random_26000_1000_8_0_1507691669.csv"  
+[2] "bench_queries_region_random_26000_1000_8_112_1507691669.csv"
+[3] "bench_queries_region_random_26000_1000_8_16_1507691669.csv" 
+[4] "bench_queries_region_random_26000_1000_8_240_1507691669.csv"
+[5] "bench_queries_region_random_26000_1000_8_48_1507691669.csv"
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 26400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_0_1507691669.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_0_1507691669.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_0_1507691669.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_0_1507691669.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_0_1507691669.csv'
+... ................. ... ............................................................................................... ........ ............................................................................................... ...... ...... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 26400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_112_1507691669.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_112_1507691669.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_112_1507691669.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_112_1507691669.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_112_1507691669.csv'
+... ................. ... ................................................................................................. ........ ............................................................................................. [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 26400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_16_1507691669.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_16_1507691669.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_16_1507691669.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_16_1507691669.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_16_1507691669.csv'
+... ................. ... ................................................................................................ ........ ................................................................................................ .... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 26400 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_48_1507691669.csv' file 2     2  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_48_1507691669.csv' row 3     3  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_48_1507691669.csv' col 4     4  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_48_1507691669.csv' expected 5     5  <NA> 11 columns 12 columns 'bench_queries_region_random_26000_1000_8_48_1507691669.csv'
+... ................. ... ................................................................................................ ........ ................................................................................................ .... [... truncated]
+Warning messages:
+1: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+2: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+3: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+4: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+#+end_example
+
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+names(df) <- c("algo" , "V2" , "queryId", "V4", "V5", "bench" , "ms" , "V8", "Refine","V10","Count","EltSize")
+
+df <- select(df, -V2, -V4, -V5, -V8, -V10)
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 105,600 x 7
+            algo queryId           bench      ms Refine   Count EltSize
+           <chr>   <int>           <chr>   <dbl>  <int>   <int>  <fctr>
+ 1 GeoHashBinary       0 apply_at_region 3.08509    482 3440580       0
+ 2 GeoHashBinary       0 apply_at_region 2.88730    482 3440580       0
+ 3 GeoHashBinary       0 apply_at_region 2.79058    482 3440580       0
+ 4 GeoHashBinary       0 apply_at_region 2.80968    482 3440580       0
+ 5 GeoHashBinary       0 apply_at_region 2.80729    482 3440580       0
+ 6 GeoHashBinary       0 apply_at_region 2.82159    482 3440580       0
+ 7 GeoHashBinary       0 apply_at_region 2.81033    482 3440580       0
+ 8 GeoHashBinary       0 apply_at_region 2.82575    482 3440580       0
+ 9 GeoHashBinary       0 apply_at_region 2.81096    482 3440580       0
+10 GeoHashBinary       0 apply_at_region 2.81783    482 3440580       0
+# ... with 105,590 more rows
+#+end_example
+
+Fix the count for Rtrees
+#+begin_src R :results output :exports both :session 
+df %>%  
+    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
+           Refine = ifelse(grepl("RTree",algo), NA, Refine)) %>%
+    mutate(queryWidth = 90 / 2**(queryId %/% 10))  %>%   # comput info about query width
+    mutate(EltSize = as.numeric(as.character(EltSize)) + 16 ) -> df # adjust the actual size of the elements
+#+end_src
+
+#+RESULTS:
+
+Summarize the averages
+#+begin_src R :results output :session :exports both
+df 
+dfAvg <- 
+    df %>% 
+    group_by_at(vars(-ms)) %>%   #group_by all expect ms
+    summarize(avg_ms = mean(ms), stdv = sd(ms))
+
+dfAvg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 105,600 x 8
+            algo queryId           bench      ms Refine   Count EltSize queryWidth
+           <chr>   <int>           <chr>   <dbl>  <int>   <int>   <dbl>      <dbl>
+ 1 GeoHashBinary       0 apply_at_region 3.08509    482 3440580      16         90
+ 2 GeoHashBinary       0 apply_at_region 2.88730    482 3440580      16         90
+ 3 GeoHashBinary       0 apply_at_region 2.79058    482 3440580      16         90
+ 4 GeoHashBinary       0 apply_at_region 2.80968    482 3440580      16         90
+ 5 GeoHashBinary       0 apply_at_region 2.80729    482 3440580      16         90
+ 6 GeoHashBinary       0 apply_at_region 2.82159    482 3440580      16         90
+ 7 GeoHashBinary       0 apply_at_region 2.81033    482 3440580      16         90
+ 8 GeoHashBinary       0 apply_at_region 2.82575    482 3440580      16         90
+ 9 GeoHashBinary       0 apply_at_region 2.81096    482 3440580      16         90
+10 GeoHashBinary       0 apply_at_region 2.81783    482 3440580      16         90
+# ... with 105,590 more rows
+# A tibble: 3,200 x 9
+# Groups:   algo, queryId, bench, Refine, Count, EltSize [?]
+    algo queryId           bench Refine   Count EltSize queryWidth    avg_ms       stdv
+   <chr>   <int>           <chr>  <int>   <int>   <dbl>      <dbl>     <dbl>      <dbl>
+ 1 BTree       0 apply_at_region    482 3440580      16         90  41.03886 0.04404940
+ 2 BTree       0 apply_at_region    482 3440580      32         90  52.17745 0.05745869
+ 3 BTree       0 apply_at_region    482 3440580      64         90  56.91351 0.15904363
+ 4 BTree       0 apply_at_region    482 3440580     128         90  69.15047 0.41461984
+ 5 BTree       0  scan_at_region    482      NA      16         90  61.30736 0.03998940
+ 6 BTree       0  scan_at_region    482      NA      32         90  76.90666 0.10484246
+ 7 BTree       0  scan_at_region    482      NA      64         90 113.96748 0.12851438
+ 8 BTree       0  scan_at_region    482      NA     128         90 165.12442 0.04778796
+ 9 BTree       1 apply_at_region    519 3440446      16         90  41.67429 0.03785674
+10 BTree       1 apply_at_region    519 3440446      32         90  53.01065 0.05516692
+# ... with 3,190 more rows
+#+end_example
+
+*** Scan queries by queryId
+#+begin_src R :results output graphics :file (org-babel-temp-file "overview_query_region" ".png") :exports both :width 800 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_line(aes(group=algo)) +
+    #acet_wrap(EltSize ~ queryWidth,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
+#    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
+    facet_wrap(EltSize~queryWidth,scale="free",nrow=4, labeller = "label_both") + 
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+}
+
+dfAvg %>% 
+    filter(bench == "scan_at_region") %>% 
+    myplot() -> p
+p
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/overview_query_region19237B2O.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "overview_query_region" ".pdf") :exports both :width 14 :height 10 :session 
+p
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/overview_query_region1923753f.pdf]]
+
+*** Scan Queries by count
+#+begin_src R :results output :exports both :session 
+dfAvg %>% 
+    ungroup() %>%
+    filter(bench == "apply_at_region") %>%
+    select(queryId,algo,Count,EltSize) %>%
+    left_join( 
+        filter(ungroup(dfAvg), bench == "scan_at_region") %>% select(-Count)
+   ) -> dfCount
+dfCount
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Joining, by = c("queryId", "algo", "EltSize")
+# A tibble: 1,600 x 9
+   queryId  algo   Count EltSize          bench Refine queryWidth    avg_ms       stdv
+     <int> <chr>   <int>   <dbl>          <chr>  <int>      <dbl>     <dbl>      <dbl>
+ 1       0 BTree 3440580      16 scan_at_region    482         90  61.30736 0.03998940
+ 2       0 BTree 3440580      32 scan_at_region    482         90  76.90666 0.10484246
+ 3       0 BTree 3440580      64 scan_at_region    482         90 113.96748 0.12851438
+ 4       0 BTree 3440580     128 scan_at_region    482         90 165.12442 0.04778796
+ 5       1 BTree 3440446      16 scan_at_region    519         90  61.83986 0.03936288
+ 6       1 BTree 3440446      32 scan_at_region    519         90  77.56185 0.08775762
+ 7       1 BTree 3440446      64 scan_at_region    519         90 115.41552 0.18201462
+ 8       1 BTree 3440446     128 scan_at_region    519         90 166.27091 0.06163571
+ 9       2 BTree 3438884      16 scan_at_region    708         90  61.40488 0.04220763
+10       2 BTree 3438884      32 scan_at_region    708         90  77.18631 0.24806512
+# ... with 1,590 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "scan_queries_by_size" ".png") :exports both :width 800 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(Count), group=algo, y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_line() +
+    # geom_text(aes(label=queryId),color="black") +
+    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    facet_wrap( EltSize~queryWidth,
+               scale="free", 
+               nrow = 4 , 
+               labeller = label_both)+
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+        
+}
+
+dfCount %>% myplot() -> p1 
+p1
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/scan_queries_by_size19237bKb.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "scan_querie_by_size" ".pdf") :exports both :width 14 :height 10 :session 
+p1
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/scan_querie_by_size19237oUh.pdf]]
+
+*** Scan Queries Boxplots by queryId
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+
+p3 <- 
+df %>% 
+    filter(bench == "scan_at_region") %>%
+    ggplot(aes(x = as.factor(queryId), y = ms, color = algo)) +  
+    geom_boxplot(outlier.shape=17) +
+    #geom_point() + 
+    geom_line(data = filter(dfAvg, bench== "scan_at_region"), aes(x= as.factor(queryId), y = avg_ms, group = algo)) + 
+    # geom_text(aes(label=queryId),color="black") +
+    facet_wrap( EltSize~queryWidth,
+                scale="free", 
+                ncol = 8 , 
+                labeller = label_both) +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, vjust = 0.5))
+
+p3
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/figure192371en.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "scan_queries_box_plot" ".pdf") :exports both :width 14 :height 10 :session 
+p3
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/scan_queries_box_plot19237Cpt.pdf]]
+
+- Outliers seem to be ok these plots, we don't need to remove them in this case
+
+  
+*** Throughput of scan Queries ordered by queryId                  :export:
+
+#+begin_src R :results output graphics :file "./img/tgp_scan_queries.pdf" :exports both :width 14 :height 10 :session 
+
+myplot <- function(data) {
+    data %>%
+    arrange(Count,queryId) %>%
+    mutate(lbls = paste(Count," (",queryId,")",sep="")) %>%
+    ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
+    geom_line() +
+    labs( title="Queries ordered by size of the result", 
+          x = "Element count of the query",
+         y = "queries / ms") +     
+    facet_wrap( EltSize~queryWidth,
+               scale="free", 
+               nrow = 4 , 
+               labeller = label_both)+
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 90, vjust = 0.5))
+        
+}
+
+dfCount %>% mutate(AvgTgp = (Count/avg_ms)) %>%
+myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/tgp_scan_queries.pdf]]
+
+
+*** Throughput MB / S                                              :export:
+
+
+#+begin_src R :results output graphics :file "./img/mbps_scan_queries.pdf" :exports both :width 14 :height 10 :session 
+
+dfCount %>% 
+    arrange(Count,queryId) %>%
+    mutate(lbls = paste(Count," (",queryId,")",sep="")) %>%
+    mutate(Count = Count * EltSize / 2**20) %>% 
+    ggplot(aes(x = factor(lbls,levels=unique(lbls)), group=algo, y = Count / avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
+    geom_line() +
+    # geom_text(aes(label=queryId),color="black") +
+    labs( title="Queries ordered by size of the result", 
+          x = "Element count of the query",
+         y = "MB / ms") +     
+    facet_wrap( EltSize~queryWidth,
+               scale="free", 
+               ncol=8 , 
+               labeller = label_both)+
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+#+end_src
+
+#+RESULTS:
+[[file:./img/mbps_scan_queries.pdf]]
+
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "mbps_scan_queries" ".pdf") :exports both :width 14 :height 10 :session 
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(queryId%%10), group=algo, y = Count / avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
+    geom_line() +
+        
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 90, vjust = 0.5))
+        
+}
+
+dfCount %>% 
+   # filter(queryWidth == 90) %>%
+    mutate(Count = Count * EltSize / 2**20) %>% 
+    myplot() -> p6
+
+p6 +  facet_wrap( queryWidth~EltSize,               scale="free",                ncol=4 ,                labeller = label_both)
+p6 +  facet_grid( queryWidth~EltSize,               scale="free",                                labeller = label_both)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-19237zwJ/mbps_scan_queries19237ThI.pdf]]
+
+
+*** Throughput MB / S - Aggregate queries by width                 :export:
+#+begin_src R :results output :exports both :session 
+dfTgp <-
+dfCount %>% 
+#    mutate(Count = Count * EltSize / 2**20) %>% 
+    group_by(algo,EltSize, queryWidth) %>%
+    mutate(qTgp = Count / avg_ms, qTgp = Count / (avg_ms+stdv)) %>%
+    summarize(avgTgp = mean(qTgp), stdv = sd(qTgp), minCount = min(Count), maxCount = max(Count)) %>%
+    mutate(avgTgp = avgTgp * EltSize / 2**20, stdv = stdv * EltSize / 2**20)
+
+dfTgp
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 160 x 7
+# Groups:   algo, EltSize [20]
+    algo EltSize queryWidth    avgTgp        stdv minCount maxCount
+   <chr>   <dbl>      <dbl>     <dbl>       <dbl>    <dbl>    <dbl>
+ 1 BTree      16   0.703125 0.1898980 0.130755340      184      225
+ 2 BTree      16   1.406250 0.3713462 0.079030512      797      895
+ 3 BTree      16   2.812500 0.5961631 0.072570170     3304     3517
+ 4 BTree      16   5.625000 0.7535901 0.056509448    13230    13530
+ 5 BTree      16  11.250000 1.0843331 0.052157023    53212    54129
+ 6 BTree      16  22.500000 0.7793365 0.025977345   213526   215726
+ 7 BTree      16  45.000000 0.8071168 0.006351356   859189   862262
+ 8 BTree      16  90.000000 0.8476457 0.016766277  3438884  3443858
+ 9 BTree      32   0.703125 0.3837721 0.273443604      184      225
+10 BTree      32   1.406250 0.7270921 0.164097674      797      895
+# ... with 150 more rows
+#+end_example
+
+Alternative with same result
+#+begin_src R :results output :exports both :session 
+dfCount %>% 
+    mutate(Count = Count * EltSize / 2**20) %>% 
+    group_by(algo,EltSize, queryWidth) %>%
+    mutate(qTgp = Count  / avg_ms, qTgp = Count / (avg_ms+stdv)) %>%
+    summarize(avgTgp = mean(qTgp), stdv = sd(qTgp)) #%>%
+    #mutate(avgTgp = avgTgp * EltSize / 2**20)
+
+#dfTgp
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 160 x 5
+# Groups:   algo, EltSize [?]
+    algo EltSize queryWidth    avgTgp        stdv
+   <chr>   <dbl>      <dbl>     <dbl>       <dbl>
+ 1 BTree      16   0.703125 0.1898980 0.130755340
+ 2 BTree      16   1.406250 0.3713462 0.079030512
+ 3 BTree      16   2.812500 0.5961631 0.072570170
+ 4 BTree      16   5.625000 0.7535901 0.056509448
+ 5 BTree      16  11.250000 1.0843331 0.052157023
+ 6 BTree      16  22.500000 0.7793365 0.025977345
+ 7 BTree      16  45.000000 0.8071168 0.006351356
+ 8 BTree      16  90.000000 0.8476457 0.016766277
+ 9 BTree      32   0.703125 0.3837721 0.273443604
+10 BTree      32   1.406250 0.7270921 0.164097674
+# ... with 150 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file "./img/AggregatedTgpScanQueries.pdf" :exports both :width 14 :height 10 :session 
+dfTgp %>% 
+    ggplot(aes(x = as.factor(EltSize), group=algo, y = avgTgp, color = algo)) +  
+    geom_bar(stat="identity", position = position_dodge(), aes(fill=algo)) + 
+    geom_errorbar(aes(ymin = avgTgp - stdv, ymax = avgTgp + stdv), position= position_dodge(), color = "black")  +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 90, vjust = 0.5))+
+    facet_wrap( ~queryWidth, scale="free", ncol=4 , labeller = label_both)+
+    labs(x = "Elements Size (Bytes)", y = "Average Throughput")
+                                        # +  facet_grid( queryWidth~EltSize,               scale="free",                                labeller = label_both)
+#+end_src
+
+#+RESULTS:
+[[file:./img/AggregatedTgpScanQueries.pdf]]
+
+
+
+#+begin_src R :results output :exports both :session 
+dfTgp %>% group_by(queryWidth) %>% summarize(minCount = min(minCount), maxCount = max(maxCount))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 8 x 3
+  queryWidth minCount maxCount
+       <dbl>    <dbl>    <dbl>
+1   0.703125      184      225
+2   1.406250      797      895
+3   2.812500     3304     3517
+4   5.625000    13230    13530
+5  11.250000    53212    54129
+6  22.500000   213526   215726
+7  45.000000   859189   862262
+8  90.000000  3438884  3443858
+#+end_example
+
+
+* DONE Rerun Experiment for BTree
+- Run the experiment again with more repetitions on the cases where Btree show large variability 
+[[*BoxPlots - analysis of variability][BoxPlots  - analysis of variability]]
+
+Test only the queries from 30 to 49 
+- Run for BTree and RTree 
+#+begin_src sh :session  :results output :exports both 
+head -n 50 ../../queriesLHS.csv | tail -n +31 > ../../queriesLHS_30_50.csv
+cat ../../queriesLHS_30_50.csv
+#+end_src
+
+#+RESULTS:
+#+begin_example
+32.4710469613345,-92.3311908625066,21.2210469613345,-81.0811908625066
+-65.6249329740293,13.4025406681001,-76.8749329740293,24.6525406681001
+-19.0386928545306,67.0609032319486,-30.2886928545306,78.3109032319486
+68.0591038272367,-144.571287263781,56.8091038272367,-133.321287263781
+-3.6827281429288,37.1719261367619,-14.9327281429288,48.4219261367619
+38.9798903705589,-163.18061523661,27.7298903705589,-151.93061523661
+-47.591055925603,-8.36901732988656,-58.841055925603,2.88098267011344
+-36.27270769228,163.722108453512,-47.52270769228,174.972108453512
+73.9491951232553,115.25730538927,62.6991951232553,126.50730538927
+7.89241934303847,-47.2117615021765,-3.35758065696153,-35.9617615021765
+47.5005988516361,31.2575163405389,41.8755988516361,36.8825163405389
+-21.5590509693623,-138.387226889804,-27.1840509693623,-132.762226889804
+-37.2788398614824,-82.2243904665112,-42.9038398614824,-76.5993904665112
+-52.0091554405391,111.476996399034,-57.6341554405391,117.101996399034
+57.845036892578,79.4023375709168,52.220036892578,85.0273375709168
+83.4882688441277,-31.1929094088077,77.8632688441277,-25.5679094088077
+14.0129796967208,37.5011293663829,8.38797969672083,43.1261293663829
+-77.66765139018,-70.4015630135685,-83.29265139018,-64.7765630135685
+1.43825241498649,148.766521846596,-4.18674758501351,154.391521846596
+33.8300376938283,-152.622176820375,28.2050376938283,-146.997176820375
+#+end_example
+
+** Run Script
+#+begin_src sh :results output :exports both :tangle run.sh :shebang #!/bin/bash :eval never :var expId=expId
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+echo $(hostname) 
+
+##########################################################
+### SETUP THIS VARIABLES
+
+BUILDIR=~/Projects/pmq/build-release
+PMABUILD_DIR=~/Projects/hppsimulations/build-release
+DATADIR=$(pwd)
+# workaround as :var arguments are not been correctly tangled by my orgmode
+#expId=$(basename $(pwd) | sed 's/exp//g')
+expId=$(basename $(pwd))
+TMPDIR=/dev/shm/$expId
+
+# generate output name
+if [ $1 ] ; then 
+    EXECID=$1
+else
+    EXECID=$(date +%s)
+fi
+
+#########################################################
+
+mkdir -p $TMPDIR
+#mkdir -p $DATADIR
+
+# make pma
+mkdir -p $PMABUILD_DIR
+cd $PMABUILD_DIR
+cmake -DCMAKE_BUILD_TYPE="Release" -DTWITTERVIS=OFF -DRHO_INIT=OFF  ../pma_cd
+make 
+
+# make twitterVis
+mkdir -p $BUILDIR
+cd $BUILDIR 
+cmake -DPMA_BUILD_DIR=$PMABUILD_DIR -DCMAKE_BUILD_TYPE="Release" -DBENCH_PMQ=OFF -DBENCH_BTREE=ON -DBENCH_RTREE=ON -DBENCH_DENSE=OFF -DBENCH_RTREE_BULK=OFF ..
+make
+
+#get machine configuration
+echo "" > $DATADIR/info.org
+~/Projects/pmq/scripts/g5k_get_info.sh $DATADIR/info.org 
+
+# EXECUTE BENCHMARK
+
+#Continue execution even if one these fails
+set +e 
+
+
+for EL in 16 32 64 128 256 ; do
+    ELTSIZE=$(($EL-16))
+    cmake -DELT_SIZE=$ELTSIZE . ; make
+
+    #Run queries
+    #t=$((10**6))
+    t=26000
+    b=1000
+    #n=$(($t*$b))
+    ref=8
+    stdbuf -oL ./benchmarks/bench_queries_region -seed 123 -x 20 -rate ${b} -min_t ${t} -max_t ${t} -ref ${ref} -bf ../data/queriesLHS_30_50.csv >  ${TMPDIR}/bench_queries_region_random_${t}_${b}_${ref}_${ELTSIZE}_${EXECID}.log
+
+done
+set -e
+
+cd $TMPDIR
+tar -cvzf log_$EXECID.tgz *_$EXECID.log
+
+cd $DATADIR
+cp $TMPDIR/log_$EXECID.tgz .
+
+git checkout $expId
+
+git add info.org log_$EXECID.tgz run.sh 
+git add -u
+git commit -m "Finish execution $EXECID"
+git push origin $expId
+#+end_src 
+
+
+* DONE Analysis (log_1507669861.tgz)
+** Generate csv files
+:PROPERTIES: 
+:HEADER-ARGS:sh: :tangle parse.sh :shebang #!/bin/bash
+:END:      
+
+List logFiles
+#+begin_src sh :results table :exports both
+ls *tgz
+#+end_src
+
+#+RESULTS:
+| log_1507581698.tgz |
+| log_1507669861.tgz |
+
+
+Take the last archive from the list above:
+#+NAME: logFile2
+#+begin_src sh :results output :exports both :var f="log_1507669861.tgz"
+tar xvzf $f
+#+end_src
+
+#+RESULTS: logFile2
+: bench_queries_region_random_26000_1000_8_0_1507669861.log
+: bench_queries_region_random_26000_1000_8_112_1507669861.log
+: bench_queries_region_random_26000_1000_8_16_1507669861.log
+: bench_queries_region_random_26000_1000_8_240_1507669861.log
+: bench_queries_region_random_26000_1000_8_48_1507669861.log
+
+#+RESULTS: logFile
+: bench_queries_region_random_26000_1000_8_0_1507581698.log
+: bench_queries_region_random_26000_1000_8_112_1507581698.log
+: bench_queries_region_random_26000_1000_8_16_1507581698.log
+: bench_queries_region_random_26000_1000_8_240_1507581698.log
+: bench_queries_region_random_26000_1000_8_48_1507581698.log
+
+Create CSV using logFile 
+#+begin_src sh :results output :exports both :var logFileList=logFile2
+
+#f=$(echo $logFileList | cut -d" " -f1)
+
+#output=$( basename -s .log $f | sed "s/_[[:digit:]]\{5\}_/_/g").csv
+#echo $output
+#rm $output
+#touch $output
+
+for logFile in $logFileList ; 
+do
+output=$( basename -s .log $logFile).csv
+echo $output 
+grep " ; query ; " $logFile | sed "s/QueryBench//g" >  $output
+done
+#+end_src
+
+#+NAME: csvFile2
+#+RESULTS:
+: bench_queries_region_random_26000_1000_8_0_1507669861.csv
+: bench_queries_region_random_26000_1000_8_112_1507669861.csv
+: bench_queries_region_random_26000_1000_8_16_1507669861.csv
+: bench_queries_region_random_26000_1000_8_240_1507669861.csv
+: bench_queries_region_random_26000_1000_8_48_1507669861.csv
+
+** Results
+:PROPERTIES: 
+:HEADER-ARGS:R: :session *R* :tangle plotResults.R :shebang #!/usr/bin/env Rscript
+:END:      
+*** Prepare
+
+Load the CSV into R
+#+begin_src R :results output :exports both :var f=csvFile2 path=(print default-directory)
+library(tidyverse)
+setwd(path)
+
+#df <- f %>% read_delim(delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") )
+#df
+
+readAdd <- function(input){  # Reads a csv file and add a column identifying the csv by parsing its name
+
+return ( read_delim(input,delim=";",trim_ws = TRUE, col_names = paste("V",c(1:11),sep="") ) %>%
+         mutate (
+             tSize = as.factor(
+                 gsub("bench_queries_region_random_26000_1000_8_([[:digit:]]+)_1507669861.csv","\\1",input))))
+} 
+
+
+files = strsplit(f,"\n")[[1]]
+files
+df <- files %>%
+    map(readAdd) %>%   # use my custom read function
+    reduce(rbind)   # used rbind to combine into one dataframe
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] "bench_queries_region_random_26000_1000_8_0_1507669861.csv"  
+[2] "bench_queries_region_random_26000_1000_8_112_1507669861.csv"
+[3] "bench_queries_region_random_26000_1000_8_16_1507669861.csv" 
+[4] "bench_queries_region_random_26000_1000_8_240_1507669861.csv"
+[5] "bench_queries_region_random_26000_1000_8_48_1507669861.csv"
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 1600 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                        file expected   <int> <chr>      <chr>      <chr>                                                       <chr> actual 1     1  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_0_1507669861.csv' file 2     2  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_0_1507669861.csv' row 3     3  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_0_1507669861.csv' col 4     4  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_0_1507669861.csv' expected 5     5  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_0_1507669861.csv'
+... ................. ... ............................................................................................... ........ ............................................................................................... ...... ....... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 1600 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_112_1507669861.csv' file 2     2  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_112_1507669861.csv' row 3     3  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_112_1507669861.csv' col 4     4  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_112_1507669861.csv' expected 5     5  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_112_1507669861.csv'
+... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 1600 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_16_1507669861.csv' file 2     2  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_16_1507669861.csv' row 3     3  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_16_1507669861.csv' col 4     4  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_16_1507669861.csv' expected 5     5  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_16_1507669861.csv'
+... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 1600 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                          file expected   <int> <chr>      <chr>      <chr>                                                         <chr> actual 1     1  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_240_1507669861.csv' file 2     2  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_240_1507669861.csv' row 3     3  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_240_1507669861.csv' col 4     4  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_240_1507669861.csv' expected 5     5  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_240_1507669861.csv'
+... ................. ... ................................................................................................. ........ .............................................................................................. [... truncated]
+Parsed with column specification:
+cols(
+  V1 = col_character(),
+  V2 = col_character(),
+  V3 = col_integer(),
+  V4 = col_logical(),
+  V5 = col_integer(),
+  V6 = col_character(),
+  V7 = col_double(),
+  V8 = col_character(),
+  V9 = col_integer(),
+  V10 = col_character(),
+  V11 = col_integer()
+)
+Warning: 1600 parsing failures.
+row # A tibble: 5 x 5 col     row   col   expected     actual                                                         file expected   <int> <chr>      <chr>      <chr>                                                        <chr> actual 1     1  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_48_1507669861.csv' file 2     2  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_48_1507669861.csv' row 3     3  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_48_1507669861.csv' col 4     4  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_48_1507669861.csv' expected 5     5  <NA> 11 columns 10 columns 'bench_queries_region_random_26000_1000_8_48_1507669861.csv'
+... ................. ... ................................................................................................ ........ ................................................................................................ ..... [... truncated]
+Warning messages:
+1: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+2: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+3: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+4: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+5: In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+#+end_example
+
+Remove useless columns
+#+begin_src R :results output :exports both :session 
+names(df) <- c("algo" , "V2" , "queryId", "V4", "V5", "bench" , "ms" , "V8", "Refine","V10","Count","EltSize")
+
+df <- select(df, -V2, -V4, -V5, -V8, -V10)
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 8,000 x 7
+    algo queryId          bench       ms Refine Count EltSize
+   <chr>   <int>          <chr>    <dbl>  <int> <int>  <fctr>
+ 1 BTree       0 scan_at_region 1.348100     48    NA       0
+ 2 BTree       0 scan_at_region 1.337510     48    NA       0
+ 3 BTree       0 scan_at_region 1.323420     48    NA       0
+ 4 BTree       0 scan_at_region 1.048270     48    NA       0
+ 5 BTree       0 scan_at_region 0.787201     48    NA       0
+ 6 BTree       0 scan_at_region 0.786391     48    NA       0
+ 7 BTree       0 scan_at_region 0.785893     48    NA       0
+ 8 BTree       0 scan_at_region 0.787780     48    NA       0
+ 9 BTree       0 scan_at_region 0.785739     48    NA       0
+10 BTree       0 scan_at_region 0.784926     48    NA       0
+# ... with 7,990 more rows
+#+end_example
+
+Fix the count for Rtrees
+#+begin_src R :results output :exports both :session 
+df %>%  
+    mutate(Count = if_else(bench=="apply_at_region" & is.na(Count) , Refine, Count), # fix the count an Refine columns for Rtrees
+           Refine = ifelse(grepl("RTree",algo), NA, Refine)) %>%
+    mutate(queryId = queryId + 30) %>% 
+    mutate(queryWidth = 90 / 2**(queryId %/% 10))  %>%   # comput info about query width
+    mutate(EltSize = as.numeric(as.character(EltSize)) + 16 ) -> df # adjust the actual size of the elements
+
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 8,000 x 8
+    algo queryId          bench       ms Refine Count EltSize queryWidth
+   <chr>   <dbl>          <chr>    <dbl>  <int> <int>   <dbl>      <dbl>
+ 1 BTree      30 scan_at_region 1.348100     48    NA      16      11.25
+ 2 BTree      30 scan_at_region 1.337510     48    NA      16      11.25
+ 3 BTree      30 scan_at_region 1.323420     48    NA      16      11.25
+ 4 BTree      30 scan_at_region 1.048270     48    NA      16      11.25
+ 5 BTree      30 scan_at_region 0.787201     48    NA      16      11.25
+ 6 BTree      30 scan_at_region 0.786391     48    NA      16      11.25
+ 7 BTree      30 scan_at_region 0.785893     48    NA      16      11.25
+ 8 BTree      30 scan_at_region 0.787780     48    NA      16      11.25
+ 9 BTree      30 scan_at_region 0.785739     48    NA      16      11.25
+10 BTree      30 scan_at_region 0.784926     48    NA      16      11.25
+# ... with 7,990 more rows
+#+end_example
+
+Summarize the averages
+#+begin_src R :results output :session :exports both
+dfplot <- 
+    df %>% 
+    group_by_at(vars(-ms)) %>%   #group_by all expect ms
+    summarize(avg_ms = mean(ms), stdv = sd(ms))
+
+dfplot %>% filter(queryId == 20, EltSize==0)
+#+end_src
+
+#+RESULTS:
+: # A tibble: 0 x 9
+: # Groups:   algo, queryId, bench, Refine, Count, EltSize [0]
+: # ... with 9 variables: algo <chr>, queryId <dbl>, bench <chr>, Refine <int>,
+: #   Count <int>, EltSize <dbl>, queryWidth <dbl>, avg_ms <dbl>, stdv <dbl>
+
+#+begin_src R :results output :exports both :session 
+dfplot %>% filter(queryId == 10, bench == "scan_at_region", algo=="BTree") 
+#+end_src
+
+#+RESULTS:
+: # A tibble: 0 x 9
+: # Groups:   algo, queryId, bench, Refine, Count, EltSize [0]
+: # ... with 9 variables: algo <chr>, queryId <dbl>, bench <chr>, Refine <int>,
+: #   Count <int>, EltSize <dbl>, queryWidth <dbl>, avg_ms <dbl>, stdv <dbl>
+
+
+*** Plot overview  - scan at region                                :export:
+
+#+begin_src R :results output graphics :file "./img/overview_query_region_v2.png" :exports results :width 800 :height 600 :session
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(queryId), y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_point() +
+    #acet_wrap(EltSize ~ queryWidth,scale="free", labeller = labeller(bench=c(apply_at_region="Count Query", scan_at_region="Scan Query"), `Query Width`=label_both)) + 
+#    facet_wrap(~queryW,scale="free", labeller = "label_both") + 
+    facet_wrap(EltSize~queryWidth,scale="free",nrow=4, labeller = "label_both") + 
+    theme(legend.position = "bottom",)
+}
+
+dfplot %>% 
+    filter(bench == "scan_at_region") %>% 
+    myplot() -> p
+
+#ggsave("./img/overview_query_region.pdf")
+p
+#+end_src
+
+#+RESULTS:
+[[file:./img/overview_query_region_v2.png]]
+
+*** Scan Queries ordered by count
+
+
+#+begin_src R :results output graphics :file "./img/scan_queries_by_size_2.png"  :exports results :width 1000 :height 600 :session 
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(queryId), group=algo, y = avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = avg_ms - stdv, ymax = avg_ms + stdv) ) +
+    geom_line() +
+    # geom_text(aes(label=queryId),color="black") +
+    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    facet_wrap( EltSize~queryWidth,
+               scale="free", 
+               labeller = label_both)+
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 0.75))
+        
+}
+
+
+dfplot %>% 
+    ungroup() %>%
+    filter(bench == "apply_at_region") %>%
+    select(queryId,algo,Count,EltSize) %>%
+    left_join( 
+        filter(ungroup(dfplot), bench == "scan_at_region") %>% select(-Count)
+   ) -> dfCount
+
+
+dfCount %>% myplot() -> p1 
+p1
+
+#+end_src
+
+#+RESULTS:
+[[file:./img/scan_queries_by_size_2.png]]
+
+[[file:img/scan_queries_by_size.pdf]]
+
+
+*** Throughput of scan Queries ordered by count
+#+begin_src R :results output :exports both :session 
+dfplot %>% 
+    ungroup() %>%
+    filter(bench == "apply_at_region") %>%
+    select(queryId,algo,Count,EltSize) %>%
+    left_join( 
+        filter(ungroup(dfplot), bench == "scan_at_region") %>% select(-Count)
+   ) -> dfCount
+
+#+end_src
+
+#+begin_src R :results output graphics :file "./img/tgp_queries_by_size_errBar.pdf"  :exports results :width 14 :height 10 :session 
+
+myplot <- function(data) {
+    data %>%
+    ggplot(aes(x = as.factor(Count), group=algo, y = Count / avg_ms, color = algo)) +  
+    geom_errorbar(aes(ymin = Count / (avg_ms - stdv), ymax = Count / (avg_ms + stdv)) ) +
+    geom_line() +
+    # geom_text(aes(label=queryId),color="black") +
+    labs(title="Queries ordered by size of the result", x = "Element count of the query" ) +     
+    facet_wrap( EltSize~queryWidth,
+               scale="free", 
+               nrow = 4 , 
+               labeller = label_both)+
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 90, vjust = 0.5))
+        
+}
+
+
+dfCount %>% mutate(AvgTgp = (Count/avg_ms)) %>%
+myplot() -> p1 
+
+#ggsave("./img/tgp_queries_by_size.pdf")
+p1
+
+#+end_src
+
+#+RESULTS:
+[[file:./img/tgp_queries_by_size_errBar.pdf]]
+
+[[file:./img/tgp_queries_by_size_errBar.pdf]]
+
+**** Outlier at EltSize == 32 ? 
+
+#+begin_src R :results output :exports both :session 
+options(dplyr.width = Inf)
+dfCount %>% 
+    filter( EltSize == 32 & queryWidth == 2.8125 & algo == "ImplicitDenseVector") %>% 
+    print (n = 50) 
+
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 10 x 9
+   queryId                algo Count EltSize          bench Refine    avg_ms         stdv queryWidth
+     <int>               <chr> <int>   <dbl>          <chr>  <int>     <dbl>        <dbl>      <dbl>
+ 1      50 ImplicitDenseVector  3358      32 scan_at_region      9 0.0473941 0.0011117800     2.8125
+ 2      51 ImplicitDenseVector  3304      32 scan_at_region      9 0.0435270 0.0008304518     2.8125
+ 3      52 ImplicitDenseVector  3517      32 scan_at_region     18 0.0423312 0.0014859134     2.8125
+ 4      53 ImplicitDenseVector  3338      32 scan_at_region      9 0.0449484 0.0004810960     2.8125
+ 5      54 ImplicitDenseVector  3394      32 scan_at_region     15 0.0380585 0.0009970687     2.8125
+ 6      55 ImplicitDenseVector  3353      32 scan_at_region     33 0.0377475 0.0018589604     2.8125
+ 7      56 ImplicitDenseVector  3356      32 scan_at_region      9 0.0471694 0.0022270714     2.8125
+ *** 8      57 ImplicitDenseVector  3440      32 scan_at_region     27 0.0438725 0.0214895692     2.8125
+ 9      58 ImplicitDenseVector  3455      32 scan_at_region      9 0.0415821 0.0016354616     2.8125
+10      59 ImplicitDenseVector  3461      32 scan_at_region      9 0.0403037 0.0006655709     2.8125
+#+end_example
+
+#+begin_src R :results output :exports both :session 
+df %>% 
+    filter( EltSize == 16 & queryId == 57 & algo == "ImplicitDenseVector")
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 20 x 7
+                  algo queryId           bench       ms Refine Count EltSize
+                 <chr>   <int>           <chr>    <dbl>  <int> <int>  <fctr>
+ 1 ImplicitDenseVector      57  scan_at_region 0.042318     27    NA      16
+ 2 ImplicitDenseVector      57  scan_at_region 0.038991     27    NA      16
+ 3 ImplicitDenseVector      57  scan_at_region 0.038234     27    NA      16
+ 4 ImplicitDenseVector      57  scan_at_region 0.036748     27    NA      16
+ 5 ImplicitDenseVector      57  scan_at_region 0.036237     27    NA      16
+ 6 ImplicitDenseVector      57  scan_at_region 0.104701     27    NA      16
+ 7 ImplicitDenseVector      57  scan_at_region 0.035436     27    NA      16
+ 8 ImplicitDenseVector      57  scan_at_region 0.035593     27    NA      16
+ 9 ImplicitDenseVector      57  scan_at_region 0.035131     27    NA      16
+10 ImplicitDenseVector      57  scan_at_region 0.035336     27    NA      16
+11 ImplicitDenseVector      57 apply_at_region 0.032764     27  3440      16
+12 ImplicitDenseVector      57 apply_at_region 0.031332     27  3440      16
+13 ImplicitDenseVector      57 apply_at_region 0.031072     27  3440      16
+14 ImplicitDenseVector      57 apply_at_region 0.030391     27  3440      16
+15 ImplicitDenseVector      57 apply_at_region 0.030442     27  3440      16
+16 ImplicitDenseVector      57 apply_at_region 0.030340     27  3440      16
+17 ImplicitDenseVector      57 apply_at_region 0.030067     27  3440      16
+18 ImplicitDenseVector      57 apply_at_region 0.030145     27  3440      16
+19 ImplicitDenseVector      57 apply_at_region 0.029988     27  3440      16
+20 ImplicitDenseVector      57 apply_at_region 0.030240     27  3440      16
+#+end_example
+
+
+#+begin_src R :results output :exports both :session 
+dfCount %>% 
+    filter( EltSize == 16 & queryId == 52)
+#+end_src
+
+#+RESULTS:
+: # A tibble: 5 x 9
+:   queryId                algo Count EltSize          bench Refine    avg_ms         stdv queryWidth
+:     <int>               <chr> <int>   <dbl>          <chr>  <int>     <dbl>        <dbl>      <dbl>
+: 1      52               BTree  3517      16 scan_at_region     18 0.1144389 0.0063961994     2.8125
+: 2      52       GeoHashBinary  3517      16 scan_at_region     18 0.0587267 0.0037253598     2.8125
+: 3      52 ImplicitDenseVector  3517      16 scan_at_region     18 0.0416292 0.0009570288     2.8125
+: 4      52               RTree  3517      16 scan_at_region     NA 0.0632712 0.0071380784     2.8125
+: 5      52           RTreeBulk  3517      16 scan_at_region     NA 0.0275497 0.0008121481     2.8125
+
+**** BoxPlots  - analysis of variability 
+Using the boxplots to remove outliers
+#+begin_src R :results output :exports both :session 
+
+df %>% 
+    filter( EltSize == 16 & queryId %in% c(50:59) & algo == "ImplicitDenseVector") %>% select(ms) -> d
+
+boxplot.stats(d$ms)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+$stats
+[1] 0.0299880 0.0355310 0.0388520 0.0419715 0.0499780
+
+$n
+[1] 200
+
+$conf
+[1] 0.03813245 0.03957155
+
+$out
+[1] 0.052344 0.104701
+#+end_example
+
+#+begin_src R :results output :exports both :session 
+
+df %>% 
+    filter(bench == "scan_at_region") %>%
+    group_by(algo, queryId, bench, EltSize, queryWidth) %>%
+    summarize(avgMs = mean(ms)) -> dfAvg
+
+dfAvg
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 200 x 6
+# Groups:   algo, queryId, bench, EltSize [?]
+    algo queryId          bench EltSize queryWidth     avgMs
+   <chr>   <dbl>          <chr>   <dbl>      <dbl>     <dbl>
+ 1 BTree      30 scan_at_region      16      11.25 0.8799122
+ 2 BTree      30 scan_at_region      32      11.25 1.0575299
+ 3 BTree      30 scan_at_region      64      11.25 1.5589360
+ 4 BTree      30 scan_at_region     128      11.25 2.6599350
+ 5 BTree      30 scan_at_region     256      11.25 6.9816005
+ 6 BTree      31 scan_at_region      16      11.25 0.8122448
+ 7 BTree      31 scan_at_region      32      11.25 0.9650907
+ 8 BTree      31 scan_at_region      64      11.25 1.4832625
+ 9 BTree      31 scan_at_region     128      11.25 2.5249900
+10 BTree      31 scan_at_region     256      11.25 6.5145960
+# ... with 190 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+dfAvg %>% 
+    ggplot(aes(x = as.factor(queryId), y = avgMs, group = algo, color = algo)) +
+    geom_line() + 
+    facet_wrap( EltSize~queryWidth, scale="free")
+    
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-15998jLL/figure15998kYy.png]]
+
+#+begin_src R :results output graphics :file "/tmp/figure2.pdf" :exports both :width 14 :height 10 :session 
+df %>% 
+    filter(bench == "scan_at_region") %>%
+    ggplot(aes(x = as.factor(queryId), y = ms, color = algo)) +  
+    geom_boxplot(outlier.shape=17) +
+    #geom_point() + 
+    geom_line(data = dfAvg, aes(x= as.factor(queryId), y = avgMs, group = algo)) + 
+    # geom_text(aes(label=queryId),color="black") +
+    facet_wrap( EltSize~queryWidth,
+                scale="free", 
+                nrow = 5 , 
+                labeller = label_both)
+   # theme(legend.position = "bottom",
+   #       axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/figure2.pdf]]
+
+
+***** For BTrees, some results have a variability way to high, we will rerun those experiments. 
+  
+#+begin_src R :results output :exports both :session 
+df %>%
+    filter(bench == "scan_at_region") %>%
+   filter(queryId == 49 & EltSize == 64) %>% print(n = 80) 
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 40 x 8
+    algo queryId          bench       ms Refine Count EltSize queryWidth
+   <chr>   <dbl>          <chr>    <dbl>  <int> <int>   <dbl>      <dbl>
+ 1 BTree      49 scan_at_region 0.725517     27    NA      64      5.625
+ 2 BTree      49 scan_at_region 0.713381     27    NA      64      5.625
+ 3 BTree      49 scan_at_region 0.699680     27    NA      64      5.625
+ 4 BTree      49 scan_at_region 0.687132     27    NA      64      5.625
+ 5 BTree      49 scan_at_region 0.673483     27    NA      64      5.625
+ 6 BTree      49 scan_at_region 0.656429     27    NA      64      5.625
+ 7 BTree      49 scan_at_region 0.644572     27    NA      64      5.625
+ 8 BTree      49 scan_at_region 0.632604     27    NA      64      5.625
+ 9 BTree      49 scan_at_region 0.479202     27    NA      64      5.625
+10 BTree      49 scan_at_region 0.331138     27    NA      64      5.625
+11 BTree      49 scan_at_region 0.331364     27    NA      64      5.625
+12 BTree      49 scan_at_region 0.333485     27    NA      64      5.625
+13 BTree      49 scan_at_region 0.330673     27    NA      64      5.625
+14 BTree      49 scan_at_region 0.330174     27    NA      64      5.625
+15 BTree      49 scan_at_region 0.330204     27    NA      64      5.625
+16 BTree      49 scan_at_region 0.329844     27    NA      64      5.625
+17 BTree      49 scan_at_region 0.329129     27    NA      64      5.625
+18 BTree      49 scan_at_region 0.329488     27    NA      64      5.625
+19 BTree      49 scan_at_region 0.329535     27    NA      64      5.625
+20 BTree      49 scan_at_region 0.329142     27    NA      64      5.625
+21 RTree      49 scan_at_region 0.610116     NA    NA      64      5.625
+22 RTree      49 scan_at_region 0.448400     NA    NA      64      5.625
+23 RTree      49 scan_at_region 0.325595     NA    NA      64      5.625
+24 RTree      49 scan_at_region 0.324033     NA    NA      64      5.625
+25 RTree      49 scan_at_region 0.323794     NA    NA      64      5.625
+26 RTree      49 scan_at_region 0.323023     NA    NA      64      5.625
+27 RTree      49 scan_at_region 0.323612     NA    NA      64      5.625
+28 RTree      49 scan_at_region 0.322190     NA    NA      64      5.625
+29 RTree      49 scan_at_region 0.322444     NA    NA      64      5.625
+30 RTree      49 scan_at_region 0.325776     NA    NA      64      5.625
+31 RTree      49 scan_at_region 0.322270     NA    NA      64      5.625
+32 RTree      49 scan_at_region 0.321608     NA    NA      64      5.625
+33 RTree      49 scan_at_region 0.320540     NA    NA      64      5.625
+34 RTree      49 scan_at_region 0.321307     NA    NA      64      5.625
+35 RTree      49 scan_at_region 0.320663     NA    NA      64      5.625
+36 RTree      49 scan_at_region 0.320778     NA    NA      64      5.625
+37 RTree      49 scan_at_region 0.320073     NA    NA      64      5.625
+38 RTree      49 scan_at_region 0.320009     NA    NA      64      5.625
+39 RTree      49 scan_at_region 0.321807     NA    NA      64      5.625
+40 RTree      49 scan_at_region 0.321893     NA    NA      64      5.625
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session 
+ms = c(
+0.699267,
+0.691753,
+0.681689,
+0.667752,
+0.662243,
+0.52982 ,
+0.333021,
+0.332006,
+0.332584,
+0.330714,
+0.330684,
+0.330983,
+0.331547,
+0.330025,
+0.332319,
+0.330402,
+0.328861,
+0.329859,
+0.32866 ,
+0.32896 ,
+0.3286 ,
+0.328125,
+0.32813 ,
+0.327719,
+0.327818,
+0.328598,
+0.329868,
+0.327909,
+0.327808,
+0.327911,
+0.328114,
+0.3277 ,
+0.327244)
+
+
+d1 = data.frame(x = 1, y = ms)
+
+d1 %>% group_by(x) %>% summarize(avg = mean(y), stdv = 3*sqrt(sd(y)) / length(y)) -> d1Avg
+
+d1 %>% filter(!y %in% boxplot.stats(d1$y)$out) -> d2
+d2 %>% group_by(x) %>% summarize(avg = mean(y), stdv = 3*sqrt(sd(y)) / length(y)) -> d2Avg
+
+d1 %>%
+    ggplot(aes(x,y))+
+    geom_boxplot()+
+    ylim(0,0.7)  +
+    geom_point( data=d1Avg, aes(x , avg), color="red")+
+    geom_errorbar(data = d1Avg, aes(x,avg, ymin = avg - stdv , ymax = avg + stdv)) +
+    geom_point( data=d2Avg, aes(x , avg), color="green")+
+    geom_errorbar(data = d2Avg, aes(x,avg, ymin = avg - stdv , ymax = avg + stdv))
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-15998jLL/figure15998_Ci.png]]
+
+
+#+begin_src R :results output :exports both :session 
+d1 %>% filter(!ms %in% boxplot.stats(d1$y)$out)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+   x        y
+1  1 0.333021
+2  1 0.332006
+3  1 0.332584
+4  1 0.330714
+5  1 0.330684
+6  1 0.330983
+7  1 0.331547
+8  1 0.330025
+9  1 0.332319
+10 1 0.330402
+11 1 0.328861
+12 1 0.329859
+13 1 0.328660
+14 1 0.328960
+15 1 0.328600
+16 1 0.328125
+17 1 0.328130
+18 1 0.327719
+19 1 0.327818
+20 1 0.328598
+21 1 0.329868
+22 1 0.327909
+23 1 0.327808
+24 1 0.327911
+25 1 0.328114
+26 1 0.327700
+27 1 0.327244
+#+end_example
+
+** What is the actual count of elements per query ? :ARCHIVE:
+
+
+*** Table                                                          :export:
+
+Variance shows that some counts differ between algorithms:
+#+begin_src R :results output :exports none :session :colnames yes
+
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId) %>%                     #group to see if every algo has same coubts
+    summarize(Var = round(var(Count),3)  ) -> 
+    countVariation
+
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench == "apply_at_region") %>%
+    ungroup( bench) %>% # must ungroup to drop the column
+    select( -bench, -stdv, -Refine) %>%
+    gather(measure, value, Count, avg_ms) %>%
+    unite(temp, algo, measure) %>%
+    spread( temp, value) %>% 
+    #select(queryId,ends_with("Count") , ends_with("ms")) %>%
+    select(queryId,ends_with("Count") ) %>%
+ #   filter( !(BTree_Count == GeoHashBinary_Count & RTreeBulk_Count == RTree_Count & BTree_Count == RTree_Count)) %>% 
+    inner_join(countVariation) -> wideTable
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = "queryId"
+
+#+CAPTION: Number of elements returned in each query
+#+begin_src R :results table :exports results :session :colnames yes
+wideTable %>%
+    as_tibble() %>%
+    print(n = nrow(.))
+#+end_src
+
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
+|---------+-------------+---------------------+-----------------+-------------+-------|
+|       0 |     3440580 |             3440580 |         3440580 |     3440580 |     0 |
+|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
+|       2 |     3438884 |             3438884 |         3438884 |     3438884 |     0 |
+|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
+|       4 |     3442356 |             3442356 |         3442356 |     3442356 |     0 |
+|       5 |     3439224 |             3439224 |         3439224 |     3439224 |     0 |
+|       6 |     3438953 |             3438953 |         3438953 |     3438953 |     0 |
+|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
+|       8 |     3441859 |             3441859 |         3441859 |     3441859 |     0 |
+|       9 |     3443858 |             3443858 |         3443858 |     3443858 |     0 |
+|      10 |      859819 |              859819 |          859819 |      859819 |     0 |
+|      11 |      860304 |              860304 |          860304 |      860304 |     0 |
+|      12 |      862004 |              862004 |          862004 |      862004 |     0 |
+|      13 |      859895 |              859895 |          859895 |      859895 |     0 |
+|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
+|      15 |      859189 |              859189 |          859189 |      859189 |     0 |
+|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
+|      17 |      861935 |              861935 |          861935 |      861935 |     0 |
+|      18 |      861341 |              861341 |          861341 |      861341 |     0 |
+|      19 |      859799 |              859799 |          859799 |      859799 |     0 |
+|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
+|      21 |      214220 |              214220 |          214220 |      214220 |     0 |
+|      22 |      215543 |              215543 |          215543 |      215543 |     0 |
+|      23 |      214932 |              214932 |          214932 |      214932 |     0 |
+|      24 |      215726 |              215726 |          215726 |      215726 |     0 |
+|      25 |      214526 |              214526 |          214526 |      214526 |     0 |
+|      26 |      215502 |              215502 |          215502 |      215502 |     0 |
+|      27 |      214199 |              214199 |          214199 |      214199 |     0 |
+|      28 |      215471 |              215471 |          215471 |      215471 |     0 |
+|      29 |      214738 |              214738 |          214738 |      214738 |     0 |
+|      30 |       53488 |               53488 |           53488 |       53488 |     0 |
+|      31 |       54129 |               54129 |           54129 |       54129 |     0 |
+|      32 |       53212 |               53212 |           53212 |       53212 |     0 |
+|      33 |       53584 |               53584 |           53584 |       53584 |     0 |
+|      34 |       53724 |               53724 |           53724 |       53724 |     0 |
+|      35 |       53825 |               53825 |           53825 |       53825 |     0 |
+|      36 |       53856 |               53856 |           53856 |       53856 |     0 |
+|      37 |       53236 |               53236 |           53236 |       53236 |     0 |
+|      38 |       53837 |               53837 |           53837 |       53837 |     0 |
+|      39 |       53767 |               53767 |           53767 |       53767 |     0 |
+|      40 |       13230 |               13230 |           13230 |       13230 |     0 |
+|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
+|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
+|      43 |       13251 |               13251 |           13251 |       13251 |     0 |
+|      44 |       13524 |               13524 |           13524 |       13524 |     0 |
+|      45 |       13356 |               13356 |           13356 |       13356 |     0 |
+|      46 |       13401 |               13401 |           13401 |       13401 |     0 |
+|      47 |       13530 |               13530 |           13530 |       13530 |     0 |
+|      48 |       13417 |               13417 |           13417 |       13417 |     0 |
+|      49 |       13298 |               13298 |           13298 |       13298 |     0 |
+|      50 |        3358 |                3358 |            3358 |        3358 |     0 |
+|      51 |        3304 |                3304 |            3304 |        3304 |     0 |
+|      52 |        3517 |                3517 |            3517 |        3517 |     0 |
+|      53 |        3338 |                3338 |            3338 |        3338 |     0 |
+|      54 |        3394 |                3394 |            3394 |        3394 |     0 |
+|      55 |        3353 |                3353 |            3353 |        3353 |     0 |
+|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
+|      57 |        3440 |                3440 |            3440 |        3440 |     0 |
+|      58 |        3455 |                3455 |            3455 |        3455 |     0 |
+|      59 |        3461 |                3461 |            3461 |        3461 |     0 |
+|      60 |         842 |                 842 |             842 |         842 |     0 |
+|      61 |         808 |                 808 |             808 |         808 |     0 |
+|      62 |         840 |                 840 |             840 |         840 |     0 |
+|      63 |         834 |                 834 |             834 |         834 |     0 |
+|      64 |         839 |                 839 |             839 |         839 |     0 |
+|      65 |         852 |                 852 |             852 |         852 |     0 |
+|      66 |         797 |                 797 |             797 |         797 |     0 |
+|      67 |         843 |                 843 |             843 |         843 |     0 |
+|      68 |         813 |                 813 |             813 |         813 |     0 |
+|      69 |         895 |                 895 |             895 |         895 |     0 |
+|      70 |         225 |                 225 |             225 |         225 |     0 |
+|      71 |         184 |                 184 |             184 |         184 |     0 |
+|      72 |         209 |                 209 |             209 |         209 |     0 |
+|      73 |         199 |                 199 |             199 |         199 |     0 |
+|      74 |         212 |                 212 |             212 |         212 |     0 |
+|      75 |         222 |                 222 |             222 |         222 |     0 |
+|      76 |         213 |                 213 |             213 |         213 |     0 |
+|      77 |         192 |                 192 |             192 |         192 |     0 |
+|      78 |         196 |                 196 |             196 |         196 |     0 |
+|      79 |         188 |                 188 |             188 |         188 |     0 |
+#+TBLFM: $6=$0;%0.3f
+
+
+
+Just the diverging queries : 
+#+begin_src R :results table :exports results :session :colnames yes
+
+wideTable %>%
+    filter ( Var > 0) %>%            #get only the queryIds with variance greater that zero 
+    as_tibble() %>%
+    print(n = nrow(.))
+
+#+end_src
+
+#+CAPTION: Queries that returned different result depending on the algorithm 
+#+RESULTS:
+| queryId | BTree_Count | GeoHashBinary_Count | RTreeBulk_Count | RTree_Count |   Var |
+|---------+-------------+---------------------+-----------------+-------------+-------|
+|       1 |     3440446 |             3440446 |         3440447 |     3440447 | 0.333 |
+|       3 |     3440915 |             3440915 |         3440916 |     3440916 | 0.333 |
+|       7 |     3442233 |             3442233 |         3442234 |     3442234 | 0.333 |
+|      14 |      862262 |              862262 |          862263 |      862263 | 0.333 |
+|      16 |      859264 |              859264 |          859266 |      859266 | 1.333 |
+|      20 |      214775 |              214775 |          214776 |      214776 | 0.333 |
+|      41 |       13399 |               13399 |           13400 |       13400 | 0.333 |
+|      42 |       13513 |               13513 |           13514 |       13514 | 0.333 |
+|      56 |        3356 |                3356 |            3357 |        3357 | 0.333 |
+
+
+*** Plot                                                           :export:
+
+There are some queries where the count differs for Rtree by a small amount of elements.
+
+Counts have some differences :
+#+begin_src R :results output :exports none :session 
+options(dplyr.width = Inf)
+dfplot %>% 
+    filter( bench== "apply_at_region") %>% 
+    group_by(queryId, bench) %>% #group to see if every algo has same counts
+    summarize(c = mean(Count), s = sd(Count)  ) %>% 
+    filter ( s > 0) %>% 
+    select(queryId, bench) %>% 
+    left_join(dfplot) -> dfWrongCounts
+
+#+end_src
+
+#+RESULTS:
+: Joining, by = c("queryId", "bench")
+
+
+These are the queries that for some misterious reason resulted in different counts.
+#+begin_src R :results output graphics :file "./img/differing_counts.png" :exports results :width 600 :height 400 :session 
+
+myplot <- function(data) {
+    data %>%
+   #     mutate(`Query Width` = 90 / 2**(queryId %/% 10)) %>%
+        ggplot(aes(x = as.factor(algo), y = Count, color = algo))+
+# as.numeric(labels(as.factor(unique(algo))))), y = Count, color = algo)) +  
+        #geom_jitter( width=0.1, height=0) +
+        geom_point( ) +
+        facet_wrap(~queryId,scale="free", labeller = "label_both") + 
+        theme(legend.position = "bottom",) + 
+#        labs(x = "Query width (degrees)") +
+        #scale_y_continuous(breaks=c(3440446,3440447) )
+        scale_y_continuous(breaks=seq(min(data$Count),max(data$Count) ))
+    
+}
+
+#dfWrongCounts %>% myplot() 
+
+dfWrongCounts %>% myplot()
+
+#dfWrongCounts %>% 
+#group_by(queryId) %>% filter(queryId == 1 ) %>%
+#mutate(y_min = min(Count), y_max = max(Count)) %>% myplot()
+#+end_src
+
+#+RESULTS:
+[[file:./img/differing_counts.png]]
+
+
+* DONE Rerun 
+- use 33 repetitions
+- change the order, first count then scan
+
+
+
+
+

@@ -1,0 +1,50 @@
+cicero
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/hppsimulations/build-release
+[ 15%] Built target pma
+[ 21%] Built target bench_insert
+[ 26%] Built target test_movepma
+[ 31%] Built target bench_insertions_k
+[ 36%] Built target bench_scan
+[ 42%] Built target test_batch_remove_empty_seg_V3
+[ 47%] Built target test_bug_tweet8k_remove
+[ 52%] Built target test_batch_remove_empty_seg
+[ 57%] Built target test_batch_remove_shrink
+[ 63%] Built target test_batch_remove
+[ 68%] Built target test_batch_remove_empty_seg_V2
+[ 73%] Built target test_build_pma
+[ 78%] Built target getElem_test
+[ 84%] Built target test_bender_insertion
+[ 89%] Built target test_bender_insert_remove_rand
+[ 94%] Built target test_bender_rand_insertions
+[100%] Built target test_batch_insertions
+-- cotire 1.7.8 loaded.
+-- Boost version: 1.64.0
+-- Boost version: 1.64.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/julio/Projects/pmq/build-release
+[ 14%] Built target test_pmq_count
+[ 28%] Built target test_containers_count
+[ 42%] Built target bench_insert_remove_count
+[ 57%] Built target bench_queries_region
+[ 71%] Built target bench_memory
+[ 85%] Built target bench_insert_remove_scan
+[100%] Built target bench_insert_and_scan
+bench_queries_region_twitter_1000_1000_10_1510783350.log
+bench_queries_region_twitter_128000_1000_10_1510783350.log
+bench_queries_region_twitter_16000_1000_10_1510783350.log
+bench_queries_region_twitter_2000_1000_10_1510783350.log
+bench_queries_region_twitter_32000_1000_10_1510783350.log
+bench_queries_region_twitter_4000_1000_10_1510783350.log
+bench_queries_region_twitter_64000_1000_10_1510783350.log
+bench_queries_region_twitter_8000_1000_10_1510783350.log
+Already on 'exp20171111161232'
+M	data/cicero/exp20171111161232/info.org
+M	data/cicero/exp20171111161232/run.sh
+M	data/cicero/exp20171111161232/run_1510425176
+A	data/cicero/exp20171111161232/run_1510771798
+A	data/cicero/exp20171111161232/run_1510779165
+A	data/cicero/exp20171111161232/run_1510783217
+A	data/cicero/exp20171111161232/run_1510783350

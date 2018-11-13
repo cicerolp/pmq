@@ -1,0 +1,43 @@
+#!/usr/bin/ipython3
+
+import sys
+from __future__ import print_function
+import json
+
+"""
+Clean the twitter json file keeping the following keys
+"""
+keys = ["coordinates","created_at","geo","id","lang","place","text","timestamp_ms"]
+
+"""
+By default ouputs to a file 
+"""
+output_to_file = True;
+
+
+files = !ls eleicoes_*.json
+#files = !ls Brazil_*.json
+
+#files = ["Brazil_2016-10-03_09h06.json"]
+#files = ["eleicoes_2016-09-30_22h53.json"]
+
+for f in files:
+    if output_to_file:
+        outfile = open(f.split(".")[0]+"_clean.json", 'w')
+    else:
+        outfile = sys.stdout
+
+    tweets = !cat $f  
+    for t in tweets: 
+        if t[0] != "{":
+            continue 
+
+        js = json.loads(t)
+        js_sub = { key : js[key] if key in js else "none" for key in keys}
+        js_sub["hashtags"] = js["entities"]["hashtags"] if "entities" in js else "none"
+        json.dumps(js_sub,ensure_ascii=False)
+        json.dump(js_sub,outfile,ensure_ascii=False)
+        print("",file=outfile)
+
+
+#outfile.close()

@@ -1,0 +1,32 @@
+<div id="map" class="col-sm-8 fill nopadding" style="border: 1px solid black;">
+  <app-heatmap></app-heatmap>
+</div>
+
+<div id="sidebar" class="col-sm-4 fill"><br>
+  <md-tab-group>
+    <md-tab label="topk">
+      <div id="topk">
+        <br>
+        <label>alpha</label>
+        <md-slider (change)="onAlphaChange($event);" [(ngModel)]="alpha" tickInterval="1" min="0.0" max="1.0" step="0.1" thumbLabel="true"></md-slider><br>
+        <label>radius</label>
+        <md-slider (change)="onRadiusChange($event);" [(ngModel)]="radius" tickInterval="1" min="0.25" max="400.0" step="39.975"
+          thumbLabel="true"></md-slider><br>
+        <label>k</label>
+        <md-slider (change)="onKChange($event);" [(ngModel)]="k" tickInterval="1" min="10" max="100" step="10" thumbLabel="true"></md-slider><br>
+        <label>time</label>
+        <md-slider (change)="onTimeChange($event);" [(ngModel)]="time" tickInterval="1" min="0" max="86400" step="1" thumbLabel="true"></md-slider>
+      </div>
+    </md-tab>
+    <md-tab label="triggers">
+      <br>
+      <label>frequency (%)</label>
+      <md-slider (change)="onTriggerFrquencyChange($event);" [(ngModel)]="trigger_frquency" tickInterval="1" min="1" max="25" step="1" thumbLabel="true"></md-slider>
+      <label>timeout (ms)</label>
+      <md-slider [(ngModel)]="trigger_timeout" tickInterval="1" min="1" max="10000" step="1" thumbLabel="true"></md-slider>
+      <label>max rendered triggers</label>
+      <md-slider [(ngModel)]="max_triggers" tickInterval="1" min="1" max="100" step="1" thumbLabel="true"></md-slider>
+    </md-tab>
+  </md-tab-group>
+  <app-table></app-table>
+</div>

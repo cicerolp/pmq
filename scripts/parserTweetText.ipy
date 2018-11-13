@@ -1,0 +1,44 @@
+#!/usr/bin/ipython3
+
+import sys
+from __future__ import print_function
+import json
+
+keys = ["coordinates","created_at","text"]
+
+output_to_file = True;
+
+#files = []
+#files = !ls eleicoes_*.json
+#files = !ls Brazil_*.json
+
+files = ["/mnt/disk2/Julio/tweets_hc/twitter_us_2012-05-22_14h.json"]
+print(files)
+
+for f in files:
+    if output_to_file:
+        outfile = open(f.split(".")[0]+"_text.json", 'w')
+    else:
+        outfile = sys.stdout
+
+    #tweets = !head eleicoes_2016-09-30_22h53.json -n2 | sed -n '/^{/p'
+    # print(f)
+    tweets = !cat $f
+
+    # print(tweets)
+    # print(tweets[1])
+   
+    for t in tweets:
+        if t == "" :
+            continue
+#       print (t) 
+
+        js = json.loads(t)
+        js_sub = { key : js[key] if key in js else "none" for key in keys}
+        js_sub["coordinates"] = js["coordinates"]["coordinates"] if "coordinates" in js else "none"
+        json.dumps(js_sub,ensure_ascii=False)
+        json.dump(js_sub,outfile,ensure_ascii=False)
+        print("",file=outfile)
+
+
+#outfile.close()

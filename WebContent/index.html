@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+   <title>Twitter VIS</title>
+   <meta charset="utf-8" />
+
+   <link rel="stylesheet" href="css/leaflet.css" />
+   <link rel="stylesheet" href="css/styles.css" />
+   
+   <link rel="stylesheet" href="css/jquery-ui.min.css">
+   <link rel="stylesheet" href="css/jquery-ui.theme.min.css">  
+
+   <!-- Leaflet - a JavaScript library for mobile-friendly maps -->
+   <script>
+      L_PREFER_CANVAS = true;
+      
+      var S_URL = "./rest";
+      var WS_URL = 'ws://' + window.location.host;
+      
+      // map and heatmap vars
+      var map_move = false, map_zoom = false;
+      var heatmap_updating = false;
+      
+      var up_to_date = false;
+      
+      var marker_opt = {
+         color: '#ffffff', 
+         weight: 1,
+         interactive: false
+      };     
+   </script>
+   
+   <script src="js/d3-4.2.3.min.js"></script>
+   <script src="js/jquery-2.1.4.min.js"></script>
+   <script src="js/jquery-ui-1.12.0.min.js"></script>
+      
+   <script src="js/mercator.js"></script>
+      
+   <script src="js/leaflet.min.js"></script>
+   
+   <script src="js/grid_layer.js"></script>
+
+   <script src="js/heatmap.min.js"></script>
+   <script src="js/leaflet-heatmap.js"></script>
+
+   <script src="js/custom_layer.js"></script>
+
+   <link rel="stylesheet" type="text/css" href="css/dataTables.jqueryui.min.css" />
+
+   <script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
+   <script type="text/javascript" src="js/dataTables.jqueryui.min.js"></script>
+
+   <script src="js/simpleheat.js"></script>
+   <script src="js/leaflet-heat.js"></script>
+   <script src="http://leaflet.github.io/Leaflet.markercluster/example/realworld.10000.js"></script>
+</head>
+<body>
+   <div id="right-panel">
+      <table id="async_table" class="display" cellspacing="0" width="100%">
+         <thead>
+            <tr>
+               <th>time</th>
+               <th>language</th>
+               <th>device</th>
+               <th>app</th>
+            </tr>
+         </thead>
+      </table>
+   </div>   
+   <div id="container">
+      <div id="map" ></div>
+      <div id="progressbar">
+         <div id="progress-label">Loading...</div>            
+      </div> 
+   </div>
+   
+   <script src="js/progressbar.js"></script>
+   <script src="js/ui.js"></script>
+</body>
+</html>
+

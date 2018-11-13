@@ -1,0 +1,229 @@
+# -*- org-export-babel-evaluate: nil; -*-
+#+TITLE: Reseach Note os the PMQ Project 
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: @JULIO(J) @CICERO(C) @BRUNO(B)
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n) export(e)
+#+OPTIONS: ^:{} H:3
+#+PROPERTY: header-args :cache no :eval no-export
+
+* README
+This file contains the research notes about the PMQ project targeting a submission to PVLDB journal
+
+* [2017-06-25 Dom] Notes sent by Bruno                               :@BRUNO:
+
+Following one reviewer comment, I agree that we need to compare performance at the same level so
+not our PMA implementation against a full blown database, but take instead  classical DB data structures. I identified two:
+ -  R-tree for georeference data: One implementation avaiable in boost: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
+- B-tree that we couple with a Z-ccurve for indexing. I did not look at available implementation but very likely many available.
+
+https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time.html
+
+https://code.google.com/archive/p/cpp-btree/
+
+https://github.com/algorithm-ninja/cpp-btree
+
+A pending question is if parallelism would be a significant add. I still balieve so, but we may be short on time. The other consern
+is to find parallel R-tree or B-tree this is not that common. I have to investigate a little more.
+
+
+** R-tree:
+*** Sequential: http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes.html
+The performance of the R-tree depends on balancing algorithm, parameters and data inserted into the container.
+**** Linear algorithm
+**** Quadratic algorithm
+**** R*-tree
+*** Packing algorithm
+**** Slide presenting ideas for preloading a R-tree in parallel and with less overlap (use a space filling curve): http://www.mathematik.uni-marburg.de/~achakeye/publications/big_spatial_2012.pdf
+
+** B-tree:
+*** A B+-tree parallel implementing various optimizations.  https://github.com/runshenzhu/palmtree
+*** Based on a VLDB 2011 paper:
+ J. Sewall, J. Chhugani, C. Kim, N. Satish, and P. Dubey. PALM: Parallel architecture-friendly latch-free modifications to B+ trees on many-core processors. Proc. VLDB Endowment, 4(11):795--806, August 2011.
+*** Several interesting aspects:
+**** Optimization of mem allocator
+**** Work by batches
+**** Tried  SIMD optimization
+**** Del a given key.
+
+* [2017-07-07 Sex] PMA vs Btrees ?                                   :@JULIO:
+
+** Parallel implementation of B+ trees
+
+Related to sugestions that Bruno had.
+
+BIB:Sewall2011
+https://github.com/runshenzhu/palmtree
+
+The problem of PMA :
+- Querying is not very efficient. Binnay search with no index didn't show up very good perf.
+
+- What are the benchmarks that this guys used. 
+
+- Is there any work about querying on streaming workloads ? 
+
+- What is a streaming benchmark ?
+
+* [2017-08-18 Sex] Research notes                                    :@JULIO:
+** R-Tees
+
+*** Boost R-tree
+http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes/introduction.html#ftn.geometry.spatial_indexes.introduction.f2
+
+
+**** Several algorithms to build to R-tree
+trade InsertionTime vs QueryTime
+
+Insertion:
+- linear
+- *quadratic* : the middle term between instertion and query
+- R* : reduce the number of overlaps. 
+
+overlaps on r-tree: fast on writes, but slow on reads because of ineficient indexing
+https://developer.ibm.com/dwblog/2014/geospatial-indexing/
+
+**** Spatial Query
+- Intersects (Box) : return points in a selected box.
+
+**** Nearest Neighbour Queries (Knn)
+
+http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/spatial_indexes/queries.html
+
+- Allows for a custom *nearest predicate*, this is similar to our ToK algorithm from VIS paper.
+
+
+**** Temporal Deletion? 
+- R-tree deletes an element by its value.
+
+- We would have to query elements < T and delete them. 
+
+- R-tree allows interative queries:
+  : std::for_each(bgi::qbegin(tree, bgi::nearest(pt, 3)), bgi::qend(tree), do_something()); 
+
+  but dosomething() cannot modify the tree, otherwise it invalidade the iterator. 
+
+- The R-tree doesn't seems to have any batch operation for deleting several elements. 
+
+***** Removals 
+Removals are done by searching all the elements satisfing the removal predicate. 
+
+Using the list of elements to be removed we call the _rtree->remove function.
+
+note: Boost doesn't support very well the =cs::geographic= coordinate system. Use instead =cs::cartesian= that gives better results and is also correct.  http://www.boost.org/doc/libs/1_64_0/libs/geometry/doc/html/geometry/reference/cs/cs_cartesian.html 
+
+*** Other implementations - libspatialindex
+http://libspatialindex.github.io/
+https://github.com/libspatialindex/libspatialindex
+
+*** In MongoDb 
+
+https://www.slideshare.net/nknize/rtree-spatial-indexing-with-mongodb-mongodc
+
+Geohash implemenations: 
+https://github.com/mongodb/mongo/blob/6471618952c8727bc5b06039ed2cf861e1a36436/src/mongo/db/geo/hash.cpp
+
+https://github.com/mongodb
+
+** B-trees
+
+*** Cache-oblivious B-tree implementation ? 
+
+This is actually a Cache-oblivious Binary-tree. 
+https://www.reddit.com/r/cpp/comments/2bvefq/does_anyone_know_of_a_cache_oblivious_b_tree_c/
+
+http://supertech.csail.mit.edu/cacheObliviousBTree.html
+"We used a binary tree with a "van Emde Boas" layout whose leaves point to intervals in a "packed memory structure". The search tree supports efficient lookup, as well as efficient amortized insertion and deletion."
+
+**** Thesis describing implemetation:
+BIB:Kasheff2004
+
+http://people.csail.mit.edu/bradley/papers/Kasheff04.pdf
+
+See figures: they show the same performance pattern that I identified in my experiements with the PMA.
+
+http://groups.csail.mit.edu/sct/wiki/index.php?title=Main_Page
+
+**** Tokutek
+https://github.com/Tokutek/ft-index
+
+https://www.youtube.com/watch?v=AVNjqgf7zNw
+Presentation: 
+https://www.percona.com/blog/wp-content/uploads/2011/03/Tokutek_Understanding_Indexes.pdf
+
+Fractal Tree ? 
+
+Tokutek was acquired by Percona in 2015
+
+***** Super linear indexes
+Co-founder of tokutek with Bender
+
+http://www.superlinearindexes.org/home
+
+https://www.yumpu.com/en/document/view/32640574/multidimensional-amp-string-indexes-for-streaming-data
+
+*TokuDB* storage engine fot *MySQL*, 
+Uses the cache-oblivious Streaming B-trees.
+
+**** Cache-obliviou Streaming B-trees BIB:Bender2007a
+
+Comparison where made with the B-tree implemented in BIB:Bender2006b
+
+**** Cache-oblivious String B-trees BIB:Bender2006b
+
+"B-trees ages very fast" -> performance gets poorer.
+
+Static CO-BTREES
+Dynamic CO-BTREES
+
+*** Google B-tree
+https://code.google.com/archive/p/cpp-btree/
+
+https://isocpp.org/blog/2013/02/b-tree-containers-from-google
+
+https://opensource.googleblog.com/2013/01/c-containers-that-save-memory-and-time.html
+
+
+https://github.com/diegocaro/cpp-btree
+
+
+NOTE about safe containers: don't have a version of multi-map implemented. 
+https://code.google.com/archive/p/cpp-btree/wikis/UsageInstructions.wiki
+
+
+*** Fractal Tree
+- Implemented in Tokutek Database
+- Originated from BIB:Bender2007a
+
+Sources:
+https://en.wikipedia.org/wiki/Fractal_tree_index
+
+Github:
+https://github.com/Tokutek/ft-index
+
+
+https://github.com/Percona/tokudb-engine
+
+
+Fractal Trees for Mongo-DB? 
+https://www.percona.com/services/support/mongodb-support
+
+*** Palm-Tree
+A Parallel implementation of B-trees: 
+https://github.com/runshenzhu/palmtree
+
+Sequential comparison witgh stx:Btree
+https://panthema.net/2007/stx-btree/
+https://github.com/bingmann/stx-btree
+
+*** Stx-btree 
+Implementation of an efficient Btree available at: 
+https://github.com/bingmann/stx-btree
+
+This is the sequential implementation used for comparison in the Palm-Tree paper. 
+
+Detailed performance tests in: 
+http://panthema.net/2007/stx-btree/speedtest/
+
+Paper with removals http://ilpubs.stanford.edu:8090/85/1/1995-19.pdf
